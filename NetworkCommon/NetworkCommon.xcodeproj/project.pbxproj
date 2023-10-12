@@ -1,0 +1,423 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */; };
+		5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */; };
+		55853CDC2AC32BE300901E52 /* libCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B373072AC325D000F0095E /* libCommon.a */; };
+		55B372E82AC309B600F0095E /* UDPSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372E62AC309B600F0095E /* UDPSocket.cpp */; };
+		55B372E92AC309B600F0095E /* UDPSocket.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B372E72AC309B600F0095E /* UDPSocket.hpp */; };
+		55B372EE2AC30AA800F0095E /* Address.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372EC2AC30AA800F0095E /* Address.cpp */; };
+		55B372EF2AC30AA800F0095E /* Address.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B372ED2AC30AA800F0095E /* Address.hpp */; };
+		55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C6CA2AD2A42500470E01 /* server.cpp */; };
+		55E4D2F92AC6BE6D00555999 /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */; };
+		55E4D2FA2AC6BE6D00555999 /* NetworkInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */; };
+		55E4D30B2AC8065300555999 /* UDPPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3092AC8065300555999 /* UDPPacket.cpp */; };
+		55E4D30C2AC8065300555999 /* UDPPacket.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D30A2AC8065300555999 /* UDPPacket.hpp */; };
+		55E4D3302ACC5D5000555999 /* RemoteInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */; };
+		55E4D3312ACC5D5000555999 /* RemoteInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */; };
+		55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3452ACDD58000555999 /* client.cpp */; };
+		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		55B373062AC325D000F0095E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55B373022AC325D000F0095E /* Common.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 55B372FA2AC325B200F0095E;
+			remoteInfo = Common;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QNetworkInterface.cpp; sourceTree = "<group>"; };
+		5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QNetworkInterface.hpp; sourceTree = "<group>"; };
+		55B372CF2AC3091000F0095E /* libNetworkCommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetworkCommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55B372E62AC309B600F0095E /* UDPSocket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UDPSocket.cpp; sourceTree = "<group>"; };
+		55B372E72AC309B600F0095E /* UDPSocket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UDPSocket.hpp; sourceTree = "<group>"; };
+		55B372EC2AC30AA800F0095E /* Address.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Address.cpp; sourceTree = "<group>"; };
+		55B372ED2AC30AA800F0095E /* Address.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Address.hpp; sourceTree = "<group>"; };
+		55B373022AC325D000F0095E /* Common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Common.xcodeproj; path = ../Common/Common.xcodeproj; sourceTree = "<group>"; };
+		55D1C6CA2AD2A42500470E01 /* server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = server.cpp; sourceTree = "<group>"; };
+		55D1C6D22AD314AB00470E01 /* server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server.h; sourceTree = "<group>"; };
+		55D1C6D92AD3276700470E01 /* common_structs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common_structs.h; sourceTree = "<group>"; };
+		55D1C6DA2AD329B700470E01 /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
+		55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkInterface.cpp; sourceTree = "<group>"; };
+		55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetworkInterface.hpp; sourceTree = "<group>"; };
+		55E4D3092AC8065300555999 /* UDPPacket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UDPPacket.cpp; sourceTree = "<group>"; };
+		55E4D30A2AC8065300555999 /* UDPPacket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UDPPacket.hpp; sourceTree = "<group>"; };
+		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RemoteInterface.cpp; sourceTree = "<group>"; };
+		55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RemoteInterface.hpp; sourceTree = "<group>"; };
+		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
+		55E4D3452ACDD58000555999 /* client.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = client.cpp; sourceTree = "<group>"; };
+		55FB29BE2ACF1D010051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = quiche_lib/release/libquiche.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		55B372CD2AC3091000F0095E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55853CDC2AC32BE300901E52 /* libCommon.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		55853CCA2AC32AD200901E52 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				55FB29BE2ACF1D010051DDF9 /* libquiche.a */,
+				55E4D3242ACAF4F600555999 /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		55B372C62AC3091000F0095E = {
+			isa = PBXGroup;
+			children = (
+				55B373022AC325D000F0095E /* Common.xcodeproj */,
+				55B372E52AC3097700F0095E /* Source */,
+				55B372D02AC3091000F0095E /* Products */,
+				55853CCA2AC32AD200901E52 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		55B372D02AC3091000F0095E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				55B372CF2AC3091000F0095E /* libNetworkCommon.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55B372E52AC3097700F0095E /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */,
+				5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */,
+				55E4D3342ACDD23100555999 /* quiche */,
+				55B372E62AC309B600F0095E /* UDPSocket.cpp */,
+				55B372E72AC309B600F0095E /* UDPSocket.hpp */,
+				55B372EC2AC30AA800F0095E /* Address.cpp */,
+				55B372ED2AC30AA800F0095E /* Address.hpp */,
+				55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */,
+				55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */,
+				55E4D3092AC8065300555999 /* UDPPacket.cpp */,
+				55E4D30A2AC8065300555999 /* UDPPacket.hpp */,
+				55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */,
+				55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */,
+			);
+			path = Source;
+			sourceTree = "<group>";
+		};
+		55B373032AC325D000F0095E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				55B373072AC325D000F0095E /* libCommon.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		55E4D3342ACDD23100555999 /* quiche */ = {
+			isa = PBXGroup;
+			children = (
+				55D1C6CA2AD2A42500470E01 /* server.cpp */,
+				55E4D3452ACDD58000555999 /* client.cpp */,
+				55E4D3352ACDD23100555999 /* quiche.h */,
+				55D1C6D22AD314AB00470E01 /* server.h */,
+				55D1C6D92AD3276700470E01 /* common_structs.h */,
+				55D1C6DA2AD329B700470E01 /* client.h */,
+			);
+			path = quiche;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		55B372CB2AC3091000F0095E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55E4D30C2AC8065300555999 /* UDPPacket.hpp in Headers */,
+				55E4D3312ACC5D5000555999 /* RemoteInterface.hpp in Headers */,
+				55B372E92AC309B600F0095E /* UDPSocket.hpp in Headers */,
+				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
+				55E4D2FA2AC6BE6D00555999 /* NetworkInterface.hpp in Headers */,
+				5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */,
+				55B372EF2AC30AA800F0095E /* Address.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		55B372CE2AC3091000F0095E /* NetworkCommon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55B372D32AC3091000F0095E /* Build configuration list for PBXNativeTarget "NetworkCommon" */;
+			buildPhases = (
+				55B372CB2AC3091000F0095E /* Headers */,
+				55B372CC2AC3091000F0095E /* Sources */,
+				55B372CD2AC3091000F0095E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NetworkCommon;
+			productName = NetworkCommon;
+			productReference = 55B372CF2AC3091000F0095E /* libNetworkCommon.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		55B372C72AC3091000F0095E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1240;
+				TargetAttributes = {
+					55B372CE2AC3091000F0095E = {
+						CreatedOnToolsVersion = 12.4;
+					};
+				};
+			};
+			buildConfigurationList = 55B372CA2AC3091000F0095E /* Build configuration list for PBXProject "NetworkCommon" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 55B372C62AC3091000F0095E;
+			productRefGroup = 55B372D02AC3091000F0095E /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 55B373032AC325D000F0095E /* Products */;
+					ProjectRef = 55B373022AC325D000F0095E /* Common.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				55B372CE2AC3091000F0095E /* NetworkCommon */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		55B373072AC325D000F0095E /* libCommon.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCommon.a;
+			remoteRef = 55B373062AC325D000F0095E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		55B372CC2AC3091000F0095E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55E4D2F92AC6BE6D00555999 /* NetworkInterface.cpp in Sources */,
+				55E4D3302ACC5D5000555999 /* RemoteInterface.cpp in Sources */,
+				5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */,
+				55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */,
+				55B372EE2AC30AA800F0095E /* Address.cpp in Sources */,
+				55B372E82AC309B600F0095E /* UDPSocket.cpp in Sources */,
+				55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */,
+				55E4D30B2AC8065300555999 /* UDPPacket.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		55B372D12AC3091000F0095E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		55B372D22AC3091000F0095E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		55B372D42AC3091000F0095E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Source/quiche",
+					"$(PROJECT_DIR)/Source/ev",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/quiche_lib/debug",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wno-noexcept-type";
+			};
+			name = Debug;
+		};
+		55B372D52AC3091000F0095E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Source/quiche",
+					"$(PROJECT_DIR)/Source/ev",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/quiche_lib/debug",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wno-noexcept-type";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		55B372CA2AC3091000F0095E /* Build configuration list for PBXProject "NetworkCommon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55B372D12AC3091000F0095E /* Debug */,
+				55B372D22AC3091000F0095E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55B372D32AC3091000F0095E /* Build configuration list for PBXNativeTarget "NetworkCommon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55B372D42AC3091000F0095E /* Debug */,
+				55B372D52AC3091000F0095E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 55B372C72AC3091000F0095E /* Project object */;
+}
