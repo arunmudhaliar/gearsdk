@@ -81,7 +81,8 @@ int32_t main(int32_t argc, const char * argv[]) {
 //    argv2[1] = (char*)"localhost";
 //    argv2[2] = (char*)"4000";
 //    test_server_main(3, argv2);
-    QNetworkServer::run("localhost", "4000");
+    QNetworkServer server;
+    server.run("localhost", "4000");
     /*
      PrintCommonInfo();
     // insert code here...

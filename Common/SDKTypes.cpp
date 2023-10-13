@@ -8,6 +8,7 @@
 #include "SDKTypes.hpp"
 
 #include <iostream>
+#include <time.h>
 
 #if PLATFORM == PLATFORM_ANDROID
 #include <android/log.h>
@@ -26,17 +27,18 @@ void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
     if (logLevel>LOG_LEVEL) {
         return;
     }
+    time_t givemetime = time(NULL);
     char buffer[LOGBUFFER_SIZE];
     va_list v;
     va_start(v,format);
     vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
     va_end(v);
 #if PLATFORM == PLATFORM_MAC
-    std::cout << "[" << tag << "] : " << buffer << "\n";
+    std::cout << strtok(ctime(&givemetime), "\n") << " : [" << tag << "] - " << buffer << "\n";
 #elif PLATFORM == PLATFORM_ANDROID
      __android_log_print(ANDROID_LOG_INFO, tag, buffer);
 #else
-    std::cout << "[" << tag << "] : " << buffer << "\n";
+    std::cout << strtok(ctime(&givemetime), "\n") << "[" << tag << "] - " << buffer << "\n";
 #endif
 }
 
