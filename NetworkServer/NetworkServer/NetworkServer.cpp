@@ -6,13 +6,11 @@
 //
 #include "NetworkServer.hpp"
 #include <unistd.h>
+
 #include "../../Common/gxCrc32.h"
 
 #include "QNetworkServer.hpp"
 
-//extern "C" {
-//#include "../../NetworkCommon/Source/quiche/server.h"
-//}
 
 #undef __LOGTAG__
 #define __LOGTAG__ "NetworkServer"
@@ -65,24 +63,12 @@ bool NetworkServer::OnConstructPacket(const UDPSocket* socket, Address& sender, 
 
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
-//    NetworkServer server;
-//    server.Init(NETWORK_PROTOCOL_ID, GSDK_UDP_DEFAULT_PORT);
-//    server.BeginReceive();
-//
-//
-//    while (server.GetSocket().IsActive())
-//    {
-//        usleep(10*1000);    // 10ms
-//    }
+    std::__fs::filesystem::path executablePath(argc>0 ? argv[0] : "");
+    DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", executablePath.parent_path().c_str());
     
-//    printf("hello quinche");
-//    char **argv2 = (char**)malloc(sizeof(char*)*3);
-//    argv2[0] = (char*)"TestQuiche";
-//    argv2[1] = (char*)"localhost";
-//    argv2[2] = (char*)"4000";
-//    test_server_main(3, argv2);
     QNetworkServer server;
-    server.run("localhost", "4000");
+    server.run("localhost", "4000", executablePath);
+    
     /*
      PrintCommonInfo();
     // insert code here...

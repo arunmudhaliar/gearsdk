@@ -16,6 +16,9 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <filesystem>
+
+namespace fs = std::__fs::filesystem;
 
 #include "../../Common/SDKTypes.hpp"
 
@@ -54,6 +57,7 @@ class MQConnectionBridge {
 public:
     virtual void FlushEgress(struct ev_loop *loop, QConnection* qconnection) = 0;
     virtual void DestroyConnection(struct ev_loop *loop, QConnection* qconnection) = 0;
+    virtual void OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) = 0;
 };
 
 class QConnection {
@@ -85,11 +89,12 @@ public:
 
 class QNetworkServer : public MQConnectionBridge {
 public:
-    int run(std::string host, std::string port);
+    int run(std::string host, std::string port, fs::path executablePath);
     
 protected:
     void FlushEgress(struct ev_loop *loop, QConnection* qconnection) override;
     void DestroyConnection(struct ev_loop *loop, QConnection* qconnection) override;
+    void OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) override;
     
 private:
     static void debug_log(const uint8_t *line, void *argp);

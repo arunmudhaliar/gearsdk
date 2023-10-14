@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <time.h>
+#include <unistd.h>
 
 #if PLATFORM == PLATFORM_ANDROID
 #include <android/log.h>
@@ -21,6 +22,12 @@ extern "C"
 
 void PrintCommonInfo() {
     DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
+    } else {
+        DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
+    }
 }
 
 void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
@@ -70,6 +77,15 @@ void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
     DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : %s\x1b[0m", tag, buffer);
     assert(condition);
 }
+void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
+    char buffer[LOGBUFFER_SIZE];
+    va_list v;
+    va_start(v,format);
+    vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+    va_end(v);
+    DEBUG_PRINT(LOG_LEVEL, "\x1B[32m****", "[%s] : %s\x1b[0m", tag, buffer);
+}
+
 } //extern "C"
 
 

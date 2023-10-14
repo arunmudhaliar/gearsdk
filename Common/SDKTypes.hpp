@@ -48,4 +48,5 @@ extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* 
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);
 #endif /* SDKTypes_hpp */

@@ -126,6 +126,11 @@ QConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
     return qconnection;
 }
 
+
+void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) {
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "--------->>>>>>>>> %s", buf);
+}
+
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QConnection* qconnection) {
     static uint8_t out[MAX_DATAGRAM_SIZE];
 
@@ -174,7 +179,7 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
     QConnection* qconnection = (QConnection*)w->data;
     quiche_conn_on_timeout(qconnection->conn);
 
-    DEBUG_PRINT_WARN(__LOGTAG__, "timeout !!!");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "timeout !!!");
     
     qconnection->bridge->FlushEgress(loop, qconnection);
 
@@ -359,9 +364,11 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     static const char *resp = "byez\n";
                     quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez'");
                 }
                 
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
+//                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
+                qconnection->bridge->OnMessage(recv_len, buf, qconnection);
             }
 
             quiche_stream_iter_free(readable);
@@ -378,7 +385,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             quiche_conn_stats(qconnection->conn, &stats);
             quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
                     stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
             DestroyConnection(loop, qconnection);
@@ -391,7 +398,7 @@ void QNetworkServer::recv_cb(EV_P_ ev_io *w, int revents) {
     server->Recv_cb(loop, w, revents);
 }
 
-int QNetworkServer::run(std::string host, std::string port) {
+int QNetworkServer::run(std::string host, std::string port, fs::path executablePath) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -428,8 +435,12 @@ int QNetworkServer::run(std::string host, std::string port) {
         return -1;
     }
 
-    quiche_config_load_cert_chain_from_pem_file(config, "./cert.crt");
-    quiche_config_load_priv_key_from_pem_file(config, "./cert.key");
+    //std::string rootDir = executablePath.parent_path();
+    fs::path rootDir(executablePath.parent_path());
+    fs::path certFile("cert.crt");
+    fs::path keyFile("cert.key");
+    quiche_config_load_cert_chain_from_pem_file(config, (rootDir / certFile).c_str());
+    quiche_config_load_priv_key_from_pem_file(config, (rootDir / keyFile).c_str());
 
     quiche_config_set_application_protos(config,
         (uint8_t *) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
