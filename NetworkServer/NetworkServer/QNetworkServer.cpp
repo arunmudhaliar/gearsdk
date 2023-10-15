@@ -48,7 +48,7 @@ void QConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----->>>>>>%s", (char*)buf);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>> %s", (char*)buf);
         break;
     }
 
@@ -159,11 +159,11 @@ QConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
 }
 
 void QNetworkServer::OnConnection(QConnection* qconnection) {
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "++++++++++>>>>>>>>> new connection");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
 void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) {
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "--------->>>>>>>>> %s", buf);
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s", buf);
     
     qconnection->SendMessage("hello", true);
     qconnection->SendMessage("get me this", true);
