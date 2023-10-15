@@ -46,7 +46,7 @@ struct connections {
     QPeerConnection *h = nullptr;
 };
 
-class MQConnectionBridge {
+class MQPeerConnectionBridge {
 public:
     virtual void FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) = 0;
     virtual void DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) = 0;
@@ -58,7 +58,7 @@ public:
 
 class QPeerConnection {
 public:
-    QPeerConnection(MQConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock) :
+    QPeerConnection(MQPeerConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock) :
     bridge(bridge),
     sock(sock)
     {
@@ -74,7 +74,7 @@ public:
     void SendMessage(const char *buf, size_t buflen, bool flush);
     void SendMessage(const std::string& buffer, bool flush);
     
-    MQConnectionBridge* bridge = nullptr;
+    MQPeerConnectionBridge* bridge = nullptr;
     uint8_t cid[LOCAL_CONN_ID_LEN];
     ev_timer timer;
     int sock;
@@ -84,7 +84,7 @@ public:
     UT_hash_handle hh;
 };
 
-class QNetworkServer : protected MQConnectionBridge {
+class QNetworkServer : protected MQPeerConnectionBridge {
 public:
     int run(std::string host, std::string port, fs::path executablePath);
     
