@@ -26,11 +26,11 @@
 
 #include <quiche.h>
 
-void QConnection::SendMessage(const std::string& buffer, bool flush) {
+void QPeerConnection::SendMessage(const std::string& buffer, bool flush) {
     SendMessage(buffer.c_str(), buffer.size(), flush);
 }
 
-void QConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
+void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
     if (!quiche_conn_is_established(conn)) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
         return;
@@ -115,14 +115,14 @@ uint8_t *QNetworkServer::gen_cid(uint8_t *cid, size_t cid_len) {
     return cid;
 }
 
-QConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
+QPeerConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
                                    uint8_t *odcid, size_t odcid_len,
                                    struct sockaddr *local_addr,
                                    socklen_t local_addr_len,
                                    struct sockaddr_storage *peer_addr,
                                    socklen_t peer_addr_len)
 {
-    QConnection* qconnection = new QConnection(this, scid, scid_len, conns->sock);
+    QPeerConnection* qconnection = new QPeerConnection(this, scid, scid_len, conns->sock);
     if (qconnection == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate qconnection");
         GX_DELETE(qconnection);
@@ -158,18 +158,18 @@ QConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
     return qconnection;
 }
 
-void QNetworkServer::OnConnection(QConnection* qconnection) {
+void QNetworkServer::OnConnection(QPeerConnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
-void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) {
+void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s", buf);
     
     qconnection->SendMessage("hello", true);
     qconnection->SendMessage("get me this", true);
 }
 
-void QNetworkServer::FlushEgress(struct ev_loop *loop, QConnection* qconnection) {
+void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
     static uint8_t out[MAX_DATAGRAM_SIZE];
 
     SendInfo send_info;
@@ -207,7 +207,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QConnection* qconnection)
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
-void QNetworkServer::DestroyConnection(struct ev_loop *loop, QConnection* qconnection) {
+void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) {
     OnDestroyConnection(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
     ev_timer_stop(loop, &qconnection->timer);
@@ -216,12 +216,12 @@ void QNetworkServer::DestroyConnection(struct ev_loop *loop, QConnection* qconne
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed !!!");
 }
 
-void QNetworkServer::OnDestroyConnection(QConnection* qconnection) {
+void QNetworkServer::OnDestroyConnection(QPeerConnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
 }
 
 void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
-    QConnection* qconnection = (QConnection*)w->data;
+    QPeerConnection* qconnection = (QPeerConnection*)w->data;
         
     quiche_conn_on_timeout(qconnection->conn);
 
@@ -251,8 +251,8 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
 }
 
 void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
-    QConnection* qconnection = nullptr;
-    QConnection* tmp = nullptr;
+    QPeerConnection* qconnection = nullptr;
+    QPeerConnection* tmp = nullptr;
     
     static uint8_t buf[65535];
     static uint8_t out[MAX_DATAGRAM_SIZE];

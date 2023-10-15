@@ -9,7 +9,7 @@
 
 #include "../../Common/gxCrc32.h"
 
-#include "QNetworkServer.hpp"
+#include "GameServer.hpp"
 
 
 #undef __LOGTAG__
@@ -66,7 +66,7 @@ int32_t main(int32_t argc, const char * argv[]) {
     std::__fs::filesystem::path executablePath(argc>0 ? argv[0] : "");
     DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", executablePath.parent_path().c_str());
     
-    QNetworkServer server;
+    GameServer server;
     server.run("localhost", "4000", executablePath);
     
     /*
