@@ -42,8 +42,10 @@ extern "C" DECLSPEC void PrintCommonInfo();
 #define LOG_LEVEL_2 2
 #define LOG_LEVEL_3 3
 
+#ifndef LOG_LEVEL
+    #define LOG_LEVEL LOG_LEVEL_0
+#endif
 
-#define LOG_LEVEL LOG_LEVEL_0
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);

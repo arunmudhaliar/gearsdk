@@ -26,6 +26,24 @@
 
 #include <quiche.h>
 
+QPeerConnection::QPeerConnection(MQPeerConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock) :
+bridge(bridge),
+sock(sock)
+{
+    if (scid_len != LOCAL_CONN_ID_LEN) {
+        DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
+    }
+
+    memcpy(cid, scid, LOCAL_CONN_ID_LEN);
+}
+
+QPeerConnection::~QPeerConnection() {
+    ev_timer_stop(bridge->GetMainLoop(), &timer);
+    if (conn) {
+        quiche_conn_free(conn);
+    }
+}
+
 void QPeerConnection::SendMessage(const std::string& buffer, bool flush) {
     SendMessage(buffer.c_str(), buffer.size(), flush);
 }
@@ -40,7 +58,7 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
     StreamIter *writable = quiche_conn_writable(conn);
 
     while (quiche_stream_iter_next(writable, &s)) {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 
         ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *) buf,
                                 buflen, false);
@@ -59,7 +77,7 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
 }
 
 void QNetworkServer::debug_log(const uint8_t *line, void *argp) {
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*)line);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s", (char*)line);
 }
 void QNetworkServer::mint_token(const uint8_t *dcid, size_t dcid_len,
                        struct sockaddr_storage *addr, socklen_t addr_len,
@@ -163,10 +181,16 @@ void QNetworkServer::OnConnection(QPeerConnection* qconnection) {
 }
 
 void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s", buf);
+    uint8_t* copybuf = new uint8_t[recv_len+1];
+    memcpy(copybuf, buf, recv_len);
+    copybuf[recv_len] = '\0';
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
+    GX_DELETE_ARY(copybuf);
     
-    qconnection->SendMessage("hello", true);
-    qconnection->SendMessage("get me this", true);
+    qconnection->SendMessage("hello1 from server", true);
+    qconnection->SendMessage("hello12 from server", true);
+    qconnection->SendMessage("hello123 from server", true);
+    qconnection->SendMessage("hello1234 from server", true);
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
@@ -179,7 +203,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
                                            &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
             break;
         }
 
@@ -197,21 +221,19 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
     double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t;
     ev_timer_again(loop, &qconnection->timer);
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) {
     OnDestroyConnection(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
-    ev_timer_stop(loop, &qconnection->timer);
-    quiche_conn_free(qconnection->conn);
     GX_DELETE(qconnection);
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed !!!");
 }
@@ -236,7 +258,7 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
         quiche_conn_stats(qconnection->conn, &stats);
         quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
         qconnection->bridge->DestroyConnection(loop, qconnection);
@@ -323,7 +345,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -359,7 +381,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -394,7 +416,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(qconnection->conn)) {
             uint64_t s = 0;
@@ -402,7 +424,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             StreamIter *readable = quiche_conn_readable(qconnection->conn);
 
             while (quiche_stream_iter_next(readable, &s)) {
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is readable", s);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 
                 bool fin = false;
                 ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s,
@@ -441,6 +463,16 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
             DestroyConnection(loop, qconnection);
+        }
+    }
+}
+
+void QNetworkServer::BroadCastMessage(const std::string& buffer, bool flush) {
+    QPeerConnection* qconnection = nullptr;
+    QPeerConnection* tmp = nullptr;
+    HASH_ITER(hh, conns->h, qconnection, tmp) {
+        if (quiche_conn_is_established(qconnection->conn)) {
+            qconnection->SendMessage(buffer, flush);
         }
     }
 }

@@ -58,18 +58,8 @@ public:
 
 class QPeerConnection {
 public:
-    QPeerConnection(MQPeerConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock) :
-    bridge(bridge),
-    sock(sock)
-    {
-        if (scid_len != LOCAL_CONN_ID_LEN) {
-            DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
-        }
-
-        memcpy(cid, scid, LOCAL_CONN_ID_LEN);
-    }
-    ~QPeerConnection() {
-    }
+    QPeerConnection(MQPeerConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock);
+    ~QPeerConnection();
     
     void SendMessage(const char *buf, size_t buflen, bool flush);
     void SendMessage(const std::string& buffer, bool flush);
@@ -87,6 +77,7 @@ public:
 class QNetworkServer : protected MQPeerConnectionBridge {
 public:
     int run(std::string host, std::string port, fs::path executablePath);
+    void BroadCastMessage(const std::string& buffer, bool flush);
     
 protected:
     void FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) override;

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5574E6BA2AD86EDC00FAFE08 /* QNetworkClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */; };
+		5574E6C92ADC3A2F00FAFE08 /* GameClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */; };
 		55853CE42AC32FF600901E52 /* libNetworkCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B372DC2AC3094C00F0095E /* libNetworkCommon.a */; };
 		55B372A72AC2AB4A00F0095E /* NetworkClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372A62AC2AB4A00F0095E /* NetworkClient.cpp */; };
 		55D1C6D52AD3269C00470E01 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D42AD3269800470E01 /* libev.a */; };
@@ -41,6 +42,8 @@
 /* Begin PBXFileReference section */
 		5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QNetworkClient.cpp; sourceTree = "<group>"; };
 		5574E6B92AD86EDC00FAFE08 /* QNetworkClient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QNetworkClient.hpp; sourceTree = "<group>"; };
+		5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameClient.cpp; sourceTree = "<group>"; };
+		5574E6C82ADC3A2F00FAFE08 /* GameClient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GameClient.hpp; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* NetworkClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NetworkClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372A62AC2AB4A00F0095E /* NetworkClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkClient.cpp; sourceTree = "<group>"; };
 		55B372D72AC3094C00F0095E /* NetworkCommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NetworkCommon.xcodeproj; path = ../NetworkCommon/NetworkCommon.xcodeproj; sourceTree = "<group>"; };
@@ -103,6 +106,8 @@
 				55E4D3032AC6D81900555999 /* NetworkClient.hpp */,
 				5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */,
 				5574E6B92AD86EDC00FAFE08 /* QNetworkClient.hpp */,
+				5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */,
+				5574E6C82ADC3A2F00FAFE08 /* GameClient.hpp */,
 			);
 			path = NetworkClient;
 			sourceTree = "<group>";
@@ -189,6 +194,7 @@
 			files = (
 				55B372A72AC2AB4A00F0095E /* NetworkClient.cpp in Sources */,
 				5574E6BA2AD86EDC00FAFE08 /* QNetworkClient.cpp in Sources */,
+				5574E6C92ADC3A2F00FAFE08 /* GameClient.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,6 +319,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"LOG_LEVEL=LOG_LEVEL_1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../NetworkCommon/Source/quiche\"",
 					"\"$(SRCROOT)/../NetworkCommon/Source/ev\"",

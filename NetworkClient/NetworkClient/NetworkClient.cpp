@@ -14,7 +14,7 @@ extern "C" {
 #include "../../NetworkCommon/Source/quiche/client.h"
 }
 
-#include "QNetworkClient.hpp"
+#include "GameClient.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "NetworkClient"
@@ -62,6 +62,15 @@ bool NetworkClient::OnConstructPacket(const UDPSocket* socket, Address& sender, 
     return true;
 }
 
+void timeout_cb(EV_P_ ev_timer *w, int revents) {
+    GameClient* client = (GameClient*)w->data;
+    client->SendMessage("hello1 from server", true);
+    client->SendMessage("hello12 from server", true);
+    client->SendMessage("hello123 from server", true);
+    client->SendMessage("hello1234 from server", true);
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT MAIN");
+}
+
 int32_t main(int32_t argc, const char * argv[]) {
     
 //    std::deque<UDPPacket*> receiveQ;
@@ -93,7 +102,18 @@ int32_t main(int32_t argc, const char * argv[]) {
 //    argv2[2] = (char*)"4000";
 //    test_client_main(3, argv2);
     
-    QNetworkClient::run("localhost", "4000");
+    GameClient client;
+//    for(int x=0;x<1000;x++) {
+        client.run("localhost", "4000");
+//    }
+    
+    struct ev_loop* loop = ev_default_loop(0);
+    static ev_timer tw;
+    ev_timer_init (&tw, timeout_cb, 5, 3);
+    tw.data = &client;
+    ev_timer_start(loop, &tw);
+    ev_run(loop, 0);
+    
 //    NetworkClient client;
 //    client.Init(NETWORK_PROTOCOL_ID);
 //    client.BeginReceive();
