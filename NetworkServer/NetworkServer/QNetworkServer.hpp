@@ -48,16 +48,15 @@ struct connections {
     QConnection *h = nullptr;
 };
 
-struct conn_io {
-
-};
-
-
 class MQConnectionBridge {
 public:
     virtual void FlushEgress(struct ev_loop *loop, QConnection* qconnection) = 0;
     virtual void DestroyConnection(struct ev_loop *loop, QConnection* qconnection) = 0;
+    
+    virtual void OnConnection(QConnection* qconnection) = 0;
     virtual void OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) = 0;
+    virtual void OnDestroyConnection(QConnection* qconnection) = 0;
+    inline virtual struct ev_loop * GetMainLoop() = 0;
 };
 
 class QConnection {
@@ -74,6 +73,9 @@ public:
     }
     ~QConnection() {
     }
+    
+    void SendMessage(const char *buf, size_t buflen, bool flush);
+    void SendMessage(const std::string& buffer, bool flush);
     
     MQConnectionBridge* bridge = nullptr;
     uint8_t cid[LOCAL_CONN_ID_LEN];
@@ -95,7 +97,11 @@ protected:
     void FlushEgress(struct ev_loop *loop, QConnection* qconnection) override;
     void DestroyConnection(struct ev_loop *loop, QConnection* qconnection) override;
     void OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) override;
-    
+    void OnConnection(QConnection* qconnection) override;
+    void OnDestroyConnection(QConnection* qconnection) override;
+    inline struct ev_loop * GetMainLoop() override {
+        return mainloop;
+    }
 private:
     static void debug_log(const uint8_t *line, void *argp);
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
@@ -116,6 +122,7 @@ private:
     void Recv_cb(EV_P_ ev_io *w, int revents);
     
     Config *config = nullptr;
+    struct ev_loop *mainloop = nullptr;
     struct connections *conns = nullptr;
 };
 

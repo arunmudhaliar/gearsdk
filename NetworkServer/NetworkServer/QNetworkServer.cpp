@@ -26,6 +26,38 @@
 
 #include <quiche.h>
 
+void QConnection::SendMessage(const std::string& buffer, bool flush) {
+    SendMessage(buffer.c_str(), buffer.size(), flush);
+}
+
+void QConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
+    if (!quiche_conn_is_established(conn)) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
+        return;
+    }
+    
+    uint64_t s = 0;
+    StreamIter *writable = quiche_conn_writable(conn);
+
+    while (quiche_stream_iter_next(writable, &s)) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+
+        ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *) buf,
+                                buflen, false);
+        if (sent_len!=buflen) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
+            break;
+        }
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----->>>>>>%s", (char*)buf);
+        break;
+    }
+
+    quiche_stream_iter_free(writable);
+    if (flush) {
+        bridge->FlushEgress(bridge->GetMainLoop(), this);
+    }
+}
+
 void QNetworkServer::debug_log(const uint8_t *line, void *argp) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*)line);
 }
@@ -121,14 +153,20 @@ QConnection *QNetworkServer::create_conn(uint8_t *scid, size_t scid_len,
 
     HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, qconnection);
 
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "new connection");
+    qconnection->bridge->OnConnection(qconnection);
 
     return qconnection;
 }
 
+void QNetworkServer::OnConnection(QConnection* qconnection) {
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "++++++++++>>>>>>>>> new connection");
+}
 
 void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "--------->>>>>>>>> %s", buf);
+    
+    qconnection->SendMessage("hello", true);
+    qconnection->SendMessage("get me this", true);
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QConnection* qconnection) {
@@ -162,21 +200,29 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QConnection* qconnection)
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "sent %zd bytes", sent);
     }
 
-    double t = quiche_conn_timeout_as_nanos(qconnection->conn) / 1e9f;
+    uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
+    double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t;
     ev_timer_again(loop, &qconnection->timer);
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void QNetworkServer::DestroyConnection(struct ev_loop *loop, QConnection* qconnection) {
+    OnDestroyConnection(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
     ev_timer_stop(loop, &qconnection->timer);
     quiche_conn_free(qconnection->conn);
     GX_DELETE(qconnection);
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Connection destroyed !!!");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed !!!");
+}
+
+void QNetworkServer::OnDestroyConnection(QConnection* qconnection) {
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
 }
 
 void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
     QConnection* qconnection = (QConnection*)w->data;
+        
     quiche_conn_on_timeout(qconnection->conn);
 
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "timeout !!!");
@@ -193,6 +239,12 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
+        qconnection->bridge->DestroyConnection(loop, qconnection);
+        return;
+    } else {
+        
+        // force close here
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Force close connection !!!");
         qconnection->bridge->DestroyConnection(loop, qconnection);
         return;
     }
@@ -445,7 +497,7 @@ int QNetworkServer::run(std::string host, std::string port, fs::path executableP
     quiche_config_set_application_protos(config,
         (uint8_t *) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
-    quiche_config_set_max_idle_timeout(config, 50000);
+    quiche_config_set_max_idle_timeout(config, 20000);
     quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(config, 10000000);
@@ -464,13 +516,13 @@ int QNetworkServer::run(std::string host, std::string port, fs::path executableP
 
     ev_io watcher;
 
-    struct ev_loop *loop = ev_default_loop(0);
+    mainloop = ev_default_loop(0);
 
     ev_io_init(&watcher, recv_cb, sock, EV_READ);
-    ev_io_start(loop, &watcher);
+    ev_io_start(mainloop, &watcher);
     watcher.data = this;
 
-    ev_loop(loop, 0);
+    ev_loop(mainloop, 0);
 
     freeaddrinfo(local);
 
