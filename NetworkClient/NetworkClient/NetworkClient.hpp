@@ -9,6 +9,13 @@
 #define NetworkClient_hpp
 
 #include "../../NetworkCommon/Source/NetworkInterface.hpp"
+#include "GameClient.hpp"
+
+class NetworkClientTester {
+public:
+    void Test();
+    std::vector<GameClient*> clientList;
+};
 
 class NetworkClient : public NetworkInterface {
 public:
@@ -18,6 +25,8 @@ public:
 protected:
     virtual void OnReceivePayLoad(const UDPSocket* socket, Address& sender, const PayLoad* payload) override;
     virtual bool OnConstructPacket(const UDPSocket* socket, Address& sender, UDPPacket* packet, Buffer& buffer) override;
+    
+
 };
 
 #endif /* NetworkClient_hpp */
