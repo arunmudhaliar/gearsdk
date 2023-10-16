@@ -30,6 +30,11 @@ extern "C" {
 class MQCommandBridge;
 class QConnection {
 public:
+    enum CON_STATE {
+        STATE_OPEN,
+        STATE_CONNECT,
+        STATE_CLOSE
+    };
     QConnection(MQCommandBridge* bridge, Config *config);
     ~QConnection();
     ev_timer timer;
@@ -41,8 +46,18 @@ public:
     Config *config = nullptr;
     struct addrinfo *peer = nullptr;
     int Connect(std::string host, std::string port);
-    void SendMessage(const char *buf, size_t buflen, bool flush);
-    void SendMessage(const std::string& buffer, bool flush);
+    int SendMessage(const char *buf, size_t buflen, bool flush);
+    int SendMessage(const std::string& buffer, bool flush);
+    void SetState(CON_STATE state);
+    inline bool IsOpen() { return state == STATE_OPEN; }
+    inline bool IsClosed() { return state == STATE_CLOSE; }
+    int ConnectionActive();
+    
+    uint8_t recv_buf[65535];
+    uint8_t egress_out[MAX_DATAGRAM_SIZE];
+    
+private:
+    CON_STATE state = STATE_OPEN;
 };
 
 class MQConnectionBridge {
@@ -59,32 +74,39 @@ public:
     virtual void DestroyConnection(struct ev_loop *loop, QConnection* qconnection) = 0;
     inline virtual struct ev_loop * GetMainLoop() = 0;
     
-    virtual void Connect(QConnection* qconnection) = 0;
-    virtual void MessageReceived(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) = 0;
-    virtual void Close(QConnection* qconnection) = 0;
+    virtual void Event_Connect(QConnection* qconnection) = 0;
+    virtual void Event_MsgReceived(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) = 0;
+    virtual void Event_Close(QConnection* qconnection) = 0;
+    virtual int SendMessage(const std::string& buffer, bool flush) = 0;
+    virtual int Close() = 0;
 };
 
-struct RunConfig;
+//struct RunConfig;
 class QNetworkClient : public MQCommandBridge, public MQConnectionBridge {
 private:
-    enum CON_STATE {
-        STATE_OPEN,
-        STATE_CONNECT,
-        STATE_CLOSE
+    struct RunConfig {
+        std::string host;
+        std::string port;
+        QNetworkClient* thiz;
+        int pthread_returnValue;
     };
+    
     struct ev_loop *mainloop = nullptr;
-    static RunConfig runConfig;
+    struct RunConfig runConfig;
     
     pthread_t run_thread_id;
     pthread_mutex_t run_mutex;
-    pthread_mutex_t conn_mutex;
-    CON_STATE state = STATE_OPEN;
+    pthread_mutex_t close_mutex;
+    //pthread_mutex_t conn_mutex;
+    //pthread_mutex_t recv_mutex;
+    pthread_mutex_t send_mutex;
     
     static void debug_log(const uint8_t *line, void *argp);
 //    void flush_egress(struct ev_loop *loop, struct conn_io *conn_io);
     static void recv_cb(EV_P_ ev_io *w, int revents);
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
     static void* run_internal(void* data);
+
     
 protected:
     void FlushEgress(struct ev_loop *loop, QConnection* qconnection) override final;
@@ -96,9 +118,9 @@ protected:
     inline struct ev_loop * GetMainLoop() override final {
         return mainloop;
     }
-    void Connect(QConnection* qconnection) override final;
-    void MessageReceived(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) override final;
-    void Close(QConnection* qconnection) override final;
+    void Event_Connect(QConnection* qconnection) override final;
+    void Event_MsgReceived(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) override final;
+    void Event_Close(QConnection* qconnection) override final;
     
     QConnection* qclientConnection = nullptr;
     
@@ -106,15 +128,9 @@ public:
     QNetworkClient();
     ~QNetworkClient();
     
-    void SendMessage(const std::string& buffer, bool flush);
+    int SendMessage(const std::string& buffer, bool flush)  override final;
+    int Close() override final;
     
     int run(std::string host, std::string port);
-};
-
-struct RunConfig {
-    std::string host;
-    std::string port;
-    QNetworkClient* thiz;
-    int pthread_returnValue;
 };
 #endif /* QNetworkClient_hpp */

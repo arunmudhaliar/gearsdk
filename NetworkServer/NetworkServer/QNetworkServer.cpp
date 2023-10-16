@@ -181,10 +181,17 @@ void QNetworkServer::OnConnection(QPeerConnection* qconnection) {
 }
 
 void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* qconnection) {
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+
     uint8_t* copybuf = new uint8_t[recv_len+1];
     memcpy(copybuf, buf, recv_len);
     copybuf[recv_len] = '\0';
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
+    if (getnameinfo((struct sockaddr *) &qconnection->peer_addr, qconnection->peer_addr_len, hbuf, sizeof(hbuf), sbuf,
+                    sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
+    } else {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
+    }
     GX_DELETE_ARY(copybuf);
     
     qconnection->SendMessage("hello1 from server", true);
@@ -226,7 +233,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
     double t = (double)timeout_in_nanos / 1e9f;
-    qconnection->timer.repeat = t;
+    qconnection->timer.repeat = t<0.00001f ? 1.0f : t;
     ev_timer_again(loop, &qconnection->timer);
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
@@ -263,13 +270,13 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
 
         qconnection->bridge->DestroyConnection(loop, qconnection);
         return;
-    } else {
+    } /*else {
         
         // force close here
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Force close connection !!!");
         qconnection->bridge->DestroyConnection(loop, qconnection);
         return;
-    }
+    }*/
 }
 
 void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
@@ -408,7 +415,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             conns->local_addr,
             conns->local_addr_len,
         };
-
+        
         ssize_t done = quiche_conn_recv(qconnection->conn, buf, read, &recv_info);
 
         if (done < 0) {
@@ -434,7 +441,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     break;
                 }
 
-                if (fin) {
+                if (fin /*|| true*/) {
                     static const char *resp = "byez\n";
                     quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);

@@ -10,6 +10,8 @@
 #include "../../Common/gxCrc32.h"
 #include "../../Common/Timer.h"
 
+#include <vector>
+
 extern "C" {
 #include "../../NetworkCommon/Source/quiche/client.h"
 }
@@ -63,12 +65,13 @@ bool NetworkClient::OnConstructPacket(const UDPSocket* socket, Address& sender, 
 }
 
 void timeout_cb(EV_P_ ev_timer *w, int revents) {
-    GameClient* client = (GameClient*)w->data;
-    client->SendMessage("hello1 from server", true);
-    client->SendMessage("hello12 from server", true);
-    client->SendMessage("hello123 from server", true);
-    client->SendMessage("hello1234 from server", true);
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT MAIN");
+    GameClient* client = (GameClient*)w->data;
+    client->SendMessage("hello1 from client", true);
+    client->SendMessage("hello12 from client", true);
+    client->SendMessage("hello123 from client", true);
+    client->SendMessage("hello1234 from client", true);
+//    client->Close();
 }
 
 int32_t main(int32_t argc, const char * argv[]) {
@@ -102,17 +105,32 @@ int32_t main(int32_t argc, const char * argv[]) {
 //    argv2[2] = (char*)"4000";
 //    test_client_main(3, argv2);
     
-    GameClient client;
-//    for(int x=0;x<1000;x++) {
-        client.run("localhost", "4000");
+    GameClient client1;
+//    for(int x=0;x<100;x++) {
+        client1.run("localhost", "4000");
 //    }
+    
+    std::vector<GameClient*> clientList;
+    for (int x=0; x<10; x++) {
+        GameClient* newClient = new GameClient();
+        newClient->run("localhost", "4000");
+        clientList.push_back(newClient);
+    }
+    GameClient client2;
+    client2.run("localhost", "4000");
     
     struct ev_loop* loop = ev_default_loop(0);
     static ev_timer tw;
-    ev_timer_init (&tw, timeout_cb, 5, 3);
-    tw.data = &client;
+    ev_timer_init (&tw, timeout_cb, 3, 1);
+    tw.data = &client1;
     ev_timer_start(loop, &tw);
     ev_run(loop, 0);
+    
+    
+    for (int x=0; x<clientList.size(); x++) {
+        GameClient* client = clientList[x];
+        GX_DELETE(client);
+    }
     
 //    NetworkClient client;
 //    client.Init(NETWORK_PROTOCOL_ID);
