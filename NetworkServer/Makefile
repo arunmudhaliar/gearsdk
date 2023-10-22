@@ -25,7 +25,7 @@ LDFLAGS = -g
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a
+LIBS = ~/workshop/quiche/target/release/libquiche.a ../NetworkCommon/libs/libev.a
 else
     ifeq ($(UNAME),Darwin)
         LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a -framework CoreFoundation -framework Security
