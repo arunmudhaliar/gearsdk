@@ -15,6 +15,10 @@
 #include <android/log.h>
 #endif
 
+#if PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+#endif
+
 #define LOGBUFFER_SIZE FILENAME_MAX*2
 
 extern "C"
