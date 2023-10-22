@@ -530,6 +530,7 @@ int QNetworkServer::run(std::string host, std::string port, fs::path executableP
     fs::path rootDir(executablePath.parent_path());
     fs::path certFile("cert.crt");
     fs::path keyFile("cert.key");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
     quiche_config_load_cert_chain_from_pem_file(config, (rootDir / certFile).c_str());
     quiche_config_load_priv_key_from_pem_file(config, (rootDir / keyFile).c_str());
 

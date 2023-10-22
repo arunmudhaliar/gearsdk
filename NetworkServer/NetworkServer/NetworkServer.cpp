@@ -70,16 +70,16 @@ int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
     fs::path executablePath(argc>0 ? argv[0] : "");
     
-#if PLATFORM == PLATFORM_LINUX
-    char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        executablePath = cwd;
-        fs::path exeFile("NetworkServer");
-        executablePath = executablePath/exeFile;
-    } else {
-        DEBUG_PRINT_ERROR(__DEFAULT_LOG_TAG__, "getcwd() error");
-    }
-#endif
+//#if PLATFORM == PLATFORM_LINUX
+//    char cwd[PATH_MAX];
+//    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+//        executablePath = cwd;
+//        fs::path exeFile("NetworkServer");
+//        executablePath = executablePath/exeFile;
+//    } else {
+//        DEBUG_PRINT_ERROR(__DEFAULT_LOG_TAG__, "getcwd() error");
+//    }
+//#endif
     
     DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", executablePath.parent_path().c_str());
 
