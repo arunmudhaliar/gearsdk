@@ -64,7 +64,7 @@ bool NetworkServer::OnConstructPacket(const UDPSocket* socket, Address& sender, 
 
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
-    std::__fs::filesystem::path executablePath(argc>0 ? argv[0] : "");
+    fs::path executablePath(argc>0 ? argv[0] : "");
     DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", executablePath.parent_path().c_str());
     
     GameServer server;

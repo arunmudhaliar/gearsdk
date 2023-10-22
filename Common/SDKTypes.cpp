@@ -42,12 +42,10 @@ void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
     va_end(v);
 #if PLATFORM == PLATFORM_MAC
     fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
-//    std::cout << strtok(ctime(&givemetime), "\n") << " : [" << tag << "] - " << buffer << "\n";
 #elif PLATFORM == PLATFORM_ANDROID
      __android_log_print(ANDROID_LOG_INFO, tag, buffer);
 #else
     fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
-//    std::cout << strtok(ctime(&givemetime), "\n") << "[" << tag << "] - " << buffer << "\n";
 #endif
 }
 

@@ -10,6 +10,7 @@
 #define PLATFORM_MAC        2
 #define PLATFORM_UNIX       3
 #define PLATFORM_ANDROID    4
+#define PLATFORM_LINUX      5
 
 #if defined(_WIN32)
     #error "Not supported"
@@ -17,6 +18,8 @@
     #define PLATFORM PLATFORM_MAC
 #elif defined(ANDROID)
     #define PLATFORM PLATFORM_ANDROID
+#elif defined(__linux__)
+    #define PLATFORM PLATFORM_LINUX
 #else
     #define PLATFORM PLATFORM_UNIX
 #endif

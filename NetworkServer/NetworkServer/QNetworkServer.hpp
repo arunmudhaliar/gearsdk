@@ -18,8 +18,13 @@
 #include <algorithm>
 #include <filesystem>
 
-//namespace fs = std::__fs::filesystem;
+#if PLATFORM == PLATFORM_MAC
+namespace fs = std::__fs::filesystem;
+#elif PLATFORM == PLATFORM_LINUX
 namespace fs = std::filesystem;
+#else
+namespace fs = std::__fs::filesystem;
+#endif
 
 #include "../../Common/SDKTypes.hpp"
 
