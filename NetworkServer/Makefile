@@ -17,12 +17,21 @@ $(NCOMMONSRCS) \
 OBJS = ${SRCS:.cpp=.o}
 
 USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_1
-CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+# CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
 
 LDFLAGS = -g
 # LDFLAGS = -shared -rdynamic
-LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a -framework CoreFoundation -framework Security
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a
+else
+    ifeq ($(UNAME),Darwin)
+        LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a -framework CoreFoundation -framework Security
+    endif
+endif
+
 PLUGIN_SHARED = QNetwork
 CXX ?= clang
 
