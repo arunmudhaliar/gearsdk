@@ -69,19 +69,19 @@ bool NetworkServer::OnConstructPacket(const UDPSocket* socket, Address& sender, 
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
     fs::path executablePath(argc>0 ? argv[0] : "");
-    fs::path rootDir;
+    fs::path rootDir = executablePath.parent_path();
     
-#if PLATFORM == PLATFORM_LINUX
-    char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        executablePath = cwd;
-        rootDir = executablePath;
-    } else {
-        DEBUG_PRINT_ERROR(__DEFAULT_LOG_TAG__, "getcwd() error");
-    }
-#elif PLATFORM == PLATFORM_MAC
-    rootDir = executablePath.parent_path();
-#endif
+//#if PLATFORM == PLATFORM_LINUX
+//    char cwd[PATH_MAX];
+//    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+//        executablePath = cwd;
+//        rootDir = executablePath;
+//    } else {
+//        DEBUG_PRINT_ERROR(__DEFAULT_LOG_TAG__, "getcwd() error");
+//    }
+//#elif PLATFORM == PLATFORM_MAC
+//    rootDir = executablePath.parent_path();
+//#endif
     
     DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", rootDir.c_str());
 
