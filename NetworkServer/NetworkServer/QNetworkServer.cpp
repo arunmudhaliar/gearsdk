@@ -489,7 +489,7 @@ void QNetworkServer::recv_cb(EV_P_ ev_io *w, int revents) {
     server->Recv_cb(loop, w, revents);
 }
 
-int QNetworkServer::run(std::string host, std::string port, fs::path executablePath) {
+int QNetworkServer::run(std::string host, std::string port, fs::path rootDir) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -527,7 +527,6 @@ int QNetworkServer::run(std::string host, std::string port, fs::path executableP
     }
 
     //std::string rootDir = executablePath.parent_path();
-    fs::path rootDir(executablePath.parent_path());
     fs::path certFile("cert.crt");
     fs::path keyFile("cert.key");
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
