@@ -780,7 +780,7 @@ void* QNetworkClient::run_internal(void* data) {
     }
 #endif
     
-//    quiche_enable_debug_logging(debug_log, nullptr);
+    quiche_enable_debug_logging(debug_log, nullptr);
 
     Config *config = quiche_config_new(0xbabababa);
     if (config == NULL) {

@@ -128,8 +128,8 @@ int32_t main(int32_t argc, const char * argv[]) {
     
     NetworkClientTester tester;
     
-    for (int y=0; y<5; y++) {
-        for (int x=0; x<100; x++) {
+    for (int y=0; y<1; y++) {
+        for (int x=0; x<1; x++) {
             GameClient* newClient = new GameClient();
             newClient->run("localhost", "4000");
     //        newClient->SendMessage("STAAART CLIENT from client", true);
@@ -145,10 +145,10 @@ int32_t main(int32_t argc, const char * argv[]) {
         tw.data = &tester;
         ev_timer_start(loop, &tw);
         
-        static ev_timer tw2;
-        ev_timer_init (&tw2, delete_cb, 3, 1);
-        tw2.data = &tester;
-        ev_timer_start(loop, &tw2);
+//        static ev_timer tw2;
+//        ev_timer_init (&tw2, delete_cb, 3, 1);
+//        tw2.data = &tester;
+//        ev_timer_start(loop, &tw2);
         
         ev_run(loop, 0);
         

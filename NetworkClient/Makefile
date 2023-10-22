@@ -8,15 +8,15 @@ $(COMMON_SRCDIR)/SDKTypes.cpp \
 $(COMMON_SRCDIR)/gxCrc32.cpp \
 
 INCLUDES = -I "../NetworkCommon/Source/ev" -I "../NetworkCommon/Source/quiche"
-SRCDIR = ./NetworkServer
-SRCS = $(SRCDIR)/NetworkServer.cpp \
-$(SRCDIR)/GameServer.cpp \
-$(SRCDIR)/QNetworkServer.cpp \
+SRCDIR = ./NetworkClient
+SRCS = $(SRCDIR)/NetworkClient.cpp \
+$(SRCDIR)/GameClient.cpp \
+$(SRCDIR)/QNetworkClient.cpp \
 $(NCOMMONSRCS) \
 
 OBJS = ${SRCS:.cpp=.o}
 
-USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_1
+USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_1 -DUSE_PTHREAD=1
 # CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
@@ -32,7 +32,7 @@ else
     endif
 endif
 
-PLUGIN_SHARED = QServer
+PLUGIN_SHARED = QClient
 CXX ?= clang
 
 #.cpp.o:
