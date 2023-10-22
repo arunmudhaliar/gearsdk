@@ -41,11 +41,13 @@ void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
     vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
     va_end(v);
 #if PLATFORM == PLATFORM_MAC
-    std::cout << strtok(ctime(&givemetime), "\n") << " : [" << tag << "] - " << buffer << "\n";
+    fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+//    std::cout << strtok(ctime(&givemetime), "\n") << " : [" << tag << "] - " << buffer << "\n";
 #elif PLATFORM == PLATFORM_ANDROID
      __android_log_print(ANDROID_LOG_INFO, tag, buffer);
 #else
-    std::cout << strtok(ctime(&givemetime), "\n") << "[" << tag << "] - " << buffer << "\n";
+    fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+//    std::cout << strtok(ctime(&givemetime), "\n") << "[" << tag << "] - " << buffer << "\n";
 #endif
 }
 
@@ -84,6 +86,14 @@ void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
     vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
     va_end(v);
     DEBUG_PRINT(LOG_LEVEL, "\x1B[32m****", "[%s] : %s\x1b[0m", tag, buffer);
+}
+void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
+    char buffer[LOGBUFFER_SIZE];
+    va_list v;
+    va_start(v,format);
+    vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+    va_end(v);
+    DEBUG_PRINT(LOG_LEVEL, "\x1B[35m****", "[%s] : %s\x1b[0m", tag, buffer);
 }
 
 } //extern "C"

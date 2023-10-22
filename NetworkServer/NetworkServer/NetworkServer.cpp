@@ -5,15 +5,15 @@
 //  Created by Arun A on 20/09/23.
 //
 #include "NetworkServer.hpp"
-#include <unistd.h>
-
-#include "../../Common/gxCrc32.h"
-
 #include "GameServer.hpp"
 
 
 #undef __LOGTAG__
 #define __LOGTAG__ "NetworkServer"
+
+#if 0
+#include <unistd.h>
+#include "../../Common/gxCrc32.h"
 
 #define NETWORK_PROTOCOL_ID 0x7f8c
 
@@ -60,6 +60,7 @@ bool NetworkServer::OnConstructPacket(const UDPSocket* socket, Address& sender, 
 ////    long bytesSent = GetSocket().Send( sender, data, (int)size );
 //    long bytesSent = SendPayload(sender, PayLoad &payload)
 //    DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "bytesSent %ld", bytesSent);
+#endif
 
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();

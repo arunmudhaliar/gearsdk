@@ -23,12 +23,194 @@
 
 #include <pthread.h>
 
-QConnection::QConnection(MQCommandBridge* bridge, Config *config) :
+int QNetworkClient::connectionID = 0;
+
+#pragma region QMutex
+QMutex::QMutex() {
+    inited = false;
+}
+int QMutex::init(const std::string& name) {
+    this->name = name+"_mutex";
+    int ret_val = pthread_mutex_init(&mutex, nullptr);
+    if (ret_val != 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "%s mutex init has failed: %s - %d", name.c_str(), strerror (errno), errno);
+    } else {
+        inited = true;
+        condition.init(name);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s mutex init", name.c_str());
+    }
+    return ret_val;
+}
+
+QMutex::~QMutex(){
+    if (inited) {
+        pthread_mutex_destroy(&mutex);
+    }
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s mutex destroyed", name.c_str());
+}
+
+int QMutex::tryInitIfNot() {
+    int retVal = 0;
+    if (!inited) {
+        retVal = init("QMutex");
+        if(retVal!=0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "tryInitIfNot failed (%s), %s", name.c_str());
+        }
+    }
+    return retVal;
+}
+
+int QMutex::tryLock(const char* msg) {
+    int retVal = 0;
+    if (!inited) {
+        retVal = tryInitIfNot();
+        if(retVal!=0) {
+            return retVal;
+        }
+    }
+    retVal = pthread_mutex_trylock(&mutex);
+    if(retVal!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(%s), %s", name.c_str(), (msg!=nullptr)? msg : "");
+    }
+    return retVal;
+}
+
+int QMutex::unLock(const char* msg) {
+    int retVal = 0;
+    if (!inited) {
+        retVal = tryInitIfNot();
+        if(retVal!=0) {
+            return retVal;
+        }
+    }
+    retVal = pthread_mutex_unlock(&mutex);
+    if (retVal != 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock(%s), %s", name.c_str(), (msg!=nullptr)? msg : "");
+    }
+    return retVal;
+}
+void QMutex::conditionalWait() {
+    while (!allowTask) {
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s Blocked by %s", name.c_str(), blockedBy.c_str());
+        DEBUG_ASSERT(__LOGTAG__, (condition.conditionWait(*this, __FUNCTION__)==0), __FUNCTION__);
+    }
+}
+
+void QMutex::block(const char* blockedBy_) {
+    // block close
+    DEBUG_ASSERT(__LOGTAG__, (tryLock()==0), __FUNCTION__);
+    blockedBy = (blockedBy_==nullptr)?"???" : blockedBy_;
+    allowTask = false;
+    blockCount++;
+    DEBUG_ASSERT(__LOGTAG__, (unLock()==0), __FUNCTION__);
+    //
+}
+
+void QMutex::unBlock() {
+    DEBUG_ASSERT(__LOGTAG__, (tryLock()==0), __FUNCTION__);
+    allowTask = true;
+    DEBUG_ASSERT(__LOGTAG__, (condition.signal()==0), __FUNCTION__);
+    DEBUG_ASSERT(__LOGTAG__, (unLock()==0), __FUNCTION__);
+}
+#pragma endregion QMutex
+
+#pragma region QMutexCondition
+QMutexCondition::QMutexCondition() {
+    inited = false;
+}
+int QMutexCondition::init(const std::string& name) {
+    this->name = name+"_cond";
+    int retVal = pthread_cond_init(&cond, nullptr);
+    if (retVal != 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "%s condition init has failed: %s - %d", name.c_str(), strerror (errno), errno);
+    } else {
+        inited = true;
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s condtion init", name.c_str());
+    }
+    return retVal;
+}
+
+int QMutexCondition::tryInitIfNot() {
+    int retVal = 0;
+    if (!inited) {
+        retVal = init("QMutexCondition");
+        if(retVal!=0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "tryInitIfNot failed (%s), %s", name.c_str());
+        }
+    }
+    return retVal;
+}
+
+QMutexCondition::~QMutexCondition() {
+    if (inited) {
+        pthread_cond_destroy(&cond);
+    }
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s condition destroyed", name.c_str());
+}
+
+
+int QMutexCondition::signal(const char* msg) {
+    int retVal = 0;
+    if (!inited) {
+        retVal = tryInitIfNot();
+        if(retVal!=0) {
+            return retVal;
+        }
+    }
+    int sig_req = pthread_cond_signal(&cond);
+    if (sig_req!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "SIGNAL failed %d on %s. %s", sig_req, name.c_str(), (msg!=nullptr)? msg : "");
+    }
+    return sig_req;
+}
+int QMutexCondition::broadcast(const char* msg) {
+    int retVal = 0;
+    if (!inited) {
+        retVal = tryInitIfNot();
+        if(retVal!=0) {
+            return retVal;
+        }
+    }
+    int broadcast_req = pthread_cond_broadcast(&cond);
+    if (broadcast_req!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "BROADCAST failed %d on %s. %s", broadcast_req, name.c_str(), (msg!=nullptr)? msg : "");
+    }
+    return broadcast_req;
+}
+
+int QMutexCondition::conditionWait(QMutex& qmutex, const char* msg) {
+    int retVal = 0;
+    if (!inited) {
+        retVal = tryInitIfNot();
+        if(retVal!=0) {
+            return retVal;
+        }
+    }
+    int wait_req = pthread_cond_wait(&cond, qmutex.getMutexInternal());
+    if (wait_req!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "COND_WAIT failed %d for %s, %s", wait_req, name.c_str(), (msg!=nullptr)? msg : "");
+    }
+    return wait_req;
+}
+#pragma endregion QMutexCondition
+
+#pragma region QConnection
+QConnection::QConnection(MQCommandBridge* bridge, int id) :
 bridge(bridge),
-config(config) {
+id(id) {
+}
+
+QConnection::QConnection(MQCommandBridge* bridge, Config *config, int id) :
+bridge(bridge),
+config(config),
+id(id) {
 }
 
 QConnection::~QConnection() {
+    Release();
+}
+
+void QConnection::Release() {
     if (peer) {
         freeaddrinfo(peer);
         peer = nullptr;
@@ -38,8 +220,9 @@ QConnection::~QConnection() {
         quiche_conn_free(conn);
         conn = nullptr;
     }
-    bridge = nullptr;
-    config = nullptr;
+    watcher.data = nullptr;
+    ev_io_stop(bridge->GetMainLoop(), &watcher);
+    ev_break(bridge->GetMainLoop(), EVBREAK_ONE);
 }
 
 void QConnection::SetState(CON_STATE state) {
@@ -111,26 +294,35 @@ int QConnection::Connect(std::string host, std::string port) {
 }
 
 int QConnection::ConnectionActive() {
-    if (!quiche_conn_is_established(conn)) {
+    if (!conn) {
         return -1;
+    }
+    if (!quiche_conn_is_established(conn)) {
+        return -2;
     }
 
     if (quiche_conn_is_closed(conn)) {
-        return -2;
+        return -3;
     }
     
     return 0;
 }
 
-int QConnection::SendMessage(const std::string& buffer, bool flush) {
-    return SendMessage(buffer.c_str(), buffer.size(), flush);
+ssize_t QConnection::SendMessage(const std::string& buffer, bool fin) {
+    return SendMessage(buffer.c_str(), buffer.size(), fin);
 }
 
-int QConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
-    if (state == STATE_CLOSE) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection in CLOSE state. May be in destruction event !!!", (char*)buf);
+ssize_t QConnection::SendMessage(const char *buf, size_t buflen, bool fin) {
+    if (state != STATE_CONNECT) {
+//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not in CONNECT state. state = %d", state);
         return -1;
     }
+    int conn_active = ConnectionActive();
+    if (conn_active< 0) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, conn is null or not active = %d", conn_active);
+        return conn_active;
+    }
+    
     if (!quiche_conn_is_established(conn)) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
         return -2;
@@ -141,38 +333,46 @@ int QConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
         return -3;
     }
     
+    ssize_t result = -4;
     uint64_t s = 0;
     StreamIter *writable = quiche_conn_writable(conn);
-
-    int result = -4;
     while (quiche_stream_iter_next(writable, &s)) {
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 
         ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *) buf,
-                                buflen, false);
+                                buflen, fin);
         if (sent_len!=buflen) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>> %s", (char*)buf);
-        result = 0;
+//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>> %s", (char*)buf);
+        result = sent_len;
         break;
     }
-
     quiche_stream_iter_free(writable);
-    if (flush) {
-        bridge->FlushEgress(bridge->GetMainLoop(), this);
-    }
+
     return result;
 }
+#pragma endregion QConnection
 
 void QNetworkClient::debug_log(const uint8_t *line, void *argp) {
-    // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*)line);
+     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*)line);
 }
 
 void QNetworkClient::FlushEgress(struct ev_loop *loop, QConnection* qconnection) {
-    SendInfo send_info;
+    
+#if USE_PTHREAD
+    // lock send
+    DEBUG_ASSERT(__LOGTAG__, (flushMutex.tryLock()==0), __FUNCTION__);
+    flushMutex.conditionalWait();
 
+    // block
+    sendMutex.block(__FUNCTION__);
+    destroyMutex.block(__FUNCTION__);
+    closeMutex.block(__FUNCTION__);
+#endif
+    
+    SendInfo send_info;
     while (1) {
         ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out),
                                            &send_info);
@@ -203,7 +403,13 @@ void QNetworkClient::FlushEgress(struct ev_loop *loop, QConnection* qconnection)
     double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t;
     ev_timer_again(loop, &qconnection->timer);
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    
+    DEBUG_ASSERT(__LOGTAG__, (flushMutex.unLock()==0), __FUNCTION__);
+    
+    sendMutex.unBlock();
+    destroyMutex.unBlock();
+    closeMutex.unBlock();
 }
 
 void QNetworkClient::Event_Connect(QConnection* qconnection) {
@@ -256,80 +462,152 @@ void QNetworkClient::Event_Close(QConnection* qconnection) {
 //    }
 }
 
-void QNetworkClient::DestroyConnection(struct ev_loop *loop, QConnection* qconnection) {
-//    if(pthread_mutex_trylock(&conn_mutex)!=0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(conn_mutex), DestroyConnection returning...");
-//        return;
-//    }
-    OnDestroyConnection(qconnection);
-    GX_DELETE(qconnection);
-    
-//    if (pthread_mutex_unlock(&conn_mutex) != 0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock conn_mutex, DestroyConnection !!!");
-//    }
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed !!!");
+void QNetworkClient::ForceRelease() {
+    if (ReleaseConnection(GetMainLoop(), qclientConnection)==0){
+        GX_DELETE(qclientConnection);
+    }
 }
 
-int QNetworkClient::Close() {
-    if (qclientConnection == nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qclientConnection == null, Close returning...");
-        return -9;
+int QNetworkClient::ReleaseConnection(struct ev_loop *loop, QConnection* qconnection) {
+    if (qconnection == nullptr) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Already destroyed.. Ignoring...");
+        return -11;
     }
-    int conActive =  qclientConnection->ConnectionActive();
-    if (conActive<0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "connection not active %d, Close returning...", conActive);
-        return conActive;
-    }
+
+#if USE_PTHREAD
+    // lock destroy
+    DEBUG_ASSERT(__LOGTAG__, (destroyMutex.tryLock()==0), __FUNCTION__);
+    destroyMutex.conditionalWait();
     
-    if(pthread_mutex_trylock(&close_mutex)!=0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(close_mutex), SendMessage returning...");
-        return -8;
-    }
+    // block
+    sendMutex.block(__FUNCTION__);
+    closeMutex.block(__FUNCTION__);
+    flushMutex.block(__FUNCTION__);
+
+#endif
+    qconnection->Release();
+    OnReleaseConnection(qconnection);
+    GX_DELETE(qclientConnection);
+#if USE_PTHREAD
+    //    connectionActivity.allowDestroy = false;
+    DEBUG_ASSERT(__LOGTAG__, (destroyMutex.unLock()==0), __FUNCTION__);
+#endif
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection released !!!");
     
-    if (qclientConnection) {
-//        qclientConnection->br(buffer.c_str(), buffer.size(), flush);
-        if (quiche_conn_close(qclientConnection->conn, true, 0, NULL, 0) < 0) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection - Close");
-        }
-    }
     
-    if (pthread_mutex_unlock(&close_mutex) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock close_mutex, Close !!!");
-    }
-    
+#if USE_PTHREAD
+    // signal send op
+    sendMutex.unBlock();
+    closeMutex.unBlock();
+    flushMutex.unBlock();
+#endif
     return 0;
 }
 
-int QNetworkClient::SendMessage(const std::string& buffer, bool flush) {
-//    if(pthread_mutex_trylock(&conn_mutex)!=0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(conn_mutex), SendMessage returning...");
-//        return -1;
+int QNetworkClient::Close() {
+//#if USE_PTHREAD
+//    DEBUG_ASSERT(__LOGTAG__, (closeMutex.tryLock()==0), "Close - CHECK !!!");
+//    if (qclientConnection == nullptr) {
+//        //DEBUG_PRINT_ERROR(__LOGTAG__, "qclientConnection == null, Close returning...");
+//        DEBUG_ASSERT(__LOGTAG__, (closeMutex.unLock()==0), "Close - CHECK !!!");
+//        return -8;
 //    }
+//#else
+//    if (qclientConnection == nullptr) {
+//        return -8;
+//    }
+//#endif
     
-    if(pthread_mutex_trylock(&send_mutex)!=0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(send_mutex), SendMessage returning...");
-        return -9;
-    }
+    // lock close
+    DEBUG_ASSERT(__LOGTAG__, (closeMutex.tryLock()==0), __FUNCTION__);
+    closeMutex.conditionalWait();
     
+    // block
+    sendMutex.block(__FUNCTION__);
+    destroyMutex.block(__FUNCTION__);
+    flushMutex.block(__FUNCTION__);
+    
+    const static uint8_t bye[] = "Bye\r\n";
+    ssize_t qcmd_close_ret_val = 0;
     if (qclientConnection) {
-        qclientConnection->SendMessage(buffer.c_str(), buffer.size(), flush);
+        int conActive =  qclientConnection->ConnectionActive();
+        if (conActive==0) {
+            qcmd_close_ret_val = qclientConnection->SendMessage((const char*)bye, sizeof(bye), true);
+        //    if (qcmd_close_ret_val == sizeof(bye)) {
+        //        FlushEgress(mainloop, qclientConnection);
+        //    }
+        ////        int qcmd_close_ret_val = quiche_conn_close(qclientConnection->conn, true, 0, NULL, 0);
+        //    if (qcmd_close_ret_val < 0) {
+        //        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection - Close : %d, id :%d", qcmd_close_ret_val, qclientConnection->id);
+        //    } else {
+        //        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "CLOSE ISSUED");
+        //        if (quiche_conn_is_closed(qclientConnection->conn)) {
+        //            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "CLOSED");
+        //        }
+        //    }
+        }
+    }
+#if USE_PTHREAD
+    DEBUG_ASSERT(__LOGTAG__, (closeMutex.unLock()==0), "Close - CHECK !!!");
+#endif
+    flushMutex.unBlock();
+    if (qcmd_close_ret_val == sizeof(bye)) {
+        // signal flush op
+        FlushEgress(mainloop, qclientConnection);
+    }
+    sendMutex.unBlock();
+    destroyMutex.unBlock();
+    return 0;
+}
+
+bool QNetworkClient::IsClosed() {
+    return quiche_conn_is_closed(qclientConnection->conn);
+}
+
+int QNetworkClient::SendMessage(const std::string& buffer, bool flush) {
+#if USE_PTHREAD
+    // lock send
+    DEBUG_ASSERT(__LOGTAG__, (sendMutex.tryLock()==0), __FUNCTION__);
+    sendMutex.conditionalWait();
+    
+    // block
+    destroyMutex.block(__FUNCTION__);
+    flushMutex.block(__FUNCTION__);
+    closeMutex.block(__FUNCTION__);
+#endif
+    
+    ssize_t sent_result = 0;
+    if (qclientConnection) {
+        sent_result = qclientConnection->SendMessage(buffer.c_str(), buffer.size(), flush);
     }
     
-    if (pthread_mutex_unlock(&send_mutex) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock send_mutex, SendMessage !!!");
+#if USE_PTHREAD
+    //connectionActivity.allowSend = false;
+    DEBUG_ASSERT(__LOGTAG__, (sendMutex.unLock()==0), __FUNCTION__);
+    
+    flushMutex.unBlock();
+    if (sent_result ==  buffer.size()) {
+        FlushEgress(mainloop, qclientConnection);
     }
     
-//    if (pthread_mutex_unlock(&conn_mutex) != 0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock conn_mutex, SendMessage !!!");
-//    }
+    destroyMutex.unBlock();
+    closeMutex.unBlock();
+#else
+    if (sent_result ==  buffer.size()) {
+        FlushEgress(mainloop, qclientConnection);
+    }
+#endif
     
     return 0;
 }
 
 void QNetworkClient::recv_cb(EV_P_ ev_io *w, int revents) {
     QConnection *qconnection = (QConnection *)w->data;
-
-    while (1) {
+    if (qconnection->conn == nullptr) {
+        return;
+    }
+    
+    while (qconnection->conn && 1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
@@ -368,20 +646,13 @@ void QNetworkClient::recv_cb(EV_P_ ev_io *w, int revents) {
 
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done reading");
 
-    if (quiche_conn_is_closed(qconnection->conn)) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection closed");
-        qconnection->bridge->Event_Close(qconnection);
-        ev_break(EV_A_ EVBREAK_ONE);
-        return;
-    }
-
-    if (quiche_conn_is_established(qconnection->conn) && qconnection->IsOpen()) {
+    if (qconnection->conn && quiche_conn_is_established(qconnection->conn) && qconnection->IsOpen()) {
         const uint8_t *app_proto;
         size_t app_proto_len;
 
         quiche_conn_application_proto(qconnection->conn, &app_proto, &app_proto_len);
 
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection established: %.*s",
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection established: %.*s",
                 (int) app_proto_len, app_proto);
         qconnection->bridge->Event_Connect(qconnection);
 
@@ -390,11 +661,10 @@ void QNetworkClient::recv_cb(EV_P_ ev_io *w, int revents) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send Hi request");
             return;
         }
-
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "sent Hi request");
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent Hi request");
     }
 
-    if (quiche_conn_is_established(qconnection->conn)) {
+    if (qconnection->conn && quiche_conn_is_established(qconnection->conn)) {
         uint64_t s = 0;
 
         StreamIter *readable = quiche_conn_readable(qconnection->conn);
@@ -414,7 +684,7 @@ void QNetworkClient::recv_cb(EV_P_ ev_io *w, int revents) {
                 if (quiche_conn_close(qconnection->conn, true, 0, NULL, 0) < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection");
                 }
-                DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, closing...");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
             }
             qconnection->bridge->Event_MsgReceived(recv_len, qconnection->recv_buf, qconnection);
         }
@@ -422,14 +692,21 @@ void QNetworkClient::recv_cb(EV_P_ ev_io *w, int revents) {
         quiche_stream_iter_free(readable);
     }
 
-    qconnection->bridge->FlushEgress(loop, qconnection);
+    if (qconnection->conn) {
+        qconnection->bridge->FlushEgress(loop, qconnection);
+    }
 }
 
 void QNetworkClient::timeout_cb(EV_P_ ev_timer *w, int revents) {
     QConnection *qconnection = (QConnection *)w->data;
+    if (qconnection->conn == nullptr) {
+        ev_break(EV_A_ EVBREAK_ONE);
+        return;
+    }
+    
     quiche_conn_on_timeout(qconnection->conn);
 
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "timeout");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout");
 
     qconnection->bridge->FlushEgress(loop, qconnection);
 
@@ -440,79 +717,54 @@ void QNetworkClient::timeout_cb(EV_P_ ev_timer *w, int revents) {
         quiche_conn_stats(qconnection->conn, &stats);
         quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt);
         qconnection->bridge->Event_Close(qconnection);
         ev_break(EV_A_ EVBREAK_ONE);
         return;
     } else {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection not closed");
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection not closed");
     }
 }
 
 void QNetworkClient::OnConnect(QConnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ##########");
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ##########");
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ##########");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ########## - %d", qconnection->id);
+//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ##########");
+//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ##########");
 }
 
 void QNetworkClient::OnClose(QConnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ##########");
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ##########");
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ##########");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ########## - %d", qconnection->id);
+//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ##########");
+//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ##########");
 }
 
 void QNetworkClient::OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) {
     uint8_t* copybuf = new uint8_t[recv_len+1];
     memcpy(copybuf, buf, recv_len);
     copybuf[recv_len] = '\0';
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len%d]", copybuf, recv_len);
+    //DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len%d]", copybuf, recv_len);
     GX_DELETE_ARY(copybuf);
 }
 
-void QNetworkClient::OnDestroyConnection(QConnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
+void QNetworkClient::OnReleaseConnection(QConnection* qconnection) {
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection about to release !!!");
 }
 
 
 QNetworkClient::QNetworkClient() {
-    if (pthread_mutex_init(&run_mutex, nullptr) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "run_mutex init has failed: %s - %d", strerror (errno), errno);
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_mutex init");
-    }
-    
-//    if (pthread_mutex_init(&conn_mutex, nullptr) != 0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "conn_mutex init has failed: %s - %d", strerror (errno), errno);
-//    } else {
-//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "conn_mutex init");
-//    }
-    
-//    if (pthread_mutex_init(&recv_mutex, nullptr) != 0) {
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "recv_mutex init has failed: %s - %d", strerror (errno), errno);
-//    } else {
-//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_mutex init");
-//    }
-    
-    if (pthread_mutex_init(&send_mutex, nullptr) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "send_mutex init has failed: %s - %d", strerror (errno), errno);
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "send_mutex init");
-    }
-    
-    if (pthread_mutex_init(&close_mutex, nullptr) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "close_mutex init has failed: %s - %d", strerror (errno), errno);
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "close_mutex init");
-    }
+#if USE_PTHREAD
+    DEBUG_ASSERT(__LOGTAG__, (runMutex.init("run")==0), "QNetworkClient Constructor - CHECK !!!");
+    DEBUG_ASSERT(__LOGTAG__, (sendMutex.init("send")==0), "QNetworkClient Constructor - CHECK !!!");
+    DEBUG_ASSERT(__LOGTAG__, (closeMutex.init("close")==0), "QNetworkClient Constructor - CHECK !!!");
+    DEBUG_ASSERT(__LOGTAG__, (destroyMutex.init("destroy")==0), "QNetworkClient Constructor - CHECK !!!");
+    DEBUG_ASSERT(__LOGTAG__, (flushMutex.init("flush")==0), "QNetworkClient Constructor - CHECK !!!");
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.init("runConfig")==0), "QNetworkClient Constructor - CHECK !!!");
+#endif
 }
 
 QNetworkClient::~QNetworkClient() {
-    pthread_mutex_destroy(&close_mutex);
-//    pthread_mutex_destroy(&recv_mutex);
-    pthread_mutex_destroy(&send_mutex);
-//    pthread_mutex_destroy(&conn_mutex);
-    pthread_mutex_destroy(&run_mutex);
+    // GX_DELETE(qclientConnection);
 }
 
 void* QNetworkClient::run_internal(void* data) {
@@ -520,35 +772,40 @@ void* QNetworkClient::run_internal(void* data) {
     std::string host = runConfig->host;
     std::string port = runConfig->port;
     QNetworkClient* thiz = runConfig->thiz;
-    
-    if(pthread_mutex_trylock(&thiz->run_mutex)!=0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(run_mutex), returning...");
+#if USE_PTHREAD
+    if(thiz->runMutex.tryLock("Returning...")!=0) {
+        runConfig->finished = true;
         runConfig->pthread_returnValue = -1;
         pthread_exit(&runConfig->pthread_returnValue);
     }
+#endif
     
-    quiche_enable_debug_logging(debug_log, NULL);
+//    quiche_enable_debug_logging(debug_log, nullptr);
 
     Config *config = quiche_config_new(0xbabababa);
     if (config == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
         runConfig->pthread_returnValue = -1;
-        if (pthread_mutex_unlock(&thiz->run_mutex) != 0) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock mutex !!!");
-        }
-        pthread_mutex_destroy(&thiz->run_mutex);
+        runConfig->finished = true;
+#if USE_PTHREAD
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+//        pthread_mutex_destroy(&thiz->run_mutex);
         pthread_exit(&runConfig->pthread_returnValue);
+#else
+        return nullptr;
+#endif
     }
 
     quiche_config_set_application_protos(config,
         (uint8_t *) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
-    quiche_config_set_max_idle_timeout(config, 10000);
+    quiche_config_set_max_idle_timeout(config, 30000);
     quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(config, 10000000);
     quiche_config_set_initial_max_stream_data_bidi_local(config, 1000000);
     quiche_config_set_initial_max_stream_data_uni(config, 1000000);
+    quiche_config_set_initial_max_stream_data_bidi_remote(config, 1000000);
     quiche_config_set_initial_max_streams_bidi(config, 100);
     quiche_config_set_initial_max_streams_uni(config, 100);
     quiche_config_set_disable_active_migration(config, true);
@@ -557,24 +814,26 @@ void* QNetworkClient::run_internal(void* data) {
       quiche_config_log_keys(config);
     }
 
-    thiz->qclientConnection = new QConnection(thiz, config);
+    thiz->qclientConnection = new QConnection(thiz, config, runConfig->id);
     if (thiz->qclientConnection == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create qconnection");
         runConfig->pthread_returnValue = -1;
-        if (pthread_mutex_unlock(&thiz->run_mutex) != 0) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock mutex !!!");
-        }
-        pthread_mutex_destroy(&thiz->run_mutex);
+        runConfig->finished = true;
+#if USE_PTHREAD
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        //pthread_mutex_destroy(&thiz->run_mutex);
         pthread_exit(&runConfig->pthread_returnValue);
+#else
+        return nullptr;
+#endif
     }
     thiz->qclientConnection->Connect(host, port);
     
-    ev_io watcher;
     thiz->mainloop = ev_loop_new(0);
 
-    ev_io_init(&watcher, recv_cb, thiz->qclientConnection->sock, EV_READ);
-    ev_io_start(thiz->mainloop, &watcher);
-    watcher.data = thiz->qclientConnection;
+    ev_io_init(&thiz->qclientConnection->watcher, recv_cb, thiz->qclientConnection->sock, EV_READ);
+    ev_io_start(thiz->mainloop, &thiz->qclientConnection->watcher);
+    thiz->qclientConnection->watcher.data = thiz->qclientConnection;
 
     ev_init(&thiz->qclientConnection->timer, timeout_cb);
     thiz->qclientConnection->timer.data = thiz->qclientConnection;
@@ -583,25 +842,45 @@ void* QNetworkClient::run_internal(void* data) {
 
     ev_loop(thiz->mainloop, 0);
 
-    thiz->DestroyConnection(thiz->mainloop, thiz->qclientConnection);
+    thiz->ReleaseConnection(thiz->mainloop, thiz->qclientConnection);
     
     quiche_config_free(config);
     
-    if (pthread_mutex_unlock(&thiz->run_mutex) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock mutex !!!");
-    }
+    DEBUG_ASSERT(__LOGTAG__, (thiz->GetRunConfigMutex().tryLock()==0), __FUNCTION__);
+    runConfig->pthread_returnValue = 0;
+    runConfig->finished = true;
+    DEBUG_ASSERT(__LOGTAG__, (thiz->GetRunConfigMutex().unLock()==0), __FUNCTION__);
+#if USE_PTHREAD
+    DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
     pthread_exit(0);
+#else
+    return nullptr;
+#endif
+}
+
+bool QNetworkClient::IsRunFinished() {
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.tryLock()==0), __FUNCTION__);
+    bool retVal = runConfig.finished;
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.unLock()==0), __FUNCTION__);
+    return retVal;
 }
 
 int QNetworkClient::run(std::string host, std::string port) {
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.tryLock()==0), __FUNCTION__);
     runConfig.host = host;
     runConfig.port = port;
     runConfig.thiz = this;
-        
+    runConfig.finished = false;
+    runConfig.id = QNetworkClient::connectionID++;
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.unLock()==0), __FUNCTION__);
+#if USE_PTHREAD
     if( pthread_create( &run_thread_id, nullptr,  QNetworkClient::run_internal, (void*)&runConfig) < 0)
     {
         DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror (errno), errno);
         return -1;
     }
+#else
+    QNetworkClient::run_internal((void*)&runConfig);
+#endif
     return 0;
 }

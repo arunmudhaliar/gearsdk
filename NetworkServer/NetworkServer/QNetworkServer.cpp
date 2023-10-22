@@ -188,16 +188,16 @@ void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* 
     copybuf[recv_len] = '\0';
     if (getnameinfo((struct sockaddr *) &qconnection->peer_addr, qconnection->peer_addr_len, hbuf, sizeof(hbuf), sbuf,
                     sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
     } else {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
     }
     GX_DELETE_ARY(copybuf);
     
-    qconnection->SendMessage("hello1 from server", true);
-    qconnection->SendMessage("hello12 from server", true);
-    qconnection->SendMessage("hello123 from server", true);
-    qconnection->SendMessage("hello1234 from server", true);
+    qconnection->SendMessage("HELLO from server", true);
+//    qconnection->SendMessage("hello12 from server", true);
+//    qconnection->SendMessage("hello123 from server", true);
+//    qconnection->SendMessage("hello1234 from server", true);
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
@@ -235,7 +235,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
     double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t<0.00001f ? 1.0f : t;
     ev_timer_again(loop, &qconnection->timer);
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) {
@@ -254,7 +254,7 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
         
     quiche_conn_on_timeout(qconnection->conn);
 
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "timeout !!!");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout !!!");
     
     qconnection->bridge->FlushEgress(loop, qconnection);
 
@@ -297,7 +297,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT_WARN(__LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -536,7 +536,7 @@ int QNetworkServer::run(std::string host, std::string port, fs::path executableP
     quiche_config_set_application_protos(config,
         (uint8_t *) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
-    quiche_config_set_max_idle_timeout(config, 20000);
+    quiche_config_set_max_idle_timeout(config, 30000);
     quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(config, 10000000);

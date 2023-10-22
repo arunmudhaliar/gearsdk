@@ -10,17 +10,7 @@
 		5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */; };
 		5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */; };
 		55853CDC2AC32BE300901E52 /* libCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B373072AC325D000F0095E /* libCommon.a */; };
-		55B372E82AC309B600F0095E /* UDPSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372E62AC309B600F0095E /* UDPSocket.cpp */; };
-		55B372E92AC309B600F0095E /* UDPSocket.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B372E72AC309B600F0095E /* UDPSocket.hpp */; };
-		55B372EE2AC30AA800F0095E /* Address.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372EC2AC30AA800F0095E /* Address.cpp */; };
-		55B372EF2AC30AA800F0095E /* Address.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B372ED2AC30AA800F0095E /* Address.hpp */; };
 		55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C6CA2AD2A42500470E01 /* server.cpp */; };
-		55E4D2F92AC6BE6D00555999 /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */; };
-		55E4D2FA2AC6BE6D00555999 /* NetworkInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */; };
-		55E4D30B2AC8065300555999 /* UDPPacket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3092AC8065300555999 /* UDPPacket.cpp */; };
-		55E4D30C2AC8065300555999 /* UDPPacket.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D30A2AC8065300555999 /* UDPPacket.hpp */; };
-		55E4D3302ACC5D5000555999 /* RemoteInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */; };
-		55E4D3312ACC5D5000555999 /* RemoteInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */; };
 		55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3452ACDD58000555999 /* client.cpp */; };
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
@@ -39,22 +29,11 @@
 		5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QNetworkInterface.cpp; sourceTree = "<group>"; };
 		5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QNetworkInterface.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libNetworkCommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetworkCommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		55B372E62AC309B600F0095E /* UDPSocket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UDPSocket.cpp; sourceTree = "<group>"; };
-		55B372E72AC309B600F0095E /* UDPSocket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UDPSocket.hpp; sourceTree = "<group>"; };
-		55B372EC2AC30AA800F0095E /* Address.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Address.cpp; sourceTree = "<group>"; };
-		55B372ED2AC30AA800F0095E /* Address.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Address.hpp; sourceTree = "<group>"; };
 		55B373022AC325D000F0095E /* Common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Common.xcodeproj; path = ../Common/Common.xcodeproj; sourceTree = "<group>"; };
 		55D1C6CA2AD2A42500470E01 /* server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = server.cpp; sourceTree = "<group>"; };
 		55D1C6D22AD314AB00470E01 /* server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server.h; sourceTree = "<group>"; };
-		55D1C6D92AD3276700470E01 /* common_structs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common_structs.h; sourceTree = "<group>"; };
 		55D1C6DA2AD329B700470E01 /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
-		55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkInterface.cpp; sourceTree = "<group>"; };
-		55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetworkInterface.hpp; sourceTree = "<group>"; };
-		55E4D3092AC8065300555999 /* UDPPacket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = UDPPacket.cpp; sourceTree = "<group>"; };
-		55E4D30A2AC8065300555999 /* UDPPacket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = UDPPacket.hpp; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
-		55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RemoteInterface.cpp; sourceTree = "<group>"; };
-		55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RemoteInterface.hpp; sourceTree = "<group>"; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
 		55E4D3452ACDD58000555999 /* client.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = client.cpp; sourceTree = "<group>"; };
 		55FB29BE2ACF1D010051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = quiche_lib/release/libquiche.a; sourceTree = "<group>"; };
@@ -105,16 +84,6 @@
 				5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */,
 				5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */,
 				55E4D3342ACDD23100555999 /* quiche */,
-				55B372E62AC309B600F0095E /* UDPSocket.cpp */,
-				55B372E72AC309B600F0095E /* UDPSocket.hpp */,
-				55B372EC2AC30AA800F0095E /* Address.cpp */,
-				55B372ED2AC30AA800F0095E /* Address.hpp */,
-				55E4D2F72AC6BE6D00555999 /* NetworkInterface.cpp */,
-				55E4D2F82AC6BE6D00555999 /* NetworkInterface.hpp */,
-				55E4D3092AC8065300555999 /* UDPPacket.cpp */,
-				55E4D30A2AC8065300555999 /* UDPPacket.hpp */,
-				55E4D32E2ACC5D5000555999 /* RemoteInterface.cpp */,
-				55E4D32F2ACC5D5000555999 /* RemoteInterface.hpp */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -134,7 +103,6 @@
 				55E4D3452ACDD58000555999 /* client.cpp */,
 				55E4D3352ACDD23100555999 /* quiche.h */,
 				55D1C6D22AD314AB00470E01 /* server.h */,
-				55D1C6D92AD3276700470E01 /* common_structs.h */,
 				55D1C6DA2AD329B700470E01 /* client.h */,
 			);
 			path = quiche;
@@ -147,13 +115,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55E4D30C2AC8065300555999 /* UDPPacket.hpp in Headers */,
-				55E4D3312ACC5D5000555999 /* RemoteInterface.hpp in Headers */,
-				55B372E92AC309B600F0095E /* UDPSocket.hpp in Headers */,
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
-				55E4D2FA2AC6BE6D00555999 /* NetworkInterface.hpp in Headers */,
 				5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */,
-				55B372EF2AC30AA800F0095E /* Address.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,14 +192,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55E4D2F92AC6BE6D00555999 /* NetworkInterface.cpp in Sources */,
-				55E4D3302ACC5D5000555999 /* RemoteInterface.cpp in Sources */,
 				5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */,
 				55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */,
-				55B372EE2AC30AA800F0095E /* Address.cpp in Sources */,
-				55B372E82AC309B600F0095E /* UDPSocket.cpp in Sources */,
 				55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */,
-				55E4D30B2AC8065300555999 /* UDPPacket.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,0 +1,41 @@
+BUILDDIR = build
+
+NETWORK_COMMON_SRCDIR = ../NetworkCommon/Source
+COMMON_SRCDIR = ../Common
+NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/QNetworkInterface.cpp \
+$(COMMON_SRCDIR)/Timer.cpp \
+$(COMMON_SRCDIR)/SDKTypes.cpp \
+$(COMMON_SRCDIR)/gxCrc32.cpp \
+
+INCLUDES = -I "../NetworkCommon/Source/ev" -I "../NetworkCommon/Source/quiche"
+SRCDIR = ./NetworkServer
+SRCS = $(SRCDIR)/NetworkServer.cpp \
+$(SRCDIR)/GameServer.cpp \
+$(SRCDIR)/QNetworkServer.cpp \
+$(NCOMMONSRCS) \
+
+OBJS = ${SRCS:.cpp=.o}
+
+USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_1
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++11 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+
+LDFLAGS = -g
+# LDFLAGS = -shared -rdynamic
+LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a -framework CoreFoundation -framework Security
+PLUGIN_SHARED = QNetwork
+CXX ?= clang
+
+#.cpp.o:
+#	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+objects/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $(BUILDDIR)
+    	
+all: shared
+
+clean:
+	rm -f $(OBJS) $(PLUGIN_SHARED)
+
+shared: $(OBJS)
+	$(CXX) $(LDFLAGS) -o $(PLUGIN_SHARED) $(OBJS) $(LIBS)
