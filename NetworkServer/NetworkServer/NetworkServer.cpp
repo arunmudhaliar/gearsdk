@@ -11,6 +11,10 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "NetworkServer"
 
+#if PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+#endif
+
 #if 0
 #include <unistd.h>
 #include "../../Common/gxCrc32.h"
