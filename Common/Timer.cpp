@@ -21,6 +21,8 @@ static long _getTime(void)
     gettimeofday(&now, NULL);
     return (long)(now.tv_sec*1000 + now.tv_usec/1000);
 }
+#elif defined(__linux__)
+#include <time.h>
 #else
 #error Unknown Platform
 #endif
