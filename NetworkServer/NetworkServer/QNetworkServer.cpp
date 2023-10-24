@@ -66,7 +66,7 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>> %s", (char*)buf);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*)buf);
         break;
     }
 
@@ -297,7 +297,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -443,9 +443,12 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
                 if (fin /*|| true*/) {
                     static const char *resp = "byez\n";
-                    quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
+                    ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);
                     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez'");
+                    if (bye_sent_len!=5) {
+                        DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
+                    }
                 }
                 
 //                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
