@@ -242,7 +242,7 @@ void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qc
     OnDestroyConnection(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
     GX_DELETE(qconnection);
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed !!!");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pening %d]!!!", HASH_CNT(hh, conns->h));
 }
 
 void QNetworkServer::OnDestroyConnection(QPeerConnection* qconnection) {

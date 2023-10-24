@@ -12,6 +12,8 @@
 #include <ev.h>
 #include <uthash.h>
 #include <string>
+#include <vector>
+
 #if USE_PTHREAD
 #include <pthread.h>
 #endif
@@ -52,14 +54,14 @@ public:
     QMutex();
     ~QMutex();
     int init(const std::string& name);
-    int tryLock(const char* msg = nullptr);
+    int tryLock(const char* lockedBy, const char* msg = nullptr);
     int unLock(const char* msg = nullptr);
     inline pthread_mutex_t* getMutexInternal() {
         return &mutex;
     }
-    void conditionalWait();
+    void conditionalWait(const char* waiting_at);
     void block(const char* blockedBy = nullptr);
-    void unBlock();
+    void unBlock(const char* unblockedBy);
 private:
     int tryInitIfNot();
     bool inited = false;
@@ -67,8 +69,25 @@ private:
     pthread_mutex_t mutex;
     std::string name;
     std::string blockedBy = "none";
+    std::string lockedBy = "none";
+    std::string waitingAT = "none";
+    std::string unblockedBy = "none";
     QMutexCondition condition;
     long blockCount = 0;
+    int wanted = 0;
+};
+
+struct QData {
+    QData(uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
+        this->data = new uint8_t[sz];
+        memcpy(this->data, _data, sz);
+    }
+    ~QData() {
+        GX_DELETE_ARY(this->data);
+    }
+    uint8_t* data = nullptr;
+    ssize_t size = 0;
+    bool fin = false;
 };
 
 class MQCommandBridge;
@@ -76,11 +95,6 @@ class QConnection {
 private:
     QConnection() {};
 public:
-    enum CON_STATE {
-        STATE_OPEN,
-        STATE_CONNECT,
-        STATE_CLOSE
-    };
     QConnection(MQCommandBridge* bridge, int id);
     QConnection(MQCommandBridge* bridge, Config *config, int id);
     ~QConnection();
@@ -88,6 +102,8 @@ public:
     void SetConfig(Config *config) { this->config = config; }
     int id = -1;
     ev_timer timer;
+    ev_timer sendTimer;
+    ev_tstamp last_sendTime;
     ev_io watcher;
     int sock;
     struct sockaddr_storage local_addr;
@@ -97,11 +113,8 @@ public:
     Config *config = nullptr;
     struct addrinfo *peer = nullptr;
     int Connect(std::string host, std::string port);
-    ssize_t SendMessage(const char *buf, size_t buflen, bool fin = false);
-    ssize_t SendMessage(const std::string& buffer, bool fin = false);
-    void SetState(CON_STATE state);
-    inline bool IsOpen() { return state == STATE_OPEN; }
-    inline bool IsClosed() { return state == STATE_CLOSE; }
+    ssize_t SendMessage(const char *buf, size_t buflen, bool fin);
+    ssize_t SendMessage(const std::string& buffer, bool fin);
     int ConnectionActive();
     
     void Release();
@@ -109,8 +122,7 @@ public:
     uint8_t recv_buf[65535];
     uint8_t egress_out[MAX_DATAGRAM_SIZE];
     
-private:
-    CON_STATE state = STATE_OPEN;
+    std::vector<QData*> sendBuffer;
 };
 
 class MQConnectionBridge {
@@ -119,6 +131,12 @@ public:
     virtual void OnMessage(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) = 0;
     virtual void OnReleaseConnection(QConnection* qconnection) = 0;
     virtual void OnClose(QConnection* qconnection) = 0;
+};
+
+enum CON_STATE {
+    STATE_OPEN,
+    STATE_CONNECT,
+    STATE_CLOSE
 };
 
 class MQCommandBridge {
@@ -132,9 +150,17 @@ public:
     virtual void Event_Close(QConnection* qconnection) = 0;
     virtual int SendMessage(const std::string& buffer, bool flush) = 0;
     virtual int Close() = 0;
+    virtual CON_STATE GetState() = 0;
+    
+    virtual QMutex* Get_runMutex() = 0;
+    virtual QMutex* Get_closeMutex() = 0;
+//    virtual QMutex* Get_destroyMutex() = 0;
+    virtual QMutex* Get_sendMutex() = 0;
+    virtual QMutex* Get_sendLoopMutex() = 0;
+//    virtual QMutex* Get_flushMutex() = 0;
+//    virtual QMutex* Get_recvMutex() = 0;
 };
 
-//struct RunConfig;
 class QNetworkClient : public MQCommandBridge, public MQConnectionBridge {
 private:
     struct RunConfig {
@@ -146,49 +172,32 @@ private:
         int id = -1;
     };
     static int connectionID;
-//    struct ConnActivity {
-//        bool allowSend = true;
-//        bool allowClose = true;
-//        bool allowDestroy = true;
-//        bool allowFlush = true;
-//
-////        inline bool anyActivity() { return (sending || closing || destroying); }
-////        std::string blockedBy() {
-////            if (!anyActivity()) {
-////                return "none";
-////            }
-////            std::stringstream ss;
-////            ss<<(sending?"send ":"") << (closing?"close ":"")<<(destroying?" destroy":"");
-////            return ss.str();
-////        }
-//    };
     struct ev_loop *mainloop = nullptr;
     struct RunConfig runConfig;
     
 #if USE_PTHREAD
     QMutex runMutex;
     QMutex closeMutex;
-    QMutex destroyMutex;
+//    QMutex destroyMutex;
     QMutex sendMutex;
-    QMutex flushMutex;
-//    QMutexCondition destroyCondition;
-//    QMutexCondition sendCondition;
-//    QMutexCondition flushCondition;
-//    QMutexCondition closeCondition;
-
+    QMutex sendLoopMutex;
+//    QMutex flushMutex;
     QMutex runConfigMutex;
+//    QMutex recvMutex;
     pthread_t run_thread_id;
 #endif
-//    ConnActivity connectionActivity;
-    
 
-    
     static void debug_log(const uint8_t *line, void *argp);
-//    void flush_egress(struct ev_loop *loop, struct conn_io *conn_io);
     static void recv_cb(EV_P_ ev_io *w, int revents);
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
+    static void send_cb(EV_P_ ev_timer *w, int revents);
     static void* run_internal(void* data);
 
+    void SetState(CON_STATE state);
+    inline CON_STATE GetState() override final { return state; }
+    inline bool IsOpen() { return state == STATE_OPEN; }
+    inline bool IsClosed() { return state == STATE_CLOSE; }
+    CON_STATE state = STATE_OPEN;
     
 protected:
     void FlushEgress(struct ev_loop *loop, QConnection* qconnection) override final;
@@ -204,6 +213,28 @@ protected:
     void Event_MsgReceived(ssize_t recv_len, uint8_t* buf, QConnection* qconnection) override final;
     void Event_Close(QConnection* qconnection) override final;
     
+    QMutex* Get_runMutex() override final {
+        return &runMutex;
+    }
+    QMutex* Get_closeMutex() override final {
+        return &closeMutex;
+    }
+    QMutex* Get_sendLoopMutex() override final {
+        return &sendLoopMutex;
+    }
+//    QMutex* Get_destroyMutex() override final {
+//        return &destroyMutex;
+//    }
+    QMutex* Get_sendMutex() override final {
+        return &sendMutex;
+    }
+//    QMutex* Get_flushMutex() override final {
+//        return &flushMutex;
+//    }
+//    QMutex* Get_recvMutex() override final {
+//        return &recvMutex;
+//    }
+    
     QConnection* qclientConnection = nullptr;
     
 public:
@@ -212,7 +243,7 @@ public:
     
     int SendMessage(const std::string& buffer, bool flush)  override final;
     int Close() override final;
-    bool IsClosed();
+//    bool IsClosed();
     
     bool IsRunFinished();
     
