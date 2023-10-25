@@ -289,9 +289,11 @@ int QConnection::Connect(std::string host, std::string port) {
 
     ssize_t rand_len = read(rng, &scid, sizeof(scid));
     if (rand_len < 0) {
+        close(rng);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection ID");
         return -1;
     }
+    close(rng);
 
     local_addr_len = sizeof(local_addr);
     if (getsockname(sock, (struct sockaddr *)&local_addr,
