@@ -9,6 +9,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "NetworkClient"
 #include <unistd.h>
+#include <algorithm>
 
 void NetworkClientTester::send_msg_timer_cb(EV_P_ ev_timer *w, int revents) {
     NetworkClientTester* tester = (NetworkClientTester*)w->data;
