@@ -2,7 +2,7 @@ BUILDDIR = build
 
 NETWORK_COMMON_SRCDIR = ../NetworkCommon/Source
 COMMON_SRCDIR = ../Common
-NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/main.cpp \
+NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(COMMON_SRCDIR)/Timer.cpp \
 $(COMMON_SRCDIR)/SDKTypes.cpp \
 $(COMMON_SRCDIR)/gxCrc32.cpp \
