@@ -239,7 +239,7 @@ void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qc
 }
 
 void QNetworkServer::OnDestroyConnection(QPeerConnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
+//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
 }
 
 void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
@@ -285,7 +285,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -320,7 +320,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (qconnection == nullptr) {
             if (!quiche_version_is_supported(version)) {
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "version negotiation");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
@@ -345,7 +345,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             }
 
             if (token_len == 0) {
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stateless retry");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stateless retry");
 
                 mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
