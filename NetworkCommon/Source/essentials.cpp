@@ -6,6 +6,7 @@
 //
 
 #include "essentials.hpp"
+#include <cstring>
 
 #pragma region QMutex
 QMutex::QMutex() {
