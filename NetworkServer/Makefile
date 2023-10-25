@@ -16,7 +16,7 @@ $(NCOMMONSRCS) \
 
 OBJS = ${SRCS:.cpp=.o}
 
-USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_2
+USER_DEFINES = -DLOG_LEVEL=2
 # CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
