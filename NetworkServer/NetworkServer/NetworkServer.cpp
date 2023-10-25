@@ -93,6 +93,8 @@ int32_t main(int32_t argc, const char * argv[]) {
     } else {
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Usage : <executable> 'ip address' 'port'. Ignore for debug builds running locally.");
     }
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "host:%s, port:%s", host.c_str(), port.c_str());
+    
     
     fs::path executablePath(argc>0 ? argv[0] : "");
     fs::path rootDir = executablePath.parent_path();
