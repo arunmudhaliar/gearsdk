@@ -87,7 +87,7 @@ int32_t main(int32_t argc, const char * argv[]) {
 
 
     GameServer server;
-    server.run("localhost", "4000", rootDir);
+    server.run("192.168.0.230", "4000", rootDir);
     
     /*
      PrintCommonInfo();
