@@ -22,6 +22,7 @@
 #include <netdb.h>
 
 #include <pthread.h>
+#include <algorithm>
 
 int QNetworkClient::connectionID = 0;
 
@@ -793,7 +794,7 @@ void QNetworkClient::send_cb(EV_P_ ev_timer *w, int revents) {
         for(auto it = successfullySent.cbegin();it!=successfullySent.cend();it++) {
             QData* fd = *it;
             int oldSz = (int)qconnection->sendBuffer.size();
-            qconnection->sendBuffer.erase(std::remove(qconnection->sendBuffer.begin(), qconnection->sendBuffer.end(), (const QData*)fd), qconnection->sendBuffer.end());
+            qconnection->sendBuffer.erase(std::remove(qconnection->sendBuffer.begin(), qconnection->sendBuffer.end(), fd), qconnection->sendBuffer.end());
             if(oldSz!=qconnection->sendBuffer.size()) {
                 GX_DELETE(fd);
             }
