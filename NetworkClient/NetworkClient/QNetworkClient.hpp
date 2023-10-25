@@ -13,11 +13,11 @@
 #include <uthash.h>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #if USE_PTHREAD
 #include <pthread.h>
 #endif
-#include <sstream>
 
 #include "../../Common/SDKTypes.hpp"
 
@@ -29,7 +29,6 @@ extern "C" {
 #define __LOGTAG__ "QNetworkClient"
 
 #define LOCAL_CONN_ID_LEN 16
-
 #define MAX_DATAGRAM_SIZE 1350
 
 class QMutex;
@@ -103,7 +102,6 @@ public:
     int id = -1;
     ev_timer timer;
     ev_timer sendTimer;
-    ev_tstamp last_sendTime;
     ev_io watcher;
     int sock;
     struct sockaddr_storage local_addr;
@@ -116,7 +114,6 @@ public:
     ssize_t SendMessage(const char *buf, size_t buflen, bool fin);
     ssize_t SendMessage(const std::string& buffer, bool fin);
     int ConnectionActive();
-    
     void Release();
     
     uint8_t recv_buf[65535];
@@ -154,11 +151,8 @@ public:
     
     virtual QMutex* Get_runMutex() = 0;
     virtual QMutex* Get_closeMutex() = 0;
-//    virtual QMutex* Get_destroyMutex() = 0;
     virtual QMutex* Get_sendMutex() = 0;
     virtual QMutex* Get_sendLoopMutex() = 0;
-//    virtual QMutex* Get_flushMutex() = 0;
-//    virtual QMutex* Get_recvMutex() = 0;
 };
 
 class QNetworkClient : public MQCommandBridge, public MQConnectionBridge {
@@ -178,12 +172,9 @@ private:
 #if USE_PTHREAD
     QMutex runMutex;
     QMutex closeMutex;
-//    QMutex destroyMutex;
     QMutex sendMutex;
     QMutex sendLoopMutex;
-//    QMutex flushMutex;
     QMutex runConfigMutex;
-//    QMutex recvMutex;
     pthread_t run_thread_id;
 #endif
 
@@ -222,19 +213,10 @@ protected:
     QMutex* Get_sendLoopMutex() override final {
         return &sendLoopMutex;
     }
-//    QMutex* Get_destroyMutex() override final {
-//        return &destroyMutex;
-//    }
+
     QMutex* Get_sendMutex() override final {
         return &sendMutex;
     }
-//    QMutex* Get_flushMutex() override final {
-//        return &flushMutex;
-//    }
-//    QMutex* Get_recvMutex() override final {
-//        return &recvMutex;
-//    }
-    
     QConnection* qclientConnection = nullptr;
     
 public:
@@ -243,14 +225,9 @@ public:
     
     int SendMessage(const std::string& buffer, bool flush)  override final;
     int Close() override final;
-//    bool IsClosed();
-    
     bool IsRunFinished();
-    
     int run(std::string host, std::string port);
-    
     void ForceRelease();
     inline QMutex& GetRunConfigMutex() { return runConfigMutex; }
-    // const RunConfig& GetRunConfig() { return runConfig; }
 };
 #endif /* QNetworkClient_hpp */

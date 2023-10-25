@@ -9,8 +9,6 @@
 #define QNetworkServer_hpp
 
 #include <stdio.h>
-
-#include <stdio.h>
 #include <ev.h>
 #include <uthash.h>
 #include <string>
@@ -19,6 +17,9 @@
 #include <filesystem>
 
 #include "../../Common/SDKTypes.hpp"
+extern "C" {
+#include <quiche.h>
+}
 
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
@@ -28,17 +29,11 @@ namespace fs = std::filesystem;
 namespace fs = std::__fs::filesystem;
 #endif
 
-extern "C" {
-#include <quiche.h>
-}
-
 #undef __LOGTAG__
 #define __LOGTAG__ "QNetworkServer"
 
 #define LOCAL_CONN_ID_LEN 16
-
 #define MAX_DATAGRAM_SIZE 1350
-
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
     sizeof(struct sockaddr_storage) + \

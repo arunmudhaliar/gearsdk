@@ -2,21 +2,21 @@ BUILDDIR = build
 
 NETWORK_COMMON_SRCDIR = ../NetworkCommon/Source
 COMMON_SRCDIR = ../Common
-NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/QNetworkInterface.cpp \
+NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/main.cpp \
 $(COMMON_SRCDIR)/Timer.cpp \
 $(COMMON_SRCDIR)/SDKTypes.cpp \
 $(COMMON_SRCDIR)/gxCrc32.cpp \
 
 INCLUDES = -I "../NetworkCommon/Source/ev" -I "../NetworkCommon/Source/quiche"
 SRCDIR = ./NetworkServer
-SRCS = $(SRCDIR)/NetworkServer.cpp \
+SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/GameServer.cpp \
 $(SRCDIR)/QNetworkServer.cpp \
 $(NCOMMONSRCS) \
 
 OBJS = ${SRCS:.cpp=.o}
 
-USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_2
+USER_DEFINES = -DLOG_LEVEL=LOG_LEVEL_0
 # CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden

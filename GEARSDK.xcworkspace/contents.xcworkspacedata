@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:sandbox">
+   </FileRef>
+   <FileRef
       location = "group:NetworkClient/NetworkClient.xcodeproj">
    </FileRef>
    <FileRef

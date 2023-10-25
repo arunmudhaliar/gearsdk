@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		557487392AE9533200C0F6CA /* libNetworkCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B372DC2AC3094C00F0095E /* libNetworkCommon.a */; };
+		557487402AE957ED00C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574873F2AE957ED00C0F6CA /* main.cpp */; };
 		5574E6BA2AD86EDC00FAFE08 /* QNetworkClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */; };
 		5574E6C92ADC3A2F00FAFE08 /* GameClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */; };
-		55853CE42AC32FF600901E52 /* libNetworkCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B372DC2AC3094C00F0095E /* libNetworkCommon.a */; };
-		55B372A72AC2AB4A00F0095E /* NetworkClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372A62AC2AB4A00F0095E /* NetworkClient.cpp */; };
+		55B372A72AC2AB4A00F0095E /* NetworkClientTester.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372A62AC2AB4A00F0095E /* NetworkClientTester.cpp */; };
 		55D1C6D52AD3269C00470E01 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D42AD3269800470E01 /* libev.a */; };
 		55D1C6D62AD3269C00470E01 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D32AD3269800470E01 /* libquiche.a */; };
 		55D1C6D82AD326A500470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D72AD326A500470E01 /* Security.framework */; };
@@ -40,17 +41,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5574873F2AE957ED00C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QNetworkClient.cpp; sourceTree = "<group>"; };
 		5574E6B92AD86EDC00FAFE08 /* QNetworkClient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QNetworkClient.hpp; sourceTree = "<group>"; };
 		5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameClient.cpp; sourceTree = "<group>"; };
 		5574E6C82ADC3A2F00FAFE08 /* GameClient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GameClient.hpp; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* NetworkClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NetworkClient; sourceTree = BUILT_PRODUCTS_DIR; };
-		55B372A62AC2AB4A00F0095E /* NetworkClient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkClient.cpp; sourceTree = "<group>"; };
+		55B372A62AC2AB4A00F0095E /* NetworkClientTester.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkClientTester.cpp; sourceTree = "<group>"; };
 		55B372D72AC3094C00F0095E /* NetworkCommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NetworkCommon.xcodeproj; path = ../NetworkCommon/NetworkCommon.xcodeproj; sourceTree = "<group>"; };
 		55D1C6D32AD3269800470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../NetworkCommon/libs/libquiche.a; sourceTree = "<group>"; };
 		55D1C6D42AD3269800470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../NetworkCommon/libs/libev.a; sourceTree = "<group>"; };
 		55D1C6D72AD326A500470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		55E4D3032AC6D81900555999 /* NetworkClient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetworkClient.hpp; sourceTree = "<group>"; };
+		55E4D3032AC6D81900555999 /* NetworkClientTester.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetworkClientTester.hpp; sourceTree = "<group>"; };
 		55E4D3182ACAF45800555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -59,11 +61,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				557487392AE9533200C0F6CA /* libNetworkCommon.a in Frameworks */,
 				55D1C6D62AD3269C00470E01 /* libquiche.a in Frameworks */,
 				55D1C6D82AD326A500470E01 /* Security.framework in Frameworks */,
 				55D1C6D52AD3269C00470E01 /* libev.a in Frameworks */,
 				55E4D32A2ACAF58000555999 /* CoreFoundation.framework in Frameworks */,
-				55853CE42AC32FF600901E52 /* libNetworkCommon.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,12 +104,13 @@
 		55B372A52AC2AB4A00F0095E /* NetworkClient */ = {
 			isa = PBXGroup;
 			children = (
-				55B372A62AC2AB4A00F0095E /* NetworkClient.cpp */,
-				55E4D3032AC6D81900555999 /* NetworkClient.hpp */,
+				55B372A62AC2AB4A00F0095E /* NetworkClientTester.cpp */,
+				55E4D3032AC6D81900555999 /* NetworkClientTester.hpp */,
 				5574E6B82AD86EDC00FAFE08 /* QNetworkClient.cpp */,
 				5574E6B92AD86EDC00FAFE08 /* QNetworkClient.hpp */,
 				5574E6C72ADC3A2F00FAFE08 /* GameClient.cpp */,
 				5574E6C82ADC3A2F00FAFE08 /* GameClient.hpp */,
+				5574873F2AE957ED00C0F6CA /* main.cpp */,
 			);
 			path = NetworkClient;
 			sourceTree = "<group>";
@@ -192,8 +195,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55B372A72AC2AB4A00F0095E /* NetworkClient.cpp in Sources */,
+				55B372A72AC2AB4A00F0095E /* NetworkClientTester.cpp in Sources */,
 				5574E6BA2AD86EDC00FAFE08 /* QNetworkClient.cpp in Sources */,
+				557487402AE957ED00C0F6CA /* main.cpp in Sources */,
 				5574E6C92ADC3A2F00FAFE08 /* GameClient.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

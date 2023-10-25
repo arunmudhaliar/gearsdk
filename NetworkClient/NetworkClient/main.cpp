@@ -1,0 +1,46 @@
+//
+//  main.cpp
+//  NetworkClient
+//
+//  Created by Arun A on 25/10/23.
+//
+
+#include "NetworkClientTester.hpp"
+#undef __LOGTAG__
+#define __LOGTAG__ "NetworkClient"
+#include <unistd.h>
+#include <netdb.h>
+
+int32_t main(int32_t argc, const char * argv[]) {
+    PrintCommonInfo();
+    
+    std::string host = "localhost";
+    std::string port = "4000";
+    if (argc==3) {
+        host = argv[1];
+        port = argv[2];
+        const struct addrinfo hints = {
+            .ai_family = PF_UNSPEC,
+            .ai_socktype = SOCK_DGRAM,
+            .ai_protocol = IPPROTO_UDP
+        };
+        struct addrinfo *peer = nullptr;
+        if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Failed to resolve host. Exiting !!!");
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Usage : <executable> 'ip address' 'port'");
+            return -1;
+        }
+        if (peer) {
+            freeaddrinfo(peer);
+            peer = nullptr;
+        }
+    } else {
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Usage : <executable> 'ip address' 'port'. Ignore for debug builds running locally.");
+    }
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "host:%s, port:%s", host.c_str(), port.c_str());
+    
+    NetworkClientTester tester;
+    tester.run(host, port, 1, 7);
+
+    return 0;
+}

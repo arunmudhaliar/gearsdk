@@ -10,7 +10,7 @@
 		5574E6B62AD84A3A00FAFE08 /* QNetworkServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B42AD84A3A00FAFE08 /* QNetworkServer.cpp */; };
 		5574E6C32ADBB1CD00FAFE08 /* GameServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* GameServer.cpp */; };
 		55853CE02AC32E7600901E52 /* libNetworkCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B372E42AC3096100F0095E /* libNetworkCommon.a */; };
-		55B372BC2AC2ABCD00F0095E /* NetworkServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* NetworkServer.cpp */; };
+		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
 		55D1C6CE2AD2A49000470E01 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6CC2AD2A48D00470E01 /* libev.a */; };
 		55D1C6CF2AD2A49000470E01 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6CD2AD2A48D00470E01 /* libquiche.a */; };
 		55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D02AD2A49B00470E01 /* Security.framework */; };
@@ -49,14 +49,13 @@
 		5574E6C12ADBB1CD00FAFE08 /* GameServer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameServer.cpp; sourceTree = "<group>"; };
 		5574E6C22ADBB1CD00FAFE08 /* GameServer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GameServer.hpp; sourceTree = "<group>"; };
 		55B372B82AC2ABCD00F0095E /* NetworkServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NetworkServer; sourceTree = BUILT_PRODUCTS_DIR; };
-		55B372BB2AC2ABCD00F0095E /* NetworkServer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkServer.cpp; sourceTree = "<group>"; };
+		55B372BB2AC2ABCD00F0095E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55B372DF2AC3096100F0095E /* NetworkCommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = NetworkCommon.xcodeproj; path = ../NetworkCommon/NetworkCommon.xcodeproj; sourceTree = "<group>"; };
 		55D1C6CC2AD2A48D00470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../NetworkCommon/libs/libev.a; sourceTree = "<group>"; };
 		55D1C6CD2AD2A48D00470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../NetworkCommon/libs/libquiche.a; sourceTree = "<group>"; };
 		55D1C6D02AD2A49B00470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		55D1C6DC2AD32E8800470E01 /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		55D1C6DD2AD32E8800470E01 /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
-		55E4D3062AC6EFD400555999 /* NetworkServer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NetworkServer.hpp; sourceTree = "<group>"; };
 		55E4D31B2ACAF47E00555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55FB29CE2ACF32220051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../../quiche/target/debug/deps/libquiche.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,8 +110,7 @@
 		55B372BA2AC2ABCD00F0095E /* NetworkServer */ = {
 			isa = PBXGroup;
 			children = (
-				55B372BB2AC2ABCD00F0095E /* NetworkServer.cpp */,
-				55E4D3062AC6EFD400555999 /* NetworkServer.hpp */,
+				55B372BB2AC2ABCD00F0095E /* main.cpp */,
 				5574E6B42AD84A3A00FAFE08 /* QNetworkServer.cpp */,
 				5574E6B52AD84A3A00FAFE08 /* QNetworkServer.hpp */,
 				5574E6C12ADBB1CD00FAFE08 /* GameServer.cpp */,
@@ -210,7 +208,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55B372BC2AC2ABCD00F0095E /* NetworkServer.cpp in Sources */,
+				55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */,
 				5574E6C32ADBB1CD00FAFE08 /* GameServer.cpp in Sources */,
 				5574E6B62AD84A3A00FAFE08 /* QNetworkServer.cpp in Sources */,
 			);

@@ -7,11 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */; };
-		5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */; };
+		557487382AE9530500C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487372AE9530500C0F6CA /* main.cpp */; };
 		55853CDC2AC32BE300901E52 /* libCommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55B373072AC325D000F0095E /* libCommon.a */; };
-		55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55D1C6CA2AD2A42500470E01 /* server.cpp */; };
-		55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3452ACDD58000555999 /* client.cpp */; };
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
 
@@ -26,16 +23,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QNetworkInterface.cpp; sourceTree = "<group>"; };
-		5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QNetworkInterface.hpp; sourceTree = "<group>"; };
+		557487372AE9530500C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libNetworkCommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetworkCommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B373022AC325D000F0095E /* Common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Common.xcodeproj; path = ../Common/Common.xcodeproj; sourceTree = "<group>"; };
-		55D1C6CA2AD2A42500470E01 /* server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = server.cpp; sourceTree = "<group>"; };
-		55D1C6D22AD314AB00470E01 /* server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server.h; sourceTree = "<group>"; };
-		55D1C6DA2AD329B700470E01 /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
-		55E4D3452ACDD58000555999 /* client.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = client.cpp; sourceTree = "<group>"; };
 		55FB29BE2ACF1D010051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = quiche_lib/release/libquiche.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -81,9 +73,8 @@
 		55B372E52AC3097700F0095E /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				5574E6AF2AD845E600FAFE08 /* QNetworkInterface.cpp */,
-				5574E6B02AD845E600FAFE08 /* QNetworkInterface.hpp */,
 				55E4D3342ACDD23100555999 /* quiche */,
+				557487372AE9530500C0F6CA /* main.cpp */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -99,11 +90,7 @@
 		55E4D3342ACDD23100555999 /* quiche */ = {
 			isa = PBXGroup;
 			children = (
-				55D1C6CA2AD2A42500470E01 /* server.cpp */,
-				55E4D3452ACDD58000555999 /* client.cpp */,
 				55E4D3352ACDD23100555999 /* quiche.h */,
-				55D1C6D22AD314AB00470E01 /* server.h */,
-				55D1C6DA2AD329B700470E01 /* client.h */,
 			);
 			path = quiche;
 			sourceTree = "<group>";
@@ -116,7 +103,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
-				5574E6B22AD845E600FAFE08 /* QNetworkInterface.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,9 +178,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5574E6B12AD845E600FAFE08 /* QNetworkInterface.cpp in Sources */,
-				55FB29BA2ACEC38F0051DDF9 /* client.cpp in Sources */,
-				55D1C6CB2AD2A42500470E01 /* server.cpp in Sources */,
+				557487382AE9530500C0F6CA /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

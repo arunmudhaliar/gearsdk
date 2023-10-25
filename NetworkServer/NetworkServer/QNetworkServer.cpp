@@ -13,17 +13,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
-
 #include <fcntl.h>
 #include <errno.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-
 #include <ev.h>
 #include <uthash.h>
-
 #include <quiche.h>
 
 QPeerConnection::QPeerConnection(MQPeerConnectionBridge* bridge, uint8_t *scid, size_t scid_len, int sock) :
@@ -194,10 +190,8 @@ void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* 
     }
     GX_DELETE_ARY(copybuf);
     
+    // TODO : Comment this for development.
     qconnection->SendMessage("HELLO from server", true);
-//    qconnection->SendMessage("hello12 from server", true);
-//    qconnection->SendMessage("hello123 from server", true);
-//    qconnection->SendMessage("hello1234 from server", true);
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
@@ -205,7 +199,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
 
     SendInfo send_info;
 
-    while (1) {
+    while (true) {
         ssize_t written = quiche_conn_send(qconnection->conn, out, sizeof(out),
                                            &send_info);
 
@@ -252,10 +246,8 @@ void QNetworkServer::OnDestroyConnection(QPeerConnection* qconnection) {
 void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
     QPeerConnection* qconnection = (QPeerConnection*)w->data;
         
-    quiche_conn_on_timeout(qconnection->conn);
-
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout !!!");
-    
+    quiche_conn_on_timeout(qconnection->conn);
     qconnection->bridge->FlushEgress(loop, qconnection);
 
     if (quiche_conn_is_closed(qconnection->conn)) {
@@ -286,7 +278,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
     static uint8_t buf[65535];
     static uint8_t out[MAX_DATAGRAM_SIZE];
 
-    while (1) {
+    while (true) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
@@ -441,7 +433,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     break;
                 }
 
-                if (fin /*|| true*/) {
+                if (fin) {
                     static const char *resp = "byez\n";
                     ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);
@@ -529,7 +521,6 @@ int QNetworkServer::run(std::string host, std::string port, fs::path rootDir) {
         return -1;
     }
 
-    //std::string rootDir = executablePath.parent_path();
     fs::path certFile("cert.crt");
     fs::path keyFile("cert.key");
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
