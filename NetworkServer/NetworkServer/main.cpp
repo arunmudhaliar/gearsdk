@@ -14,6 +14,10 @@
 #endif
 #include <netdb.h>
 
+void dummy_timer_cb(EV_P_ ev_timer *w, int revents) {
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "dummy_timer_cb");
+}
+
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
     std::string host = "localhost";
@@ -46,6 +50,17 @@ int32_t main(int32_t argc, const char * argv[]) {
     DEBUG_PRINT_IMPORTANT(__DEFAULT_LOG_TAG__, "Root dir : %s", rootDir.c_str());
     GameServer server;
     server.run(host, port, rootDir);
+    
+    
+    // dummy run loop
+    // send timer
+    struct ev_loop* loop = ev_default_loop(0);
+    static ev_timer tw;
+    ev_timer_init (&tw, dummy_timer_cb, 60, 1);
+    tw.data = &server;
+    ev_timer_start(loop, &tw);
+    
+    ev_run(loop, 0);
     
     return 0;
 }

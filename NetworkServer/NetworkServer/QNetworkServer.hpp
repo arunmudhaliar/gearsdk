@@ -17,6 +17,8 @@
 #include <filesystem>
 
 #include "../../Common/SDKTypes.hpp"
+#include "../../NetworkCommon/Source/essentials.hpp"
+
 extern "C" {
 #include <quiche.h>
 }
@@ -45,6 +47,8 @@ struct connections {
     struct sockaddr *local_addr = nullptr;
     socklen_t local_addr_len;
     QPeerConnection *h = nullptr;
+    uint8_t buf[65535];
+    uint8_t out[MAX_DATAGRAM_SIZE];
 };
 
 class MQPeerConnectionBridge {
@@ -74,20 +78,33 @@ public:
     socklen_t peer_addr_len;
     UT_hash_handle hh;
     int itrmsg = 0;
+    
+    uint8_t egress_out[MAX_DATAGRAM_SIZE];
 };
 
 class QNetworkServer : protected MQPeerConnectionBridge {
+private:
+    struct RunServerConfig {
+        std::string host;
+        std::string port;
+        QNetworkServer* thiz;
+        int pthread_returnValue;
+        bool finished = false;
+        int id = -1;
+        fs::path rootDir;
+    };
+    static int runID;
 public:
     int run(std::string host, std::string port, fs::path executablePath);
     void BroadCastMessage(const std::string& buffer, bool flush);
     
 protected:
-    void FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) override;
-    void DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) override;
+    void FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) override final;
+    void DestroyConnection(struct ev_loop *loop, QPeerConnection* qconnection) override final;
     void OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* qconnection) override;
     void OnConnection(QPeerConnection* qconnection) override;
     void OnDestroyConnection(QPeerConnection* qconnection) override;
-    inline struct ev_loop * GetMainLoop() override {
+    inline struct ev_loop * GetMainLoop() override final {
         return mainloop;
     }
 private:
@@ -112,6 +129,13 @@ private:
     Config *config = nullptr;
     struct ev_loop *mainloop = nullptr;
     struct connections *conns = nullptr;
+    
+    static void* run_internal(void* data);
+    
+    struct RunServerConfig runServerConfig;
+    QMutex runMutex;
+    QMutex runConfigMutex;
+    pthread_t run_thread_id;
 };
 
 #endif /* QNetworkServer_hpp */

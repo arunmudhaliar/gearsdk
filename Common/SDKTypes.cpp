@@ -34,6 +34,9 @@ void PrintCommonInfo() {
     } else {
         DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
     }
+#if DEBUG
+    DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
+#endif
 }
 
 void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {

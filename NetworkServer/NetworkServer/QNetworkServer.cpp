@@ -197,10 +197,9 @@ void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* 
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
-    static uint8_t out[MAX_DATAGRAM_SIZE];
     SendInfo send_info;
     while (true) {
-        ssize_t written = quiche_conn_send(qconnection->conn, out, sizeof(out),
+        ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out),
                                            &send_info);
 
         if (written == QUICHE_ERR_DONE) {
@@ -213,7 +212,7 @@ void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnect
             return;
         }
 
-        ssize_t sent = sendto(qconnection->sock, out, written, 0,
+        ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0,
                               (struct sockaddr *) &send_info.to,
                               send_info.to_len);
 
@@ -236,7 +235,7 @@ void QNetworkServer::DestroyConnection(struct ev_loop *loop, QPeerConnection* qc
     OnDestroyConnection(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
     GX_DELETE(qconnection);
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pening %d]!!!", HASH_CNT(hh, conns->h));
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
 
 void QNetworkServer::OnDestroyConnection(QPeerConnection* qconnection) {
@@ -274,16 +273,13 @@ void QNetworkServer::timeout_cb(EV_P_ ev_timer *w, int revents) {
 void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
     QPeerConnection* qconnection = nullptr;
     QPeerConnection* tmp = nullptr;
-    
-    static uint8_t buf[65535];
-    static uint8_t out[MAX_DATAGRAM_SIZE];
 
     while (true) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
 
-        ssize_t read = recvfrom(conns->sock, buf, sizeof(buf), 0,
+        ssize_t read = recvfrom(conns->sock, conns->buf, sizeof(conns->buf), 0,
                                 (struct sockaddr *) &peer_addr,
                                 &peer_addr_len);
 
@@ -312,7 +308,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
         uint8_t token[MAX_TOKEN_LEN];
         size_t token_len = sizeof(token);
 
-        int rc = quiche_header_info(buf, read, LOCAL_CONN_ID_LEN, &version,
+        int rc = quiche_header_info(conns->buf, read, LOCAL_CONN_ID_LEN, &version,
                                     &type, scid, &scid_len, dcid, &dcid_len,
                                     token, &token_len);
         if (rc < 0) {
@@ -328,7 +324,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
-                                                           out, sizeof(out));
+                                                           conns->out, sizeof(conns->out));
 
                 if (written < 0) {
                     DEBUG_PRINT_WARN(__LOGTAG__, "failed to create vneg packet: %zd",
@@ -336,7 +332,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                ssize_t sent = sendto(conns->sock, out, written, 0,
+                ssize_t sent = sendto(conns->sock, conns->out, written, 0,
                                       (struct sockaddr *) &peer_addr,
                                       peer_addr_len);
                 if (sent != written) {
@@ -364,7 +360,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                                                dcid, dcid_len,
                                                new_cid, LOCAL_CONN_ID_LEN,
                                                token, token_len,
-                                               version, out, sizeof(out));
+                                               version, conns->out, sizeof(conns->out));
 
                 if (written < 0) {
                     DEBUG_PRINT_WARN(__LOGTAG__, "failed to create retry packet: %zd",
@@ -372,7 +368,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                ssize_t sent = sendto(conns->sock, out, written, 0,
+                ssize_t sent = sendto(conns->sock, conns->out, written, 0,
                                       (struct sockaddr *) &peer_addr,
                                       peer_addr_len);
                 if (sent != written) {
@@ -408,7 +404,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
             conns->local_addr_len,
         };
         
-        ssize_t done = quiche_conn_recv(qconnection->conn, buf, read, &recv_info);
+        ssize_t done = quiche_conn_recv(qconnection->conn, conns->buf, read, &recv_info);
 
         if (done < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
@@ -424,13 +420,13 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                 DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
                 bool fin = false;
                 ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s,
-                                                           buf, sizeof(buf),
+                                                           conns->buf, sizeof(conns->buf),
                                                            &fin);
                 if (recv_len < 0) {
                     break;
                 }
                 if (fin) {
-                    static const char *resp = "byez\n";
+                    const char *resp = "byez\n";
                     ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);
                     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez'");
@@ -439,7 +435,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     }
                 }
 //                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
-                qconnection->bridge->OnMessage(recv_len, buf, qconnection);
+                qconnection->bridge->OnMessage(recv_len, conns->buf, qconnection);
             }
             quiche_stream_iter_free(readable);
         }
@@ -478,60 +474,86 @@ void QNetworkServer::recv_cb(EV_P_ ev_io *w, int revents) {
     server->Recv_cb(loop, w, revents);
 }
 
-int QNetworkServer::run(std::string host, std::string port, fs::path rootDir) {
+void* QNetworkServer::run_internal(void* data) {
+    RunServerConfig* runConfig = (RunServerConfig*)data;
+    std::string host = runConfig->host;
+    std::string port = runConfig->port;
+    QNetworkServer* thiz = runConfig->thiz;
+    
+    if(thiz->runMutex.tryLock(__FUNCTION__)!=0) {
+        runConfig->finished = true;
+        runConfig->pthread_returnValue = -1;
+        pthread_exit(&runConfig->pthread_returnValue);
+    }
+    
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP
     };
 
-      quiche_enable_debug_logging(debug_log, nullptr);
+    quiche_enable_debug_logging(debug_log, nullptr);
 
     struct addrinfo *local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
-        return -1;
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
 
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
-        return -1;
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
-        return -1;
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
-        return -1;
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
 
-    config = quiche_config_new(PROTOCOL_VERSION);
-    if (config == nullptr) {
+    thiz->config = quiche_config_new(PROTOCOL_VERSION);
+    if (thiz->config == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
-        return -1;
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->runMutex.unLock()==0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
 
     fs::path certFile("cert.crt");
     fs::path keyFile("cert.key");
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
-    quiche_config_load_cert_chain_from_pem_file(config, (rootDir / certFile).c_str());
-    quiche_config_load_priv_key_from_pem_file(config, (rootDir / keyFile).c_str());
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (runConfig->rootDir / certFile).c_str());
+    quiche_config_load_cert_chain_from_pem_file(thiz->config, (runConfig->rootDir / certFile).c_str());
+    quiche_config_load_priv_key_from_pem_file(thiz->config, (runConfig->rootDir / keyFile).c_str());
 
-    quiche_config_set_application_protos(config,
+    quiche_config_set_application_protos(thiz->config,
         (uint8_t *) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
-    quiche_config_set_max_idle_timeout(config, 30000);
-    quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_initial_max_data(config, 10000000);
-    quiche_config_set_initial_max_stream_data_bidi_local(config, 1000000);
-    quiche_config_set_initial_max_stream_data_bidi_remote(config, 1000000);
-    quiche_config_set_initial_max_streams_bidi(config, 100);
-    quiche_config_set_cc_algorithm(config, Reno);
+    quiche_config_set_max_idle_timeout(thiz->config, 30000);
+    quiche_config_set_max_recv_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_send_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
+    quiche_config_set_initial_max_data(thiz->config, 10000000);
+    quiche_config_set_initial_max_stream_data_bidi_local(thiz->config, 1000000);
+    quiche_config_set_initial_max_stream_data_bidi_remote(thiz->config, 1000000);
+    quiche_config_set_initial_max_streams_bidi(thiz->config, 100);
+    quiche_config_set_cc_algorithm(thiz->config, Reno);
 
     struct connections c;
     c.sock = sock;
@@ -539,21 +561,39 @@ int QNetworkServer::run(std::string host, std::string port, fs::path rootDir) {
     c.local_addr = local->ai_addr;
     c.local_addr_len = local->ai_addrlen;
 
-    conns = &c;
+    thiz->conns = &c;
 
     ev_io watcher;
 
-    mainloop = ev_default_loop(0);
+    thiz->mainloop = ev_loop_new(0);
 
     ev_io_init(&watcher, recv_cb, sock, EV_READ);
-    ev_io_start(mainloop, &watcher);
-    watcher.data = this;
+    ev_io_start(thiz->mainloop, &watcher);
+    watcher.data = thiz;
 
-    ev_loop(mainloop, 0);
+    ev_loop(thiz->mainloop, 0);
 
     freeaddrinfo(local);
 
-    quiche_config_free(config);
+    quiche_config_free(thiz->config);
 
+    return 0;
+}
+
+int QNetworkServer::runID = 0;
+
+int QNetworkServer::run(std::string host, std::string port, fs::path rootDir) {
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.tryLock(__FUNCTION__)==0), __FUNCTION__);
+    runServerConfig.host = host;
+    runServerConfig.port = port;
+    runServerConfig.thiz = this;
+    runServerConfig.finished = false;
+    runServerConfig.id = QNetworkServer::runID++;
+    DEBUG_ASSERT(__LOGTAG__, (runConfigMutex.unLock()==0), __FUNCTION__);
+    if( pthread_create( &run_thread_id, nullptr,  QNetworkServer::run_internal, (void*)&runServerConfig) < 0)
+    {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror (errno), errno);
+        return -1;
+    }
     return 0;
 }
