@@ -54,8 +54,11 @@ void NetworkClientTester::delete_cb(EV_P_ ev_timer *w, int revents) {
 }
 
 void NetworkClientTester::run(const std::string& host, const std::string& port, float sendInterval, float closeTimeout) {
-    for (int y=0; y<5; y++) {
-        for (int x=0; x<100; x++) {
+    const int total_loop = 5;
+    const int clients_per_loop = 100;
+    const int wait_sec_after_loop = 3;
+    for (int y=0; y<total_loop; y++) {
+        for (int x=0; x<clients_per_loop; x++) {
             GameClient* newClient = new GameClient();
             newClient->run(host, port);
             clientList.push_back(newClient);
@@ -82,6 +85,6 @@ void NetworkClientTester::run(const std::string& host, const std::string& port, 
             GX_DELETE(client);
         }
         clientList.clear();
-        usleep(5*1000*1000);    // wait for 5 sec.
+        usleep(wait_sec_after_loop*1000*1000);    // wait for wait_sec_after_loop sec.
     }
 }

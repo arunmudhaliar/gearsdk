@@ -53,11 +53,11 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "192.168.0.230"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "4000"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

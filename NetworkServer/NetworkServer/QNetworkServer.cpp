@@ -49,13 +49,10 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
         return;
     }
-    
     uint64_t s = 0;
     StreamIter *writable = quiche_conn_writable(conn);
-
     while (quiche_stream_iter_next(writable, &s)) {
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-
         ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *) buf,
                                 buflen, false);
         if (sent_len!=buflen) {
@@ -65,7 +62,6 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*)buf);
         break;
     }
-
     quiche_stream_iter_free(writable);
     if (flush) {
         bridge->FlushEgress(bridge->GetMainLoop(), this);
@@ -123,9 +119,11 @@ uint8_t *QNetworkServer::gen_cid(uint8_t *cid, size_t cid_len) {
     ssize_t rand_len = read(rng, cid, cid_len);
     if (rand_len < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection ID");
+        close(rng);
         return nullptr;
     }
 
+    close(rng);
     return cid;
 }
 
@@ -176,6 +174,8 @@ void QNetworkServer::OnConnection(QPeerConnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
+#include <sstream>
+
 void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* qconnection) {
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
@@ -191,14 +191,14 @@ void QNetworkServer::OnMessage(ssize_t recv_len, uint8_t* buf, QPeerConnection* 
     GX_DELETE_ARY(copybuf);
     
     // TODO : Comment this for development.
-    qconnection->SendMessage("HELLO from server", true);
+    std::stringstream ss;
+    ss<<"HELLO from server-"<<qconnection->itrmsg++;
+    qconnection->SendMessage(ss.str(), true);
 }
 
 void QNetworkServer::FlushEgress(struct ev_loop *loop, QPeerConnection* qconnection) {
     static uint8_t out[MAX_DATAGRAM_SIZE];
-
     SendInfo send_info;
-
     while (true) {
         ssize_t written = quiche_conn_send(qconnection->conn, out, sizeof(out),
                                            &send_info);
@@ -419,12 +419,9 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (quiche_conn_is_established(qconnection->conn)) {
             uint64_t s = 0;
-
             StreamIter *readable = quiche_conn_readable(qconnection->conn);
-
             while (quiche_stream_iter_next(readable, &s)) {
                 DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
-
                 bool fin = false;
                 ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s,
                                                            buf, sizeof(buf),
@@ -432,7 +429,6 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                 if (recv_len < 0) {
                     break;
                 }
-
                 if (fin) {
                     static const char *resp = "byez\n";
                     ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
@@ -442,11 +438,9 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                         DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
                     }
                 }
-                
 //                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
                 qconnection->bridge->OnMessage(recv_len, buf, qconnection);
             }
-
             quiche_stream_iter_free(readable);
         }
     }

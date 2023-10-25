@@ -73,6 +73,7 @@ public:
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     UT_hash_handle hh;
+    int itrmsg = 0;
 };
 
 class QNetworkServer : protected MQPeerConnectionBridge {
