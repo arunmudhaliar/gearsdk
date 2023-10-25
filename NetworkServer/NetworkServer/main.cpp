@@ -16,6 +16,8 @@
 
 void dummy_timer_cb(EV_P_ ev_timer *w, int revents) {
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "dummy_timer_cb");
+    w->repeat = 60;
+    ev_timer_again(loop, w);
 }
 
 int32_t main(int32_t argc, const char * argv[]) {
@@ -53,12 +55,12 @@ int32_t main(int32_t argc, const char * argv[]) {
     
     
     // dummy run loop
-    // send timer
     struct ev_loop* loop = ev_default_loop(0);
     static ev_timer tw;
     ev_timer_init (&tw, dummy_timer_cb, 60, 1);
     tw.data = &server;
-    ev_timer_start(loop, &tw);
+    tw.repeat = 60;
+    ev_timer_again(loop, &tw);
     
     ev_run(loop, 0);
     
