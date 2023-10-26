@@ -166,7 +166,7 @@ ssize_t QConnection::SendMessage(const char *buf, size_t buflen, bool fin) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*)buf);
+        //DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*)buf);
         result = sent_len;
         break;
     }
@@ -254,7 +254,7 @@ int QNetworkClient::ReleaseConnection(struct ev_loop *loop, QConnection* qconnec
         qconnection->Release();
         OnReleaseConnection(qconnection);
         GX_DELETE(qclientConnection);
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection released !!!");
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Connection released !!!");
     } else {
         retVal = -1;
         DEBUG_PRINT_ERROR(__LOGTAG__, "Already destroyed.. Ignoring...");
@@ -587,7 +587,7 @@ void* QNetworkClient::run_internal(void* data) {
     thiz->ReleaseConnection(thiz->mainloop, thiz->qclientConnection);
     
     quiche_config_free(config);
-    
+        
     DEBUG_ASSERT(__LOGTAG__, (thiz->GetRunConfigMutex().tryLock(__FUNCTION__)==0), __FUNCTION__);
     runConfig->pthread_returnValue = 0;
     runConfig->finished = true;

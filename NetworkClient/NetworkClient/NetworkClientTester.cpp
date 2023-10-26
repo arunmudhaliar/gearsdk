@@ -42,21 +42,23 @@ void NetworkClientTester::send_msg_timer_cb(EV_P_ ev_timer *w, int revents) {
 void NetworkClientTester::delete_cb(EV_P_ ev_timer *w, int revents) {
     NetworkClientTester* tester = (NetworkClientTester*)w->data;
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT DELETE %d", tester->clientList.size());
-    int finished = 0;
+//    int finished = 0;
     for(int x=0;x<tester->clientList.size();x++) {
         GameClient* client = tester->clientList[x];
         client->Close();
-        //client->ForceRelease();
-        if (client->IsRunFinished()) {
-            finished++;
-        }
+//        //client->ForceRelease();
+        break;
+//        if (client->IsRunFinished()) {
+//            finished++;
+//        }
     }
+//    ev_break(loop, EVBREAK_ONE);
 }
 
 void NetworkClientTester::run(const std::string& host, const std::string& port, float sendInterval, float closeTimeout) {
-    const int total_loop = 5;
-    const int clients_per_loop = 100;
-    const int wait_sec_after_loop = 3;
+    const int total_loop = 7;
+    const int clients_per_loop = 5;
+    const int wait_sec_after_loop = 6;
     for (int y=0; y<total_loop; y++) {
         for (int x=0; x<clients_per_loop; x++) {
             GameClient* newClient = new GameClient();

@@ -29,8 +29,8 @@ sock(sock)
     if (scid_len != LOCAL_CONN_ID_LEN) {
         DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
     }
-
-    memcpy(cid, scid, LOCAL_CONN_ID_LEN);
+    memcpy(cid, scid, LOCAL_CONN_ID_LEN);                                                          \
+    HASH_VALUE(cid, LOCAL_CONN_ID_LEN, cid_hash_val);
 }
 
 QPeerConnection::~QPeerConnection() {
@@ -66,6 +66,30 @@ void QPeerConnection::SendMessage(const char *buf, size_t buflen, bool flush) {
     if (flush) {
         bridge->FlushEgress(bridge->GetMainLoop(), this);
     }
+}
+
+void QPeerConnection::Close() {
+    if (!quiche_conn_is_established(conn)) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant close !!!, connection not established - ");
+        return;
+    }
+    uint64_t s = 0;
+    StreamIter *writable = quiche_conn_writable(conn);
+    while (quiche_stream_iter_next(writable, &s)) {
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+        const char *byez = "byez\n";
+        ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, (uint8_t *) byez,
+                                5, true);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Close, sending 'byez'");
+        if (bye_sent_len!=5) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
+        }
+        
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*)byez);
+        break;
+    }
+    quiche_stream_iter_free(writable);
+    bridge->FlushEgress(bridge->GetMainLoop(), this);
 }
 
 void QNetworkServer::debug_log(const uint8_t *line, void *argp) {
@@ -429,7 +453,7 @@ void QNetworkServer::Recv_cb(EV_P_ ev_io *w, int revents) {
                     const char *resp = "byez\n";
                     ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t *) resp,
                                             5, true);
-                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez'");
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
                     if (bye_sent_len!=5) {
                         DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
                     }

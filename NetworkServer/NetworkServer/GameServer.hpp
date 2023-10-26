@@ -8,9 +8,9 @@
 #ifndef GameServer_hpp
 #define GameServer_hpp
 
-#include "QNetworkServer.hpp"
+#include "roomserver.hpp"
 
-class GameServer : public QNetworkServer {
+class GameServer : public roomserver {
     
 };
 

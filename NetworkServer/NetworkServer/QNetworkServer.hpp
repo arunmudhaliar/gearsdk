@@ -68,9 +68,11 @@ public:
     
     void SendMessage(const char *buf, size_t buflen, bool flush);
     void SendMessage(const std::string& buffer, bool flush);
+    void Close();
     
     MQPeerConnectionBridge* bridge = nullptr;
     uint8_t cid[LOCAL_CONN_ID_LEN];
+    unsigned cid_hash_val = 0;
     ev_timer timer;
     int sock;
     Connection *conn = nullptr;
