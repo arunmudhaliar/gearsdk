@@ -10,6 +10,8 @@
 		557487382AE9530500C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487372AE9530500C0F6CA /* main.cpp */; };
 		557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487422AE9A78D00C0F6CA /* essentials.cpp */; };
 		557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557487432AE9A78D00C0F6CA /* essentials.hpp */; };
+		5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574879C2AEC227500C0F6CA /* qtimer.cpp */; };
+		5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574879D2AEC227500C0F6CA /* qtimer.hpp */; };
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +29,8 @@
 		557487372AE9530500C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		557487422AE9A78D00C0F6CA /* essentials.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = essentials.cpp; sourceTree = "<group>"; };
 		557487432AE9A78D00C0F6CA /* essentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = essentials.hpp; sourceTree = "<group>"; };
+		5574879C2AEC227500C0F6CA /* qtimer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer.cpp; sourceTree = "<group>"; };
+		5574879D2AEC227500C0F6CA /* qtimer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtimer.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B373022AC325D000F0095E /* common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = common.xcodeproj; path = ../common/common.xcodeproj; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
@@ -87,6 +91,8 @@
 				557487372AE9530500C0F6CA /* main.cpp */,
 				557487422AE9A78D00C0F6CA /* essentials.cpp */,
 				557487432AE9A78D00C0F6CA /* essentials.hpp */,
+				5574879C2AEC227500C0F6CA /* qtimer.cpp */,
+				5574879D2AEC227500C0F6CA /* qtimer.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -107,6 +113,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
+				5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */,
 				557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -184,6 +191,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */,
+				5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

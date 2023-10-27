@@ -10,6 +10,7 @@
 
 #include <string>
 #include "../../common/sdktypes.hpp"
+#include "qtimer.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"

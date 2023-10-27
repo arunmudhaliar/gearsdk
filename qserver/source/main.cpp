@@ -14,11 +14,6 @@
 #endif
 #include <netdb.h>
 
-void dummy_timer_cb(EV_P_ ev_timer *w, int revents) {
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "dummy_timer_cb");
-    w->repeat = 60;
-    ev_timer_again(loop, w);
-}
 
 int32_t main(int32_t argc, const char * argv[]) {
     PrintCommonInfo();
@@ -53,14 +48,13 @@ int32_t main(int32_t argc, const char * argv[]) {
     gameserver server;
     server.run(host, port, rootDir);
     
-    
     // dummy run loop
     struct ev_loop* loop = ev_default_loop(0);
-    static ev_timer tw;
-    ev_timer_init (&tw, dummy_timer_cb, 60, 1);
-    tw.data = &server;
-    tw.repeat = 60;
-    ev_timer_again(loop, &tw);
+    qtimer_sceduler scheduler;
+    scheduler.set_ev_lopp(loop);
+    scheduler.schedule_repeat_timer([](qtimer& timer){
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "repeat timer - callback");
+    }, 60);
     
     ev_run(loop, 0);
     
