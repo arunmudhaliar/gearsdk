@@ -1,15 +1,16 @@
 BUILDDIR = build
 
-NETWORK_COMMON_SRCDIR = ../networkcommon/Source
+NETWORK_COMMON_SRCDIR = ../networkcommon/source
 COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
-$(COMMON_SRCDIR)/Timer.cpp \
+$(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
-$(COMMON_SRCDIR)/gxCrc32.cpp \
+$(COMMON_SRCDIR)/gxcrc32.cpp \
 
-INCLUDES = -I "../networkcommon/Source/ev" -I "../networkcommon/Source/quiche"
-SRCDIR = ./NetworkServer
+INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
+SRCDIR = ./networkserver
 SRCS = $(SRCDIR)/main.cpp \
+$(SRCDIR)/roomserver.cpp \
 $(SRCDIR)/gameserver.cpp \
 $(SRCDIR)/qnetworkserver.cpp \
 $(NCOMMONSRCS) \
@@ -32,7 +33,7 @@ else
     endif
 endif
 
-PLUGIN_SHARED = QServer
+PLUGIN_SHARED = qserver
 CXX ?= clang
 
 #.cpp.o:

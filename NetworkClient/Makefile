@@ -1,13 +1,13 @@
 BUILDDIR = build
 
-NETWORK_COMMON_SRCDIR = ../networkcommon/Source
+NETWORK_COMMON_SRCDIR = ../networkcommon/source
 COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
-$(COMMON_SRCDIR)/Timer.cpp \
+$(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
-$(COMMON_SRCDIR)/gxCrc32.cpp \
+$(COMMON_SRCDIR)/gxcrc32.cpp \
 
-INCLUDES = -I "../networkcommon/Source/ev" -I "../networkcommon/Source/quiche"
+INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
 SRCDIR = ./networkclient
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/networkclient_tester.cpp \
@@ -33,7 +33,7 @@ else
     endif
 endif
 
-PLUGIN_SHARED = QClient
+PLUGIN_SHARED = qclient
 CXX ?= clang
 
 #.cpp.o:
