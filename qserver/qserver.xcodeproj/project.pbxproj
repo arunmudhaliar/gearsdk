@@ -10,6 +10,7 @@
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487552AEB8DA800C0F6CA /* libnetworkcommon.a */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
+		557487A52AEC6BE000C0F6CA /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487A32AEC6BE000C0F6CA /* room.cpp */; };
 		5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */; };
 		5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
 		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
@@ -50,6 +51,8 @@
 		557487482AEA47E100C0F6CA /* roomserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = roomserver.hpp; sourceTree = "<group>"; };
 		557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = networkcommon.xcodeproj; path = ../networkcommon/networkcommon.xcodeproj; sourceTree = "<group>"; };
 		557487572AEB8E1A00C0F6CA /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		557487A32AEC6BE000C0F6CA /* room.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = room.cpp; sourceTree = "<group>"; };
+		557487A42AEC6BE000C0F6CA /* room.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = room.hpp; sourceTree = "<group>"; };
 		5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qnetworkserver.cpp; sourceTree = "<group>"; };
 		5574E6B52AD84A3A00FAFE08 /* qnetworkserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qnetworkserver.hpp; sourceTree = "<group>"; };
 		5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gameserver.cpp; sourceTree = "<group>"; };
@@ -132,6 +135,8 @@
 				5574E6C22ADBB1CD00FAFE08 /* gameserver.hpp */,
 				557487472AEA47E100C0F6CA /* roomserver.cpp */,
 				557487482AEA47E100C0F6CA /* roomserver.hpp */,
+				557487A32AEC6BE000C0F6CA /* room.cpp */,
+				557487A42AEC6BE000C0F6CA /* room.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -220,6 +225,7 @@
 				55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */,
 				5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */,
 				5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */,
+				557487A52AEC6BE000C0F6CA /* room.cpp in Sources */,
 				557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

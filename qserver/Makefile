@@ -11,6 +11,7 @@ $(COMMON_SRCDIR)/gxcrc32.cpp \
 INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
 SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
+$(SRCDIR)/room.cpp \
 $(SRCDIR)/roomserver.cpp \
 $(SRCDIR)/gameserver.cpp \
 $(SRCDIR)/qnetworkserver.cpp \

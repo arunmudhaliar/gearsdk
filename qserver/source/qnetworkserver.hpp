@@ -105,9 +105,13 @@ private:
 
 public:
     int run(std::string host, std::string port, fs::path executablePath);
-    void BroadCastMessage(const std::string &buffer, bool flush);
-
+    void broadcast_message(const std::string &buffer, bool flush);
+    void network_server_begin();
+    void network_server_end();
+    
 protected:
+    virtual void on_network_server_begin() = 0;
+    virtual void on_network_server_end() = 0;
     void flush_egress(struct ev_loop *loop, qpeerconnection *qconnection) override final;
     void destroy_connection(struct ev_loop *loop, qpeerconnection *qconnection) override final;
     void on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection *qconnection) override;

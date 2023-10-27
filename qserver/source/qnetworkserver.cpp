@@ -542,7 +542,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
     }
 }
 
-void qnetworkserver::BroadCastMessage(const std::string &buffer, bool flush)
+void qnetworkserver::broadcast_message(const std::string &buffer, bool flush)
 {
     qpeerconnection *qconnection = nullptr;
     qpeerconnection *tmp = nullptr;
@@ -561,6 +561,12 @@ void qnetworkserver::recv_cb(EV_P_ ev_io *w, int revents)
     server->recv_cb_internal(loop, w, revents);
 }
 
+void qnetworkserver::network_server_begin() {
+    on_network_server_begin();
+}
+void qnetworkserver::network_server_end() {
+    on_network_server_end();
+}
 void *qnetworkserver::run_internal(void *data)
 {
     runserverconfig *runConfig = (runserverconfig *)data;
@@ -664,8 +670,12 @@ void *qnetworkserver::run_internal(void *data)
     ev_io_start(thiz->mainloop, &watcher);
     watcher.data = thiz;
 
+    thiz->network_server_begin();
+    
     ev_loop(thiz->mainloop, 0);
 
+    thiz->network_server_end();
+    
     freeaddrinfo(local);
 
     quiche_config_free(thiz->config);

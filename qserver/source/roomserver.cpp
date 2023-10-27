@@ -7,117 +7,32 @@
 
 #include "roomserver.hpp"
 
-int room::roomID = 0;
-
-ssize_t room::try_add_connection(qpeerconnection* qconnection) {
-    if (qconnection == nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection == null !!!");
-        return -1;
-    }
-    if (playermap.find(qconnection) != playermap.end()) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection already in the playermap !!!");
-        return -2;
-    }
-    if (state!=room_waiting) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state !!!");
-        return -3;
-    }
-    if (playermap.size()>=room_config.max_players) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "room max cpacity reached !!!");
-        return -4;
-    }
-    player* player_ = new player(qconnection);
-    playermap[qconnection] = player_;
-    roominterface->onplayer_added(this, player_);
-    if(is_min_capacity_reached()) {
-        set_state(room_start);
-    }
-    return playermap.size();
-}
-
-ssize_t room::remove_connection(qpeerconnection* qconnection) {
-    if (qconnection == nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection == null !!!");
-        return -1;
-    }
-    std::map<qpeerconnection*, player*>::iterator it = playermap.find(qconnection);
-    if (it == playermap.end()) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection not in the playermap !!! %s", qconnection->cid);
-        return -1;
-    }
-    player* removed_player = (*it).second;
-    playermap.erase(it);
-    roominterface->onplayer_removed(this, removed_player);
-    GX_DELETE(removed_player);  // Better to cache this than delete. He may rejoin.
-    
-    // player leaving between gameplay and gone below min threshold
-    if (playermap.size()<room_config.min_players && state>=room_start) {
-        kick_all_except(nullptr);
-    }
-    
-    if (playermap.size()==0 && state>=room_start) {
-        set_state(room_end);
-    }
-    return playermap.size();
-}
-
-void room::kick_all_except(qpeerconnection* qconnection) {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick all");
-    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
-        player* player_ = it->second;
-        if (player_->qconnection == qconnection) {  // to avoid recursive Close.
-            continue;
-        }
-        player_->qconnection->close();
-    }
-}
-
-void room::set_state(states state) {
-    states prev_state = this->state;
-    this->state = state;
-    if (prev_state!=this->state) {
-        on_state_change(prev_state);
-    }
-}
-
-void room::on_state_change(states prev_state) {
-    switch (state) {
-        case room_uninitialised: {
-            break;
-        }
-        case room_waiting: {
-            if (prev_state == room_uninitialised) {
-                roominterface->onroom_create(this);
+void roomserver::on_timer_check_zombie_rooms(qtimer& qtimer_) {
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "timer_check_zombie_rooms");
+    if (waiting_rooms.size()) {
+        bool atleast_one_zombie = false;
+        for(auto it = waiting_rooms.cbegin();it!=waiting_rooms.cend();it++) {
+            room* waiting_room = *it;
+            if (waiting_room->since_creation() >= WAITING_ROOM_ZOMBIE_THRESHOLD) {
+                waiting_room->print_info();
+                atleast_one_zombie = true;
             }
         }
-            break;
-        case room_start: {
-            roominterface->onroom_pre_start(this);
-            roominterface->onroom_start(this);
-            break;
-        }
-        case room_end: {
-            roominterface->onroom_end(this);
-            break;
+        if (atleast_one_zombie) {
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "~~zombies~~");
         }
     }
 }
 
-
-room::room(interfaceroom* interface, const roomconfig& room_config) :
-roominterface(interface),
-room_config(room_config),
-room_index(room::roomID++)
-{
-    set_state(room_waiting);
+void roomserver::on_network_server_begin() {
+    scheduler.set_ev_lopp(get_mainloop());
+    type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
+    scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "start");
 }
 
-room::~room() {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Room destructor");
-    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
-        player* player_to_rem = (*it).second;
-        roominterface->onplayer_removed(this, player_to_rem);
-    }
+void roomserver::on_network_server_end() {
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "end");
 }
 
 void roomserver::onroom_pre_start(room* room) {
