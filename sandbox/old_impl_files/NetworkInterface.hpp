@@ -1,6 +1,6 @@
 //
 //  NetworkInterface.hpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 29/09/23.
 //

@@ -5,9 +5,9 @@
       location = "group:sandbox">
    </FileRef>
    <FileRef
-      location = "group:NetworkClient/NetworkClient.xcodeproj">
+      location = "group:/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/networkclient/networkclient.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:NetworkServer/NetworkServer.xcodeproj">
+      location = "group:/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/NetworkServer/networkserver.xcodeproj">
    </FileRef>
 </Workspace>

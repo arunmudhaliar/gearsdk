@@ -1,6 +1,6 @@
 //
 //  Address.hpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 26/09/23.
 //
@@ -12,7 +12,7 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "../../Common/SDKTypes.hpp"
+#include "../../common/sdktypes.hpp"
 
 class Address
 {

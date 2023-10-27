@@ -1,6 +1,6 @@
 //
 //  UDPSocket.hpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 26/09/23.
 //

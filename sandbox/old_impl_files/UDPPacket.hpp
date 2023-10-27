@@ -1,6 +1,6 @@
 //
 //  UDPPacket.hpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 30/09/23.
 //
@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "../../Common/SDKTypes.hpp"
+#include "../../common/sdktypes.hpp"
 #include "Address.hpp"
 
 #undef __LOGTAG__

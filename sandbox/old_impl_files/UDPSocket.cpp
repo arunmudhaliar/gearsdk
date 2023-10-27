@@ -1,6 +1,6 @@
 //
 //  UDPSocket.cpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 26/09/23.
 //
@@ -8,7 +8,7 @@
 #include "UDPSocket.hpp"
 #include <fcntl.h>
 #include <unistd.h>
-#include "../../Common/gxCrc32.h"
+#include "../../common/gxCrc32.h"
 
 UDPSocket::UDPSocket() {
 }

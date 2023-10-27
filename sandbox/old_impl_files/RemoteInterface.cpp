@@ -1,6 +1,6 @@
 //
 //  RemoteInterface.cpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 03/10/23.
 //

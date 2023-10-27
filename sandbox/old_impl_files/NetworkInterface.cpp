@@ -1,13 +1,13 @@
 //
 //  NetworkInterface.cpp
-//  NetworkCommon
+//  networkcommon
 //
 //  Created by Arun A on 29/09/23.
 //
 
 #include "NetworkInterface.hpp"
-#include "../../Common/gxCrc32.h"
-#include "../../Common/Timer.h"
+#include "../../common/gxCrc32.h"
+#include "../../common/Timer.h"
 #include <unistd.h>
 #include <sstream>
 

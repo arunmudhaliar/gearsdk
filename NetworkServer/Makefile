@@ -1,17 +1,17 @@
 BUILDDIR = build
 
-NETWORK_COMMON_SRCDIR = ../NetworkCommon/Source
-COMMON_SRCDIR = ../Common
+NETWORK_COMMON_SRCDIR = ../networkcommon/Source
+COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(COMMON_SRCDIR)/Timer.cpp \
-$(COMMON_SRCDIR)/SDKTypes.cpp \
+$(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxCrc32.cpp \
 
-INCLUDES = -I "../NetworkCommon/Source/ev" -I "../NetworkCommon/Source/quiche"
+INCLUDES = -I "../networkcommon/Source/ev" -I "../networkcommon/Source/quiche"
 SRCDIR = ./NetworkServer
 SRCS = $(SRCDIR)/main.cpp \
-$(SRCDIR)/GameServer.cpp \
-$(SRCDIR)/QNetworkServer.cpp \
+$(SRCDIR)/gameserver.cpp \
+$(SRCDIR)/qnetworkserver.cpp \
 $(NCOMMONSRCS) \
 
 OBJS = ${SRCS:.cpp=.o}
@@ -25,10 +25,10 @@ LDFLAGS = -g
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-LIBS = ../NetworkCommon/libs/linux/libquiche.a ../NetworkCommon/libs/linux/libev.a
+LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a
 else
     ifeq ($(UNAME),Darwin)
-        LIBS = ../NetworkCommon/libs/libquiche.a ../NetworkCommon/libs/libev.a -framework CoreFoundation -framework Security
+        LIBS = ../networkcommon/libs/libquiche.a ../networkcommon/libs/libev.a -framework CoreFoundation -framework Security
     endif
 endif
 
