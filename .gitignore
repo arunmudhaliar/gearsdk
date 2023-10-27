@@ -67,6 +67,5 @@ fastlane/test_output
 
 iOSInjectionProject/
 *.o
-QNetwork
-QServer
-QClient
+qclient-app
+qserver-app

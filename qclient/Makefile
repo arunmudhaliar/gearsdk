@@ -8,7 +8,7 @@ $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 
 INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
-SRCDIR = ./networkclient
+SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/networkclient_tester.cpp \
 $(SRCDIR)/gameclient.cpp \
@@ -33,7 +33,7 @@ else
     endif
 endif
 
-PLUGIN_SHARED = qclient
+PLUGIN_SHARED = qclient-app
 CXX ?= clang
 
 #.cpp.o:
