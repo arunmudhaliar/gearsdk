@@ -6,7 +6,7 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 
-INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "/usr/include/c++/11/"
+INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "/usr/include/c++/11"
 SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/room.cpp \
