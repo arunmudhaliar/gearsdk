@@ -28,6 +28,7 @@ ssize_t room::try_add_connection(qpeerconnection* qconnection) {
     }
     player* player_ = new player(qconnection);
     playermap[qconnection] = player_;
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_index);
     roominterface->onplayer_added(this, player_);
     if(is_min_capacity_reached()) {
         set_state(room_start);
@@ -47,6 +48,7 @@ ssize_t room::remove_connection(qpeerconnection* qconnection) {
     }
     player* removed_player = (*it).second;
     playermap.erase(it);
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_index);
     roominterface->onplayer_removed(this, removed_player);
     GX_DELETE(removed_player);  // Better to cache this than delete. He may rejoin.
     
@@ -87,16 +89,19 @@ void room::on_state_change(states prev_state) {
         }
         case room_waiting: {
             if (prev_state == room_uninitialised) {
+                DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - create %d", room_index);
                 roominterface->onroom_create(this);
             }
         }
             break;
         case room_start: {
             roominterface->onroom_pre_start(this);
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room_index);
             roominterface->onroom_start(this);
             break;
         }
         case room_end: {
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room_index);
             roominterface->onroom_end(this);
             break;
         }
@@ -117,6 +122,7 @@ room::~room() {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Room destructor");
     for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
         player* player_to_rem = (*it).second;
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, room_index);
         roominterface->onplayer_removed(this, player_to_rem);
     }
 }

@@ -52,19 +52,14 @@ void roomserver::onroom_pre_start(room* room) {
     }
 }
 void roomserver::onroom_create(room* room) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - create %d", room->room_index);
 }
 void roomserver::onroom_start(room* room) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room->room_index);
 }
 void roomserver::onplayer_added(room* room, player* player) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", player->qconnection->cid_hash_val, room->room_index);
 }
 void roomserver::onplayer_removed(room* room, player* player) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", player->qconnection->cid_hash_val, room->room_index);
 }
 void roomserver::onroom_end(room* room) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room->room_index);
 }
 
 void roomserver::on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) {
