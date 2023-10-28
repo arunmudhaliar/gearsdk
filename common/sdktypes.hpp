@@ -47,7 +47,11 @@
 
 #define __DEFAULT_LOG_TAG__ "gsdk_log"
 
-extern "C" DECLSPEC void PrintCommonInfo();
+#if PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+#include <stdarg.h>
+#include <bits/stdc++.h>
+#endif
 
 #define LOG_LEVEL_0 0
 #define LOG_LEVEL_1 1
@@ -58,6 +62,7 @@ extern "C" DECLSPEC void PrintCommonInfo();
 #define LOG_LEVEL LOG_LEVEL_0
 #endif
 
+extern "C" DECLSPEC void PrintCommonInfo();
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...);
