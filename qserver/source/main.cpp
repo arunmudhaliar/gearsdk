@@ -7,15 +7,23 @@
 #include "gameserver.hpp"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "networkserver"
+#define __LOGTAG__ "qserver"
 
 #if PLATFORM == PLATFORM_LINUX
 #include <linux/limits.h>
 #endif
 #include <netdb.h>
 
+static std::string version_string = "0.1";
+static unsigned version_code = 0;
 
 int32_t main(int32_t argc, const char * argv[]) {
+    if (argc==2 && strcmp(argv[1], "--version")==0) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "version %s(%d)", version_string.c_str(), version_code);
+        return 0;
+    }
+    
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "version %s(%d)", version_string.c_str(), version_code);
     PrintCommonInfo();
     std::string host = "localhost";
     std::string port = "4000";
