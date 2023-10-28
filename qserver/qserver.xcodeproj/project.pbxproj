@@ -11,11 +11,11 @@
 		557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487552AEB8DA800C0F6CA /* libnetworkcommon.a */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
 		557487A52AEC6BE000C0F6CA /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487A32AEC6BE000C0F6CA /* room.cpp */; };
+		557487AD2AED546A00C0F6CA /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487AC2AED545E00C0F6CA /* libev.a */; };
+		557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487AE2AED547500C0F6CA /* libquiche.a */; };
 		5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */; };
 		5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
 		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
-		55D1C6CE2AD2A49000470E01 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6CC2AD2A48D00470E01 /* libev.a */; };
-		55D1C6CF2AD2A49000470E01 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6CD2AD2A48D00470E01 /* libquiche.a */; };
 		55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D02AD2A49B00470E01 /* Security.framework */; };
 		55D1C6DE2AD32E9300470E01 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DC2AD32E8800470E01 /* cert.key */; };
 		55D1C6DF2AD32E9300470E01 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DD2AD32E8800470E01 /* cert.crt */; };
@@ -53,6 +53,8 @@
 		557487572AEB8E1A00C0F6CA /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		557487A32AEC6BE000C0F6CA /* room.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = room.cpp; sourceTree = "<group>"; };
 		557487A42AEC6BE000C0F6CA /* room.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = room.hpp; sourceTree = "<group>"; };
+		557487AC2AED545E00C0F6CA /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
+		557487AE2AED547500C0F6CA /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
 		5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qnetworkserver.cpp; sourceTree = "<group>"; };
 		5574E6B52AD84A3A00FAFE08 /* qnetworkserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qnetworkserver.hpp; sourceTree = "<group>"; };
 		5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gameserver.cpp; sourceTree = "<group>"; };
@@ -74,10 +76,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
-				55D1C6CF2AD2A49000470E01 /* libquiche.a in Frameworks */,
+				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
 				557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
-				55D1C6CE2AD2A49000470E01 /* libev.a in Frameworks */,
+				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
 				55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,6 +98,8 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				557487AE2AED547500C0F6CA /* libquiche.a */,
+				557487AC2AED545E00C0F6CA /* libev.a */,
 				557487572AEB8E1A00C0F6CA /* libcommon.a */,
 				55D1C6D02AD2A49B00470E01 /* Security.framework */,
 				55FB29CE2ACF32220051DDF9 /* libquiche.a */,
@@ -361,7 +365,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs\"";
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -381,7 +385,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs\"";
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";

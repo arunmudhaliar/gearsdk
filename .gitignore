@@ -69,3 +69,4 @@ iOSInjectionProject/
 *.o
 qclient-app
 qserver-app
+*.log

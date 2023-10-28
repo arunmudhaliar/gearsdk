@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Build qserver",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/qserver/qserver-app",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/qserver",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "make-qserver"
+        }
+    ],
+    "version": "2.0.0"
+}

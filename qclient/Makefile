@@ -23,30 +23,33 @@ USER_DEFINES = -DLOG_LEVEL=1 -DUSE_PTHREAD=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
 
-LDFLAGS = -g
-# LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a
-else
-    ifeq ($(UNAME),Darwin)
-        LIBS = ../networkcommon/libs/libquiche.a ../networkcommon/libs/libev.a -framework CoreFoundation -framework Security
-    endif
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a
+endif
+ifeq ($(UNAME),Darwin)
+	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a -framework CoreFoundation -framework Security
 endif
 
-PLUGIN_SHARED = qclient-app
-CXX ?= clang
+EXE = qclient-app
+CXX = clang++
+
+DEBUG_LDFLAGS = -W -Wall -g -O0 -DDEBUG
+RELEASE_LDFLAGS = -W -Wall
 
 #.cpp.o:
 #	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 objects/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c -o $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) -c
     	
-all: shared
+all: debug
 
 clean:
-	rm -f $(OBJS) $(PLUGIN_SHARED)
+	rm -f $(OBJS) $(EXE)
 
-shared: $(OBJS)
-	$(CXX) $(LDFLAGS) -o $(PLUGIN_SHARED) $(OBJS) $(LIBS)
+debug: $(OBJS)
+	$(CXX) $(DEBUG_LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+
+release: $(OBJS)
+	$(CXX) $(RELEASE_LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
