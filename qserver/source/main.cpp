@@ -15,7 +15,7 @@
 #include <netdb.h>
 
 static std::string version_string = "0.1";
-static unsigned version_code = 0;
+static unsigned version_code = 1;
 
 int32_t main(int32_t argc, const char * argv[]) {
     if (argc==2 && strcmp(argv[1], "--version")==0) {
