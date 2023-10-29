@@ -49,12 +49,13 @@ if [ $PREP_DOCKER = true ] ; then
    zip -r $WORKSPACE/out/docker_qserver_$BUILD_ID.zip $WORKSPACE/docker-server
    
    if [ $BUILD_DOCKER = true ] ; then
+      cd $WORKSPACE/docker-server
       set +x
       echo "--- BUILD DOCKER ---"
       echo "--- BUILD DOCKER ---"
       echo "--- BUILD DOCKER ---"
       set -x
-      sudo docker build -t qserver-exp .
+      docker build -t qserver-exp .
       
       if [ $PUBLISH_DOCKER = true ] ; then
          set +x
@@ -62,9 +63,9 @@ if [ $PREP_DOCKER = true ] ; then
          echo "--- PUBLISH DOCKER ---"
          echo "--- PUBLISH DOCKER ---"
          set -x
-         sudo docker stop qserver-container
-         sudo docker rm --force qserver-container
-         sudo docker run --name qserver-container -d qserver-exp
+         docker stop qserver-container
+         docker rm --force qserver-container
+         docker run --name qserver-container -d qserver-exp
       fi
    fi
 fi
