@@ -35,7 +35,22 @@ rm -rf ./docker-server/qserver/docker
 rm -rf ./docker-server/qserver/*.dSYM
 rm -rf ./docker-server/qserver/qserver-app
 
-echo "use 'docker build -t qserver-exp .' to build the docker"
-# docker build -t qserver-exp .
-echo "use 'docker run -d qserver-exp' to run the docker"
-# docker run -d qserver-exp
+# build
+echo "use 'sudo docker build -t qserver-exp .' to build the docker"
+# sudo docker build -t qserver-exp .
+
+# run
+echo "use 'sudo docker run --name qserver-container -d qserver-exp' to run the docker"
+# sudo docker run --name qserver-container -d qserver-exp
+
+# stop
+echo "use 'sudo docker stop qserver-container' to stop the docker"
+# sudo docker stop qserver-container
+
+# restart
+echo "use 'sudo docker restart qserver-container' to re-start the docker"
+# sudo docker restart qserver-container
+
+# REMOVE
+echo "use 'sudo docker rm --force qserver-container' to REMOVE the docker"
+# sudo docker rm --force qserver-container
