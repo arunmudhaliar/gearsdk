@@ -25,7 +25,7 @@ CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -pthread -Wl,--no-as-needed -ldl
 endif
 ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a -framework CoreFoundation -framework Security

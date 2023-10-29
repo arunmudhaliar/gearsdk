@@ -70,3 +70,4 @@ iOSInjectionProject/
 qclient-app
 qserver-app
 *.log
+docker-server
