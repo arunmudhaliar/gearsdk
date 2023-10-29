@@ -7,6 +7,7 @@ cp -r ./networkcommon/ ./docker-server/networkcommon
 cp -r ./qserver/ ./docker-server/qserver
 cp ./qserver/docker/Dockerfile ./docker-server/Dockerfile
 cp ./qserver/docker/make_qserver.sh ./docker-server/make_qserver.sh
+cp ./qserver/docker/run_qserver.sh ./docker-server/run_qserver.sh
 
 # docker-server
 rm -rf -- ./docker-server/**/*.o
