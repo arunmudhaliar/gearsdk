@@ -7,13 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55A4ADA32AEF825800BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADA22AEF825800BC4CED /* main.cpp */; };
+		55A4ADA32AEF825800BC4CED /* main_h3_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
 		55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC12AEF838200BC4CED /* libev.a */; };
 		55A4ADC42AEF83A800BC4CED /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC32AEF839B00BC4CED /* libquiche.a */; };
 		55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */; };
 		55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC72AEFA40F00BC4CED /* Security.framework */; };
+		55A4ADD82AEFBA6300BC4CED /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
+		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,13 +32,16 @@
 
 /* Begin PBXFileReference section */
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
-		55A4ADA22AEF825800BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADC12AEF838200BC4CED /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
 		55A4ADC32AEF839B00BC4CED /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
 		55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55A4ADC72AEFA40F00BC4CED /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3server.cpp; sourceTree = "<group>"; };
+		55A4ADD72AEFBA6300BC4CED /* qh3server.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3server.hpp; sourceTree = "<group>"; };
+		55A4ADD92AEFBD2600BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +81,10 @@
 		55A4ADA12AEF825800BC4CED /* qh3server */ = {
 			isa = PBXGroup;
 			children = (
-				55A4ADA22AEF825800BC4CED /* main.cpp */,
+				55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */,
+				55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */,
+				55A4ADD72AEFBA6300BC4CED /* qh3server.hpp */,
+				55A4ADD92AEFBD2600BC4CED /* main.cpp */,
 			);
 			path = qh3server;
 			sourceTree = "<group>";
@@ -151,7 +159,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A4ADA32AEF825800BC4CED /* main.cpp in Sources */,
+				55A4ADA32AEF825800BC4CED /* main_h3_server.cpp in Sources */,
+				55A4ADD82AEFBA6300BC4CED /* qh3server.cpp in Sources */,
+				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
