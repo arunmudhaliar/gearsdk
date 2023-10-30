@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:qh3client/qh3client.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:qh3server/qh3server.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:sandbox">
    </FileRef>
    <FileRef

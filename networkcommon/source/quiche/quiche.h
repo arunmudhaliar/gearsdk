@@ -27,6 +27,52 @@ extern "C" {
 #define ssize_t SSIZE_T
 #endif
 
+#define QUICHE_H3_APPLICATION_PROTOCOL "\x02h3"
+
+enum Event_type {
+    /// Request/response headers were received.
+    Headers,
+
+    /// Data was received.
+    ///
+    /// This indicates that the application can use the [`recv_body()`] method
+    /// to retrieve the data from the stream.
+    ///
+    /// Note that [`recv_body()`] will need to be called repeatedly until the
+    /// [`Done`] value is returned, as the event will not be re-armed until all
+    /// buffered data is read.
+    ///
+    /// [`recv_body()`]: struct.Connection.html#method.recv_body
+    /// [`Done`]: enum.Error.html#variant.Done
+    Data,
+
+    /// Stream was closed,
+    Finished,
+
+    /// Stream was reset.
+    ///
+    /// The associated data represents the error code sent by the peer.
+    Reset,
+
+    /// PRIORITY_UPDATE was received.
+    ///
+    /// This indicates that the application can use the
+    /// [`take_last_priority_update()`] method to take the last received
+    /// PRIORITY_UPDATE for a specified stream.
+    ///
+    /// This event is triggered once per stream until the last PRIORITY_UPDATE
+    /// is taken. It is recommended that applications defer taking the
+    /// PRIORITY_UPDATE until after [`poll()`] returns [`Done`].
+    ///
+    /// [`take_last_priority_update()`]: struct.Connection.html#method.take_last_priority_update
+    /// [`poll()`]: struct.Connection.html#method.poll
+    /// [`Done`]: enum.Error.html#variant.Done
+    PriorityUpdate,
+
+    /// GOAWAY was received.
+    GoAway
+};
+
 enum quiche_error {
     // There is no more work to do.
     QUICHE_ERR_DONE = -1,
