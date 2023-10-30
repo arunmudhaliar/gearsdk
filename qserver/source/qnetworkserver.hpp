@@ -24,14 +24,6 @@ extern "C"
 #include <quiche.h>
 }
 
-#if PLATFORM == PLATFORM_MAC
-namespace fs = std::__fs::filesystem;
-#elif PLATFORM == PLATFORM_LINUX
-namespace fs = std::filesystem;
-#else
-namespace fs = std::__fs::filesystem;
-#endif
-
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkserver"
 

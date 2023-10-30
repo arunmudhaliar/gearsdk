@@ -204,3 +204,43 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
     return wait_req;
 }
 #pragma endregion QMutexCondition
+
+
+int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
+                              const std::string& version_string_, unsigned version_code_,
+                              std::string& host, std::string& port, fs::path& rootDir) {
+    if (argc==2 && strcmp(argv[1], "--version")==0) {
+        DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
+        return -1;
+    }
+
+    DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
+    PrintCommonInfo();
+    if (argc==3) {
+        host = argv[1];
+        port = argv[2];
+        const struct addrinfo hints = {
+            .ai_family = PF_UNSPEC,
+            .ai_socktype = SOCK_DGRAM,
+            .ai_protocol = IPPROTO_UDP
+        };
+        struct addrinfo *peer = nullptr;
+        if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
+            DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
+            DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> 'ip address' 'port'");
+            return -1;
+        }
+        if (peer) {
+            freeaddrinfo(peer);
+            peer = nullptr;
+        }
+    } else {
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> 'ip address' 'port'. Ignore for debug builds running locally.");
+    }
+    DEBUG_PRINT_IMPORTANT(tag, "host:%s, port:%s", host.c_str(), port.c_str());
+
+    fs::path executablePath(argc>0 ? argv[0] : "");
+    rootDir = executablePath.parent_path();
+    DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());
+    return 0;
+}

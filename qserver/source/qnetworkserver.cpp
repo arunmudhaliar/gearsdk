@@ -692,6 +692,7 @@ int qnetworkserver::run(std::string host, std::string port, fs::path rootDir)
     run_server_config.port = port;
     run_server_config.thiz = this;
     run_server_config.finished = false;
+    run_server_config.rootDir = rootDir;
     run_server_config.id = qnetworkserver::runID++;
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
     if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, (void *)&run_server_config) < 0)

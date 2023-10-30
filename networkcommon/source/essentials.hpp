@@ -12,6 +12,18 @@
 #include "../../common/sdktypes.hpp"
 #include "qtimer.hpp"
 
+#if PLATFORM == PLATFORM_MAC
+namespace fs = std::__fs::filesystem;
+#elif PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+namespace fs = std::filesystem;
+#else
+namespace fs = std::__fs::filesystem;
+#endif
+
+#include <netdb.h>
+#include <filesystem>
+
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
@@ -58,6 +70,43 @@ private:
     qmutexcondition condition;
     long blockCount = 0;
     int wanted = 0;
+};
+
+class essentials {
+public:
+    static int32_t resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
+                                  const std::string& version_string_, unsigned version_code_,
+                                         std::string& host, std::string& port, fs::path& rootDir);
+};
+
+// h3 structs
+struct getorpost_reqdata {
+    getorpost_reqdata(){
+    }
+    getorpost_reqdata(const std::string& path) :
+        path(path) {
+    }
+    getorpost_reqdata(const std::string& path, const std::string& payload) :
+        path(path), payload(payload) {
+    }
+    bool is_postrequest() const { return payload.size()>0; }
+    void clear_payload() {
+        payload.clear();
+        reminder_payload.clear();
+    }
+    std::string path;
+    std::string payload;
+    std::vector<std::string> reminder_payload;
+};
+
+struct getorpost_response_data {
+    getorpost_response_data( const std::string& payload) :
+        payload(payload) {
+    }
+    void clear_payload() {
+        payload = "{}";
+    }
+    std::string payload = "{}"; // empty response
 };
 
 #endif /* essentials_hpp */

@@ -358,7 +358,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"LOG_LEVEL=LOG_LEVEL_1",
+					"LOG_LEVEL=1",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (

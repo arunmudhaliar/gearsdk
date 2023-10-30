@@ -11,7 +11,10 @@ int main(int argc, const char *argv[]) {
     std::string host = "localhost";
     std::string port = "4004";
     
-    qh3client::run(host, port);
+    qh3client client(host, port);
+    client.send_request(getorpost_reqdata("/whoami", "{}"));
+    
+//    client.get(getorpost_data("/"));
     
     return 0;
 }

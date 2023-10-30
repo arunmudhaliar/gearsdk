@@ -63,6 +63,7 @@
 #endif
 
 extern "C" DECLSPEC void PrintCommonInfo();
+extern "C" DECLSPEC int NumberOfDigits(unsigned int num);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...);

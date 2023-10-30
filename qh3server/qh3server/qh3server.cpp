@@ -7,13 +7,9 @@
 
 #include "qh3server.hpp"
 
-Config *qh3server::config = NULL;
-Config *qh3server::http3_config = NULL;
-struct connections *qh3server::conns = NULL;
-
 //void (*cb)(const uint8_t *line, void *argp), void *argp
 void qh3server::debug_log(const uint8_t *line, void *argp) {
-    fprintf(stderr, "%s\n", line);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, (char*)line);
 }
 
 void qh3server::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
@@ -26,12 +22,12 @@ void qh3server::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
                                            &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            fprintf(stderr, "done writing\n");
+            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
             break;
         }
 
         if (written < 0) {
-            fprintf(stderr, "failed to create packet: %zd\n", written);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create packet: %zd", written);
             return;
         }
 
@@ -39,11 +35,11 @@ void qh3server::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
                               (struct sockaddr *) &conn_io->peer_addr,
                               conn_io->peer_addr_len);
         if (sent != written) {
-            perror("failed to send");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
             return;
         }
 
-        fprintf(stderr, "sent %zd bytes\n", sent);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
@@ -92,16 +88,17 @@ bool qh3server::validate_token(const uint8_t *token, size_t token_len,
 uint8_t *qh3server::gen_cid(uint8_t *cid, size_t cid_len) {
     int rng = open("/dev/urandom", O_RDONLY);
     if (rng < 0) {
-        perror("failed to open /dev/urandom");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open /dev/urandom");
         return NULL;
     }
 
     ssize_t rand_len = read(rng, cid, cid_len);
     if (rand_len < 0) {
-        perror("failed to create connection ID");
+        close(rng);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection ID");
         return NULL;
     }
-
+    close(rng);
     return cid;
 }
 
@@ -114,12 +111,12 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
 {
     struct conn_io *conn_io = (struct conn_io *)calloc(1, sizeof(*conn_io));
     if (conn_io == NULL) {
-        fprintf(stderr, "failed to allocate connection IO\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate connection IO");
         return NULL;
     }
 
     if (scid_len != LOCAL_CONN_ID_LEN) {
-        fprintf(stderr, "failed, scid length too short\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed, scid length too short");
     }
 
     memcpy(conn_io->cid, scid, LOCAL_CONN_ID_LEN);
@@ -133,12 +130,13 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
                                       config);
 
     if (conn == NULL) {
-        fprintf(stderr, "failed to create connection\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection");
         return NULL;
     }
 
     conn_io->sock = conns->sock;
     conn_io->conn = conn;
+    conn_io->bridge = this;
 
     memcpy(&conn_io->peer_addr, peer_addr, peer_addr_len);
     conn_io->peer_addr_len = peer_addr_len;
@@ -148,7 +146,7 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
 
     HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, conn_io);
 
-    fprintf(stderr, "new connection\n");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new connection");
 
     return conn_io;
 }
@@ -160,16 +158,35 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
    size_t value_len,
    void *argp)
  */
+void qh3server::parse_header(const uint8_t *name, size_t name_len,
+                  const uint8_t *value, size_t value_len, struct conn_io *conn_io) {
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "got HTTP header: %.*s=%.*s",
+            (int) name_len, name, (int) value_len, value);
+    if (name_len==5) {
+        // check for path
+        if (strncmp((char*)name, ":path", name_len)==0) {
+            conn_io->http_request.path.resize(value_len, 0);
+            std::copy(value, value+value_len, begin(conn_io->http_request.path));
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "HTTP req '%s' : %s", name, value);
+        }
+    }
+}
+
+void qh3server::parse(struct conn_io *conn_io) {
+}
+
 int qh3server::for_each_header(const uint8_t *name, size_t name_len,
                            const uint8_t *value, size_t value_len,
                            void *argp) {
-    fprintf(stderr, "got HTTP header: %.*s=%.*s\n",
-            (int) name_len, name, (int) value_len, value);
-
+    struct conn_io *conn_io = (struct conn_io *)argp;
+    conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
     return 0;
 }
 
 void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
+    qh3server* server = (qh3server *)w->data;
+    struct connections *conns = server->conns;
+    
     struct conn_io *tmp, *conn_io = NULL;
 
     static uint8_t buf[65535];
@@ -186,11 +203,11 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                fprintf(stderr, "recv would block\n");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
                 break;
             }
 
-            perror("failed to read");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to read");
             return;
         }
 
@@ -213,7 +230,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                     &type, scid, &scid_len, dcid, &dcid_len,
                                     token, &token_len);
         if (rc < 0) {
-            fprintf(stderr, "failed to parse header: %d\n", rc);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
             return;
         }
 
@@ -221,14 +238,14 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (conn_io == NULL) {
             if (!quiche_version_is_supported(version)) {
-                fprintf(stderr, "version negotiation\n");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
                                                            out, sizeof(out));
 
                 if (written < 0) {
-                    fprintf(stderr, "failed to create vneg packet: %zd\n",
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create vneg packet: %zd",
                             written);
                     continue;
                 }
@@ -237,18 +254,18 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                       (struct sockaddr *) &peer_addr,
                                       peer_addr_len);
                 if (sent != written) {
-                    perror("failed to send");
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
                     continue;
                 }
 
-                fprintf(stderr, "sent %zd bytes\n", sent);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
             if (token_len == 0) {
-                fprintf(stderr, "stateless retry\n");
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stateless retry");
 
-                mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
+                server->mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
 
                 uint8_t new_cid[LOCAL_CONN_ID_LEN];
@@ -264,7 +281,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                                version, out, sizeof(out));
 
                 if (written < 0) {
-                    fprintf(stderr, "failed to create retry packet: %zd\n",
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create retry packet: %zd",
                             written);
                     continue;
                 }
@@ -273,22 +290,22 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                       (struct sockaddr *) &peer_addr,
                                       peer_addr_len);
                 if (sent != written) {
-                    perror("failed to send");
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
                     continue;
                 }
 
-                fprintf(stderr, "sent %zd bytes\n", sent);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
 
-            if (!validate_token(token, token_len, &peer_addr, peer_addr_len,
+            if (!server->validate_token(token, token_len, &peer_addr, peer_addr_len,
                                odcid, &odcid_len)) {
-                fprintf(stderr, "invalid address validation token\n");
+                DEBUG_PRINT_WARN(__LOGTAG__, "invalid address validation token");
                 continue;
             }
 
-            conn_io = create_conn(dcid, dcid_len, odcid, odcid_len,
+            conn_io = server->create_conn(dcid, dcid_len, odcid, odcid_len,
                                   conns->local_addr, conns->local_addr_len,
                                   &peer_addr, peer_addr_len);
 
@@ -308,20 +325,20 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
         ssize_t done = quiche_conn_recv(conn_io->conn, buf, read, &recv_info);
 
         if (done < 0) {
-            fprintf(stderr, "failed to process packet: %zd\n", done);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
             continue;
         }
 
-        fprintf(stderr, "recv %zd bytes\n", done);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(conn_io->conn)) {
             Event *ev;
 
             if (conn_io->http3 == NULL) {
                 conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn,
-                                                                   http3_config);
+                                                                   server->http3_config);
                 if (conn_io->http3 == NULL) {
-                    fprintf(stderr, "failed to create HTTP/3 connection\n");
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create HTTP/3 connection");
                     continue;
                 }
             }
@@ -339,12 +356,45 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     case Event_type::Headers: {
                         int rc = quiche_h3_event_for_each_header((const struct Event *)ev,
                                                                  for_each_header,
-                                                                 NULL);
+                                                                 conn_io);
 
                         if (rc != 0) {
-                            fprintf(stderr, "failed to process headers\n");
+                            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process headers");
                         }
+                        break;
+                    }
 
+                    case Event_type::Data: {
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
+                        conn_io->http_request.clear_payload();
+                        for (;;) {
+                            ssize_t len = quiche_h3_recv_body(conn_io->http3,
+                                                              conn_io->conn, s,
+                                                              buf, sizeof(buf));
+
+                            if (len <= 0) {
+                                break;
+                            }
+                            if (conn_io->http_request.payload.size()==0) {
+                                conn_io->http_request.payload.resize(len, 0);
+                                std::copy(buf, buf+len, begin(conn_io->http_request.payload));
+                            } else {
+                                std::string reminder_body((char*)buf, len);
+                                conn_io->http_request.reminder_payload.push_back(reminder_body);
+                            }
+                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int) len, buf);
+                        }
+                        break;
+                    }
+
+                    case Event_type::Finished: {
+                        conn_io->http_response.clear_payload();
+                        conn_io->bridge->parse(conn_io);
+                        
+                        int number_of_digits = NumberOfDigits((int)conn_io->http_response.payload.size());
+                        char content_length_data[number_of_digits+1];
+                        snprintf(content_length_data, sizeof(content_length_data), "%d", (int)conn_io->http_response.payload.size());
+                        
                         Header headers[] = {
                             {
                                 .name = (uint8_t *) ":status",
@@ -354,6 +404,15 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                 .value_len = sizeof("200") - 1,
                             },
 
+                            //Alternate-Protocol: quic:<QUIC server port>
+                            {
+                                .name = (uint8_t *) "Alternate-Protocol",
+                                .name_len = sizeof("Alternate-Protocol") - 1,
+
+                                .value = (uint8_t *) "quic:6121",
+                                .value_len = sizeof("quic:6121") - 1,
+                            },
+                            
                             {
                                 .name = (uint8_t *) "server",
                                 .name_len = sizeof("server") - 1,
@@ -366,25 +425,18 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                 .name = (uint8_t *) "content-length",
                                 .name_len = sizeof("content-length") - 1,
 
-                                .value = (uint8_t *) "5",
-                                .value_len = sizeof("5") - 1,
+                                .value = (uint8_t *) content_length_data,
+                                .value_len = sizeof(content_length_data),
                             },
                         };
 
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
-                                                s, headers, 3, false);
-
-                        quiche_h3_send_body(conn_io->http3, conn_io->conn,
-                                            s, (uint8_t *) "byez\n", 5, true);
-                        break;
+                                                s, headers, 3, false);                        
+                        ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
+                                                               (u_int8_t*)conn_io->http_response.payload.c_str(), conn_io->http_response.payload.size(),
+                                                               true);
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "sent HTTP response %" PRId64 " with body %ld", s, send_len);
                     }
-
-                    case Event_type::Data: {
-                        fprintf(stderr, "got HTTP data\n");
-                        break;
-                    }
-
-                    case Event_type::Finished:
                         break;
 
                     case Event_type::Reset:
@@ -394,7 +446,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         break;
 
                     case Event_type::GoAway: {
-                        fprintf(stderr, "got GOAWAY\n");
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got GOAWAY");
                         break;
                     }
                 }
@@ -405,7 +457,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
     }
 
     HASH_ITER(hh, conns->h, conn_io, tmp) {
-        flush_egress(loop, conn_io);
+        server->flush_egress(loop, conn_io);
 
         if (quiche_conn_is_closed(conn_io->conn)) {
             Stats stats;
@@ -414,7 +466,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
             quiche_conn_stats(conn_io->conn, &stats);
             quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-            fprintf(stderr, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
                     stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
             HASH_DELETE(hh, conns->h, conn_io);
@@ -427,13 +479,20 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
     }
 }
 
+void qh3server::destroy_connection(struct ev_loop *loop, struct conn_io *conn_io) {
+    HASH_DELETE(hh, conns->h, conn_io);
+    ev_timer_stop(loop, &conn_io->timer);
+    quiche_conn_free(conn_io->conn);
+    free(conn_io);
+}
+
 void qh3server::timeout_cb(EV_P_ ev_timer *w, int revents) {
     struct conn_io *conn_io = (struct conn_io *)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
-    fprintf(stderr, "timeout\n");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout");
 
-    flush_egress(loop, conn_io);
+    conn_io->bridge->flush_egress(loop, conn_io);
 
     if (quiche_conn_is_closed(conn_io->conn)) {
         Stats stats;
@@ -442,61 +501,57 @@ void qh3server::timeout_cb(EV_P_ ev_timer *w, int revents) {
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-        fprintf(stderr, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
-        HASH_DELETE(hh, conns->h, conn_io);
-
-        ev_timer_stop(loop, &conn_io->timer);
-        quiche_conn_free(conn_io->conn);
-        free(conn_io);
-
+        conn_io->bridge->destroy_connection(loop, conn_io);
         return;
     }
 }
 
-int qh3server::run(const std::string& host, const std::string& port) {
-//    std::string host = "localhost";
-//    std::string port = "4004";
-
+int qh3server::run(const std::string& host, const std::string& port, fs::path& rootDir) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP
     };
 
-//     quiche_enable_debug_logging(debug_log, NULL);
+     quiche_enable_debug_logging(debug_log, NULL);
 
     struct addrinfo *local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
-        perror("failed to resolve host");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
         return -1;
     }
 
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
-        perror("failed to create socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        perror("failed to make socket non-blocking");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
         return -1;
     }
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
-        perror("failed to connect socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
         return -1;
     }
 
     config = quiche_config_new(PROTOCOL_VERSION);
     if (config == NULL) {
-        fprintf(stderr, "failed to create config\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
         return -1;
     }
 
-    quiche_config_load_cert_chain_from_pem_file(config, "./cert.crt");
-    quiche_config_load_priv_key_from_pem_file(config, "./cert.key");
+    
+    fs::path certFile("cert.crt");
+    fs::path keyFile("cert.key");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
+    quiche_config_load_cert_chain_from_pem_file(config, (rootDir / certFile).c_str());
+    quiche_config_load_priv_key_from_pem_file(config, (rootDir / keyFile).c_str());
 
     quiche_config_set_application_protos(config,
         (uint8_t *) QUICHE_H3_APPLICATION_PROTOCOL,
@@ -516,7 +571,7 @@ int qh3server::run(const std::string& host, const std::string& port) {
 
     http3_config = quiche_h3_config_new();
     if (http3_config == NULL) {
-        fprintf(stderr, "failed to create HTTP/3 config\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create HTTP/3 config");
         return -1;
     }
 
@@ -530,13 +585,13 @@ int qh3server::run(const std::string& host, const std::string& port) {
 
     ev_io watcher;
 
-    struct ev_loop *loop = ev_default_loop(0);
+    mainloop = ev_default_loop(0);
 
     ev_io_init(&watcher, recv_cb, sock, EV_READ);
-    ev_io_start(loop, &watcher);
-    watcher.data = &c;
+    ev_io_start(mainloop, &watcher);
+    watcher.data = this;
 
-    ev_loop(loop, 0);
+    ev_loop(mainloop, 0);
 
     freeaddrinfo(local);
 

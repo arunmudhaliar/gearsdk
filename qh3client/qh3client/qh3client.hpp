@@ -26,27 +26,49 @@
 
 #include <ev.h>
 #include <quiche.h>
+#include "../../networkcommon/source/essentials.hpp"
 
 #define LOCAL_CONN_ID_LEN 16
 #define MAX_DATAGRAM_SIZE 1350
 
+class bridge_h3client_connection;
+struct conn_io {
+    ev_timer timer;
+    const char *host = nullptr;
 
-class qh3client {
+    int sock;
+    struct sockaddr_storage local_addr;
+    socklen_t local_addr_len;
+
+    Connection *conn = nullptr;
+    Connection *http3 = nullptr;
+    bridge_h3client_connection* bridge = nullptr;
+};
+
+class bridge_h3client_connection {
 public:
-    struct conn_io {
-        ev_timer timer;
-        const char *host = nullptr;
+    virtual void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) = 0;
+    inline virtual struct ev_loop *get_mainloop() = 0;
+    inline virtual const struct getorpost_reqdata& get_getorpost_http_request() = 0;
+    virtual int64_t send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) = 0;
+    virtual int64_t send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) = 0;
+};
 
-        int sock;
-        struct sockaddr_storage local_addr;
-        socklen_t local_addr_len;
-
-        Connection *conn = nullptr;
-        Connection *http3 = nullptr;
-    };
+class qh3client : public bridge_h3client_connection{
+public:
+    
+    qh3client(const std::string& host, const std::string& port);
+    
+    struct ev_loop *mainloop = nullptr;
     
     static void debug_log(const uint8_t *line, void *argp);
-    static void flush_egress(struct ev_loop *loop, struct conn_io *conn_io);
+    void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) override final;
+    inline struct ev_loop *get_mainloop() override final {
+        return mainloop;
+    }
+    inline const struct getorpost_reqdata& get_getorpost_http_request() override final {
+        return http_request;
+    }
     static int for_each_setting(uint64_t identifier, uint64_t value,
                                 void *argp);
     static int for_each_header(const uint8_t *name, size_t name_len,
@@ -54,6 +76,12 @@ public:
                                void *argp);
     static void recv_cb(EV_P_ ev_io *w, int revents);
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
-    static int run(const std::string& host, const std::string& port);
+    int64_t send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) override final;
+    int64_t send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) override final;
+    int send_request(const getorpost_reqdata& data_getorpost_);
+    
+    const std::string host;
+    const std::string port;
+    getorpost_reqdata http_request;
 };
 #endif /* qh3client_hpp */

@@ -6,6 +6,7 @@
 //
 
 #include "qh3client.hpp"
+#include "../../common/sdktypes.hpp"
 
 void qh3client::debug_log(const uint8_t *line, void *argp) {
     fprintf(stderr, "%s\n", line);
@@ -69,6 +70,120 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
             (int) name_len, name, (int) value_len, value);
 
     return 0;
+}
+
+int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
+    Header headers_get[] = {
+        {
+            .name = (uint8_t *) ":method",
+            .name_len = sizeof(":method") - 1,
+
+            .value = (uint8_t *) "GET",
+            .value_len = sizeof("GET") - 1,
+        },
+
+        {
+            .name = (uint8_t *) ":scheme",
+            .name_len = sizeof(":scheme") - 1,
+
+            .value = (uint8_t *) "https",
+            .value_len = sizeof("https") - 1,
+        },
+
+        {
+            .name = (uint8_t *) ":authority",
+            .name_len = sizeof(":authority") - 1,
+
+            .value = (uint8_t *) conn_io->host,
+            .value_len = strlen(conn_io->host),
+        },
+
+        {
+            .name = (uint8_t *) ":path",
+            .name_len = sizeof(":path") - 1,
+
+            .value = (uint8_t *) data_getorpost_.path.c_str(),
+            .value_len = data_getorpost_.path.size(),
+        },
+
+        {
+            .name = (uint8_t *) "user-agent",
+            .name_len = sizeof("user-agent") - 1,
+
+            .value = (uint8_t *) "quiche",
+            .value_len = sizeof("quiche") - 1,
+        },
+    };
+
+    int64_t stream_id = quiche_h3_send_request(conn_io->http3,
+                                               conn_io->conn,
+                                               headers_get, 5, true);
+
+    fprintf(stderr, "sent HTTP GET request %" PRId64 "\n", stream_id);
+    return stream_id;
+}
+
+int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
+    int number_of_digits = NumberOfDigits((int)data_getorpost_.payload.size());
+    char content_length_data[number_of_digits+1];
+    snprintf(content_length_data, sizeof(content_length_data), "%d", (int)data_getorpost_.payload.size());
+    Header headers_get[] = {
+        {
+            .name = (uint8_t *) ":method",
+            .name_len = sizeof(":method") - 1,
+
+            .value = (uint8_t *) "POST",
+            .value_len = sizeof("POST") - 1,
+        },
+
+        {
+            .name = (uint8_t *) ":scheme",
+            .name_len = sizeof(":scheme") - 1,
+
+            .value = (uint8_t *) "https",
+            .value_len = sizeof("https") - 1,
+        },
+
+        {
+            .name = (uint8_t *) ":authority",
+            .name_len = sizeof(":authority") - 1,
+
+            .value = (uint8_t *) conn_io->host,
+            .value_len = strlen(conn_io->host),
+        },
+
+        {
+            .name = (uint8_t *) ":path",
+            .name_len = sizeof(":path") - 1,
+
+            .value = (uint8_t *) data_getorpost_.path.c_str(),
+            .value_len = data_getorpost_.path.size(),
+        },
+
+        {
+            .name = (uint8_t *) "user-agent",
+            .name_len = sizeof("user-agent") - 1,
+
+            .value = (uint8_t *) "quiche",
+            .value_len = sizeof("quiche") - 1,
+        },
+        {
+            .name = (uint8_t *) "content-length",
+            .name_len = sizeof("content-length") - 1,
+
+            .value = (uint8_t *) content_length_data,
+            .value_len = sizeof(content_length_data),
+        },
+    };
+
+    int64_t stream_id = quiche_h3_send_request(conn_io->http3,
+                                               conn_io->conn,
+                                               headers_get, 6, false);
+    ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id,
+                                           (u_int8_t*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size(),
+                                           true);
+    fprintf(stderr, "sent HTTP POST request %" PRId64 " with body %ld\n", stream_id, send_len);
+    return stream_id;
 }
 
 void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
@@ -148,54 +263,12 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
 
         quiche_h3_config_free(config);
 
-        Header headers[] = {
-            {
-                .name = (uint8_t *) ":method",
-                .name_len = sizeof(":method") - 1,
-
-                .value = (uint8_t *) "GET",
-                .value_len = sizeof("GET") - 1,
-            },
-
-            {
-                .name = (uint8_t *) ":scheme",
-                .name_len = sizeof(":scheme") - 1,
-
-                .value = (uint8_t *) "https",
-                .value_len = sizeof("https") - 1,
-            },
-
-            {
-                .name = (uint8_t *) ":authority",
-                .name_len = sizeof(":authority") - 1,
-
-                .value = (uint8_t *) conn_io->host,
-                .value_len = strlen(conn_io->host),
-            },
-
-            {
-                .name = (uint8_t *) ":path",
-                .name_len = sizeof(":path") - 1,
-
-                .value = (uint8_t *) "/",
-                .value_len = sizeof("/") - 1,
-            },
-
-            {
-                .name = (uint8_t *) "user-agent",
-                .name_len = sizeof("user-agent") - 1,
-
-                .value = (uint8_t *) "quiche",
-                .value_len = sizeof("quiche") - 1,
-            },
-        };
-
-        int64_t stream_id = quiche_h3_send_request(conn_io->http3,
-                                                   conn_io->conn,
-                                                   headers, 5, true);
-
-        fprintf(stderr, "sent HTTP request %" PRId64 "\n", stream_id);
-
+        const getorpost_reqdata& data_getorpost_ = conn_io->bridge->get_getorpost_http_request();
+        if (data_getorpost_.is_postrequest()) {
+            conn_io->bridge->send_post_http_request(data_getorpost_, conn_io);
+        } else {
+            conn_io->bridge->send_get_http_request(data_getorpost_, conn_io);
+        }
         req_sent = true;
     }
 
@@ -276,7 +349,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
         }
     }
 
-    flush_egress(loop, conn_io);
+    conn_io->bridge->flush_egress(loop, conn_io);
 }
 
 void qh3client::timeout_cb(EV_P_ ev_timer *w, int revents) {
@@ -285,7 +358,7 @@ void qh3client::timeout_cb(EV_P_ ev_timer *w, int revents) {
 
     fprintf(stderr, "timeout\n");
 
-    flush_egress(loop, conn_io);
+    conn_io->bridge->flush_egress(loop, conn_io);
 
     if (quiche_conn_is_closed(conn_io->conn)) {
         Stats stats;
@@ -302,7 +375,13 @@ void qh3client::timeout_cb(EV_P_ ev_timer *w, int revents) {
     }
 }
 
-int qh3client::run(const std::string& host, const std::string& port) {
+qh3client::qh3client(const std::string& host, const std::string& port) :
+host(host),
+port(port) {
+}
+
+int qh3client::send_request(const getorpost_reqdata& data_get_) {
+    this->http_request = data_get_;
     
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
@@ -365,9 +444,11 @@ int qh3client::run(const std::string& host, const std::string& port) {
 
     ssize_t rand_len = read(rng, &scid, sizeof(scid));
     if (rand_len < 0) {
+        close(rng);
         perror("failed to create connection ID");
         return -1;
     }
+    close(rng);
 
     struct conn_io *conn_io = (struct conn_io *)malloc(sizeof(*conn_io));
     if (conn_io == NULL) {
@@ -396,21 +477,22 @@ int qh3client::run(const std::string& host, const std::string& port) {
     conn_io->sock = sock;
     conn_io->conn = conn;
     conn_io->host = host.c_str();
+    conn_io->bridge = this;
 
     ev_io watcher;
 
-    struct ev_loop *loop = ev_default_loop(0);
+    mainloop = ev_default_loop(0);
 
     ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
-    ev_io_start(loop, &watcher);
+    ev_io_start(mainloop, &watcher);
     watcher.data = conn_io;
 
     ev_init(&conn_io->timer, timeout_cb);
     conn_io->timer.data = conn_io;
 
-    flush_egress(loop, conn_io);
+    flush_egress(mainloop, conn_io);
 
-    ev_loop(loop, 0);
+    ev_loop(mainloop, 0);
 
     freeaddrinfo(peer);
 

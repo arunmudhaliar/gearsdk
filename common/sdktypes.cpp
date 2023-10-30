@@ -20,7 +20,6 @@
 
 extern "C"
 {
-
     void PrintCommonInfo()
     {
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
@@ -41,6 +40,21 @@ extern "C"
 #if DEBUG
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
 #endif
+    }
+
+    int NumberOfDigits(unsigned int num)
+    {
+        if (num==0) {
+            return 1;
+        }
+        int len = 0;
+        unsigned int n = num;
+        while (n != 0)
+        {
+            len++;
+            n /= 10;
+        }
+        return len;
     }
 
     void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...)

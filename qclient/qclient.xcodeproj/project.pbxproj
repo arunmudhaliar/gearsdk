@@ -334,7 +334,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"USE_PTHREAD=1",
-					"LOG_LEVEL=LOG_LEVEL_2",
+					"LOG_LEVEL=2",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
