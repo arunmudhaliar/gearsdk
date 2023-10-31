@@ -66,6 +66,8 @@ struct connections {
     struct sockaddr *local_addr = nullptr;
     socklen_t local_addr_len;
     struct conn_io *h = nullptr;
+    std::string server_port;
+    std::string quic_alternate_protocol_str;
 };
 
 struct conn_io {
@@ -80,6 +82,7 @@ struct conn_io {
     bridge_h3_connection* bridge = nullptr;
     getorpost_reqdata http_request;
     getorpost_response_data http_response;
+
 };
 
 class qh3server : public bridge_h3_connection {

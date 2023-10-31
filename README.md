@@ -30,4 +30,6 @@ ubuntu build
 [MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=]
 
 - Chrome Canary
-/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-for-quic-on=localhost:6121 https://localhost:6121/whoami --ignore-certificate-errors-spki-list=<SPKI>
+/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/whoami --ignore-certificate-errors-spki-list=<SPKI>
+
+/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/ --ignore-certificate-errors-spki-list=MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=

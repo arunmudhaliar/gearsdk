@@ -409,8 +409,8 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                 .name = (uint8_t *) "Alternate-Protocol",
                                 .name_len = sizeof("Alternate-Protocol") - 1,
 
-                                .value = (uint8_t *) "quic:6121",
-                                .value_len = sizeof("quic:6121") - 1,
+                                .value = (uint8_t *) conns->quic_alternate_protocol_str.c_str(),
+                                .value_len = conns->quic_alternate_protocol_str.size() - 1,
                             },
                             
                             {
@@ -584,6 +584,8 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     c.h = NULL;
     c.local_addr = local->ai_addr;
     c.local_addr_len = local->ai_addrlen;
+    c.server_port = port;
+    c.quic_alternate_protocol_str = "quic:"+port;
 
     conns = &c;
 

@@ -12,7 +12,7 @@ static unsigned version_code = 1;
 
 int main(int argc, const char *argv[]) {
     std::string host = "localhost";
-    std::string port = "6121";
+    std::string port = "4004";
     fs::path rootDir;
     essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
                           version_string, version_code,
