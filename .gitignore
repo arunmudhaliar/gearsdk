@@ -71,3 +71,4 @@ qclient-app
 qserver-app
 *.log
 docker-server
+qh3server-app
