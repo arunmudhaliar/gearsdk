@@ -172,7 +172,7 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
             .name_len = sizeof("content-length") - 1,
 
             .value = (uint8_t *) content_length_data,
-            .value_len = sizeof(content_length_data),
+            .value_len = sizeof(content_length_data) - 1,
         },
     };
 

@@ -426,16 +426,20 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                 .name_len = sizeof("content-length") - 1,
 
                                 .value = (uint8_t *) content_length_data,
-                                .value_len = sizeof(content_length_data),
+                                .value_len = sizeof(content_length_data) - 1,
                             },
                         };
 
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
-                                                s, headers, 3, false);                        
+                                                s, headers, 4, false);
                         ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
                                                                (u_int8_t*)conn_io->http_response.payload.c_str(), conn_io->http_response.payload.size(),
                                                                true);
-                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "sent HTTP response %" PRId64 " with body %ld", s, send_len);
+                        if (send_len!=conn_io->http_response.payload.size()) {
+                            DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
+                            break;
+                        }
+                        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response %" PRId64 " with body %s", s, conn_io->http_response.payload.c_str());
                     }
                         break;
 
