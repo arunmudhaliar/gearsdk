@@ -40,8 +40,8 @@ echo "use 'sudo docker build -t qh3server-exp .' to build the docker"
 # sudo docker build -t qh3server.
 
 # run
-echo "use 'sudo docker run --publish 4004:4004 --name qh3server-container -d qh3server-exp' to run the docker"
-# sudo docker run --publish 4004:4004 --name qh3server-container -d qh3server-exp 
+echo "use 'sudo docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp' to run the docker"
+# sudo docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp
 
 # stop
 echo "use 'sudo docker stop qh3server-container' to stop the docker"

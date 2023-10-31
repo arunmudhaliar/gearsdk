@@ -636,12 +636,18 @@ void *qnetworkserver::run_internal(void *data)
         pthread_exit(&runConfig->pthread_returnValue);
     }
 
-    fs::path certFile("cert.crt");
-    fs::path keyFile("cert.key");
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (runConfig->rootDir / certFile).c_str());
-    quiche_config_load_cert_chain_from_pem_file(thiz->config, (runConfig->rootDir / certFile).c_str());
-    quiche_config_load_priv_key_from_pem_file(thiz->config, (runConfig->rootDir / keyFile).c_str());
-
+    fs::path certFile(runConfig->rootDir / "cert.crt");
+    fs::path keyFile(runConfig->rootDir / "cert.key");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
+    int res_crt_load = quiche_config_load_cert_chain_from_pem_file(thiz->config, certFile.c_str());
+    if (res_crt_load!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s", certFile.c_str());
+    }
+    int res_key_load = quiche_config_load_priv_key_from_pem_file(thiz->config, keyFile.c_str());
+    if (res_key_load!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
+    }
+    
     quiche_config_set_application_protos(thiz->config,
                                          (uint8_t *)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 

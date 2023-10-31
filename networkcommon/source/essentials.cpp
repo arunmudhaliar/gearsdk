@@ -216,7 +216,7 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
 
     DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
     PrintCommonInfo();
-    if (argc==3) {
+    if (argc>=3) {
         host = argv[1];
         port = argv[2];
         const struct addrinfo hints = {
@@ -239,8 +239,12 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
     }
     DEBUG_PRINT_IMPORTANT(tag, "host:%s, port:%s", host.c_str(), port.c_str());
 
-    fs::path executablePath(argc>0 ? argv[0] : "");
-    rootDir = executablePath.parent_path();
+    if (argc>=5 && strcmp(argv[3], "--certdir")==0) {
+        rootDir = fs::path(argv[4]);
+    } else {
+        fs::path executablePath(argc>0 ? argv[0] : "");
+        rootDir = executablePath.parent_path();
+    }
     DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());
     return 0;
 }

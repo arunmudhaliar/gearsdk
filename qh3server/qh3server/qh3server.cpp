@@ -551,11 +551,17 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     }
 
     
-    fs::path certFile("cert.crt");
-    fs::path keyFile("cert.key");
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s", (rootDir / certFile).c_str());
-    quiche_config_load_cert_chain_from_pem_file(config, (rootDir / certFile).c_str());
-    quiche_config_load_priv_key_from_pem_file(config, (rootDir / keyFile).c_str());
+    fs::path certFile(rootDir / "cert.crt");
+    fs::path keyFile(rootDir / "cert.key");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
+    int res_crt_load = quiche_config_load_cert_chain_from_pem_file(config, certFile.c_str());
+    if (res_crt_load!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s", certFile.c_str());
+    }
+    int res_key_load = quiche_config_load_priv_key_from_pem_file(config, keyFile.c_str());
+    if (res_key_load!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
+    }
 
     quiche_config_set_application_protos(config,
         (uint8_t *) QUICHE_H3_APPLICATION_PROTOCOL,
