@@ -16,4 +16,7 @@
    <FileRef
       location = "group:qclient/qclient.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:qhiredis/qhiredis.xcodeproj">
+   </FileRef>
 </Workspace>

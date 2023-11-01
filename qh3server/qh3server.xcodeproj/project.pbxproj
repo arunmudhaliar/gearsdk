@@ -10,6 +10,8 @@
 		556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C82AF01D0500D688DB /* cert.key */; };
 		556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C92AF01D0500D688DB /* cert.crt */; };
 		556AB5CE2AF0308800D688DB /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
+		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
+		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
 		55A4ADA32AEF825800BC4CED /* main_h3_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
@@ -40,6 +42,9 @@
 		556AB5C92AF01D0500D688DB /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
 		556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_server.cpp; sourceTree = "<group>"; };
 		556AB5CD2AF0308800D688DB /* http3_sample_server.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = http3_sample_server.hpp; sourceTree = "<group>"; };
+		556AB5EE2AF1B3C800D688DB /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556AB5F02AF1B3E900D688DB /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../networkcommon/libs/macos/libhiredis.a; sourceTree = "<group>"; };
+		556AB5F22AF25B3500D688DB /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos/libhiredis.a; sourceTree = "<group>"; };
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,6 +63,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */,
+				556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */,
 				55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */,
 				55A4ADC42AEF83A800BC4CED /* libquiche.a in Frameworks */,
 				55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */,
@@ -113,6 +120,9 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556AB5F02AF1B3E900D688DB /* libhiredis.a */,
+				556AB5F22AF25B3500D688DB /* libhiredis.a */,
+				556AB5EE2AF1B3C800D688DB /* libqhiredis.a */,
 				55A4ADC72AEFA40F00BC4CED /* Security.framework */,
 				55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */,
 				55A4ADC32AEF839B00BC4CED /* libquiche.a */,
@@ -313,8 +323,12 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -329,8 +343,12 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 				);
-				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
