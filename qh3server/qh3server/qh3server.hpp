@@ -28,6 +28,7 @@
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+#include "../../networkcommon/source/qtextfilelogger.hpp"
 
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
@@ -91,6 +92,7 @@ private:
     Config *http3_config = nullptr;
     struct connections *conns = nullptr;
     struct ev_loop *mainloop = nullptr;
+    qtextfilelogger logger;
     
     static void debug_log(const uint8_t *line, void *argp);
     void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) override final;

@@ -36,7 +36,7 @@
 class qtimer;
 typedef std::function<void(qtimer& qtimer_)> type_qtimer_cb;
 
-struct qtimer {
+class qtimer {
 private:
     qtimer() {}
 
@@ -74,7 +74,7 @@ public:
         timer.data = this;
         ev_timer_start(loop, &timer);
     }
-    ~qtimer() {
+    virtual ~qtimer() {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qtimer destructor");
     }
 
@@ -90,7 +90,7 @@ public:
 class qtimer_sceduler {
 public:
     qtimer_sceduler();
-    ~qtimer_sceduler();
+    virtual ~qtimer_sceduler();
     
     void set_ev_lopp(struct ev_loop* loop) { this->loop = loop; }
     qtimer* schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */; };
+		556AB5F72AF260DD00D688DB /* qtextfilelogger.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */; };
+		556AB5FA2AF3A2C700D688DB /* qbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5F82AF3A2C700D688DB /* qbuffer.cpp */; };
+		556AB5FB2AF3A2C700D688DB /* qbuffer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB5F92AF3A2C700D688DB /* qbuffer.hpp */; };
 		557487382AE9530500C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487372AE9530500C0F6CA /* main.cpp */; };
 		557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487422AE9A78D00C0F6CA /* essentials.cpp */; };
 		557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557487432AE9A78D00C0F6CA /* essentials.hpp */; };
@@ -26,6 +30,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfilelogger.cpp; sourceTree = "<group>"; };
+		556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfilelogger.hpp; sourceTree = "<group>"; };
+		556AB5F82AF3A2C700D688DB /* qbuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qbuffer.cpp; sourceTree = "<group>"; };
+		556AB5F92AF3A2C700D688DB /* qbuffer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qbuffer.hpp; sourceTree = "<group>"; };
 		557487372AE9530500C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		557487422AE9A78D00C0F6CA /* essentials.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = essentials.cpp; sourceTree = "<group>"; };
 		557487432AE9A78D00C0F6CA /* essentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = essentials.hpp; sourceTree = "<group>"; };
@@ -93,6 +101,10 @@
 				557487432AE9A78D00C0F6CA /* essentials.hpp */,
 				5574879C2AEC227500C0F6CA /* qtimer.cpp */,
 				5574879D2AEC227500C0F6CA /* qtimer.hpp */,
+				556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */,
+				556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */,
+				556AB5F82AF3A2C700D688DB /* qbuffer.cpp */,
+				556AB5F92AF3A2C700D688DB /* qbuffer.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -115,6 +127,8 @@
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
 				5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */,
 				557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */,
+				556AB5F72AF260DD00D688DB /* qtextfilelogger.hpp in Headers */,
+				556AB5FB2AF3A2C700D688DB /* qbuffer.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,7 +206,9 @@
 			files = (
 				557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */,
 				5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */,
+				556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,
+				556AB5FA2AF3A2C700D688DB /* qbuffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
