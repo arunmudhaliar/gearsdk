@@ -13,12 +13,10 @@ void qh3client::debug_log(const uint8_t *line, void *argp) {
 }
 
 void qh3client::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
-    static uint8_t out[MAX_DATAGRAM_SIZE];
-
     SendInfo send_info;
 
     while (1) {
-        ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out),
+        ssize_t written = quiche_conn_send(conn_io->conn, conn_io->out, sizeof(conn_io->out),
                                            &send_info);
 
         if (written == QUICHE_ERR_DONE) {
@@ -31,7 +29,7 @@ void qh3client::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
             return;
         }
 
-        ssize_t sent = sendto(conn_io->sock, out, written, 0,
+        ssize_t sent = sendto(conn_io->sock, conn_io->out, written, 0,
                               (struct sockaddr *) &send_info.to,
                               send_info.to_len);
 
@@ -187,19 +185,14 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
 }
 
 void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
-    static bool req_sent = false;
-    static bool settings_received = false;
-
     struct conn_io *conn_io = (struct conn_io *)w->data;
-
-    static uint8_t buf[65535];
 
     while (1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
 
-        ssize_t read = recvfrom(conn_io->sock, buf, sizeof(buf), 0,
+        ssize_t read = recvfrom(conn_io->sock, conn_io->buf, sizeof(conn_io->buf), 0,
                                 (struct sockaddr *) &peer_addr,
                                 &peer_addr_len);
 
@@ -221,7 +214,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
             conn_io->local_addr_len,
         };
 
-        ssize_t done = quiche_conn_recv(conn_io->conn, buf, read, &recv_info);
+        ssize_t done = quiche_conn_recv(conn_io->conn, conn_io->buf, read, &recv_info);
 
         if (done < 0) {
             fprintf(stderr, "failed to process packet: %zd\n", done);
@@ -240,7 +233,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
         return;
     }
 
-    if (quiche_conn_is_established(conn_io->conn) && !req_sent) {
+    if (quiche_conn_is_established(conn_io->conn) && !conn_io->req_sent) {
         const uint8_t *app_proto;
         size_t app_proto_len;
 
@@ -269,7 +262,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
         } else {
             conn_io->bridge->send_get_http_request(data_getorpost_, conn_io);
         }
-        req_sent = true;
+        conn_io->req_sent = true;
     }
 
     if (quiche_conn_is_established(conn_io->conn)) {
@@ -284,13 +277,13 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
                 break;
             }
 
-            if (!settings_received) {
+            if (!conn_io->settings_received) {
                 int rc = quiche_h3_for_each_setting(conn_io->http3,
                                                     for_each_setting,
                                                     NULL);
 
                 if (rc == 0) {
-                    settings_received = true;
+                    conn_io->settings_received = true;
                 }
             }
 
@@ -310,15 +303,19 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
                     for (;;) {
                         ssize_t len = quiche_h3_recv_body(conn_io->http3,
                                                           conn_io->conn, s,
-                                                          buf, sizeof(buf));
+                                                          conn_io->buf, sizeof(conn_io->buf));
 
                         if (len <= 0) {
                             break;
                         }
 
-                        printf("%.*s", (int) len, buf);
+                        printf("%.*s", (int) len, conn_io->buf);
+                        if (conn_io->response) {
+                            conn_io->response->push_back(conn_io_response(conn_io->buf, len));
+                        }
                     }
 
+                    conn_io->res_received = true;
                     break;
                 }
 
@@ -380,10 +377,12 @@ host(host),
 port(port) {
 }
 
-qh3client::~qh3client() {    
+qh3client::~qh3client() {
+    GX_DELETE(conn_io);
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qh3client destroyed");
 }
 
-int qh3client::send_request(const getorpost_reqdata& data_get_) {
+int qh3client::send_request(const getorpost_reqdata& data_get_, std::vector<conn_io_response>* response) {
     this->http_request = data_get_;
     
     const struct addrinfo hints = {
@@ -453,12 +452,13 @@ int qh3client::send_request(const getorpost_reqdata& data_get_) {
     }
     close(rng);
 
-    struct conn_io *conn_io = (struct conn_io *)malloc(sizeof(*conn_io));
+    conn_io = new struct conn_io();
     if (conn_io == NULL) {
         fprintf(stderr, "failed to allocate connection IO\n");
         return -1;
     }
-
+    conn_io->response = response;
+    
     conn_io->local_addr_len = sizeof(conn_io->local_addr);
     if (getsockname(sock, (struct sockaddr *)&conn_io->local_addr,
                     &conn_io->local_addr_len) != 0)
@@ -484,7 +484,7 @@ int qh3client::send_request(const getorpost_reqdata& data_get_) {
 
     ev_io watcher;
 
-    mainloop = ev_default_loop(0);
+    mainloop = ev_loop_new(0);
 
     ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
     ev_io_start(mainloop, &watcher);
@@ -497,6 +497,9 @@ int qh3client::send_request(const getorpost_reqdata& data_get_) {
 
     ev_loop(mainloop, 0);
 
+    ev_timer_stop(mainloop, &conn_io->timer);
+    ev_io_stop(mainloop, &watcher);
+    
     freeaddrinfo(peer);
 
     if (conn_io->http3) {

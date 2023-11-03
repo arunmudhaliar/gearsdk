@@ -19,9 +19,15 @@ protected:
     
     // mongo callbacks
     void on_mongo_connect() override final;
-    void on_mongo_create_index_keys(const char* collection_name, bson_t& indexkey, mongoc_index_opt_t& opt) override final;
+    void on_mongo_create_index_keys(const char* collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) override final;
+    
+    qmongo* mongo = nullptr;
     
 public:
+    http3_sample_server();
+    ~http3_sample_server();
+    
     void test_mongo_db();
+
 };
 #endif /* http3_sample_server_hpp */

@@ -92,7 +92,6 @@ private:
     Config *http3_config = nullptr;
     struct connections *conns = nullptr;
     struct ev_loop *mainloop = nullptr;
-    qtextfilelogger logger;
     
     static void debug_log(const uint8_t *line, void *argp);
     void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) override final;
@@ -125,6 +124,7 @@ private:
 protected:
     void parse_header(const uint8_t *name, size_t name_len,
                       const uint8_t *value, size_t value_len, struct conn_io *conn_io) override;
+    qtextfilelogger logger;
     
 public:
     int run(const std::string& host, const std::string& port, fs::path& rootDir);

@@ -89,6 +89,10 @@ struct getorpost_reqdata {
     getorpost_reqdata(const std::string& path, const std::string& payload) :
         path(path), payload(payload) {
     }
+    getorpost_reqdata(const getorpost_reqdata& data) {
+        path = data.path;
+        payload = data.payload;
+    }
     bool is_postrequest() const { return payload.size()>0; }
     void clear_payload() {
         payload.clear();

@@ -14,7 +14,7 @@
 class interface_qmongo_connection {
 public:
     virtual void on_mongo_connect() = 0;
-    virtual void on_mongo_create_index_keys(const char* collection_name, bson_t& indexkey, mongoc_index_opt_t& opt) = 0;
+    virtual void on_mongo_create_index_keys(const char* collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) = 0;
 };
 
 class qmongo {

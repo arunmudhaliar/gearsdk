@@ -8,11 +8,11 @@
 #ifndef http3_sample_client_hpp
 #define http3_sample_client_hpp
 
-#include "qh3client.hpp"
+#include "qh3client_helper.hpp"
 
-class http3_sample_client : public qh3client {
+class http3_sample_client {
 public:
-    http3_sample_client(const std::string& host, const std::string& port);
+    http3_sample_client();
     ~http3_sample_client();
     
     void init_connection();
