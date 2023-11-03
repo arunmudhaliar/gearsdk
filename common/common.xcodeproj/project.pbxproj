@@ -7,6 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		556AB6E02AF5736E00D688DB /* bson.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C42AF5736E00D688DB /* bson.h */; };
+		556AB6E12AF5736E00D688DB /* bson-json.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C52AF5736E00D688DB /* bson-json.h */; };
+		556AB6E22AF5736E00D688DB /* bson-prelude.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C62AF5736E00D688DB /* bson-prelude.h */; };
+		556AB6E32AF5736E00D688DB /* bcon.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C72AF5736E00D688DB /* bcon.h */; };
+		556AB6E42AF5736E00D688DB /* bson-endian.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C82AF5736E00D688DB /* bson-endian.h */; };
+		556AB6E52AF5736E00D688DB /* bson-decimal128.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C92AF5736E00D688DB /* bson-decimal128.h */; };
+		556AB6E62AF5736E00D688DB /* bson-config.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CA2AF5736E00D688DB /* bson-config.h */; };
+		556AB6E72AF5736E00D688DB /* bson-version-functions.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CB2AF5736E00D688DB /* bson-version-functions.h */; };
+		556AB6E82AF5736E00D688DB /* bson-clock.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CC2AF5736E00D688DB /* bson-clock.h */; };
+		556AB6E92AF5736E00D688DB /* bson-reader.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CD2AF5736E00D688DB /* bson-reader.h */; };
+		556AB6EA2AF5736E00D688DB /* bson-utf8.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CE2AF5736E00D688DB /* bson-utf8.h */; };
+		556AB6EB2AF5736E00D688DB /* bson-string.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6CF2AF5736E00D688DB /* bson-string.h */; };
+		556AB6EC2AF5736E00D688DB /* bson-atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D02AF5736E00D688DB /* bson-atomic.h */; };
+		556AB6ED2AF5736E00D688DB /* bson-keys.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D12AF5736E00D688DB /* bson-keys.h */; };
+		556AB6EE2AF5736E00D688DB /* bson-error.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D22AF5736E00D688DB /* bson-error.h */; };
+		556AB6EF2AF5736E00D688DB /* bson-oid.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D32AF5736E00D688DB /* bson-oid.h */; };
+		556AB6F02AF5736E00D688DB /* bson-context.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D42AF5736E00D688DB /* bson-context.h */; };
+		556AB6F12AF5736E00D688DB /* bson-types.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D52AF5736E00D688DB /* bson-types.h */; };
+		556AB6F22AF5736E00D688DB /* bson-iter.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D62AF5736E00D688DB /* bson-iter.h */; };
+		556AB6F32AF5736E00D688DB /* bson-writer.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D72AF5736E00D688DB /* bson-writer.h */; };
+		556AB6F42AF5736E00D688DB /* bson-memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D82AF5736E00D688DB /* bson-memory.h */; };
+		556AB6F52AF5736E00D688DB /* bson-compat.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6D92AF5736E00D688DB /* bson-compat.h */; };
+		556AB6F62AF5736E00D688DB /* bson-cmp.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DA2AF5736E00D688DB /* bson-cmp.h */; };
+		556AB6F72AF5736E00D688DB /* bson-macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DB2AF5736E00D688DB /* bson-macros.h */; };
+		556AB6F82AF5736E00D688DB /* bson-md5.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DC2AF5736E00D688DB /* bson-md5.h */; };
+		556AB6F92AF5736E00D688DB /* bson-version.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DD2AF5736E00D688DB /* bson-version.h */; };
+		556AB6FA2AF5736E00D688DB /* bson-value.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DE2AF5736E00D688DB /* bson-value.h */; };
+		556AB6FB2AF5736E00D688DB /* bson.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DF2AF5736E00D688DB /* bson.h */; };
 		55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55853CC72AC32A1E00901E52 /* sdktypes.cpp */; };
 		55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B3730B2AC3263200F0095E /* sdktypes.hpp */; };
 		55E4D3102AC8A73000555999 /* gxcrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D30E2AC8A73000555999 /* gxcrc32.cpp */; };
@@ -16,6 +44,34 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		556AB6C42AF5736E00D688DB /* bson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bson.h; sourceTree = "<group>"; };
+		556AB6C52AF5736E00D688DB /* bson-json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-json.h"; sourceTree = "<group>"; };
+		556AB6C62AF5736E00D688DB /* bson-prelude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-prelude.h"; sourceTree = "<group>"; };
+		556AB6C72AF5736E00D688DB /* bcon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bcon.h; sourceTree = "<group>"; };
+		556AB6C82AF5736E00D688DB /* bson-endian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-endian.h"; sourceTree = "<group>"; };
+		556AB6C92AF5736E00D688DB /* bson-decimal128.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-decimal128.h"; sourceTree = "<group>"; };
+		556AB6CA2AF5736E00D688DB /* bson-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-config.h"; sourceTree = "<group>"; };
+		556AB6CB2AF5736E00D688DB /* bson-version-functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-version-functions.h"; sourceTree = "<group>"; };
+		556AB6CC2AF5736E00D688DB /* bson-clock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-clock.h"; sourceTree = "<group>"; };
+		556AB6CD2AF5736E00D688DB /* bson-reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-reader.h"; sourceTree = "<group>"; };
+		556AB6CE2AF5736E00D688DB /* bson-utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-utf8.h"; sourceTree = "<group>"; };
+		556AB6CF2AF5736E00D688DB /* bson-string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-string.h"; sourceTree = "<group>"; };
+		556AB6D02AF5736E00D688DB /* bson-atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-atomic.h"; sourceTree = "<group>"; };
+		556AB6D12AF5736E00D688DB /* bson-keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-keys.h"; sourceTree = "<group>"; };
+		556AB6D22AF5736E00D688DB /* bson-error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-error.h"; sourceTree = "<group>"; };
+		556AB6D32AF5736E00D688DB /* bson-oid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-oid.h"; sourceTree = "<group>"; };
+		556AB6D42AF5736E00D688DB /* bson-context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-context.h"; sourceTree = "<group>"; };
+		556AB6D52AF5736E00D688DB /* bson-types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-types.h"; sourceTree = "<group>"; };
+		556AB6D62AF5736E00D688DB /* bson-iter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-iter.h"; sourceTree = "<group>"; };
+		556AB6D72AF5736E00D688DB /* bson-writer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-writer.h"; sourceTree = "<group>"; };
+		556AB6D82AF5736E00D688DB /* bson-memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-memory.h"; sourceTree = "<group>"; };
+		556AB6D92AF5736E00D688DB /* bson-compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-compat.h"; sourceTree = "<group>"; };
+		556AB6DA2AF5736E00D688DB /* bson-cmp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-cmp.h"; sourceTree = "<group>"; };
+		556AB6DB2AF5736E00D688DB /* bson-macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-macros.h"; sourceTree = "<group>"; };
+		556AB6DC2AF5736E00D688DB /* bson-md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-md5.h"; sourceTree = "<group>"; };
+		556AB6DD2AF5736E00D688DB /* bson-version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-version.h"; sourceTree = "<group>"; };
+		556AB6DE2AF5736E00D688DB /* bson-value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-value.h"; sourceTree = "<group>"; };
+		556AB6DF2AF5736E00D688DB /* bson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bson.h; sourceTree = "<group>"; };
 		55853CC72AC32A1E00901E52 /* sdktypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sdktypes.cpp; sourceTree = "<group>"; };
 		55B372FA2AC325B200F0095E /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B3730B2AC3263200F0095E /* sdktypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sdktypes.hpp; sourceTree = "<group>"; };
@@ -37,9 +93,53 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		556AB6C22AF5736E00D688DB /* libbson-1.0 */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6C32AF5736E00D688DB /* bson */,
+				556AB6DF2AF5736E00D688DB /* bson.h */,
+			);
+			path = "libbson-1.0";
+			sourceTree = "<group>";
+		};
+		556AB6C32AF5736E00D688DB /* bson */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6C42AF5736E00D688DB /* bson.h */,
+				556AB6C52AF5736E00D688DB /* bson-json.h */,
+				556AB6C62AF5736E00D688DB /* bson-prelude.h */,
+				556AB6C72AF5736E00D688DB /* bcon.h */,
+				556AB6C82AF5736E00D688DB /* bson-endian.h */,
+				556AB6C92AF5736E00D688DB /* bson-decimal128.h */,
+				556AB6CA2AF5736E00D688DB /* bson-config.h */,
+				556AB6CB2AF5736E00D688DB /* bson-version-functions.h */,
+				556AB6CC2AF5736E00D688DB /* bson-clock.h */,
+				556AB6CD2AF5736E00D688DB /* bson-reader.h */,
+				556AB6CE2AF5736E00D688DB /* bson-utf8.h */,
+				556AB6CF2AF5736E00D688DB /* bson-string.h */,
+				556AB6D02AF5736E00D688DB /* bson-atomic.h */,
+				556AB6D12AF5736E00D688DB /* bson-keys.h */,
+				556AB6D22AF5736E00D688DB /* bson-error.h */,
+				556AB6D32AF5736E00D688DB /* bson-oid.h */,
+				556AB6D42AF5736E00D688DB /* bson-context.h */,
+				556AB6D52AF5736E00D688DB /* bson-types.h */,
+				556AB6D62AF5736E00D688DB /* bson-iter.h */,
+				556AB6D72AF5736E00D688DB /* bson-writer.h */,
+				556AB6D82AF5736E00D688DB /* bson-memory.h */,
+				556AB6D92AF5736E00D688DB /* bson-compat.h */,
+				556AB6DA2AF5736E00D688DB /* bson-cmp.h */,
+				556AB6DB2AF5736E00D688DB /* bson-macros.h */,
+				556AB6DC2AF5736E00D688DB /* bson-md5.h */,
+				556AB6DD2AF5736E00D688DB /* bson-version.h */,
+				556AB6DE2AF5736E00D688DB /* bson-value.h */,
+			);
+			path = bson;
+			sourceTree = "<group>";
+		};
 		55B372F12AC325B200F0095E = {
 			isa = PBXGroup;
 			children = (
+				556AB6C22AF5736E00D688DB /* libbson-1.0 */,
 				55E4D3132ACAF18B00555999 /* timer.cpp */,
 				55E4D3142ACAF18B00555999 /* timer.h */,
 				55E4D30E2AC8A73000555999 /* gxcrc32.cpp */,
@@ -74,9 +174,37 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				556AB6E22AF5736E00D688DB /* bson-prelude.h in Headers */,
+				556AB6E82AF5736E00D688DB /* bson-clock.h in Headers */,
+				556AB6E42AF5736E00D688DB /* bson-endian.h in Headers */,
+				556AB6E52AF5736E00D688DB /* bson-decimal128.h in Headers */,
 				55E4D3162ACAF18B00555999 /* timer.h in Headers */,
+				556AB6F62AF5736E00D688DB /* bson-cmp.h in Headers */,
+				556AB6EF2AF5736E00D688DB /* bson-oid.h in Headers */,
+				556AB6ED2AF5736E00D688DB /* bson-keys.h in Headers */,
+				556AB6E32AF5736E00D688DB /* bcon.h in Headers */,
 				55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */,
+				556AB6FA2AF5736E00D688DB /* bson-value.h in Headers */,
+				556AB6E02AF5736E00D688DB /* bson.h in Headers */,
+				556AB6F22AF5736E00D688DB /* bson-iter.h in Headers */,
+				556AB6F42AF5736E00D688DB /* bson-memory.h in Headers */,
+				556AB6FB2AF5736E00D688DB /* bson.h in Headers */,
+				556AB6E12AF5736E00D688DB /* bson-json.h in Headers */,
+				556AB6F72AF5736E00D688DB /* bson-macros.h in Headers */,
+				556AB6E72AF5736E00D688DB /* bson-version-functions.h in Headers */,
+				556AB6E92AF5736E00D688DB /* bson-reader.h in Headers */,
+				556AB6F82AF5736E00D688DB /* bson-md5.h in Headers */,
+				556AB6EA2AF5736E00D688DB /* bson-utf8.h in Headers */,
+				556AB6E62AF5736E00D688DB /* bson-config.h in Headers */,
+				556AB6F92AF5736E00D688DB /* bson-version.h in Headers */,
 				55E4D3112AC8A73000555999 /* gxcrc32.h in Headers */,
+				556AB6F12AF5736E00D688DB /* bson-types.h in Headers */,
+				556AB6F02AF5736E00D688DB /* bson-context.h in Headers */,
+				556AB6EE2AF5736E00D688DB /* bson-error.h in Headers */,
+				556AB6F32AF5736E00D688DB /* bson-writer.h in Headers */,
+				556AB6F52AF5736E00D688DB /* bson-compat.h in Headers */,
+				556AB6EB2AF5736E00D688DB /* bson-string.h in Headers */,
+				556AB6EC2AF5736E00D688DB /* bson-atomic.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,11 +9,19 @@
 #define http3_sample_server_hpp
 
 #include "qh3server.hpp"
+#include "../../servercommon/source/qmongo/qmongo.hpp"
 
-class http3_sample_server : public qh3server {
+class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
     void parse_header(const uint8_t *name, size_t name_len,
                       const uint8_t *value, size_t value_len, struct conn_io *conn_io) override;
     void parse(struct conn_io *conn_io) override;
+    
+    // mongo callbacks
+    void on_mongo_connect() override final;
+    void on_mongo_create_index_keys(const char* collection_name, bson_t& indexkey, mongoc_index_opt_t& opt) override final;
+    
+public:
+    void test_mongo_db();
 };
 #endif /* http3_sample_server_hpp */

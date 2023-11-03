@@ -1,0 +1,526 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		556AB6662AF50BFB00D688DB /* mongoc-log.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6142AF50BFB00D688DB /* mongoc-log.h */; };
+		556AB6672AF50BFB00D688DB /* mongoc-gridfs-bucket.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6152AF50BFB00D688DB /* mongoc-gridfs-bucket.h */; };
+		556AB6682AF50BFB00D688DB /* mongoc-stream-socket.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6162AF50BFB00D688DB /* mongoc-stream-socket.h */; };
+		556AB6692AF50BFB00D688DB /* mongoc-apm.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6172AF50BFB00D688DB /* mongoc-apm.h */; };
+		556AB66A2AF50BFB00D688DB /* mongoc-find-and-modify.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6182AF50BFB00D688DB /* mongoc-find-and-modify.h */; };
+		556AB66B2AF50BFB00D688DB /* mongoc-ssl.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6192AF50BFB00D688DB /* mongoc-ssl.h */; };
+		556AB66C2AF50BFB00D688DB /* mongoc-opcode.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61A2AF50BFB00D688DB /* mongoc-opcode.h */; };
+		556AB66D2AF50BFB00D688DB /* mongoc-write-concern.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61B2AF50BFB00D688DB /* mongoc-write-concern.h */; };
+		556AB66E2AF50BFB00D688DB /* mongoc-gridfs.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61C2AF50BFB00D688DB /* mongoc-gridfs.h */; };
+		556AB66F2AF50BFB00D688DB /* mongoc-socket.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61D2AF50BFB00D688DB /* mongoc-socket.h */; };
+		556AB6702AF50BFB00D688DB /* mongoc-host-list.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61E2AF50BFB00D688DB /* mongoc-host-list.h */; };
+		556AB6712AF50BFB00D688DB /* mongoc-rand.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB61F2AF50BFB00D688DB /* mongoc-rand.h */; };
+		556AB6722AF50BFB00D688DB /* mongoc-optional.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6202AF50BFB00D688DB /* mongoc-optional.h */; };
+		556AB6732AF50BFB00D688DB /* mongoc-stream-gridfs.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6212AF50BFB00D688DB /* mongoc-stream-gridfs.h */; };
+		556AB6742AF50BFB00D688DB /* mongoc-stream-file.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6222AF50BFB00D688DB /* mongoc-stream-file.h */; };
+		556AB6752AF50BFB00D688DB /* mongoc-matcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6232AF50BFB00D688DB /* mongoc-matcher.h */; };
+		556AB6762AF50BFB00D688DB /* mongoc-client-side-encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6242AF50BFB00D688DB /* mongoc-client-side-encryption.h */; };
+		556AB6772AF50BFB00D688DB /* mongoc-stream-tls-libressl.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6252AF50BFB00D688DB /* mongoc-stream-tls-libressl.h */; };
+		556AB6782AF50BFB00D688DB /* mongoc-init.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6262AF50BFB00D688DB /* mongoc-init.h */; };
+		556AB6792AF50BFB00D688DB /* mongoc-client-pool.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6272AF50BFB00D688DB /* mongoc-client-pool.h */; };
+		556AB67A2AF50BFB00D688DB /* mongoc-version.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6282AF50BFB00D688DB /* mongoc-version.h */; };
+		556AB67B2AF50BFB00D688DB /* mongoc-gridfs-file.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6292AF50BFB00D688DB /* mongoc-gridfs-file.h */; };
+		556AB67C2AF50BFB00D688DB /* mongoc-stream-tls.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62A2AF50BFB00D688DB /* mongoc-stream-tls.h */; };
+		556AB67D2AF50BFB00D688DB /* mongoc-macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62B2AF50BFB00D688DB /* mongoc-macros.h */; };
+		556AB67E2AF50BFB00D688DB /* mongoc-stream-buffered.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62C2AF50BFB00D688DB /* mongoc-stream-buffered.h */; };
+		556AB67F2AF50BFB00D688DB /* mongoc-gridfs-file-page.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62D2AF50BFB00D688DB /* mongoc-gridfs-file-page.h */; };
+		556AB6802AF50BFB00D688DB /* mongoc-stream-tls-openssl.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62E2AF50BFB00D688DB /* mongoc-stream-tls-openssl.h */; };
+		556AB6812AF50BFB00D688DB /* mongoc-server-description.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB62F2AF50BFB00D688DB /* mongoc-server-description.h */; };
+		556AB6822AF50BFB00D688DB /* mongoc-prelude.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6302AF50BFB00D688DB /* mongoc-prelude.h */; };
+		556AB6832AF50BFB00D688DB /* mongoc-client-session.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6312AF50BFB00D688DB /* mongoc-client-session.h */; };
+		556AB6842AF50BFB00D688DB /* mongoc-bulk-operation.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6322AF50BFB00D688DB /* mongoc-bulk-operation.h */; };
+		556AB6852AF50BFB00D688DB /* mongoc-error.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6332AF50BFB00D688DB /* mongoc-error.h */; };
+		556AB6862AF50BFB00D688DB /* mongoc-stream.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6342AF50BFB00D688DB /* mongoc-stream.h */; };
+		556AB6872AF50BFB00D688DB /* mongoc-index.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6352AF50BFB00D688DB /* mongoc-index.h */; };
+		556AB6882AF50BFB00D688DB /* mongoc-server-api.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6362AF50BFB00D688DB /* mongoc-server-api.h */; };
+		556AB6892AF50BFB00D688DB /* mongoc-cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6372AF50BFB00D688DB /* mongoc-cursor.h */; };
+		556AB68A2AF50BFB00D688DB /* mongoc-read-prefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6382AF50BFB00D688DB /* mongoc-read-prefs.h */; };
+		556AB68B2AF50BFB00D688DB /* mongoc-iovec.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6392AF50BFB00D688DB /* mongoc-iovec.h */; };
+		556AB68C2AF50BFB00D688DB /* mongoc-handshake.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63A2AF50BFB00D688DB /* mongoc-handshake.h */; };
+		556AB68D2AF50BFB00D688DB /* mongoc-change-stream.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63B2AF50BFB00D688DB /* mongoc-change-stream.h */; };
+		556AB68E2AF50BFB00D688DB /* mongoc-topology-description.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63C2AF50BFB00D688DB /* mongoc-topology-description.h */; };
+		556AB68F2AF50BFB00D688DB /* mongoc-client.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63D2AF50BFB00D688DB /* mongoc-client.h */; };
+		556AB6902AF50BFB00D688DB /* mongoc-version-functions.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63E2AF50BFB00D688DB /* mongoc-version-functions.h */; };
+		556AB6912AF50BFB00D688DB /* mongoc-collection.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB63F2AF50BFB00D688DB /* mongoc-collection.h */; };
+		556AB6922AF50BFB00D688DB /* mongoc.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6402AF50BFB00D688DB /* mongoc.h */; };
+		556AB6932AF50BFB00D688DB /* mongoc-uri.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6412AF50BFB00D688DB /* mongoc-uri.h */; };
+		556AB6942AF50BFB00D688DB /* mongoc-database.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6422AF50BFB00D688DB /* mongoc-database.h */; };
+		556AB6952AF50BFB00D688DB /* mongoc-gridfs-file-list.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6432AF50BFB00D688DB /* mongoc-gridfs-file-list.h */; };
+		556AB6962AF50BFB00D688DB /* mongoc-flags.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6442AF50BFB00D688DB /* mongoc-flags.h */; };
+		556AB6972AF50BFB00D688DB /* mongoc-read-concern.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6452AF50BFB00D688DB /* mongoc-read-concern.h */; };
+		556AB6982AF50BFB00D688DB /* mongoc-config.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6462AF50BFB00D688DB /* mongoc-config.h */; };
+		556AB6992AF50BFB00D688DB /* mongoc.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6472AF50BFB00D688DB /* mongoc.h */; };
+		556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6B72AF50C3500D688DB /* qmongo.cpp */; };
+		556AB6BA2AF50C3500D688DB /* qmongo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6B82AF50C3500D688DB /* qmongo.hpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		556AB6052AF5094600D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556AB6142AF50BFB00D688DB /* mongoc-log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-log.h"; sourceTree = "<group>"; };
+		556AB6152AF50BFB00D688DB /* mongoc-gridfs-bucket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-gridfs-bucket.h"; sourceTree = "<group>"; };
+		556AB6162AF50BFB00D688DB /* mongoc-stream-socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-socket.h"; sourceTree = "<group>"; };
+		556AB6172AF50BFB00D688DB /* mongoc-apm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-apm.h"; sourceTree = "<group>"; };
+		556AB6182AF50BFB00D688DB /* mongoc-find-and-modify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-find-and-modify.h"; sourceTree = "<group>"; };
+		556AB6192AF50BFB00D688DB /* mongoc-ssl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-ssl.h"; sourceTree = "<group>"; };
+		556AB61A2AF50BFB00D688DB /* mongoc-opcode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-opcode.h"; sourceTree = "<group>"; };
+		556AB61B2AF50BFB00D688DB /* mongoc-write-concern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-write-concern.h"; sourceTree = "<group>"; };
+		556AB61C2AF50BFB00D688DB /* mongoc-gridfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-gridfs.h"; sourceTree = "<group>"; };
+		556AB61D2AF50BFB00D688DB /* mongoc-socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-socket.h"; sourceTree = "<group>"; };
+		556AB61E2AF50BFB00D688DB /* mongoc-host-list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-host-list.h"; sourceTree = "<group>"; };
+		556AB61F2AF50BFB00D688DB /* mongoc-rand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-rand.h"; sourceTree = "<group>"; };
+		556AB6202AF50BFB00D688DB /* mongoc-optional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-optional.h"; sourceTree = "<group>"; };
+		556AB6212AF50BFB00D688DB /* mongoc-stream-gridfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-gridfs.h"; sourceTree = "<group>"; };
+		556AB6222AF50BFB00D688DB /* mongoc-stream-file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-file.h"; sourceTree = "<group>"; };
+		556AB6232AF50BFB00D688DB /* mongoc-matcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-matcher.h"; sourceTree = "<group>"; };
+		556AB6242AF50BFB00D688DB /* mongoc-client-side-encryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-client-side-encryption.h"; sourceTree = "<group>"; };
+		556AB6252AF50BFB00D688DB /* mongoc-stream-tls-libressl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-tls-libressl.h"; sourceTree = "<group>"; };
+		556AB6262AF50BFB00D688DB /* mongoc-init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-init.h"; sourceTree = "<group>"; };
+		556AB6272AF50BFB00D688DB /* mongoc-client-pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-client-pool.h"; sourceTree = "<group>"; };
+		556AB6282AF50BFB00D688DB /* mongoc-version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-version.h"; sourceTree = "<group>"; };
+		556AB6292AF50BFB00D688DB /* mongoc-gridfs-file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-gridfs-file.h"; sourceTree = "<group>"; };
+		556AB62A2AF50BFB00D688DB /* mongoc-stream-tls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-tls.h"; sourceTree = "<group>"; };
+		556AB62B2AF50BFB00D688DB /* mongoc-macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-macros.h"; sourceTree = "<group>"; };
+		556AB62C2AF50BFB00D688DB /* mongoc-stream-buffered.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-buffered.h"; sourceTree = "<group>"; };
+		556AB62D2AF50BFB00D688DB /* mongoc-gridfs-file-page.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-gridfs-file-page.h"; sourceTree = "<group>"; };
+		556AB62E2AF50BFB00D688DB /* mongoc-stream-tls-openssl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream-tls-openssl.h"; sourceTree = "<group>"; };
+		556AB62F2AF50BFB00D688DB /* mongoc-server-description.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-server-description.h"; sourceTree = "<group>"; };
+		556AB6302AF50BFB00D688DB /* mongoc-prelude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-prelude.h"; sourceTree = "<group>"; };
+		556AB6312AF50BFB00D688DB /* mongoc-client-session.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-client-session.h"; sourceTree = "<group>"; };
+		556AB6322AF50BFB00D688DB /* mongoc-bulk-operation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-bulk-operation.h"; sourceTree = "<group>"; };
+		556AB6332AF50BFB00D688DB /* mongoc-error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-error.h"; sourceTree = "<group>"; };
+		556AB6342AF50BFB00D688DB /* mongoc-stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-stream.h"; sourceTree = "<group>"; };
+		556AB6352AF50BFB00D688DB /* mongoc-index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-index.h"; sourceTree = "<group>"; };
+		556AB6362AF50BFB00D688DB /* mongoc-server-api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-server-api.h"; sourceTree = "<group>"; };
+		556AB6372AF50BFB00D688DB /* mongoc-cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-cursor.h"; sourceTree = "<group>"; };
+		556AB6382AF50BFB00D688DB /* mongoc-read-prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-read-prefs.h"; sourceTree = "<group>"; };
+		556AB6392AF50BFB00D688DB /* mongoc-iovec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-iovec.h"; sourceTree = "<group>"; };
+		556AB63A2AF50BFB00D688DB /* mongoc-handshake.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-handshake.h"; sourceTree = "<group>"; };
+		556AB63B2AF50BFB00D688DB /* mongoc-change-stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-change-stream.h"; sourceTree = "<group>"; };
+		556AB63C2AF50BFB00D688DB /* mongoc-topology-description.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-topology-description.h"; sourceTree = "<group>"; };
+		556AB63D2AF50BFB00D688DB /* mongoc-client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-client.h"; sourceTree = "<group>"; };
+		556AB63E2AF50BFB00D688DB /* mongoc-version-functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-version-functions.h"; sourceTree = "<group>"; };
+		556AB63F2AF50BFB00D688DB /* mongoc-collection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-collection.h"; sourceTree = "<group>"; };
+		556AB6402AF50BFB00D688DB /* mongoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mongoc.h; sourceTree = "<group>"; };
+		556AB6412AF50BFB00D688DB /* mongoc-uri.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-uri.h"; sourceTree = "<group>"; };
+		556AB6422AF50BFB00D688DB /* mongoc-database.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-database.h"; sourceTree = "<group>"; };
+		556AB6432AF50BFB00D688DB /* mongoc-gridfs-file-list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-gridfs-file-list.h"; sourceTree = "<group>"; };
+		556AB6442AF50BFB00D688DB /* mongoc-flags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-flags.h"; sourceTree = "<group>"; };
+		556AB6452AF50BFB00D688DB /* mongoc-read-concern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-read-concern.h"; sourceTree = "<group>"; };
+		556AB6462AF50BFB00D688DB /* mongoc-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "mongoc-config.h"; sourceTree = "<group>"; };
+		556AB6472AF50BFB00D688DB /* mongoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mongoc.h; sourceTree = "<group>"; };
+		556AB6B72AF50C3500D688DB /* qmongo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qmongo.cpp; sourceTree = "<group>"; };
+		556AB6B82AF50C3500D688DB /* qmongo.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qmongo.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		556AB6032AF5094600D688DB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		556AB5FC2AF5094500D688DB = {
+			isa = PBXGroup;
+			children = (
+				556AB6112AF50BFB00D688DB /* source */,
+				556AB6062AF5094600D688DB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		556AB6062AF5094600D688DB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6052AF5094600D688DB /* libservercommon.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		556AB6112AF50BFB00D688DB /* source */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6B62AF50C2200D688DB /* qmongo */,
+				556AB6122AF50BFB00D688DB /* libmongoc-1.0 */,
+			);
+			path = source;
+			sourceTree = "<group>";
+		};
+		556AB6122AF50BFB00D688DB /* libmongoc-1.0 */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6132AF50BFB00D688DB /* mongoc */,
+				556AB6472AF50BFB00D688DB /* mongoc.h */,
+			);
+			path = "libmongoc-1.0";
+			sourceTree = "<group>";
+		};
+		556AB6132AF50BFB00D688DB /* mongoc */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6142AF50BFB00D688DB /* mongoc-log.h */,
+				556AB6152AF50BFB00D688DB /* mongoc-gridfs-bucket.h */,
+				556AB6162AF50BFB00D688DB /* mongoc-stream-socket.h */,
+				556AB6172AF50BFB00D688DB /* mongoc-apm.h */,
+				556AB6182AF50BFB00D688DB /* mongoc-find-and-modify.h */,
+				556AB6192AF50BFB00D688DB /* mongoc-ssl.h */,
+				556AB61A2AF50BFB00D688DB /* mongoc-opcode.h */,
+				556AB61B2AF50BFB00D688DB /* mongoc-write-concern.h */,
+				556AB61C2AF50BFB00D688DB /* mongoc-gridfs.h */,
+				556AB61D2AF50BFB00D688DB /* mongoc-socket.h */,
+				556AB61E2AF50BFB00D688DB /* mongoc-host-list.h */,
+				556AB61F2AF50BFB00D688DB /* mongoc-rand.h */,
+				556AB6202AF50BFB00D688DB /* mongoc-optional.h */,
+				556AB6212AF50BFB00D688DB /* mongoc-stream-gridfs.h */,
+				556AB6222AF50BFB00D688DB /* mongoc-stream-file.h */,
+				556AB6232AF50BFB00D688DB /* mongoc-matcher.h */,
+				556AB6242AF50BFB00D688DB /* mongoc-client-side-encryption.h */,
+				556AB6252AF50BFB00D688DB /* mongoc-stream-tls-libressl.h */,
+				556AB6262AF50BFB00D688DB /* mongoc-init.h */,
+				556AB6272AF50BFB00D688DB /* mongoc-client-pool.h */,
+				556AB6282AF50BFB00D688DB /* mongoc-version.h */,
+				556AB6292AF50BFB00D688DB /* mongoc-gridfs-file.h */,
+				556AB62A2AF50BFB00D688DB /* mongoc-stream-tls.h */,
+				556AB62B2AF50BFB00D688DB /* mongoc-macros.h */,
+				556AB62C2AF50BFB00D688DB /* mongoc-stream-buffered.h */,
+				556AB62D2AF50BFB00D688DB /* mongoc-gridfs-file-page.h */,
+				556AB62E2AF50BFB00D688DB /* mongoc-stream-tls-openssl.h */,
+				556AB62F2AF50BFB00D688DB /* mongoc-server-description.h */,
+				556AB6302AF50BFB00D688DB /* mongoc-prelude.h */,
+				556AB6312AF50BFB00D688DB /* mongoc-client-session.h */,
+				556AB6322AF50BFB00D688DB /* mongoc-bulk-operation.h */,
+				556AB6332AF50BFB00D688DB /* mongoc-error.h */,
+				556AB6342AF50BFB00D688DB /* mongoc-stream.h */,
+				556AB6352AF50BFB00D688DB /* mongoc-index.h */,
+				556AB6362AF50BFB00D688DB /* mongoc-server-api.h */,
+				556AB6372AF50BFB00D688DB /* mongoc-cursor.h */,
+				556AB6382AF50BFB00D688DB /* mongoc-read-prefs.h */,
+				556AB6392AF50BFB00D688DB /* mongoc-iovec.h */,
+				556AB63A2AF50BFB00D688DB /* mongoc-handshake.h */,
+				556AB63B2AF50BFB00D688DB /* mongoc-change-stream.h */,
+				556AB63C2AF50BFB00D688DB /* mongoc-topology-description.h */,
+				556AB63D2AF50BFB00D688DB /* mongoc-client.h */,
+				556AB63E2AF50BFB00D688DB /* mongoc-version-functions.h */,
+				556AB63F2AF50BFB00D688DB /* mongoc-collection.h */,
+				556AB6402AF50BFB00D688DB /* mongoc.h */,
+				556AB6412AF50BFB00D688DB /* mongoc-uri.h */,
+				556AB6422AF50BFB00D688DB /* mongoc-database.h */,
+				556AB6432AF50BFB00D688DB /* mongoc-gridfs-file-list.h */,
+				556AB6442AF50BFB00D688DB /* mongoc-flags.h */,
+				556AB6452AF50BFB00D688DB /* mongoc-read-concern.h */,
+				556AB6462AF50BFB00D688DB /* mongoc-config.h */,
+			);
+			path = mongoc;
+			sourceTree = "<group>";
+		};
+		556AB6B62AF50C2200D688DB /* qmongo */ = {
+			isa = PBXGroup;
+			children = (
+				556AB6B72AF50C3500D688DB /* qmongo.cpp */,
+				556AB6B82AF50C3500D688DB /* qmongo.hpp */,
+			);
+			path = qmongo;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		556AB6012AF5094600D688DB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				556AB68B2AF50BFB00D688DB /* mongoc-iovec.h in Headers */,
+				556AB67B2AF50BFB00D688DB /* mongoc-gridfs-file.h in Headers */,
+				556AB67F2AF50BFB00D688DB /* mongoc-gridfs-file-page.h in Headers */,
+				556AB6922AF50BFB00D688DB /* mongoc.h in Headers */,
+				556AB68D2AF50BFB00D688DB /* mongoc-change-stream.h in Headers */,
+				556AB6882AF50BFB00D688DB /* mongoc-server-api.h in Headers */,
+				556AB6692AF50BFB00D688DB /* mongoc-apm.h in Headers */,
+				556AB6862AF50BFB00D688DB /* mongoc-stream.h in Headers */,
+				556AB6972AF50BFB00D688DB /* mongoc-read-concern.h in Headers */,
+				556AB68E2AF50BFB00D688DB /* mongoc-topology-description.h in Headers */,
+				556AB6832AF50BFB00D688DB /* mongoc-client-session.h in Headers */,
+				556AB66C2AF50BFB00D688DB /* mongoc-opcode.h in Headers */,
+				556AB6702AF50BFB00D688DB /* mongoc-host-list.h in Headers */,
+				556AB6772AF50BFB00D688DB /* mongoc-stream-tls-libressl.h in Headers */,
+				556AB6742AF50BFB00D688DB /* mongoc-stream-file.h in Headers */,
+				556AB68C2AF50BFB00D688DB /* mongoc-handshake.h in Headers */,
+				556AB66E2AF50BFB00D688DB /* mongoc-gridfs.h in Headers */,
+				556AB6932AF50BFB00D688DB /* mongoc-uri.h in Headers */,
+				556AB66A2AF50BFB00D688DB /* mongoc-find-and-modify.h in Headers */,
+				556AB68F2AF50BFB00D688DB /* mongoc-client.h in Headers */,
+				556AB6BA2AF50C3500D688DB /* qmongo.hpp in Headers */,
+				556AB6672AF50BFB00D688DB /* mongoc-gridfs-bucket.h in Headers */,
+				556AB6952AF50BFB00D688DB /* mongoc-gridfs-file-list.h in Headers */,
+				556AB66D2AF50BFB00D688DB /* mongoc-write-concern.h in Headers */,
+				556AB67D2AF50BFB00D688DB /* mongoc-macros.h in Headers */,
+				556AB66F2AF50BFB00D688DB /* mongoc-socket.h in Headers */,
+				556AB6992AF50BFB00D688DB /* mongoc.h in Headers */,
+				556AB6732AF50BFB00D688DB /* mongoc-stream-gridfs.h in Headers */,
+				556AB6802AF50BFB00D688DB /* mongoc-stream-tls-openssl.h in Headers */,
+				556AB6762AF50BFB00D688DB /* mongoc-client-side-encryption.h in Headers */,
+				556AB6792AF50BFB00D688DB /* mongoc-client-pool.h in Headers */,
+				556AB6912AF50BFB00D688DB /* mongoc-collection.h in Headers */,
+				556AB6822AF50BFB00D688DB /* mongoc-prelude.h in Headers */,
+				556AB6752AF50BFB00D688DB /* mongoc-matcher.h in Headers */,
+				556AB6712AF50BFB00D688DB /* mongoc-rand.h in Headers */,
+				556AB6662AF50BFB00D688DB /* mongoc-log.h in Headers */,
+				556AB68A2AF50BFB00D688DB /* mongoc-read-prefs.h in Headers */,
+				556AB6902AF50BFB00D688DB /* mongoc-version-functions.h in Headers */,
+				556AB66B2AF50BFB00D688DB /* mongoc-ssl.h in Headers */,
+				556AB67E2AF50BFB00D688DB /* mongoc-stream-buffered.h in Headers */,
+				556AB6782AF50BFB00D688DB /* mongoc-init.h in Headers */,
+				556AB6872AF50BFB00D688DB /* mongoc-index.h in Headers */,
+				556AB6722AF50BFB00D688DB /* mongoc-optional.h in Headers */,
+				556AB6942AF50BFB00D688DB /* mongoc-database.h in Headers */,
+				556AB67C2AF50BFB00D688DB /* mongoc-stream-tls.h in Headers */,
+				556AB6842AF50BFB00D688DB /* mongoc-bulk-operation.h in Headers */,
+				556AB6962AF50BFB00D688DB /* mongoc-flags.h in Headers */,
+				556AB6812AF50BFB00D688DB /* mongoc-server-description.h in Headers */,
+				556AB6682AF50BFB00D688DB /* mongoc-stream-socket.h in Headers */,
+				556AB6852AF50BFB00D688DB /* mongoc-error.h in Headers */,
+				556AB6982AF50BFB00D688DB /* mongoc-config.h in Headers */,
+				556AB67A2AF50BFB00D688DB /* mongoc-version.h in Headers */,
+				556AB6892AF50BFB00D688DB /* mongoc-cursor.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		556AB6042AF5094600D688DB /* servercommon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 556AB6092AF5094600D688DB /* Build configuration list for PBXNativeTarget "servercommon" */;
+			buildPhases = (
+				556AB6012AF5094600D688DB /* Headers */,
+				556AB6022AF5094600D688DB /* Sources */,
+				556AB6032AF5094600D688DB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = servercommon;
+			productName = servercommon;
+			productReference = 556AB6052AF5094600D688DB /* libservercommon.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		556AB5FD2AF5094500D688DB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					556AB6042AF5094600D688DB = {
+						CreatedOnToolsVersion = 13.4;
+					};
+				};
+			};
+			buildConfigurationList = 556AB6002AF5094500D688DB /* Build configuration list for PBXProject "servercommon" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 556AB5FC2AF5094500D688DB;
+			productRefGroup = 556AB6062AF5094600D688DB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				556AB6042AF5094600D688DB /* servercommon */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		556AB6022AF5094600D688DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		556AB6072AF5094600D688DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		556AB6082AF5094600D688DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		556AB60A2AF5094600D688DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		556AB60B2AF5094600D688DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		556AB6002AF5094500D688DB /* Build configuration list for PBXProject "servercommon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				556AB6072AF5094600D688DB /* Debug */,
+				556AB6082AF5094600D688DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		556AB6092AF5094600D688DB /* Build configuration list for PBXNativeTarget "servercommon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				556AB60A2AF5094600D688DB /* Debug */,
+				556AB60B2AF5094600D688DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 556AB5FD2AF5094500D688DB /* Project object */;
+}

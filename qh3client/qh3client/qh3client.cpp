@@ -380,6 +380,9 @@ host(host),
 port(port) {
 }
 
+qh3client::~qh3client() {    
+}
+
 int qh3client::send_request(const getorpost_reqdata& data_get_) {
     this->http_request = data_get_;
     

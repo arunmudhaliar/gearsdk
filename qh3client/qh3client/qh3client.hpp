@@ -58,6 +58,7 @@ class qh3client : public bridge_h3client_connection{
 public:
     
     qh3client(const std::string& host, const std::string& port);
+    virtual ~qh3client();
     
     struct ev_loop *mainloop = nullptr;
     

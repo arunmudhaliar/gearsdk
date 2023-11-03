@@ -19,4 +19,7 @@
    <FileRef
       location = "group:qhiredis/qhiredis.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:servercommon/servercommon.xcodeproj">
+   </FileRef>
 </Workspace>
