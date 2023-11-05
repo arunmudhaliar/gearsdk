@@ -5,6 +5,8 @@ mkdir ./docker-qh3server
 cp -r ./common ./docker-qh3server/common
 cp -r ./networkcommon/ ./docker-qh3server/networkcommon
 cp -r ./qh3server/ ./docker-qh3server/qh3server
+cp -r ./qhiredis/ ./docker-qh3server/qhiredis
+cp -r ./servercommon/ ./docker-qh3server/servercommon
 cp ./qh3server/docker/Dockerfile ./docker-qh3server/Dockerfile
 cp ./qh3server/docker/make_qh3server.sh ./docker-qh3server/make_qh3server.sh
 cp ./qh3server/docker/run_qh3server.sh ./docker-qh3server/run_qh3server.sh
@@ -31,6 +33,9 @@ rm -rf -- ./docker-qh3server/**/**/**/*.xcodeproj
 rm -rf -- ./docker-qh3server/**/**/**/**/*.xcodeproj
 
 rm -rf ./docker-qh3server/networkcommon/libs/macos
+rm -rf ./docker-qh3server/common/libs/macos
+rm -rf ./docker-qh3server/qhiredis/libs/macos
+rm -rf ./docker-qh3server/servercommon/libs/macos
 rm -rf ./docker-qh3server/qh3server/docker
 rm -rf ./docker-qh3server/qh3server/*.dSYM
 rm -rf ./docker-qh3server/qh3server/qh3server-app

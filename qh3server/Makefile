@@ -1,12 +1,18 @@
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
+QHIREDIS_SRCDIR = ../qhiredis/source
+SERVER_COMMON_SRCDIR = ../servercommon/source
 COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
+$(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+$(QHIREDIS_SRCDIR)/qhiredis.cpp \
+$(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 
-INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
+INCLUDES = -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "../common/libbson-1.0" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0"
 SRCDIR = ./qh3server
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/qh3server.cpp \
@@ -26,7 +32,7 @@ ifeq ($(UNAME), Linux)
 	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -pthread -Wl,--no-as-needed -ldl
 endif
 ifeq ($(UNAME),Darwin)
-	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a -framework CoreFoundation -framework Security
+	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../servercommon/libs/macos/libmongoc-static-1.0.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libbson-static-1.0.a -framework CoreFoundation -framework Security -lresolv -lsasl2
 endif
 
 EXE = qh3server-app

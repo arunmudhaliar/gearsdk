@@ -151,8 +151,8 @@
 		556AB6112AF50BFB00D688DB /* source */ = {
 			isa = PBXGroup;
 			children = (
-				556AB6B62AF50C2200D688DB /* qmongo */,
 				556AB6122AF50BFB00D688DB /* libmongoc-1.0 */,
+				556AB6B62AF50C2200D688DB /* qmongo */,
 			);
 			path = source;
 			sourceTree = "<group>";
