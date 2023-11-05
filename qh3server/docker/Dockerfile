@@ -5,6 +5,8 @@ WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qh3server/ ./qh3server
+COPY qhiredis/ ./qhiredis
+COPY servercommon/ ./servercommon
 COPY make_qh3server.sh ./
 COPY run_qh3server.sh ./
 COPY qh3server/certs/cert.crt ./qh3server/
