@@ -13,8 +13,8 @@ COPY qh3server/certs/cert.crt ./qh3server/
 COPY qh3server/certs/cert.key ./qh3server/
 RUN apt-get update && apt-get install make
 RUN apt-get install build-essential -y
-RUN apt-get install db4.8-util -y
-RUN apt-get install sasl2-bin -y
+RUN apt-get install libssl-dev -y
+RUN apt-get install libsasl2-dev -y
 RUN apt install iproute2 -y
 RUN sh make_qh3server.sh
 CMD [ "sh", "run_qh3server.sh" ]
