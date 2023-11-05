@@ -23,8 +23,9 @@ public:
     ~qmongo();
 
     void cleanup();
-    int insert(const char* collection_name, bson_t& data);
-    int update(const char* collection_name, const char* key, const char* value);
+    int insert(const char* collection_name, bson_t& query);
+    int update(const char* collection_name, bson_t& query, bson_t& update);
+    mongoc_cursor_t* find(const char* collection_name, bson_t& query);
     mongoc_collection_t* get_collection(const char* collection_name);
     
 private:

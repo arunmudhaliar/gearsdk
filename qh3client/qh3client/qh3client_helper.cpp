@@ -20,12 +20,31 @@ int qh3client_helper::send_request(const std::string host, const std::string por
     return 0;
 }
 
+int qh3client_helper::send_async_request(const std::string host, const std::string port,
+                                         const getorpost_reqdata& data_getorpost_,
+                                         std::vector<conn_io_response>* response, type_qh3client_helper_cb async_cb) {
+    qh3_req_obj* req_obj = new qh3_req_obj(host, port, data_getorpost_, response);
+    req_obj->async_cb = async_cb;
+    if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal, (void *)req_obj) < 0)
+    {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+        return -1;
+    }
+    return 0;
+}
+//
+
 void *qh3client_helper::run_internal(void *data) {
     qh3_req_obj* req_obj = (qh3_req_obj*)data;
     qh3client* new_client = new qh3client(req_obj->host, req_obj->port);
     new_client->send_request(req_obj->data, req_obj->response);
+    if (req_obj->async_cb) {
+        req_obj->async_cb(req_obj->response);
+    }
     GX_DELETE(new_client);
     GX_DELETE(req_obj);
     pthread_exit(0);
 }
+
+
 

@@ -7,7 +7,6 @@
 
 #include "qmongo.hpp"
 #include "../../../common/gxcrc32.h"
-
 qmongo::qmongo(interface_qmongo_connection* interfce_, const char* app_name, const char* db_name, const char* uri_string) :
     interface(interfce_)
 {
@@ -103,17 +102,45 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const ch
     return EXIT_SUCCESS;
 }
 
-int qmongo::insert(const char* collection_name, bson_t& data) {
+int qmongo::insert(const char* collection_name, bson_t& query) {
     bson_error_t error;
-    if (!mongoc_collection_insert_one (get_collection(collection_name), &data, NULL, NULL, &error)) {
+    if (!mongoc_collection_insert_one (get_collection(collection_name), &query, NULL, NULL, &error)) {
        fprintf (stderr, "%s\n", error.message);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-int qmongo::update(const char* collection_name, const char* key, const char* value) {
-    return 0;
+int qmongo::update(const char* collection_name, bson_t& query, bson_t& update) {
+    bson_error_t error;
+    mongoc_find_and_modify_opts_t *opts;
+    bson_t reply;
+    
+    opts = mongoc_find_and_modify_opts_new ();
+    mongoc_find_and_modify_opts_set_update (opts, &update);
+
+    const mongoc_find_and_modify_flags_t flags = (mongoc_find_and_modify_flags_t) (MONGOC_FIND_AND_MODIFY_UPSERT | MONGOC_FIND_AND_MODIFY_RETURN_NEW);
+    /* Create the document if it didn't exist, and return the updated document */
+    mongoc_find_and_modify_opts_set_flags(opts, flags);
+    
+    bool result = mongoc_collection_find_and_modify_with_opts (
+                                                               get_collection(collection_name), &query, opts, &reply, &error);
+    if (!result) {
+        fprintf (stderr, "%s\n", error.message);
+    }
+    
+//    char* json_string = bson_as_json(&reply, nullptr);
+//    bson_destroy (&reply);
+    mongoc_find_and_modify_opts_destroy (opts);
+    return result ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+mongoc_cursor_t* qmongo::find(const char* collection_name, bson_t& query) {
+    bson_t* empty = bson_new();
+    mongoc_cursor_t* cursor;
+    cursor = mongoc_collection_find_with_opts(get_collection(collection_name), &query, empty, nullptr);
+    bson_destroy (empty);
+    return cursor;
 }
 
 mongoc_collection_t* qmongo::get_collection(const char* collection_name) {

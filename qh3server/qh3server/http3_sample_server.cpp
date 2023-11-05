@@ -83,30 +83,62 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         memset(user_name, 0, sizeof(user_name));
         snprintf(user_name, sizeof(user_name), "guest-%0x", crc);
         
-        // mongo
-        bson_t res_bson;
-        bson_init(&res_bson);
-        bson_t meta;
-        bson_init(&meta);
-        bson_append_document_begin (&res_bson, "user", 4, &meta);
-        bson_append_utf8(&meta, "pid", 3, user_id, (int)strlen(user_id));
-        bson_append_utf8(&meta, "name", 4, user_name, (int)strlen(user_name));
-        bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name, (int)strlen(sys_name));
-        bson_append_utf8(&meta, "node_name", strlen("node_name"), node_name, (int)strlen(node_name));
-        bson_append_utf8(&meta, "arch", strlen("arch"), arch, (int)strlen(arch));
-        bson_append_document_end (&res_bson, &meta);
+        time_t givemetime = time(NULL);
+        char* login_time_str = strtok(ctime(&givemetime), "\n");
         
-        if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
-            char* json_string = bson_as_json(&res_bson, nullptr);
+        // try find the user. (This needs to improve)
+        bool found = false;
+        bson_t find_query;
+        bson_init(&find_query);
+        bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), user_id, (int)strlen(user_id));
+        mongoc_cursor_t* cursor = mongo->find("users", find_query);
+        const bson_t *doc;
+        while (mongoc_cursor_next (cursor, &doc)) {
+            found = true;
+            char* json_string = bson_as_json(doc, nullptr);
             conn_io->http_response.clear_payload();
             conn_io->http_response.payload = json_string;
             bson_free(json_string);
-            logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+            logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+        }
+        mongoc_cursor_destroy (cursor);
+        
+        // if not found try insert. (This needs to improve)
+        if (!found) {
+            // mongo
+            bson_t res_bson;
+            bson_init(&res_bson);
+            bson_t meta;
+            bson_init(&meta);
+            bson_append_document_begin (&res_bson, "user", 4, &meta);
+            bson_append_utf8(&meta, "pid", 3, user_id, (int)strlen(user_id));
+            bson_append_utf8(&meta, "name", 4, user_name, (int)strlen(user_name));
+            bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name, (int)strlen(sys_name));
+            bson_append_utf8(&meta, "node_name", strlen("node_name"), node_name, (int)strlen(node_name));
+            bson_append_utf8(&meta, "arch", strlen("arch"), arch, (int)strlen(arch));
+            bson_append_utf8(&meta, "last_login", strlen("last_login"), login_time_str, (int)strlen(login_time_str));
+            bson_append_document_end (&res_bson, &meta);
+            if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
+                char* json_string = bson_as_json(&res_bson, nullptr);
+                conn_io->http_response.clear_payload();
+                conn_io->http_response.payload = json_string;
+                bson_free(json_string);
+                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+            } else {
+                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user failed - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+            }
+            bson_destroy(&meta);
+            bson_destroy (&res_bson);
+        }
+        
+        bson_t* update = BCON_NEW ("$set", "{", "user.last_login", BCON_UTF8 (login_time_str), "}");
+        if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
+            logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-last-login - %s, pid:%s", login_time_str, user_id);
         } else {
             logger.log(qlogfile::level_0, __LOGTAG__, "%s - %s", conn_io->http_request.path.c_str(), user_id);
         }
-        bson_destroy(&meta);
-        bson_destroy (&res_bson);
+        bson_destroy(update);
+        bson_destroy (&find_query);
         //
     }
 }
