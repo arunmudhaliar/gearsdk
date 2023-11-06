@@ -208,43 +208,65 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 
 int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
                               const std::string& version_string_, unsigned version_code_,
-                              std::string& host, std::string& port, fs::path& rootDir) {
+                              std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir) {
     if (argc==2 && strcmp(argv[1], "--version")==0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
         return -1;
     }
 
     DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
     PrintCommonInfo();
-    if (argc>=3) {
-        host = argv[1];
-        port = argv[2];
-        const struct addrinfo hints = {
-            .ai_family = PF_UNSPEC,
-            .ai_socktype = SOCK_DGRAM,
-            .ai_protocol = IPPROTO_UDP
-        };
-        struct addrinfo *peer = nullptr;
-        if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-            DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
-            DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> 'ip address' 'port'");
-            return -1;
-        }
-        if (peer) {
-            freeaddrinfo(peer);
-            peer = nullptr;
-        }
-    } else {
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> 'ip address' 'port'. Ignore for debug builds running locally.");
+    
+    if (argc%2==0) {
+        DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
+        return -1;
     }
-    DEBUG_PRINT_IMPORTANT(tag, "host:%s, port:%s", host.c_str(), port.c_str());
-
-    if (argc>=5 && strcmp(argv[3], "--certdir")==0) {
-        rootDir = fs::path(argv[4]);
-    } else {
-        fs::path executablePath(argc>0 ? argv[0] : "");
+    
+    // default to root
+    rootDir = "";
+    if (argc>0) {
+        fs::path executablePath(argv[0]);
         rootDir = executablePath.parent_path();
     }
+    //
+    
+    int pairs = (argc-1) / 2;
+    for(int x=0;x<pairs;x++) {
+        const char* lf = argv[1+x*2+0];
+        const char* rg = argv[1+x*2+1];
+        
+        if (strcmp(lf, "--h")==0) {
+            host = rg;
+        } else if (strcmp(lf, "--p")==0){
+            port = rg;
+        } else if (strcmp(lf, "--certdir")==0){
+            rootDir = fs::path(rg);
+        } else if (strcmp(lf, "--db")==0){
+            mongodb_uri = rg;
+        }
+    }
+    
+    // check host and port
+    const struct addrinfo hints = {
+        .ai_family = PF_UNSPEC,
+        .ai_socktype = SOCK_DGRAM,
+        .ai_protocol = IPPROTO_UDP
+    };
+    struct addrinfo *peer = nullptr;
+    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
+        DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
+        return -1;
+    }
+    if (peer) {
+        freeaddrinfo(peer);
+        peer = nullptr;
+    }
+    DEBUG_PRINT_IMPORTANT(tag, "host:%s, port:%s, mongodb_uri:%s", host.c_str(), port.c_str(), mongodb_uri.c_str());
+    //
+    
     DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());
     return 0;
 }

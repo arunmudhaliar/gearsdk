@@ -24,7 +24,7 @@ protected:
     qmongo* mongo = nullptr;
     
 public:
-    http3_sample_server();
+    http3_sample_server(const char* mongodb_uri);
     ~http3_sample_server();
     
     void test_mongo_db();

@@ -38,6 +38,13 @@ Building qserver for docker
     - docker rm --force qserver-container   [optional : if there is a previous docker running]
     - docker run --publish 4000:4000/udp --name qserver-container -d qserver-exp
 
+Install mongodb-community in docker
+-----------------------------------
+- https://www.mongodb.com/docs/manual/tutorial/install-mongodb-community-with-docker/
+
+- docker pull mongodb/mongodb-community-server
+- docker run --publish 6006:27017/tcp --name mongo -d mongodb/mongodb-community-server:latest
+    Note : we are connecting mongo docker's host machine in 6006 port not its default port numer 27017.
 
 Useful tips
 -----------

@@ -9,8 +9,8 @@
 #include "../../common/gxcrc32.h"
 #include "../../networkcommon/source/qbuffer.hpp"
 
-http3_sample_server::http3_sample_server() {
-    mongo = new qmongo(this, "qh3", "db_name");
+http3_sample_server::http3_sample_server(const char* mongodb_uri) {
+    mongo = new qmongo(this, "qh3", "db_name", mongodb_uri);
 }
 
 http3_sample_server::~http3_sample_server() {
@@ -145,10 +145,11 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
 }
 
 void http3_sample_server::test_mongo_db() {
-    qmongo mongo(this, "qh3", "db_name");
+    qmongo mongo(this, "qh3", "test", "mongodb://192.168.0.230:6006");
     
     bson_t bson;
     bson_t meta;
+    bson_init(&bson);
     bson_append_document_begin (&bson, "meta", 4, &meta);
     bson_append_utf8(&meta, "pid", 3, "mypid1", 6);
     bson_append_utf8(&meta, "name", 4, "myname", 6);

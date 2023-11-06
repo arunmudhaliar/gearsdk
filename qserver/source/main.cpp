@@ -15,10 +15,14 @@ static unsigned version_code = 1;
 int32_t main(int32_t argc, const char * argv[]) {
     std::string host = "localhost";
     std::string port = "4000";
+    std::string mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
     fs::path rootDir;
-    essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
+    int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
                           version_string, version_code,
-                          host, port, rootDir);
+                          host, port, mongodb_uri, rootDir);
+    if (result<0) {
+        exit(0);
+    }
     gameserver server;
     server.run(host, port, rootDir);
     
