@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install make
 RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
 RUN apt-get install libsasl2-dev -y
-RUN apt install libmongoc-dev -y
+# RUN apt install libmongoc-dev -y
 RUN apt install iproute2 -y
 RUN sh make_qh3server.sh
 CMD [ "sh", "run_qh3server.sh" ]
