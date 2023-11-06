@@ -22,7 +22,7 @@ void qh3server::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
                                            &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "done writing");
             break;
         }
 
@@ -39,7 +39,7 @@ void qh3server::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
@@ -180,7 +180,7 @@ int qh3server::for_each_header(const uint8_t *name, size_t name_len,
                            const uint8_t *value, size_t value_len,
                            void *argp) {
     struct conn_io *conn_io = (struct conn_io *)argp;
-    //(check) conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
+    conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
     return 0;
 }
 
@@ -204,7 +204,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -259,7 +259,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -295,7 +295,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -330,7 +330,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(conn_io->conn)) {
             Event *ev;
@@ -367,32 +367,21 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
                     case Event_type::Data: {
                         DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
-                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -1");
                         conn_io->http_request.clear_payload();
-                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -2");
                         for (;;) {
-                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -3");
                             ssize_t len = quiche_h3_recv_body(conn_io->http3,
                                                               conn_io->conn, s,
                                                               buf, sizeof(buf));
-
-                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 0");
                             if (len <= 0) {
                                 break;
                             }
                             if (conn_io->http_request.payload.size()==0) {
                                 conn_io->http_request.payload.resize(len, 0);
-                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 1");
                                 std::copy(buf, buf+len, begin(conn_io->http_request.payload));
-                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 2");
                             } else {
-                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 3");
                                 std::string reminder_body((char*)buf, len);
-                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 4");
                                 conn_io->http_request.reminder_payload.push_back(reminder_body);
-                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 5");
                             }
-                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 6");
                             DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int) len, buf);
                         }
                         break;
