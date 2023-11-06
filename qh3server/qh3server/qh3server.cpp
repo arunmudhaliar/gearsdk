@@ -372,16 +372,23 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                                               conn_io->conn, s,
                                                               buf, sizeof(buf));
 
+                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 0");
                             if (len <= 0) {
                                 break;
                             }
                             if (conn_io->http_request.payload.size()==0) {
                                 conn_io->http_request.payload.resize(len, 0);
+                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 1");
                                 std::copy(buf, buf+len, begin(conn_io->http_request.payload));
+                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 2");
                             } else {
+                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 3");
                                 std::string reminder_body((char*)buf, len);
+                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 4");
                                 conn_io->http_request.reminder_payload.push_back(reminder_body);
+                                DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 5");
                             }
+                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - 6");
                             DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int) len, buf);
                         }
                         break;
