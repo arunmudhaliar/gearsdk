@@ -65,12 +65,12 @@ Useful tips
 - SPKI code generation cmd. Go to the cert folder and issue this command.
 
 
-     cat cert.crt |
-          openssl x509 -inform pem -noout -outform pem -pubkey |
-          openssl pkey -pubin -inform pem -outform der |
-          openssl dgst -sha256 -binary |
-          openssl enc -base64
-    [MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=]
+             cat cert.crt |
+                  openssl x509 -inform pem -noout -outform pem -pubkey |
+                  openssl pkey -pubin -inform pem -outform der |
+                  openssl dgst -sha256 -binary |
+                  openssl enc -base64
+            [MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=]
 
 
 - Chrome Canary : Good to test h3 response easily.
