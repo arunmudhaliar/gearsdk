@@ -29,7 +29,7 @@ CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -lmongoc -lbson ../qhiredis/libs/linux/libhiredis.a  -lsasl2 -lssl -lcrypto -pthread -lrt -Wl,--no-as-needed -ldl -lresolv
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../servercommon/libs/linux/libmongoc-static-1.0.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libbson-static-1.0.a -lsasl2 -lssl -lcrypto -pthread -lrt -Wl,--no-as-needed -ldl -lresolv
 endif
 ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../servercommon/libs/macos/libmongoc-static-1.0.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libbson-static-1.0.a -framework CoreFoundation -framework Security -lresolv -lsasl2
