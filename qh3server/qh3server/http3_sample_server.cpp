@@ -10,7 +10,10 @@
 #include "../../networkcommon/source/qbuffer.hpp"
 
 http3_sample_server::http3_sample_server(const char* mongodb_uri) {
+//(check)
+#if 0
     mongo = new qmongo(this, "qh3", "db_name", mongodb_uri);
+#endif
 }
 
 http3_sample_server::~http3_sample_server() {
@@ -23,6 +26,8 @@ void http3_sample_server::parse_header(const uint8_t *name, size_t name_len,
 }
 
 void http3_sample_server::parse(struct conn_io *conn_io) {
+//(check)
+#if 0
     if (conn_io->http_request.path.compare("/whoami")==0) {
         conn_io->http_response.clear_payload();
         conn_io->http_response.payload = "{\"name\" : \"http3_sample_server\"}";
@@ -142,6 +147,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         bson_destroy (&find_query);
         //
     }
+#endif
 }
 
 void http3_sample_server::test_mongo_db() {

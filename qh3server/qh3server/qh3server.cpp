@@ -531,7 +531,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     };
 
     logger.start_session("qh3_logfile", sizeof("qh3_logfile"));
-    quiche_enable_debug_logging(debug_log, NULL);
+//    quiche_enable_debug_logging(debug_log, NULL);
 
     struct addrinfo *local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
