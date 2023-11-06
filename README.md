@@ -99,3 +99,10 @@ Useful tips
 
     quiche built from this git repo
     https://github.com/cloudflare/quiche.git
+
+- Connect to a docker container shell
+    sudo docker exec -it qh3server-container /bin/bash
+
+- Tailing the log file for dedbug purpose
+    // tail last 100 lines.
+    tail -f -n 100 <logfile path>   [./qh3_logfile-0-0.log]
