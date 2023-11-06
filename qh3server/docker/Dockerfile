@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:23.10
 LABEL key="qh3server"
 EXPOSE 4004/udp
 WORKDIR /app
