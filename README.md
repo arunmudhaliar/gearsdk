@@ -1,17 +1,48 @@
-# gearsdk
+# gearsdk v0.1
+
+Directories
+-----------
+- common            : source codes used by both server and client
+- networkcommon     : again common codebase used by both server and client, 
+                        but utilities associated with netwoking solutions.
+- qclient   [sdk]   : client sdk for statefull server-client communications using quic
+- qh3client [sdk]   : client sdk for stateless server-client communications using quic
+- qh3server [sdk]   : server sdk for stateless server-client communications using quic
+- qhiredis          : redis sdk wrapper [high speed in-memory db]
+- qserver   [sdk]   : server sdk for statefull server-client communications using quic
+- sandbox           : experimental code [only for reference purpose]
+- scripts           : jenkins sample script. (Note: qserver and qh3server contains more updated versions)
+- servercommon      : source code used only in server sdks. clients must not use these.
+
+- docker-qh3server  : temporary directory while building for docker. 
+- docker-qserver    : temporary directory while building for docker. 
 
 ubuntu build
  - sudo apt install clang
  - sudo apt-get install libc++-dev
  - sudo apt-get install g++multilib
+ 
+ - Use the Makefile in the respective directories to build individual sdks.
 
- docker jenkins
- - sudo usermod -a -G docker jenkins
- - docker build -t qserver-exp .
- - docker run -it qserver-exp
+Building qserver for docker
+---------------------------
+  - sudo usermod -a -G docker jenkins   (For setting user, one time setting.)
+
+  - Please refer jenkins_script.sh file under qserver folder.
+
+    - Go to 'qserver/docker' folder.
+    - sh ./prepare-docker-qserver-folder.sh
+            This will prepare a docker-server folder in root folder.
+    - docker build -t qserver-exp .
+    - docker stop qserver-container         [optional : if there is a previous docker running]
+    - docker rm --force qserver-container   [optional : if there is a previous docker running]
+    - docker run --publish 4000:4000/udp --name qserver-container -d qserver-exp
 
 
-- response header added
+Useful tips
+-----------
+- response header added (mandatory for h3 response, now we are running in 6121 port. 
+                    incase we want to change we may need to refactor the code here.)
     Alternate-Protocol: quic:<QUIC server port>
     {
         .name = (uint8_t *) "Alternate-Protocol",
@@ -21,7 +52,8 @@ ubuntu build
         .value_len = sizeof("quic:6121") - 1,
     },
 
-- SPKI
+
+- SPKI code generation cmd. Go to the cert folder and issue this command.
  cat cert.crt |
       openssl x509 -inform pem -noout -outform pem -pubkey |
       openssl pkey -pubin -inform pem -outform der |
@@ -29,13 +61,34 @@ ubuntu build
       openssl enc -base64
 [MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=]
 
-- Chrome Canary
+- Chrome Canary : Good to test h3 response easily.
 /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/whoami --ignore-certificate-errors-spki-list=<SPKI>
 
 /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/ --ignore-certificate-errors-spki-list=MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=
 
 - Mongo
-    git mongo-c-driver
-        - https://github.com/mongodb/mongo-c-driver
-    mac os 
+    https://www.mongodb.com/
+    
+    Built libs used in our codebase from this git repo
+    mongo-c-driver
+        git https://github.com/mongodb/mongo-c-driver
+    
+    Installation
+        Please refer the official site for respective OS.
+    
+    To start/stop the service on MacOS if installed using brew
         - brew services start mongodb/brew/mongodb-community
+        - brew services stop mongodb/brew/mongodb-community
+
+- Redis
+    Installation
+        Please refer the official site for respective OS.
+
+    Built libs used in our codebase from this git repo
+    git https://github.com/redis/hiredis.git
+
+- QUICHE
+    QUIC protocol code base
+
+    quiche built from this git repo
+    https://github.com/cloudflare/quiche.git
