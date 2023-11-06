@@ -20,9 +20,10 @@ Directories
 
 Ubuntu build
 ---------------
- - `sudo apt install clang`
- - `sudo apt-get install libc++-dev`
- - `sudo apt-get install g++multilib`
+
+     sudo apt install clang
+     sudo apt-get install libc++-dev
+     sudo apt-get install g++multilib
 
  - Use the `Makefile` in the respective directories to build individual sdks.
 
@@ -74,9 +75,11 @@ Useful tips
 
 
 - Chrome Canary : Good to test h3 response easily.
-`/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/whoami --ignore-certificate-errors-spki-list=<SPKI>`
 
-`/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/ --ignore-certificate-errors-spki-list=MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=`
+
+    /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/whoami --ignore-certificate-errors-spki-list=<SPKI>
+
+    /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary ----enable-quic --origin-to-force-quic-on=localhost:6121 https://localhost:6121/ --ignore-certificate-errors-spki-list=MCFtYhgL/+T4kkcV64TQTTAw0Q5Gq2360530xEr9lFs=
 
 ** Make sure to modify the url and port before trying on your machine.
 
@@ -113,3 +116,7 @@ Useful tips
 - Tailing the log file for dedbug purpose
     // tail last 100 lines.
     `tail -f -n 100 <logfile path>   [./qh3_logfile-0-0.log]`
+	
+	
+	
+*formatted by https://pandao.github.io/editor.md/en.html*
