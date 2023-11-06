@@ -366,8 +366,11 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
                     case Event_type::Data: {
                         DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -1");
                         conn_io->http_request.clear_payload();
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -2");
                         for (;;) {
+                            DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body - -3");
                             ssize_t len = quiche_h3_recv_body(conn_io->http3,
                                                               conn_io->conn, s,
                                                               buf, sizeof(buf));
