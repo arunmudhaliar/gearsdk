@@ -104,6 +104,8 @@ struct getorpost_reqdata {
 };
 
 struct getorpost_response_data {
+    getorpost_response_data() {
+    }
     getorpost_response_data( const std::string& payload) :
         payload(payload) {
     }

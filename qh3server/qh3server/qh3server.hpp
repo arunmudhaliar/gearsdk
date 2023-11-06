@@ -72,11 +72,12 @@ struct connections {
 };
 
 struct conn_io {
+    conn_io(){}
     ev_timer timer;
     int sock;
     uint8_t cid[LOCAL_CONN_ID_LEN];
-    Connection *conn;
-    Connection *http3;
+    Connection *conn = nullptr;
+    Connection *http3 = nullptr;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     UT_hash_handle hh;

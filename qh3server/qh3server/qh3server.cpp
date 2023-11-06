@@ -109,8 +109,9 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
                                    struct sockaddr_storage *peer_addr,
                                    socklen_t peer_addr_len)
 {
-    struct conn_io *conn_io = (struct conn_io *)calloc(1, sizeof(*conn_io));
-    if (conn_io == NULL) {
+    //struct conn_io *conn_io = (struct conn_io *)calloc(1, sizeof(*conn_io));
+    struct conn_io *new_conn_io = new struct conn_io();
+    if (new_conn_io == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate connection IO");
         return NULL;
     }
@@ -119,9 +120,9 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed, scid length too short");
     }
 
-    memcpy(conn_io->cid, scid, LOCAL_CONN_ID_LEN);
+    memcpy(new_conn_io->cid, scid, LOCAL_CONN_ID_LEN);
 
-    Connection *conn = quiche_accept(conn_io->cid, LOCAL_CONN_ID_LEN,
+    Connection *conn = quiche_accept(new_conn_io->cid, LOCAL_CONN_ID_LEN,
                                       odcid, odcid_len,
                                       local_addr,
                                       local_addr_len,
@@ -134,21 +135,21 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
         return NULL;
     }
 
-    conn_io->sock = conns->sock;
-    conn_io->conn = conn;
-    conn_io->bridge = this;
+    new_conn_io->sock = conns->sock;
+    new_conn_io->conn = conn;
+    new_conn_io->bridge = this;
 
-    memcpy(&conn_io->peer_addr, peer_addr, peer_addr_len);
-    conn_io->peer_addr_len = peer_addr_len;
+    memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
+    new_conn_io->peer_addr_len = peer_addr_len;
 
-    ev_init(&conn_io->timer, timeout_cb);
-    conn_io->timer.data = conn_io;
+    ev_init(&new_conn_io->timer, timeout_cb);
+    new_conn_io->timer.data = new_conn_io;
 
-    HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, conn_io);
+    HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, new_conn_io);
 
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new connection");
 
-    return conn_io;
+    return new_conn_io;
 }
 
 /*
@@ -488,7 +489,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
             ev_timer_stop(loop, &conn_io->timer);
 
             quiche_conn_free(conn_io->conn);
-            free(conn_io);
+            GX_DELETE(conn_io);
         }
     }
 }
