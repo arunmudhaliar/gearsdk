@@ -7,6 +7,7 @@
 
 #include "http3_sample_server.hpp"
 #include "../../common/gxcrc32.h"
+#include "../../networkcommon/source/qbuffer.hpp"
 
 http3_sample_server::http3_sample_server() {
     mongo = new qmongo(this, "qh3", "db_name");
@@ -21,12 +22,11 @@ void http3_sample_server::parse_header(const uint8_t *name, size_t name_len,
     qh3server::parse_header(name, name_len, value, value_len, conn_io);
 }
 
-#include "../../networkcommon/source/qbuffer.hpp"
-
 void http3_sample_server::parse(struct conn_io *conn_io) {
     if (conn_io->http_request.path.compare("/whoami")==0) {
         conn_io->http_response.clear_payload();
         conn_io->http_response.payload = "{\"name\" : \"http3_sample_server\"}";
+        logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
     } else if (conn_io->http_request.path.compare("/user_get")==0) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
@@ -34,6 +34,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         const char* json = conn_io->http_request.payload.c_str();
         if (!bson_init_from_json (&bson, json, conn_io->http_request.payload.size(), &error)) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
+            logger.log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", conn_io->http_request.path.c_str(), error.message);
            return;
         }
         

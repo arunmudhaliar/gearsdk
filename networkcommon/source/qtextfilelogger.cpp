@@ -123,7 +123,8 @@ int qlogfile::flush(bool check_for_log_file_size) {
     if (err_cnt) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "error while logging - lines not written %d !!!", err_cnt);
     }
-    if (records.size()) {
+    ssize_t flushed_cnt = records.size();
+    if (flushed_cnt) {
         fflush(fp);
     }
     records.clear();
@@ -131,7 +132,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
         create_new_logfile();
     }
     log_mutex.unLock();
-    return 0;
+    return (int)flushed_cnt;
 }
 
 qtextfilelogger::qtextfilelogger() :
@@ -178,10 +179,11 @@ void *qtextfilelogger::run_log_session(void *data) {
     ev_tstamp creation_time = ev_now(logger->log_loop);
     logger->set_ev_lopp(logger->log_loop);
     logger->logtimer = logger->schedule_repeat_timer([logger, creation_time](qtimer& timer) {
-        if (logger->logfile->flush(true) == 0) {
+        if (logger->logfile->flush(true) > 0) {
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time );
         }
     }, config->flush_time);
+    logger->log(qlogfile::level_0, __LOGTAG__, "start-session");
     ev_run(logger->log_loop, 0);
     
     logger->logtimer = nullptr; // scheduler will delete the timer;

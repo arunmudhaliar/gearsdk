@@ -18,6 +18,7 @@
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+#include "../../networkcommon/source/qtextfilelogger.hpp"
 
 extern "C"
 {
@@ -114,6 +115,7 @@ protected:
         return mainloop;
     }
 
+    qtextfilelogger logger;
 private:
     static void debug_log(const uint8_t *line, void *argp);
     static void timeout_cb(EV_P_ ev_timer *w, int revents);

@@ -521,7 +521,6 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     };
 
     logger.start_session("qh3_logfile", sizeof("qh3_logfile"));
-    logger.log(qlogfile::level_0, __LOGTAG__, "session - start");
     quiche_enable_debug_logging(debug_log, NULL);
 
     struct addrinfo *local;
@@ -613,7 +612,6 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
 
     quiche_config_free(config);
 
-    logger.log(qlogfile::level_0, __LOGTAG__, "session - end");
     logger.end_session();
     return 0;
 }

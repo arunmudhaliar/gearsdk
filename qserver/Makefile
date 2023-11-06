@@ -1,6 +1,8 @@
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
+$(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \

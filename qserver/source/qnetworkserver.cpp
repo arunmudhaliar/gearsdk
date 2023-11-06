@@ -586,6 +586,7 @@ void *qnetworkserver::run_internal(void *data)
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP};
 
+    thiz->logger.start_session("q_logfile", sizeof("q_logfile"));
     quiche_enable_debug_logging(debug_log, nullptr);
 
     struct addrinfo *local;
@@ -686,6 +687,7 @@ void *qnetworkserver::run_internal(void *data)
 
     quiche_config_free(thiz->config);
 
+    thiz->logger.end_session();
     return 0;
 }
 
