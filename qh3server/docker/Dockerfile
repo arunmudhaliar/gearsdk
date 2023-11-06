@@ -17,6 +17,7 @@ RUN apt-get install libssl-dev -y
 RUN apt-get install libsasl2-dev -y
 # RUN apt install libmongoc-dev -y
 RUN apt install libsnappy-dev -y
+RUN apt-get install -y zstd
 RUN apt install iproute2 -y
 RUN sh make_qh3server.sh
 CMD [ "sh", "run_qh3server.sh" ]
