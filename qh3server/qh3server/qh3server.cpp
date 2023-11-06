@@ -179,7 +179,7 @@ int qh3server::for_each_header(const uint8_t *name, size_t name_len,
                            const uint8_t *value, size_t value_len,
                            void *argp) {
     struct conn_io *conn_io = (struct conn_io *)argp;
-    conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
+    //(check) conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
     return 0;
 }
 
