@@ -24,10 +24,12 @@ void http3_sample_server::parse_header(const uint8_t *name, size_t name_len,
 
 void http3_sample_server::parse(struct conn_io *conn_io) {
     if (conn_io->http_request.path.compare("/whoami")==0) {
+        bool validate = conn_io->http_request.validate();
         conn_io->http_response.clear_payload();
         conn_io->http_response.payload = "{\"name\" : \"http3_sample_server\"}";
         logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
     } else if (conn_io->http_request.path.compare("/user_get")==0) {
+        bool validate = conn_io->http_request.validate();
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
         bson_error_t error;
@@ -46,6 +48,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         const char* release = nullptr;
         const char* arch = nullptr;
         qbuffer buffer;
+        buffer.allocate(128);
         qbuffer_writer writer;
         if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "details.sys_name", &sub_iter)) {
             sys_name = bson_iter_utf8 (&sub_iter, NULL);
