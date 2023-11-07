@@ -10,6 +10,7 @@
 
 #include <string>
 #include "../../common/sdktypes.hpp"
+#include "../../common/gxcrc32.h"
 #include "qtimer.hpp"
 
 #if PLATFORM == PLATFORM_MAC
@@ -98,6 +99,10 @@ struct getorpost_reqdata {
         payload.clear();
         reminder_payload.clear();
     }
+    
+    bool validate();
+    std::string crc;
+    int crc_length=0;
     std::string path;
     std::string payload;
     std::vector<std::string> reminder_payload;

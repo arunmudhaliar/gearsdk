@@ -170,6 +170,12 @@ void qh3server::parse_header(const uint8_t *name, size_t name_len,
             std::copy(value, value+value_len, begin(conn_io->http_request.path));
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "HTTP req '%s' : %s", name, value);
         }
+    } else if (name_len == 3) {
+        if (strncmp((char*)name, "crc", name_len)==0) {
+            conn_io->http_request.crc_length = value_len;
+            conn_io->http_request.crc.resize(value_len, 0);
+            std::copy(value, value+value_len, begin(conn_io->http_request.crc));
+        }
     }
 }
 
@@ -366,7 +372,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     }
 
                     case Event_type::Data: {
-                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
+                        // DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
                         conn_io->http_request.clear_payload();
                         for (;;) {
                             ssize_t len = quiche_h3_recv_body(conn_io->http3,

@@ -7,6 +7,7 @@
 
 #include "qh3client.hpp"
 #include "../../common/sdktypes.hpp"
+#include "../../common/gxcrc32.h"
 
 void qh3client::debug_log(const uint8_t *line, void *argp) {
     fprintf(stderr, "%s\n", line);
@@ -71,6 +72,11 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
 }
 
 int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
+    int crc = gxcrc32::Calc((unsigned char*)data_getorpost_.payload.c_str(), 0, (int)data_getorpost_.payload.size());
+    char crc_buffer[32];
+    memset(crc_buffer, 0, sizeof(crc_buffer));
+    snprintf(crc_buffer, sizeof(crc_buffer), "%0x", crc);
+    
     Header headers_get[] = {
         {
             .name = (uint8_t *) ":method",
@@ -111,11 +117,18 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
             .value = (uint8_t *) "quiche",
             .value_len = sizeof("quiche") - 1,
         },
+        {
+            .name = (uint8_t *) "crc",
+            .name_len = sizeof("crc") - 1,
+
+            .value = (uint8_t *) crc_buffer,
+            .value_len = sizeof(crc_buffer),
+        },
     };
 
     int64_t stream_id = quiche_h3_send_request(conn_io->http3,
                                                conn_io->conn,
-                                               headers_get, 5, true);
+                                               headers_get, 6, true);
 
     fprintf(stderr, "sent HTTP GET request %" PRId64 "\n", stream_id);
     return stream_id;
@@ -125,6 +138,13 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
     int number_of_digits = NumberOfDigits((int)data_getorpost_.payload.size());
     char content_length_data[number_of_digits+1];
     snprintf(content_length_data, sizeof(content_length_data), "%d", (int)data_getorpost_.payload.size());
+    
+    int crc = gxcrc32::Calc((unsigned char*)data_getorpost_.payload.c_str(), 0, (int)data_getorpost_.payload.size());
+    char crc_buffer[32];
+    memset(crc_buffer, 0, sizeof(crc_buffer));
+    snprintf(crc_buffer, sizeof(crc_buffer), "%0x", crc);
+    fprintf(stderr, "crc %0x - %s\n", crc, crc_buffer);
+    
     Header headers_get[] = {
         {
             .name = (uint8_t *) ":method",
@@ -172,11 +192,18 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
             .value = (uint8_t *) content_length_data,
             .value_len = sizeof(content_length_data) - 1,
         },
+        {
+            .name = (uint8_t *) "crc",
+            .name_len = sizeof("crc") - 1,
+
+            .value = (uint8_t *) crc_buffer,
+            .value_len = sizeof(crc_buffer),
+        },
     };
 
     int64_t stream_id = quiche_h3_send_request(conn_io->http3,
                                                conn_io->conn,
-                                               headers_get, 6, false);
+                                               headers_get, 7, false);
     ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id,
                                            (u_int8_t*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size(),
                                            true);

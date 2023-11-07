@@ -11,6 +11,8 @@
 #include "qh3server.hpp"
 #include "../../servercommon/source/qmongo/qmongo.hpp"
 
+#define SAMPLE_SERVER_SALT "lkfm7q3a"
+
 class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
     void parse_header(const uint8_t *name, size_t name_len,

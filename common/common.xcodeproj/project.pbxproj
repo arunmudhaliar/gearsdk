@@ -35,6 +35,11 @@
 		556AB6F92AF5736E00D688DB /* bson-version.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DD2AF5736E00D688DB /* bson-version.h */; };
 		556AB6FA2AF5736E00D688DB /* bson-value.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DE2AF5736E00D688DB /* bson-value.h */; };
 		556AB6FB2AF5736E00D688DB /* bson.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6DF2AF5736E00D688DB /* bson.h */; };
+		556AB7142AFA8FBC00D688DB /* sha256.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB7122AFA8FBC00D688DB /* sha256.h */; };
+		556AB7152AFA8FBC00D688DB /* sha256.c in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7132AFA8FBC00D688DB /* sha256.c */; };
+		556AB7172AFA94B800D688DB /* cltypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB7162AFA94B800D688DB /* cltypes.h */; };
+		556AB71B2AFA993200D688DB /* crypto_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7192AFA993200D688DB /* crypto_helper.cpp */; };
+		556AB71C2AFA993200D688DB /* crypto_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB71A2AFA993200D688DB /* crypto_helper.hpp */; };
 		55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55853CC72AC32A1E00901E52 /* sdktypes.cpp */; };
 		55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B3730B2AC3263200F0095E /* sdktypes.hpp */; };
 		55E4D3102AC8A73000555999 /* gxcrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D30E2AC8A73000555999 /* gxcrc32.cpp */; };
@@ -72,6 +77,12 @@
 		556AB6DD2AF5736E00D688DB /* bson-version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-version.h"; sourceTree = "<group>"; };
 		556AB6DE2AF5736E00D688DB /* bson-value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-value.h"; sourceTree = "<group>"; };
 		556AB6DF2AF5736E00D688DB /* bson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bson.h; sourceTree = "<group>"; };
+		556AB7122AFA8FBC00D688DB /* sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha256.h; sourceTree = "<group>"; };
+		556AB7132AFA8FBC00D688DB /* sha256.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sha256.c; sourceTree = "<group>"; };
+		556AB7162AFA94B800D688DB /* cltypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cltypes.h; sourceTree = "<group>"; };
+		556AB7182AFA979000D688DB /* endian_check.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = endian_check.h; sourceTree = "<group>"; };
+		556AB7192AFA993200D688DB /* crypto_helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = crypto_helper.cpp; sourceTree = "<group>"; };
+		556AB71A2AFA993200D688DB /* crypto_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = crypto_helper.hpp; sourceTree = "<group>"; };
 		55853CC72AC32A1E00901E52 /* sdktypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sdktypes.cpp; sourceTree = "<group>"; };
 		55B372FA2AC325B200F0095E /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B3730B2AC3263200F0095E /* sdktypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sdktypes.hpp; sourceTree = "<group>"; };
@@ -136,9 +147,23 @@
 			path = bson;
 			sourceTree = "<group>";
 		};
+		556AB7112AFA8FBC00D688DB /* crypto */ = {
+			isa = PBXGroup;
+			children = (
+				556AB7162AFA94B800D688DB /* cltypes.h */,
+				556AB7122AFA8FBC00D688DB /* sha256.h */,
+				556AB7132AFA8FBC00D688DB /* sha256.c */,
+			);
+			path = crypto;
+			sourceTree = "<group>";
+		};
 		55B372F12AC325B200F0095E = {
 			isa = PBXGroup;
 			children = (
+				556AB7192AFA993200D688DB /* crypto_helper.cpp */,
+				556AB71A2AFA993200D688DB /* crypto_helper.hpp */,
+				556AB7182AFA979000D688DB /* endian_check.h */,
+				556AB7112AFA8FBC00D688DB /* crypto */,
 				556AB6C22AF5736E00D688DB /* libbson-1.0 */,
 				55E4D3132ACAF18B00555999 /* timer.cpp */,
 				55E4D3142ACAF18B00555999 /* timer.h */,
@@ -180,6 +205,7 @@
 				556AB6E52AF5736E00D688DB /* bson-decimal128.h in Headers */,
 				55E4D3162ACAF18B00555999 /* timer.h in Headers */,
 				556AB6F62AF5736E00D688DB /* bson-cmp.h in Headers */,
+				556AB7172AFA94B800D688DB /* cltypes.h in Headers */,
 				556AB6EF2AF5736E00D688DB /* bson-oid.h in Headers */,
 				556AB6ED2AF5736E00D688DB /* bson-keys.h in Headers */,
 				556AB6E32AF5736E00D688DB /* bcon.h in Headers */,
@@ -194,9 +220,11 @@
 				556AB6E72AF5736E00D688DB /* bson-version-functions.h in Headers */,
 				556AB6E92AF5736E00D688DB /* bson-reader.h in Headers */,
 				556AB6F82AF5736E00D688DB /* bson-md5.h in Headers */,
+				556AB71C2AFA993200D688DB /* crypto_helper.hpp in Headers */,
 				556AB6EA2AF5736E00D688DB /* bson-utf8.h in Headers */,
 				556AB6E62AF5736E00D688DB /* bson-config.h in Headers */,
 				556AB6F92AF5736E00D688DB /* bson-version.h in Headers */,
+				556AB7142AFA8FBC00D688DB /* sha256.h in Headers */,
 				55E4D3112AC8A73000555999 /* gxcrc32.h in Headers */,
 				556AB6F12AF5736E00D688DB /* bson-types.h in Headers */,
 				556AB6F02AF5736E00D688DB /* bson-context.h in Headers */,
@@ -266,7 +294,9 @@
 			files = (
 				55E4D3152ACAF18B00555999 /* timer.cpp in Sources */,
 				55E4D3102AC8A73000555999 /* gxcrc32.cpp in Sources */,
+				556AB7152AFA8FBC00D688DB /* sha256.c in Sources */,
 				55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */,
+				556AB71B2AFA993200D688DB /* crypto_helper.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,6 +24,8 @@
 #define PLATFORM PLATFORM_UNIX
 #endif
 
+#include "endian_check.h"
+
 #define DECLSPEC
 
 #define GSDK_UDP_DEFAULT_PORT 5000

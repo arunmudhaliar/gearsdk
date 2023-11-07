@@ -270,3 +270,15 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
     DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());
     return 0;
 }
+
+bool getorpost_reqdata::validate() {
+    int crc_ = gxcrc32::Calc((unsigned char*)payload.c_str(), 0, (int)payload.size());
+    int crc_from_req = 0;
+    sscanf(crc.c_str(), "%x", &crc_from_req);
+    
+    if (crc_from_req != crc_) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d", crc_, crc_from_req);
+        assert(crc_from_req == crc_);
+    }
+    return crc_from_req == crc_;
+}
