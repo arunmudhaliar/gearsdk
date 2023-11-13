@@ -10,6 +10,7 @@
 		556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */; };
 		556AB7002AF574B400D688DB /* libbson-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */; };
 		556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7012AF586C000D688DB /* qh3client_helper.cpp */; };
+		556AB71E2B024A4600D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB71D2B024A4600D688DB /* libz.a */; };
 		55A4ADB62AEF82AB00BC4CED /* main_h3_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */; };
 		55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */; };
 		55A4ADCE2AEFA54D00BC4CED /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCD2AEFA54000BC4CED /* libquiche.a */; };
@@ -39,6 +40,7 @@
 		556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos/libbson-static-1.0.a"; sourceTree = "<group>"; };
 		556AB7012AF586C000D688DB /* qh3client_helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3client_helper.cpp; sourceTree = "<group>"; };
 		556AB7022AF586C000D688DB /* qh3client_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3client_helper.hpp; sourceTree = "<group>"; };
+		556AB71D2B024A4600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		55A4ADB22AEF82AA00BC4CED /* qh3client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3client; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_client.cpp; sourceTree = "<group>"; };
 		55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
@@ -57,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				556AB71E2B024A4600D688DB /* libz.a in Frameworks */,
 				55A4ADCF2AEFA55900BC4CED /* libev.a in Frameworks */,
 				556AB7002AF574B400D688DB /* libbson-static-1.0.a in Frameworks */,
 				55A4ADD32AEFA56200BC4CED /* libnetworkcommon.a in Frameworks */,
@@ -105,6 +108,7 @@
 		55A4ADC92AEFA51900BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556AB71D2B024A4600D688DB /* libz.a */,
 				556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */,
 				55A4ADD42AEFA56B00BC4CED /* Security.framework */,
 				55A4ADD22AEFA56200BC4CED /* libnetworkcommon.a */,
@@ -301,13 +305,14 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"LOG_LEVEL=1",
+					"LOG_LEVEL=2",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/zlib\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -328,6 +333,7 @@
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/zlib\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

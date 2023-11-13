@@ -59,6 +59,7 @@ public:
 
 class qbuffer_writer {
 public:
+    void write( qbuffer& buffer, int32_t value ) const;
     void write( qbuffer& buffer, uint32_t value ) const;
     void write( qbuffer& buffer, uint16_t value ) const;
     void write( qbuffer& buffer, uint8_t value ) const;

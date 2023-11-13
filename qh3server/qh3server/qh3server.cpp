@@ -161,18 +161,23 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
  */
 void qh3server::parse_header(const uint8_t *name, size_t name_len,
                   const uint8_t *value, size_t value_len, struct conn_io *conn_io) {
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "got HTTP header: %.*s=%.*s",
-            (int) name_len, name, (int) value_len, value);
+    if (memcmp(name, ":path", name_len)==0) {
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "got HTTP header: %.*s=%.*s",
+                (int) name_len, name, (int) value_len, value);
+    } else {
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP header: %.*s=%.*s",
+                (int) name_len, name, (int) value_len, value);
+    }
     if (name_len==5) {
         // check for path
-        if (strncmp((char*)name, ":path", name_len)==0) {
+        if (memcmp(name, ":path", name_len)==0) {
             conn_io->http_request.path.resize(value_len, 0);
             std::copy(value, value+value_len, begin(conn_io->http_request.path));
-            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "HTTP req '%s' : %s", name, value);
+//            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "HTTP req '%s' : %s", name, value);
         }
     } else if (name_len == 3) {
-        if (strncmp((char*)name, "crc", name_len)==0) {
-            conn_io->http_request.crc_length = value_len;
+        if (memcmp(name, "crc", name_len)==0) {
+            conn_io->http_request.crc_length = (int)value_len;
             conn_io->http_request.crc.resize(value_len, 0);
             std::copy(value, value+value_len, begin(conn_io->http_request.crc));
         }
@@ -245,7 +250,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (conn_io == NULL) {
             if (!quiche_version_is_supported(version)) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "version negotiation");
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
@@ -270,7 +275,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
             }
 
             if (token_len == 0) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stateless retry");
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "stateless retry");
 
                 server->mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
@@ -394,58 +399,67 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     }
 
                     case Event_type::Finished: {
-                        conn_io->http_response.clear_payload();
                         conn_io->bridge->parse(conn_io);
-                        
-                        int number_of_digits = NumberOfDigits((int)conn_io->http_response.payload.size());
+                        conn_io_response::payload* payload = conn_io->http_response.responses.size() ? conn_io->http_response.responses[0] : nullptr;
+                        int number_of_digits = NumberOfDigits((int)payload->len);
                         char content_length_data[number_of_digits+1];
-                        snprintf(content_length_data, sizeof(content_length_data), "%d", (int)conn_io->http_response.payload.size());
+                        snprintf(content_length_data, sizeof(content_length_data), "%d", (int)payload->len);
                         
-                        Header headers[] = {
-                            {
-                                .name = (uint8_t *) ":status",
-                                .name_len = sizeof(":status") - 1,
+                        int header_size = 4;
+                        Header *headers = new Header[header_size + conn_io->http_response.headers.size()];
+                        headers[0] = {
+                            .name = (uint8_t *) ":status",
+                            .name_len = sizeof(":status") - 1,
 
-                                .value = (uint8_t *) "200",
-                                .value_len = sizeof("200") - 1,
-                            },
+                            .value = (uint8_t *) "200",
+                            .value_len = sizeof("200") - 1,
+                        };
+                        headers[1] = {
+                            .name = (uint8_t *) "Alternate-Protocol",
+                            .name_len = sizeof("Alternate-Protocol") - 1,
 
-                            //Alternate-Protocol: quic:<QUIC server port>
-                            {
-                                .name = (uint8_t *) "Alternate-Protocol",
-                                .name_len = sizeof("Alternate-Protocol") - 1,
+                            .value = (uint8_t *) conns->quic_alternate_protocol_str.c_str(),
+                            .value_len = conns->quic_alternate_protocol_str.size() - 1,
+                        };
+                        
+                        headers[2] = {
+                            .name = (uint8_t *) "server",
+                            .name_len = sizeof("server") - 1,
 
-                                .value = (uint8_t *) conns->quic_alternate_protocol_str.c_str(),
-                                .value_len = conns->quic_alternate_protocol_str.size() - 1,
-                            },
-                            
-                            {
-                                .name = (uint8_t *) "server",
-                                .name_len = sizeof("server") - 1,
+                            .value = (uint8_t *) "quiche",
+                            .value_len = sizeof("quiche") - 1,
+                        };
+                        headers[3] = {
+                            .name = (uint8_t *) "content-length",
+                            .name_len = sizeof("content-length") - 1,
 
-                                .value = (uint8_t *) "quiche",
-                                .value_len = sizeof("quiche") - 1,
-                            },
-
-                            {
-                                .name = (uint8_t *) "content-length",
-                                .name_len = sizeof("content-length") - 1,
-
-                                .value = (uint8_t *) content_length_data,
-                                .value_len = sizeof(content_length_data) - 1,
-                            },
+                            .value = (uint8_t *) content_length_data,
+                            .value_len = sizeof(content_length_data) - 1,
                         };
 
+                        int additional_header_index=0;
+                        for (auto it : conn_io->http_response.headers) {
+                            headers[header_size+additional_header_index] = {
+                                .name = it.second->name,
+                                .name_len = it.second->name_len,
+
+                                .value = it.second->value,
+                                .value_len = it.second->value_len,
+                            };
+                            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name, it.second->value);
+                            additional_header_index++;
+                        }
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
-                                                s, headers, 4, false);
+                                                s, headers, header_size + conn_io->http_response.headers.size(), false);
                         ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
-                                                               (u_int8_t*)conn_io->http_response.payload.c_str(), conn_io->http_response.payload.size(),
+                                                               payload->buf, payload->len,
                                                                true);
-                        if (send_len!=conn_io->http_response.payload.size()) {
+                        GX_DELETE_ARY(headers);
+                        if (send_len!=payload->len) {
                             DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
                             break;
                         }
-                        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response %" PRId64 " with body %s", s, conn_io->http_response.payload.c_str());
+                        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response over %" PRId64 " with body %s", s, payload->buf);
                     }
                         break;
 
@@ -500,7 +514,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer *w, int revents) {
     struct conn_io *conn_io = (struct conn_io *)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout");
+    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "timeout");
 
     conn_io->bridge->flush_egress(loop, conn_io);
 

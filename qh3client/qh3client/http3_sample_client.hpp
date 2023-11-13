@@ -10,11 +10,16 @@
 
 #include "qh3client_helper.hpp"
 
-class http3_sample_client {
+#define SAMPLE_SERVER_SALT "lkfm7q3a"
+
+class http3_sample_client : public qtimer_sceduler {
 public:
     http3_sample_client();
     ~http3_sample_client();
     
     void init_connection();
+    
+private:
+    qtimer* keep_alive_loop = nullptr;
 };
 #endif /* http3_sample_client_hpp */

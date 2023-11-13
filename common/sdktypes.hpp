@@ -61,7 +61,7 @@
 #define LOG_LEVEL_3 3
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_0
+#define LOG_LEVEL LOG_LEVEL_2
 #endif
 
 extern "C" DECLSPEC void PrintCommonInfo();

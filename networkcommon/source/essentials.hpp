@@ -12,6 +12,7 @@
 #include "../../common/sdktypes.hpp"
 #include "../../common/gxcrc32.h"
 #include "qtimer.hpp"
+#include <map>
 
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
@@ -24,6 +25,9 @@ namespace fs = std::__fs::filesystem;
 
 #include <netdb.h>
 #include <filesystem>
+#include <vector>
+#include <quiche.h>
+#include <zlib.h>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
@@ -81,6 +85,78 @@ public:
 };
 
 // h3 structs
+
+struct conn_io_response {
+    typedef struct header {
+        header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
+            name_len = name_len_;
+            value_len = value_len_;
+            
+            name = new uint8_t[name_len];
+            value = new uint8_t[value_len];
+            memcpy(name, name_, name_len);
+            memcpy(value, value_, value_len);
+        }
+        ~header() {
+            GX_DELETE_ARY(name);
+            GX_DELETE_ARY(value);
+        }
+      uint8_t *name = nullptr;
+      uintptr_t name_len = 0;
+      uint8_t *value = nullptr;
+      uintptr_t value_len = 0;
+    } header;
+    
+    typedef struct payload {
+        payload(uint8_t* buf_, ssize_t len_) : len(len_) {
+            buf = new uint8_t[len];
+            memcpy(buf, buf_, len);
+        }
+        ~payload() {
+            GX_DELETE_ARY(buf);
+        }
+        ssize_t len = 0;
+        uint8_t* buf = nullptr;
+    } payload;
+    
+    conn_io_response(){
+    }
+    ~conn_io_response() {
+        for(std::vector<payload*>::iterator it=responses.begin(); it!= responses.end(); it++) {
+            GX_DELETE(*it);
+        }
+        for(auto h : headers) {
+            GX_DELETE(h.second);
+        }
+    }
+    void add_payload(uint8_t* buf_, ssize_t len_ ) {
+        payload* data = new payload(buf_, len_);
+        responses.push_back(data);
+    }
+
+    void add_header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
+//        unsigned int crc = gxcrc32::Calc((unsigned char*)name_, 0, (int)name_len_);
+        unsigned long  crc = crc32(0L, Z_NULL, 0);
+        crc = crc32_z(crc, (const unsigned char*)name_, name_len_);
+        
+        if (headers.find(crc)==headers.end()) {
+            header* data = new header(name_, name_len_, value_, value_len_);
+            headers[crc] = data;
+        }
+    }
+    
+    header* get_header(const uint8_t *name_, uintptr_t name_len_) {
+//        unsigned int crc = gxcrc32::Calc((unsigned char*)name_, 0, (int)name_len_);
+        unsigned long  crc = crc32(0L, Z_NULL, 0);
+        crc = crc32_z(crc, (const unsigned char*)name_, name_len_);
+        std::map<unsigned int, header*>::iterator it = headers.find(crc);
+        return it!=headers.end() ? it->second : nullptr;
+    }
+    
+    std::vector<payload*> responses;
+    std::map<unsigned int, header*> headers;
+};
+
 struct getorpost_reqdata {
     getorpost_reqdata(){
     }
@@ -108,6 +184,7 @@ struct getorpost_reqdata {
     std::vector<std::string> reminder_payload;
 };
 
+/*
 struct getorpost_response_data {
     getorpost_response_data() {
     }
@@ -118,6 +195,8 @@ struct getorpost_response_data {
         payload = "{}";
     }
     std::string payload = "{}"; // empty response
+    std::vector<Header> additional_headers;
 };
+ */
 
 #endif /* essentials_hpp */

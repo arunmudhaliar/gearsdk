@@ -334,7 +334,6 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"LOG_LEVEL=0",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (

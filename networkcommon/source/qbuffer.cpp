@@ -68,6 +68,12 @@ void qbuffer_reader::read( qbuffer& buffer, uint8_t* data, ssize_t length ) {
 // --------------------------BufferWriter--------------------------------
 // --------------------------BufferWriter--------------------------------
 
+void qbuffer_writer::write( qbuffer& buffer, int32_t value ) const {
+    uint32_t sizeOfType = sizeof(int32_t);
+    buffer.do_resize_if_required(sizeOfType);
+    *((int32_t*)(buffer.data+buffer.index)) = value;
+    buffer.index += sizeOfType;
+}
 void qbuffer_writer::write( qbuffer& buffer, uint32_t value ) const {
     uint32_t sizeOfType = sizeof(uint32_t);
     buffer.do_resize_if_required(sizeOfType);
