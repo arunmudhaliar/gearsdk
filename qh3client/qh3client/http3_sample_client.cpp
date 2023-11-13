@@ -62,16 +62,6 @@ void http3_sample_client::init_connection() {
                                         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %s !!!", x, header->value);
                                     });
     }
-//    qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
-//                                    [this](conn_io_response* response) {
-////                                        this->cancel_timer(this->keep_alive_loop);
-//                                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned 2 !!!");
-//                                    });
-//    qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
-//                                    [this](conn_io_response* response) {
-//                                        //this->cancel_timer(this->keep_alive_loop);
-//                                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned 3 !!!");
-//                                    });
     bson_free(json_string_data);
     
     struct ev_loop* loop = ev_default_loop(0);
