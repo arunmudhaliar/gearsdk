@@ -282,6 +282,5 @@ bool getorpost_reqdata::validate() {
         DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d, payload sz %d", crc_, crc_from_req, payload.size());
         assert(crc_from_req == crc_);
     }
-    DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation %d == %d, payload sz %d", crc_, crc_from_req, payload.size());
     return crc_from_req == crc_;
 }

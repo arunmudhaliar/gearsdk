@@ -447,6 +447,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                 .value_len = it.second->value_len,
                             };
                             DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name, it.second->value);
+                            additional_header_index++;
                         }
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
                                                 s, headers, header_size + conn_io->http_response.headers.size(), false);
