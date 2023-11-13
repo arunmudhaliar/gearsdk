@@ -323,6 +323,7 @@ SHA256Guts (SHA256_CTX *sc, const uint32_t *cbuf)
   sc->hash[7] += h;
 }
 
+
 void
 sha256_update (SHA256_CTX *sc, const void *vdata, uint32_t len)
 {
