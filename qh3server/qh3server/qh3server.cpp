@@ -530,7 +530,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer *w, int revents) {
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
         conn_io->bridge->destroy_connection(loop, conn_io);
