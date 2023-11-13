@@ -32,6 +32,9 @@ namespace fs = std::__fs::filesystem;
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
+#define EV_START_RECORD(timestamp_)  ev_tstamp timestamp_ = ev_now(loop)
+#define EV_STOP_RECORD(timestamp_, log_level, tag, formatted_msg) DEBUG_PRINT(log_level, tag, formatted_msg, ev_now(loop) - timestamp_)
+
 class qmutex;
 class qmutexcondition {
 public:
