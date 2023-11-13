@@ -401,7 +401,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     case Event_type::Finished: {
                         EV_START_RECORD(parse_start_time);
                         conn_io->bridge->parse(conn_io);
-                        EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%5.2fs");
+                        EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%lu ms");
                         
                         EV_START_RECORD(send_start_time);
                         conn_io_response::payload* payload = conn_io->http_response.responses.size() ? conn_io->http_response.responses[0] : nullptr;
@@ -459,7 +459,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                                                payload->buf, payload->len,
                                                                true);
                         GX_DELETE_ARY(headers);
-                        EV_STOP_RECORD(send_start_time, LOG_LEVEL_0, __LOGTAG__, "send-time t:%5.2fs");
+                        EV_STOP_RECORD(send_start_time, LOG_LEVEL_0, __LOGTAG__, "send-time t:%lu ms");
                         if (send_len!=payload->len) {
                             DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
                             break;

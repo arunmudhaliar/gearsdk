@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sdktypes.hpp"
+
 class timer
 {
 public:

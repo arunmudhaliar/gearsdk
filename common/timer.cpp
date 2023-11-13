@@ -7,12 +7,12 @@
 //
 
 #include "timer.h"
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(__APPLE__)
+#if PLATFORM == PLATFORM_MAC
 	#include <CoreFoundation/CFDate.h>
 #elif defined(GEAR_WINDOWS)
 	#include <Windows.h>
 	#pragma comment( lib, "Winmm.lib")
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 #include <time.h>
 static long _getTime(void)
 {
@@ -21,8 +21,6 @@ static long _getTime(void)
     gettimeofday(&now, NULL);
     return (long)(now.tv_sec*1000 + now.tv_usec/1000);
 }
-#elif defined(__linux__)
-#include <time.h>
 #else
 #error Unknown Platform
 #endif
@@ -45,11 +43,11 @@ void timer::init()
 void timer::update()
 {
 	double curTime=0.0;
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+#if PLATFORM == PLATFORM_MAC
 	curTime=CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
 	curTime=(double)timeGetTime()/1000.0;
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 	curTime=(double)_getTime()/1000.0;
 #endif
 	timerDTInSec=(float)(curTime-timerPreviousTime);
@@ -76,11 +74,11 @@ void timer::update()
 void timer::update(float targetFPS)
 {
 	double curTime=0.0;
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+#if PLATFORM == PLATFORM_MAC
 	curTime=CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
 	curTime=(double)timeGetTime()/1000.0;
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 	curTime=(double)_getTime()/1000.0;
 #endif
 	timerDTInSec=(float)(curTime-timerPreviousTime);
@@ -90,11 +88,11 @@ void timer::update(float targetFPS)
 	}
 	while(timerDTInSec<(1.0f/targetFPS))
 	{
-	#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+	#if PLATFORM == PLATFORM_MAC
 		curTime=CFAbsoluteTimeGetCurrent();
 	#elif defined(GEAR_WINDOWS)
 		curTime=(double)timeGetTime()/1000.0;
-	#elif defined(GEAR_ANDROID)
+	#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 		curTime=(double)_getTime()/1000.0;
 	#endif
 		timerDTInSec=(float)(curTime-timerPreviousTime);
@@ -112,11 +110,11 @@ void timer::reset()
 	timerDTInSec=0.0f;		
 	timerDTInMilliSec=0;			
 	timerElapsedTimeInSec=0.0f;
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+#if PLATFORM == PLATFORM_MAC
 	timerPreviousTime=CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
 	timerPreviousTime=(double)timeGetTime()/1000.0;
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 	timerPreviousTime=(double)_getTime()/1000.0;
 #endif
     timerLastTime=timerPreviousTime;
@@ -124,11 +122,11 @@ void timer::reset()
 
 double timer::getCurrentTimeInSec()
 {
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+#if PLATFORM == PLATFORM_MAC
 	return CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
 	return (double)timeGetTime()/1000.0;
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 	return (double)_getTime()/1000.0;
 #endif
     return 0.0;
@@ -136,11 +134,11 @@ double timer::getCurrentTimeInSec()
 
 unsigned long timer::getCurrentTimeInMilliSec()
 {
-#if defined(TARGET_IPHONE_SIMULATOR) || defined(TARGET_OS_IPHONE) || defined(GEAR_APPLE)
+#if PLATFORM == PLATFORM_MAC
 	return CFAbsoluteTimeGetCurrent()*1000;
 #elif defined(GEAR_WINDOWS)
 	return timeGetTime();
-#elif defined(GEAR_ANDROID)
+#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 	return _getTime();
 #endif
     return 0;

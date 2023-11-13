@@ -12,6 +12,7 @@
 #include "../../common/sdktypes.hpp"
 #include "../../common/gxcrc32.h"
 #include "qtimer.hpp"
+#include "../../common/timer.h"
 #include <map>
 
 #if PLATFORM == PLATFORM_MAC
@@ -32,8 +33,8 @@ namespace fs = std::__fs::filesystem;
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
-#define EV_START_RECORD(timestamp_)  ev_tstamp timestamp_ = ev_now(loop)
-#define EV_STOP_RECORD(timestamp_, log_level, tag, formatted_msg) DEBUG_PRINT(log_level, tag, formatted_msg, ev_now(loop) - timestamp_)
+#define EV_START_RECORD(timestamp_)  unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
+#define EV_STOP_RECORD(timestamp_, log_level, tag, formatted_msg) DEBUG_PRINT(log_level, tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_)
 
 class qmutex;
 class qmutexcondition {
