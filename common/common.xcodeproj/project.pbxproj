@@ -423,7 +423,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
-					"LOG_LEVEL=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/\"",

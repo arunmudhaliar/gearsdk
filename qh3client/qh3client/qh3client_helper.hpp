@@ -12,29 +12,26 @@
 #include <pthread.h>
 #include <functional>
 
-typedef std::function<void(std::vector<conn_io_response>* response)> type_qh3client_helper_cb;
+typedef std::function<void(conn_io_response* response)> type_qh3client_helper_cb;
 
 class qh3client_helper {
 public:
     struct qh3_req_obj {
         qh3_req_obj(const std::string host, const std::string port,
-                       const getorpost_reqdata& data, std::vector<conn_io_response>* response) :
-         host(host), port(port), data(data), response(response) {
+                       const getorpost_reqdata& data) :
+         host(host), port(port), data(data) {
         }
         std::string host;
         std::string port;
         getorpost_reqdata data;
-        std::vector<conn_io_response>* response = nullptr;
         pthread_t run_thread_id;
         type_qh3client_helper_cb async_cb = nullptr;
     };
     
     static int send_request(const std::string host, const std::string port,
-                            const getorpost_reqdata& data_getorpost_,
-                            std::vector<conn_io_response>* response);
+                            const getorpost_reqdata& data_getorpost_, type_qh3client_helper_cb async_cb);
     static int send_async_request(const std::string host, const std::string port,
-                            const getorpost_reqdata& data_getorpost_,
-                            std::vector<conn_io_response>* response, type_qh3client_helper_cb);
+                            const getorpost_reqdata& data_getorpost_, type_qh3client_helper_cb async_cb);
     
 private:
     static void *run_internal(void *data);

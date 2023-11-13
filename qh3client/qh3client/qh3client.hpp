@@ -27,20 +27,22 @@
 #include <ev.h>
 #include <quiche.h>
 #include "../../networkcommon/source/essentials.hpp"
+#include <map>
 
 #define LOCAL_CONN_ID_LEN 16
 #define MAX_DATAGRAM_SIZE 1350
 
-class bridge_h3client_connection;
+#undef __LOGTAG__
+#define __LOGTAG__ "qh3client"
 
-struct conn_io_response {
-    conn_io_response(uint8_t* buf_, ssize_t len_ ) : len(len_) {
-        memcpy(buf, buf_, len);
-    }
-    ssize_t len = 0;
-    uint8_t buf[65535];
-};
+class bridge_h3client_connection;
 struct conn_io {
+    conn_io() {
+        response = new conn_io_response();
+    }
+    ~conn_io() {
+        GX_DELETE(response);
+    }
     ev_timer timer;
     const char *host = nullptr;
 
@@ -56,7 +58,7 @@ struct conn_io {
     bool settings_received = false;
     uint8_t buf[65535];
     uint8_t out[MAX_DATAGRAM_SIZE];
-    std::vector<conn_io_response>* response = nullptr;
+    conn_io_response* response = nullptr;
     bool res_received = false;
 };
 
@@ -94,11 +96,14 @@ public:
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
     int64_t send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) override final;
     int64_t send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) override final;
-    int send_request(const getorpost_reqdata& data_getorpost_, std::vector<conn_io_response>* response);
+    int send_request(const getorpost_reqdata& data_getorpost_);
     
     const std::string host;
     const std::string port;
     getorpost_reqdata http_request;
     struct conn_io *conn_io = nullptr;
+    
+private:
+    int close_socket( int sock );
 };
 #endif /* qh3client_hpp */

@@ -8,6 +8,7 @@
 #include "http3_sample_server.hpp"
 #include "../../common/gxcrc32.h"
 #include "../../networkcommon/source/qbuffer.hpp"
+#include "../../common/crypto_helper.hpp"
 
 http3_sample_server::http3_sample_server(const char* mongodb_uri) {
     mongo = new qmongo(this, "qh3", "db_name", mongodb_uri);
@@ -25,12 +26,14 @@ void http3_sample_server::parse_header(const uint8_t *name, size_t name_len,
 void http3_sample_server::parse(struct conn_io *conn_io) {
     if (conn_io->http_request.path.compare("/whoami")==0) {
         bool validate = conn_io->http_request.validate();
-        conn_io->http_response.clear_payload();
-        conn_io->http_response.payload = "{\"name\" : \"http3_sample_server\"}";
-        logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+        UNUSED(validate);
+        const char* res_string = "{\"name\" : \"http3_sample_server\"}";
+        conn_io->http_response.add_payload((uint8_t*)res_string, strlen(res_string));
+        logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), res_string);
     } else if (conn_io->http_request.path.compare("/user_get")==0) {
         bool validate = conn_io->http_request.validate();
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
+        UNUSED(validate);
+//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
         bson_error_t error;
         const char* json = conn_io->http_request.payload.c_str();
@@ -76,19 +79,31 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         }
         bson_destroy (&bson);
         
-        int crc = gxcrc32::Calc(buffer.data, 0, (int)buffer.index);
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user id : %0x", crc);
+        unsigned long  crc = crc32(0L, Z_NULL, 0);
+        crc = crc32_z(crc, buffer.data, buffer.index);
+        
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user id : %x", crc);
+        
+        writer.write(buffer, crc);
         
         char user_id[32];
         memset(user_id, 0, sizeof(user_id));
-        snprintf(user_id, sizeof(user_id), "%0x", crc);
+        snprintf(user_id, sizeof(user_id), "%x", crc);
         
         char user_name[32];
         memset(user_name, 0, sizeof(user_name));
-        snprintf(user_name, sizeof(user_name), "guest-%0x", crc);
+        snprintf(user_name, sizeof(user_name), "guest-%x", crc);
         
         time_t givemetime = time(NULL);
         char* login_time_str = strtok(ctime(&givemetime), "\n");
+        
+        writer.write(buffer, (const uint8_t*)login_time_str, strlen(login_time_str));
+        
+        // calcualte sha
+        crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
+        crypto_helper::sha256(sha_data);
+        // session token header
+        conn_io->http_response.add_header((uint8_t *)"token", strlen("token"), (uint8_t *) sha_data.out, strlen(sha_data.out));
         
         // try find the user. (This needs to improve)
         bool found = false;
@@ -100,10 +115,9 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         while (mongoc_cursor_next (cursor, &doc)) {
             found = true;
             char* json_string = bson_as_json(doc, nullptr);
-            conn_io->http_response.clear_payload();
-            conn_io->http_response.payload = json_string;
+            conn_io->http_response.add_payload((uint8_t *)json_string, strlen(json_string));
+            logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", conn_io->http_request.path.c_str(), json_string);
             bson_free(json_string);
-            logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
         }
         mongoc_cursor_destroy (cursor);
         
@@ -124,12 +138,11 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             bson_append_document_end (&res_bson, &meta);
             if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
                 char* json_string = bson_as_json(&res_bson, nullptr);
-                conn_io->http_response.clear_payload();
-                conn_io->http_response.payload = json_string;
+                conn_io->http_response.add_payload((uint8_t *)json_string, strlen(json_string));
                 bson_free(json_string);
-                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), json_string);
             } else {
-                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user failed - %s", conn_io->http_request.path.c_str(), conn_io->http_response.payload.c_str());
+                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user failed", conn_io->http_request.path.c_str());
             }
             bson_destroy(&meta);
             bson_destroy (&res_bson);

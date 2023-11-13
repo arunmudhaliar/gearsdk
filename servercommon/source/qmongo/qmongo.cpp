@@ -7,6 +7,8 @@
 
 #include "qmongo.hpp"
 #include "../../../common/gxcrc32.h"
+#include <zlib.h>
+
 qmongo::qmongo(interface_qmongo_connection* interfce_, const char* app_name, const char* db_name, const char* uri_string) :
     interface(interfce_)
 {
@@ -147,8 +149,10 @@ mongoc_collection_t* qmongo::get_collection(const char* collection_name) {
     if (database == nullptr) {
         return nullptr;
     }
-    int crc32 = gxcrc32::Calc((unsigned char*)collection_name, 0, (int)strlen(collection_name));
-    std::map<int, mongoc_collection_t*>::iterator it = collections.find(crc32);
+    unsigned long  crc = crc32(0L, Z_NULL, 0);
+    crc = crc32_z(crc, (const unsigned char*)collection_name, strlen(collection_name));
+    
+    std::map<int, mongoc_collection_t*>::iterator it = collections.find(crc);
     if (it!=collections.end()) {
         return it->second;
     }
@@ -159,7 +163,7 @@ mongoc_collection_t* qmongo::get_collection(const char* collection_name) {
         return nullptr;
     }
     create_client_index_if_not(collection, collection_name);
-    collections[crc32] = collection;
+    collections[crc] = collection;
     return collection;
 }
 

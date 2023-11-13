@@ -272,13 +272,16 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
 }
 
 bool getorpost_reqdata::validate() {
-    int crc_ = gxcrc32::Calc((unsigned char*)payload.c_str(), 0, (int)payload.size());
+    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+    crc_ = crc32_z(crc_, (const unsigned char*)payload.c_str(), payload.size());
+    
     int crc_from_req = 0;
     sscanf(crc.c_str(), "%x", &crc_from_req);
     
     if (crc_from_req != crc_) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d", crc_, crc_from_req);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d, payload sz %d", crc_, crc_from_req, payload.size());
         assert(crc_from_req == crc_);
     }
+    DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation %d == %d, payload sz %d", crc_, crc_from_req, payload.size());
     return crc_from_req == crc_;
 }
