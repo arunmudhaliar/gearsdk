@@ -14,6 +14,7 @@
 	#pragma comment( lib, "Winmm.lib")
 #elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
 #include <time.h>
+#include <sys/time.h>
 static long _getTime(void)
 {
     struct timeval  now;
