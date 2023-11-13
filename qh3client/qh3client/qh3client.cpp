@@ -84,7 +84,7 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
     
     char crc_buffer[32];
     memset(crc_buffer, 0, sizeof(crc_buffer));
-    snprintf(crc_buffer, sizeof(crc_buffer), "%x", (unsigned int)crc);
+    snprintf(crc_buffer, sizeof(crc_buffer), "%lx", crc);
     
     Header headers_get[] = {
         {
@@ -151,8 +151,8 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
     crc = crc32_z(crc, (const unsigned char*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size());
     char crc_buffer[32];
     memset(crc_buffer, 0, sizeof(crc_buffer));
-    snprintf(crc_buffer, sizeof(crc_buffer), "%x", (unsigned int)crc);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %x - %s, payload sz %d", crc, crc_buffer, data_getorpost_.payload.size());
+    snprintf(crc_buffer, sizeof(crc_buffer), "%lx", crc);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %lx - %s, payload sz %d", crc, crc_buffer, data_getorpost_.payload.size());
     
     Header headers_get[] = {
         {

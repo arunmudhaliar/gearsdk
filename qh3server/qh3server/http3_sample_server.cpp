@@ -88,11 +88,11 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         
         char user_id[32];
         memset(user_id, 0, sizeof(user_id));
-        snprintf(user_id, sizeof(user_id), "%x", crc);
+        snprintf(user_id, sizeof(user_id), "%lx", crc);
         
         char user_name[32];
         memset(user_name, 0, sizeof(user_name));
-        snprintf(user_name, sizeof(user_name), "guest-%x", crc);
+        snprintf(user_name, sizeof(user_name), "guest-%lx", crc);
         
         time_t givemetime = time(NULL);
         char* login_time_str = strtok(ctime(&givemetime), "\n");

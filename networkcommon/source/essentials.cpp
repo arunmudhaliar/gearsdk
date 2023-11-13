@@ -275,8 +275,8 @@ bool getorpost_reqdata::validate() {
     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
     crc_ = crc32_z(crc_, (const unsigned char*)payload.c_str(), payload.size());
     
-    int crc_from_req = 0;
-    sscanf(crc.c_str(), "%x", &crc_from_req);
+    unsigned long crc_from_req = 0;
+    sscanf(crc.c_str(), "%lx", &crc_from_req);
     
     if (crc_from_req != crc_) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d, payload sz %d", crc_, crc_from_req, payload.size());

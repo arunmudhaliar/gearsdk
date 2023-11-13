@@ -153,12 +153,12 @@ struct conn_io_response {
 //        unsigned int crc = gxcrc32::Calc((unsigned char*)name_, 0, (int)name_len_);
         unsigned long  crc = crc32(0L, Z_NULL, 0);
         crc = crc32_z(crc, (const unsigned char*)name_, name_len_);
-        std::map<unsigned int, header*>::iterator it = headers.find(crc);
+        std::map<unsigned long, header*>::iterator it = headers.find(crc);
         return it!=headers.end() ? it->second : nullptr;
     }
     
     std::vector<payload*> responses;
-    std::map<unsigned int, header*> headers;
+    std::map<unsigned long, header*> headers;
 };
 
 struct getorpost_reqdata {
