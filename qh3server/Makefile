@@ -11,7 +11,6 @@ $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
-$(COMMON_SRCDIR)/crypto/sha256.c \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
 
 INCLUDES = -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0"
@@ -21,7 +20,9 @@ $(SRCDIR)/qh3server.cpp \
 $(SRCDIR)/http3_sample_server.cpp \
 $(NCOMMONSRCS) \
 
-OBJS = ${SRCS:.cpp=.o}
+C_SRCS =$(COMMON_SRCDIR)/crypto/sha256.c \
+
+OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 
 USER_DEFINES = -DLOG_LEVEL=2
 # CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
