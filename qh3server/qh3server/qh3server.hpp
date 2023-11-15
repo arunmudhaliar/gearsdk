@@ -72,7 +72,12 @@ struct connections {
 };
 
 struct conn_io {
-    conn_io(){}
+    conn_io() {
+        http_response = conn_io_req_res::create();
+    }
+    ~conn_io() {
+        GX_DELETE(http_response);
+    }
     ev_timer timer;
     int sock;
     uint8_t cid[LOCAL_CONN_ID_LEN];
@@ -83,7 +88,7 @@ struct conn_io {
     UT_hash_handle hh;
     bridge_h3_connection* bridge = nullptr;
     getorpost_reqdata http_request;
-    conn_io_req_res http_response;
+    conn_io_req_res* http_response = nullptr;
 };
 
 class qh3server : public bridge_h3_connection {

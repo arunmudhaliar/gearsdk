@@ -38,7 +38,7 @@
 class bridge_h3client_connection;
 struct conn_io {
     conn_io() {
-        response = new conn_io_req_res();
+        response = conn_io_req_res::create();
     }
     ~conn_io() {
         GX_DELETE(response);

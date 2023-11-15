@@ -28,7 +28,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         bool validate = conn_io->http_request.validate();
         UNUSED(validate);
         const char* res_string = "{\"name\" : \"http3_sample_server\"}";
-        conn_io->http_response.add_payload((uint8_t*)res_string, strlen(res_string));
+        conn_io->http_response->add_payload((uint8_t*)res_string, strlen(res_string));
         logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), res_string);
     } else if (conn_io->http_request.path.compare("/user_get")==0) {
         bool validate = conn_io->http_request.validate();
@@ -103,7 +103,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
         crypto_helper::sha256(sha_data);
         // session token header
-        conn_io->http_response.add_header((uint8_t *)"token", strlen("token"), (uint8_t *) sha_data.out, strlen(sha_data.out));
+        conn_io->http_response->add_header((uint8_t *)"token", strlen("token"), (uint8_t *) sha_data.out, strlen(sha_data.out));
         
         // try find the user. (This needs to improve)
         bool found = false;
@@ -115,7 +115,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         while (mongoc_cursor_next (cursor, &doc)) {
             found = true;
             char* json_string = bson_as_json(doc, nullptr);
-            conn_io->http_response.add_payload((uint8_t *)json_string, strlen(json_string));
+            conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
             logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", conn_io->http_request.path.c_str(), json_string);
             bson_free(json_string);
         }
@@ -138,7 +138,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             bson_append_document_end (&res_bson, &meta);
             if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
                 char* json_string = bson_as_json(&res_bson, nullptr);
-                conn_io->http_response.add_payload((uint8_t *)json_string, strlen(json_string));
+                conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
                 bson_free(json_string);
                 logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), json_string);
             } else {

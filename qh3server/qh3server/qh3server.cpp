@@ -404,13 +404,13 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%lu ms");
                         
                         EV_START_RECORD(send_start_time);
-                        conn_io_req_res::payload* payload = conn_io->http_response.payload_list.size() ? conn_io->http_response.payload_list[0] : nullptr;
+                        conn_io_req_res::payload* payload = conn_io->http_response->payload_list.size() ? conn_io->http_response->payload_list[0] : nullptr;
                         int number_of_digits = NumberOfDigits((int)payload->len);
                         char content_length_data[number_of_digits+1];
                         snprintf(content_length_data, sizeof(content_length_data), "%d", (int)payload->len);
                         
                         int header_size = 4;
-                        Header *headers = new Header[header_size + conn_io->http_response.headers.size()];
+                        Header *headers = new Header[header_size + conn_io->http_response->headers.size()];
                         headers[0] = {
                             .name = (uint8_t *) ":status",
                             .name_len = sizeof(":status") - 1,
@@ -442,7 +442,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         };
 
                         int additional_header_index=0;
-                        for (auto it : conn_io->http_response.headers) {
+                        for (auto it : conn_io->http_response->headers) {
                             headers[header_size+additional_header_index] = {
                                 .name = it.second->name,
                                 .name_len = it.second->name_len,
@@ -454,7 +454,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                             additional_header_index++;
                         }
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
-                                                s, headers, header_size + conn_io->http_response.headers.size(), false);
+                                                s, headers, header_size + conn_io->http_response->headers.size(), false);
                         ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
                                                                payload->buf, payload->len,
                                                                true);
