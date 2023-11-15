@@ -284,3 +284,29 @@ bool getorpost_reqdata::validate() {
     }
     return crc_from_req == crc_;
 }
+
+bool conn_io_req_res::validate() {
+     header* crc_header = get_header((const uint8_t*)"crc", strlen("crc"));
+     if (crc_header == nullptr) {
+          return  false;
+     }
+
+     payload* payload = get_payload(0);
+     if (payload == nullptr) {
+          return false;
+     }
+     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+     crc_ = crc32_z(crc_, (const unsigned char*)payload->buf, payload->len);
+
+     unsigned long crc_from_req = 0;
+     sscanf((const char*)crc_header->value, "%8lx", &crc_from_req);
+
+     if (crc_from_req != crc_) {
+          DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s",
+               crc_, crc_from_req, payload->len, crc_header->value);
+          assert(crc_from_req == crc_);
+     }
+//     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
+//        crc_, crc_from_req, payload->len, crc_header->value);
+     return crc_from_req == crc_;
+}

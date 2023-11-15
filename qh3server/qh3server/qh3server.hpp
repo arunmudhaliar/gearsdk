@@ -73,10 +73,12 @@ struct connections {
 
 struct conn_io {
     conn_io() {
+        http_request = conn_io_req_res::create();
         http_response = conn_io_req_res::create();
     }
     ~conn_io() {
         GX_DELETE(http_response);
+        GX_DELETE(http_request);
     }
     ev_timer timer;
     int sock;
@@ -87,7 +89,7 @@ struct conn_io {
     socklen_t peer_addr_len;
     UT_hash_handle hh;
     bridge_h3_connection* bridge = nullptr;
-    getorpost_reqdata http_request;
+    conn_io_req_res* http_request = nullptr;
     conn_io_req_res* http_response = nullptr;
 };
 

@@ -168,20 +168,7 @@ void qh3server::parse_header(const uint8_t *name, size_t name_len,
         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP header: %.*s=%.*s",
                 (int) name_len, name, (int) value_len, value);
     }
-    if (name_len==5) {
-        // check for path
-        if (memcmp(name, ":path", name_len)==0) {
-            conn_io->http_request.path.resize(value_len, 0);
-            std::copy(value, value+value_len, begin(conn_io->http_request.path));
-//            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "HTTP req '%s' : %s", name, value);
-        }
-    } else if (name_len == 3) {
-        if (memcmp(name, "crc", name_len)==0) {
-            conn_io->http_request.crc_length = (int)value_len;
-            conn_io->http_request.crc.resize(value_len, 0);
-            std::copy(value, value+value_len, begin(conn_io->http_request.crc));
-        }
-    }
+    conn_io->http_request->add_header(name, name_len, value, value_len);
 }
 
 void qh3server::parse(struct conn_io *conn_io) {
@@ -377,8 +364,8 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                     }
 
                     case Event_type::Data: {
-                        // DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
-                        conn_io->http_request.clear_payload();
+//                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "got HTTP req body");
+//                        conn_io->http_request.clear_payload();
                         for (;;) {
                             ssize_t len = quiche_h3_recv_body(conn_io->http3,
                                                               conn_io->conn, s,
@@ -386,13 +373,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                             if (len <= 0) {
                                 break;
                             }
-                            if (conn_io->http_request.payload.size()==0) {
-                                conn_io->http_request.payload.resize(len, 0);
-                                std::copy(buf, buf+len, begin(conn_io->http_request.payload));
-                            } else {
-                                std::string reminder_body((char*)buf, len);
-                                conn_io->http_request.reminder_payload.push_back(reminder_body);
-                            }
+                            conn_io->http_request->add_payload(buf, len);
                             DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int) len, buf);
                         }
                         break;

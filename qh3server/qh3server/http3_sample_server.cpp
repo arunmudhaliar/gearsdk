@@ -24,22 +24,24 @@ void http3_sample_server::parse_header(const uint8_t *name, size_t name_len,
 }
 
 void http3_sample_server::parse(struct conn_io *conn_io) {
-    if (conn_io->http_request.path.compare("/whoami")==0) {
-        bool validate = conn_io->http_request.validate();
+    conn_io_req_res::header* path_header = conn_io->http_request->get_header((const uint8_t*)":path", strlen(":path"));
+    conn_io_req_res::payload* payload = conn_io->http_request->get_payload(0);
+    
+    if (strncmp((const char*)path_header->value, "/whoami", path_header->value_len)==0) {
+        bool validate = conn_io->http_request->validate();
         UNUSED(validate);
         const char* res_string = "{\"name\" : \"http3_sample_server\"}";
         conn_io->http_response->add_payload((uint8_t*)res_string, strlen(res_string));
-        logger.log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", conn_io->http_request.path.c_str(), res_string);
-    } else if (conn_io->http_request.path.compare("/user_get")==0) {
-        bool validate = conn_io->http_request.validate();
+        logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - whoami - %s", path_header->value_len, path_header->value, res_string);
+    } else if (strncmp((const char*)path_header->value, "/user_get", path_header->value_len)==0) {
+        bool validate = conn_io->http_request->validate();
         UNUSED(validate);
 //        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
         bson_error_t error;
-        const char* json = conn_io->http_request.payload.c_str();
-        if (!bson_init_from_json (&bson, json, conn_io->http_request.payload.size(), &error)) {
+        if (!bson_init_from_json (&bson, (const char*)payload->buf, payload->len, &error)) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
-            logger.log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", conn_io->http_request.path.c_str(), error.message);
+            logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - ERROR - %s", path_header->value_len, path_header->value, error.message);
            return;
         }
         
@@ -116,7 +118,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             found = true;
             char* json_string = bson_as_json(doc, nullptr);
             conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
-            logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", conn_io->http_request.path.c_str(), json_string);
+            logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - user-found - %s", path_header->value_len, path_header->value, json_string);
             bson_free(json_string);
         }
         mongoc_cursor_destroy (cursor);
@@ -140,9 +142,9 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
                 char* json_string = bson_as_json(&res_bson, nullptr);
                 conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
                 bson_free(json_string);
-                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", conn_io->http_request.path.c_str(), json_string);
+                logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - new-user - %s", path_header->value_len, path_header->value, json_string);
             } else {
-                logger.log(qlogfile::level_0, __LOGTAG__, "%s - new-user failed", conn_io->http_request.path.c_str());
+                logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - new-user failed", path_header->value_len, path_header->value);
             }
             bson_destroy(&meta);
             bson_destroy (&res_bson);
@@ -152,7 +154,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
             logger.log(qlogfile::level_0, __LOGTAG__, "%s - user-last-login - %s, pid:%s", login_time_str, user_id);
         } else {
-            logger.log(qlogfile::level_0, __LOGTAG__, "%s - %s", conn_io->http_request.path.c_str(), user_id);
+            logger.log(qlogfile::level_0, __LOGTAG__, "%.*s - %s", path_header->value_len, path_header->value, user_id);
         }
         bson_destroy(update);
         bson_destroy (&find_query);
