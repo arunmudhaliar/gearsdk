@@ -52,8 +52,8 @@ void http3_sample_client::init_connection() {
         
     for (int x=0;x<500;x++) {
         qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
-                                    [this, x](conn_io_response* response) {
-                                        conn_io_response::header *header = response->get_header((const uint8_t *)"token", strlen("token"));
+                                    [this, x](conn_io_req_res* response) {
+                                        conn_io_req_res::header *header = response->get_header((const uint8_t *)"token", strlen("token"));
                                         if (header == nullptr) {
                                             return;
                                         }

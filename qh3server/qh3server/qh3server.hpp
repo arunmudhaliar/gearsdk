@@ -83,7 +83,7 @@ struct conn_io {
     UT_hash_handle hh;
     bridge_h3_connection* bridge = nullptr;
     getorpost_reqdata http_request;
-    conn_io_response http_response;
+    conn_io_req_res http_response;
 };
 
 class qh3server : public bridge_h3_connection {

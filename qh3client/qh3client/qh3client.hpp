@@ -38,7 +38,7 @@
 class bridge_h3client_connection;
 struct conn_io {
     conn_io() {
-        response = new conn_io_response();
+        response = new conn_io_req_res();
     }
     ~conn_io() {
         GX_DELETE(response);
@@ -58,7 +58,7 @@ struct conn_io {
     bool settings_received = false;
     uint8_t buf[65535];
     uint8_t out[MAX_DATAGRAM_SIZE];
-    conn_io_response* response = nullptr;
+    conn_io_req_res* response = nullptr;
     bool res_received = false;
 };
 

@@ -90,7 +90,7 @@ public:
 
 // h3 structs
 
-struct conn_io_response {
+struct conn_io_req_res {
     typedef struct header {
         header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
             name_len = name_len_;
@@ -123,9 +123,9 @@ struct conn_io_response {
         uint8_t* buf = nullptr;
     } payload;
     
-    conn_io_response(){
+    conn_io_req_res(){
     }
-    ~conn_io_response() {
+    ~conn_io_req_res() {
         for(std::vector<payload*>::iterator it=responses.begin(); it!= responses.end(); it++) {
             GX_DELETE(*it);
         }

@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <functional>
 
-typedef std::function<void(conn_io_response* response)> type_qh3client_helper_cb;
+typedef std::function<void(conn_io_req_res* response)> type_qh3client_helper_cb;
 
 class qh3client_helper {
 public:

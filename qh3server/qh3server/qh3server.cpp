@@ -404,7 +404,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%lu ms");
                         
                         EV_START_RECORD(send_start_time);
-                        conn_io_response::payload* payload = conn_io->http_response.responses.size() ? conn_io->http_response.responses[0] : nullptr;
+                        conn_io_req_res::payload* payload = conn_io->http_response.responses.size() ? conn_io->http_response.responses[0] : nullptr;
                         int number_of_digits = NumberOfDigits((int)payload->len);
                         char content_length_data[number_of_digits+1];
                         snprintf(content_length_data, sizeof(content_length_data), "%d", (int)payload->len);
