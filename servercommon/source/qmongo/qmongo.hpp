@@ -36,7 +36,7 @@ private:
     mongoc_uri_t *uri = nullptr;
     mongoc_client_t *client = nullptr;
     mongoc_database_t *database = nullptr;
-    std::map<int, mongoc_collection_t*> collections;
+    std::map<unsigned long, mongoc_collection_t*> collections;
     interface_qmongo_connection* interface = nullptr;
 };
 

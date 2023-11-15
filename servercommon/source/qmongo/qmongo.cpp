@@ -152,7 +152,7 @@ mongoc_collection_t* qmongo::get_collection(const char* collection_name) {
     unsigned long  crc = crc32(0L, Z_NULL, 0);
     crc = crc32_z(crc, (const unsigned char*)collection_name, strlen(collection_name));
     
-    std::map<int, mongoc_collection_t*>::iterator it = collections.find(crc);
+    std::map<unsigned long, mongoc_collection_t*>::iterator it = collections.find(crc);
     if (it!=collections.end()) {
         return it->second;
     }
