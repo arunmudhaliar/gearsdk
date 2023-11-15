@@ -23,5 +23,8 @@ private:
     qtimer* keep_alive_loop = nullptr;
     std::string host = "192.168.0.230";
     std::string port = "4004";
+    static int live_connections;
+    static int total_connections_returned;
+    void create_connections();
 };
 #endif /* http3_sample_client_hpp */

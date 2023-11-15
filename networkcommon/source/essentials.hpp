@@ -126,7 +126,7 @@ struct conn_io_req_res {
     conn_io_req_res(){
     }
     ~conn_io_req_res() {
-        for(std::vector<payload*>::iterator it=responses.begin(); it!= responses.end(); it++) {
+        for(std::vector<payload*>::iterator it=payload_list.begin(); it!= payload_list.end(); it++) {
             GX_DELETE(*it);
         }
         for(auto h : headers) {
@@ -135,7 +135,7 @@ struct conn_io_req_res {
     }
     void add_payload(uint8_t* buf_, ssize_t len_ ) {
         payload* data = new payload(buf_, len_);
-        responses.push_back(data);
+        payload_list.push_back(data);
     }
 
     void add_header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
@@ -157,7 +157,7 @@ struct conn_io_req_res {
         return it!=headers.end() ? it->second : nullptr;
     }
     
-    std::vector<payload*> responses;
+    std::vector<payload*> payload_list;
     std::map<unsigned long, header*> headers;
 };
 

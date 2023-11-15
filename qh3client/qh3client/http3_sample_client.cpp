@@ -11,6 +11,9 @@
 #include "../../common/crypto_helper.hpp"
 #include <zlib.h>
 
+int http3_sample_client::live_connections = 0;
+int http3_sample_client::total_connections_returned = 0;
+
 http3_sample_client::http3_sample_client(const std::string& host, const std::string& port) :
  host(host), port(port) {
 }
@@ -27,7 +30,21 @@ void http3_sample_client::init_connection() {
 //            }
 //        });
     //user_get
+    
+    create_connections();
+    
+    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer){
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client");
+        if (live_connections==0) {
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections %d", total_connections_returned);
+            create_connections();
+        }
+    }, 5);
+//
+//    ev_run(loop, 0);
+}
 
+void http3_sample_client::create_connections() {
     struct utsname device_details;
     errno =0;
     if(uname(&device_details)!=0)
@@ -57,17 +74,11 @@ void http3_sample_client::init_connection() {
                                         if (header == nullptr) {
                                             return;
                                         }
-                                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %s !!!", x, header->value);
+                                        live_connections--;
+                                        total_connections_returned++;
+                                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %.*s !!!", x, header->value_len, header->value);
                                     });
+        live_connections++;
     }
     bson_free(json_string_data);
-    
-//    struct ev_loop* loop = ev_default_loop(0);
-//    ev_tstamp creation_time = ev_now(loop);
-//    set_ev_lopp(loop);
-//    keep_alive_loop = schedule_repeat_timer([loop, creation_time](qtimer& timer){
-//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "client alive - t:%5.2fs", ev_now(loop) - creation_time);
-//    }, 600);
-//
-//    ev_run(loop, 0);
 }
