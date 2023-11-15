@@ -11,17 +11,15 @@
 #include "../../common/crypto_helper.hpp"
 #include <zlib.h>
 
-http3_sample_client::http3_sample_client() {
-    
+http3_sample_client::http3_sample_client(const std::string& host, const std::string& port) :
+ host(host), port(port) {
 }
+
 
 http3_sample_client::~http3_sample_client() {
 }
 
 void http3_sample_client::init_connection() {
-    std::string host = "localhost";
-//    std::string host = "192.168.0.230";
-    std::string port = "4004";
 //    qh3client_helper::send_request(host, port, getorpost_reqdata("/whoami", "{}"),
 //        [this](conn_io_response* response) {
 //            if (response->responses.size()){
@@ -52,7 +50,7 @@ void http3_sample_client::init_connection() {
     char* json_string_data = bson_as_json(&parent, &length);
     bson_destroy(&parent);
         
-    for (int x=0;x<1;x++) {
+    for (int x=0;x<500;x++) {
         qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
                                     [this, x](conn_io_response* response) {
                                         conn_io_response::header *header = response->get_header((const uint8_t *)"token", strlen("token"));
@@ -64,12 +62,12 @@ void http3_sample_client::init_connection() {
     }
     bson_free(json_string_data);
     
-    struct ev_loop* loop = ev_default_loop(0);
-    ev_tstamp creation_time = ev_now(loop);
-    set_ev_lopp(loop);
-    keep_alive_loop = schedule_repeat_timer([loop, creation_time](qtimer& timer){
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "client alive - t:%5.2fs", ev_now(loop) - creation_time);
-    }, 600);
-    
-    ev_run(loop, 0);
+//    struct ev_loop* loop = ev_default_loop(0);
+//    ev_tstamp creation_time = ev_now(loop);
+//    set_ev_lopp(loop);
+//    keep_alive_loop = schedule_repeat_timer([loop, creation_time](qtimer& timer){
+//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "client alive - t:%5.2fs", ev_now(loop) - creation_time);
+//    }, 600);
+//
+//    ev_run(loop, 0);
 }

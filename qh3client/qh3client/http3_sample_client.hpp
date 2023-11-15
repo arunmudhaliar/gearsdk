@@ -14,12 +14,14 @@
 
 class http3_sample_client : public qtimer_sceduler {
 public:
-    http3_sample_client();
+    http3_sample_client(const std::string& host, const std::string& port);
     ~http3_sample_client();
     
     void init_connection();
     
 private:
     qtimer* keep_alive_loop = nullptr;
+    std::string host = "192.168.0.230";
+    std::string port = "4004";
 };
 #endif /* http3_sample_client_hpp */

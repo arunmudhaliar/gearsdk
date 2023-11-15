@@ -174,6 +174,8 @@ struct getorpost_reqdata {
         path = data.path;
         payload = data.payload;
     }
+    ~getorpost_reqdata() {
+    }
     bool is_postrequest() const { return payload.size()>0; }
     void clear_payload() {
         payload.clear();
