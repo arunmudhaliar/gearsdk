@@ -98,7 +98,7 @@ int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
     qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, message, device_name, device_model, total_ram) VALUES");
     
     qstring format_string("(");
-    for (int x=1; x<list.size(); x++) {
+    for (size_t x=1; x<list.size(); x++) {
         format_string += (list[x]=="NULL") ? "%s" : "'%s'";
         if (x<list.size()-1) {
             format_string += ",";
@@ -131,6 +131,6 @@ int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
 }
 
 int qstats_crawler::parse_open_stats(std::vector<qstring>& list) {
-    
+    UNUSED(list);
     return 0;
 }

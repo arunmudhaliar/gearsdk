@@ -9,6 +9,8 @@
 #include "qstats-crawler.h"
 
 int main(int argc, const char * argv[]) {
+    UNUSED(argc);
+    UNUSED(argv);
     // insert code here...
     init_gsdk();
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qstats crawler started...");

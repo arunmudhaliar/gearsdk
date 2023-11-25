@@ -308,6 +308,11 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
 			};
 			name = Debug;
 		};
@@ -328,6 +333,11 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
 			};
 			name = Release;
 		};

@@ -32,7 +32,8 @@ void http3_sample_client::init_connection() {
     
     create_connections();
     
-    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer){
+    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
+        UNUSED(timer);
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client");
         if (live_connections==0) {
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections %d", total_connections_returned);
@@ -65,7 +66,7 @@ void http3_sample_client::create_connections() {
         
     for (int x=0;x<500;x++) {
         qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
-                                    [this, x](conn_io_req_res* response) {
+                                    [x](conn_io_req_res* response) {
                                         conn_io_req_res::header *header = response->get_header("token");
                                         if (header == nullptr) {
                                             return;

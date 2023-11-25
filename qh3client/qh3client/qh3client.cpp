@@ -11,6 +11,7 @@
 #include <zlib.h>
 
 void qh3client::debug_log(const uint8_t *line, void *argp) {
+    UNUSED(argp);
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, (char*)line);
 }
 
@@ -50,6 +51,7 @@ void qh3client::flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
 
 int qh3client::for_each_setting(uint64_t identifier, uint64_t value,
                            void *argp) {
+    UNUSED(argp);
     DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP/3 SETTING: %" PRIu64 "=%" PRIu64 "",
             identifier, value);
 
@@ -217,6 +219,7 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
 }
 
 void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
+    UNUSED(revents);
     struct conn_io *conn_io = (struct conn_io *)w->data;
 
     while (1) {
@@ -382,6 +385,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
 }
 
 void qh3client::timeout_cb(EV_P_ ev_timer *w, int revents) {
+    UNUSED(revents);
     struct conn_io *conn_io = (struct conn_io *)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
