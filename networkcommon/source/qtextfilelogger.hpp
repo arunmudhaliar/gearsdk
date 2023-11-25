@@ -33,8 +33,12 @@ public:
     qlogfile(const char* path, size_t path_len, float flush_time=60.0f, size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
     ~qlogfile();
     size_t log(log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length);
+    size_t log_buffer(const char* buffer, size_t buffer_length);
     int flush(bool check_for_log_file_size);
     qbuffer* create_new_record(size_t buffer_size);
+    
+    static bool file_exists(const char *filename);
+    static void get_all_log_files(fs::path& path, std::vector<fs::path>& files );
     
 private:
     int create_new_logfile();
@@ -55,11 +59,11 @@ private:
 class qtextfilelogger  : public qtimer_sceduler {
 public:
     qtextfilelogger();
-    ~qtextfilelogger();
+    virtual ~qtextfilelogger();
     struct qlog_config {
         qlog_config(){}
         qlog_config(char* path, size_t path_len, float flush_time, qtextfilelogger* logger, size_t max_size_of_file) :
-            logfile_path(path), logfile_path_len(path_len), flush_time(flush_time), logger(logger), max_size_of_file(max_size_of_file) {
+        logfile_path(path), logfile_path_len(path_len), flush_time(flush_time), max_size_of_file(max_size_of_file), logger(logger) {
         }
         char* logfile_path= nullptr;
         size_t logfile_path_len = 0;
@@ -81,6 +85,6 @@ public:
     struct ev_loop *log_loop = nullptr;
     qlogfile* logfile = nullptr;
     qtimer* logtimer = nullptr;
-    char log_record_buffer[SINGLE_LOG_RECORD_LENGTH];
+    char log_record_buffer[SINGLE_LOG_RECORD_LENGTH+1];
 };
 #endif /* qtextfilelogger_hpp */

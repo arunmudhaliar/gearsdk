@@ -9,7 +9,7 @@
 #include "../../../common/gxcrc32.h"
 #include <zlib.h>
 
-qmongo::qmongo(interface_qmongo_connection* interfce_, const char* app_name, const char* db_name, const char* uri_string) :
+qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) :
     interface(interfce_)
 {
     connect(app_name, db_name, uri_string);
@@ -42,19 +42,19 @@ void qmongo::cleanup() {
     mongoc_cleanup ();
 }
 
-int qmongo::connect(const char* app_name, const char* db_name, const char* uri_string) {
+int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string) {
     /*
      * Required to initialize libmongoc's internals
      */
     mongoc_init ();
     
     bson_error_t error;
-    uri = mongoc_uri_new_with_error (uri_string, &error);
+    uri = mongoc_uri_new_with_error (uri_string.c_str(), &error);
     if (!uri) {
         fprintf (stderr,
             "failed to parse URI: %s\n"
             "error message:       %s\n",
-            uri_string,
+            uri_string.c_str(),
             error.message);
         cleanup ();
         return EXIT_FAILURE;
@@ -73,12 +73,12 @@ int qmongo::connect(const char* app_name, const char* db_name, const char* uri_s
      * Register the application name so we can track it in the profile logs
      * on the server. This can also be done from the URI (see other examples).
      */
-    mongoc_client_set_appname (client, app_name);
+    mongoc_client_set_appname (client, app_name.c_str());
     
     /*
      * Get a handle on the database "db_name" and collection "coll_name"
      */
-    database = mongoc_client_get_database (client, db_name);
+    database = mongoc_client_get_database (client, db_name.c_str());
     
     if (interface) {
         interface->on_mongo_connect();
@@ -86,7 +86,7 @@ int qmongo::connect(const char* app_name, const char* db_name, const char* uri_s
     return EXIT_SUCCESS;
 }
 
-int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const char* collection_name) {
+int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name) {
     if (!interface) {
         return EXIT_FAILURE;
     }
@@ -94,7 +94,7 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const ch
     bson_t indexkey;
     mongoc_index_opt_t opt;
     bson_init (&indexkey);
-    interface->on_mongo_create_index_keys(collection_name, &indexkey, &opt);
+    interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
     if (!mongoc_collection_create_index (collection, &indexkey, &opt, &error)) {
         fprintf (stderr, "%s\n", error.message);
         bson_destroy (&indexkey);
@@ -104,16 +104,45 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const ch
     return EXIT_SUCCESS;
 }
 
-int qmongo::insert(const char* collection_name, bson_t& query) {
+/*
+int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name) {
+    if (!interface) {
+        return EXIT_FAILURE;
+    }
     bson_error_t error;
-    if (!mongoc_collection_insert_one (get_collection(collection_name), &query, NULL, NULL, &error)) {
+    bson_t indexkey;
+    bson_init (&indexkey);
+    bson_t opt;
+    bson_init (&opt);
+
+    interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
+    
+    mongoc_index_model_t *im = mongoc_index_model_new(&indexkey, &opt);
+
+    if (mongoc_collection_create_indexes_with_opts(collection, &im, 1, nullptr, nullptr, &error)) {
+        printf ("Successfully created index\n");
+    } else {
+        fprintf (stderr, "%s\n", error.message);
+        bson_destroy (&indexkey);
+        mongoc_index_model_destroy(im);
+        return EXIT_FAILURE;
+    }
+    mongoc_index_model_destroy(im);
+    bson_destroy (&indexkey);
+    return EXIT_SUCCESS;
+}
+*/
+
+int qmongo::insert(const qstring& collection_name, bson_t& query) {
+    bson_error_t error;
+    if (!mongoc_collection_insert_one (get_collection(collection_name.c_str()), &query, nullptr, nullptr, &error)) {
        fprintf (stderr, "%s\n", error.message);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-int qmongo::update(const char* collection_name, bson_t& query, bson_t& update) {
+int qmongo::update(const qstring& collection_name, bson_t& query, bson_t& update) {
     bson_error_t error;
     mongoc_find_and_modify_opts_t *opts;
     bson_t reply;
@@ -137,20 +166,19 @@ int qmongo::update(const char* collection_name, bson_t& query, bson_t& update) {
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-mongoc_cursor_t* qmongo::find(const char* collection_name, bson_t& query) {
+mongoc_cursor_t* qmongo::find(const qstring& collection_name, bson_t& query) {
     bson_t* empty = bson_new();
-    mongoc_cursor_t* cursor;
-    cursor = mongoc_collection_find_with_opts(get_collection(collection_name), &query, empty, nullptr);
+    mongoc_cursor_t* cursor = mongoc_collection_find_with_opts(get_collection(collection_name.c_str()), &query, empty, nullptr);
     bson_destroy (empty);
     return cursor;
 }
 
-mongoc_collection_t* qmongo::get_collection(const char* collection_name) {
+mongoc_collection_t* qmongo::get_collection(const qstring& collection_name) {
     if (database == nullptr) {
         return nullptr;
     }
     unsigned long  crc = crc32(0L, Z_NULL, 0);
-    crc = crc32_z(crc, (const unsigned char*)collection_name, strlen(collection_name));
+    crc = crc32_z(crc, (const unsigned char*)collection_name.c_str(), collection_name.length());
     
     std::map<unsigned long, mongoc_collection_t*>::iterator it = collections.find(crc);
     if (it!=collections.end()) {
@@ -158,7 +186,7 @@ mongoc_collection_t* qmongo::get_collection(const char* collection_name) {
     }
     
     const char* db_name = mongoc_database_get_name(database);
-    mongoc_collection_t* collection = mongoc_client_get_collection (client, db_name, collection_name);
+    mongoc_collection_t* collection = mongoc_client_get_collection(client, db_name, collection_name.c_str());
     if (collection == nullptr) {
         return nullptr;
     }

@@ -54,6 +54,9 @@
 		556AB6BB2AF50E3B00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556AB6BD2AF514E900D688DB /* libsasl2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsasl2.tbd; path = usr/lib/libsasl2.tbd; sourceTree = SDKROOT; };
 		556AB6FC2AF5742000D688DB /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos/libbson-static-1.0.a"; sourceTree = "<group>"; };
+		556ABABB2B0A318800D688DB /* libpq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpq.a; path = ../servercommon/libs/macos/libpq.a; sourceTree = "<group>"; };
+		556ABAC12B0A784A00D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = ../servercommon/libs/macos/libpgcommon.a; sourceTree = "<group>"; };
+		556ABAC32B0A78FA00D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = ../servercommon/libs/macos/libpgport.a; sourceTree = "<group>"; };
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -133,6 +136,9 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556ABAC32B0A78FA00D688DB /* libpgport.a */,
+				556ABAC12B0A784A00D688DB /* libpgcommon.a */,
+				556ABABB2B0A318800D688DB /* libpq.a */,
 				556AB6FC2AF5742000D688DB /* libbson-static-1.0.a */,
 				556AB6BD2AF514E900D688DB /* libsasl2.tbd */,
 				556AB6BB2AF50E3B00D688DB /* libservercommon.a */,
@@ -344,6 +350,7 @@
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -353,6 +360,11 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
 			};
 			name = Debug;
 		};
@@ -369,6 +381,7 @@
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -378,6 +391,11 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
 			};
 			name = Release;
 		};

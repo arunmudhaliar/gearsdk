@@ -73,7 +73,7 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
     if (conn_io->response == nullptr) {
         return 0;
     }
-    conn_io->response->add_header(name, name_len, value, value_len);
+    conn_io->response->add_header(qstring(name, name_len), qstring(value, value_len));
     return 0;
 }
 
@@ -144,8 +144,8 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
 }
 
 int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
-    int number_of_digits = NumberOfDigits((int)data_getorpost_.payload.size());
-    char content_length_data[number_of_digits+1];
+    int number_of_digits_ = number_of_digits((int)data_getorpost_.payload.size());
+    char content_length_data[number_of_digits_+1];
     snprintf(content_length_data, sizeof(content_length_data), "%d", (int)data_getorpost_.payload.size());
     unsigned long  crc = crc32(0L, Z_NULL, 0);
     crc = crc32_z(crc, (const unsigned char*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size());

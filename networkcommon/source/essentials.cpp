@@ -8,6 +8,8 @@
 #include "essentials.hpp"
 #include <cstring>
 
+using namespace gsdk;
+
 #pragma region QMutex
 qmutex::qmutex() {
     inited = false;
@@ -216,7 +218,7 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
     }
 
     DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
-    PrintCommonInfo();
+    print_common_info();
     
     if (argc%2==0) {
         DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");
@@ -271,6 +273,62 @@ int32_t essentials::resolve_cmd_line_args(const char *tag, int32_t argc, const c
     return 0;
 }
 
+qstring essentials::get_sysname() {
+    return qstring(device::device_details.sysname);
+}
+
+qstring essentials::get_device_name() {
+    return qstring(device::device_details.nodename);
+}
+qstring essentials::get_device_arch() {
+    return qstring(device::device_details.machine);
+}
+qstring essentials::get_device_release_str() {
+    return qstring(device::device_details.release);
+}
+
+time_t essentials::get_time_local() {
+    time_t now = time(NULL);
+    struct tm* tm = localtime(&now);
+    time_t local_time = tm->tm_sec + tm->tm_min*60 + tm->tm_hour*3600 + tm->tm_yday*86400 +
+        (tm->tm_year-70)*31536000 + ((tm->tm_year-69)/4)*86400 -
+    ((tm->tm_year-1)/100)*86400 + ((tm->tm_year+299)/400)*86400;
+    return local_time;
+}
+
+qstring essentials::get_time_local_tostring() {
+    time_t local_time = get_time_local();
+    qstring tmp(ctime(&local_time));
+    return tmp;
+}
+
+time_t essentials::get_time_utc() {
+    time_t now;
+    time(&now);
+    struct tm* tm = gmtime(&now);
+    time_t utc_time = tm->tm_sec + tm->tm_min*60 + tm->tm_hour*3600 + tm->tm_yday*86400 +
+        (tm->tm_year-70)*31536000 + ((tm->tm_year-69)/4)*86400 -
+    ((tm->tm_year-1)/100)*86400 + ((tm->tm_year+299)/400)*86400;
+    return utc_time;
+}
+
+qstring essentials::get_time_utc_tostring() {
+    time_t utc_time = get_time_utc();
+    qstring tmp(ctime(&utc_time));
+    return tmp;
+}
+
+qstring essentials::get_time_utc_postgresql_format() {
+    time_t now;
+    time(&now);
+    struct tm* tm = gmtime(&now);
+    char timestampStr[32];
+    snprintf(timestampStr, sizeof(timestampStr), "%04d-%02d-%02d %02d:%02d:%02d",
+             tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+             tm->tm_hour, tm->tm_min, tm->tm_sec);
+    return qstring(timestampStr);
+}
+
 bool getorpost_reqdata::validate() {
     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
     crc_ = crc32_z(crc_, (const unsigned char*)payload.c_str(), payload.size());
@@ -286,7 +344,7 @@ bool getorpost_reqdata::validate() {
 }
 
 bool conn_io_req_res::validate() {
-     header* crc_header = get_header((const uint8_t*)"crc", strlen("crc"));
+     header* crc_header = get_header("crc");
      if (crc_header == nullptr) {
           return  false;
      }
@@ -299,11 +357,11 @@ bool conn_io_req_res::validate() {
      crc_ = crc32_z(crc_, (const unsigned char*)payload->buf, payload->len);
 
      unsigned long crc_from_req = 0;
-     sscanf((const char*)crc_header->value, "%8lx", &crc_from_req);
+     sscanf((const char*)crc_header->value.c_str(), "%8lx", &crc_from_req);
 
      if (crc_from_req != crc_) {
           DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s",
-               crc_, crc_from_req, payload->len, crc_header->value);
+               crc_, crc_from_req, payload->len, crc_header->value.c_str());
           assert(crc_from_req == crc_);
      }
 //     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",

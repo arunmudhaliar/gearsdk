@@ -55,6 +55,8 @@
 #include <bits/stdc++.h>
 #endif
 
+#include<sys/utsname.h>
+
 #define LOG_LEVEL_0 0
 #define LOG_LEVEL_1 1
 #define LOG_LEVEL_2 2
@@ -63,13 +65,20 @@
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_2
 #endif
-
-extern "C" DECLSPEC void PrintCommonInfo();
-extern "C" DECLSPEC int NumberOfDigits(unsigned int num);
+extern "C" DECLSPEC int init_gsdk();
+extern "C" DECLSPEC void print_common_info();
+extern "C" DECLSPEC int number_of_digits(unsigned int num);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_ASSERT(const char *tag, bool condition, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char *tag, const char *format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char *tag, const char *format, ...);
+
+namespace gsdk {
+class device {
+public:
+    static struct utsname device_details;
+};
+};
 #endif /* sdktypes_hpp */

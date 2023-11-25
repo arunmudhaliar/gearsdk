@@ -8,7 +8,8 @@
 #include "http3_sample_client.hpp"
 
 int main(int argc, const char *argv[]) {
-//    std::string host = "192.168.0.230";    
+    init_gsdk();
+//    std::string host = "192.168.0.230";
     std::string host = "localhost";
     
     struct ev_loop* loop = ev_default_loop(0);

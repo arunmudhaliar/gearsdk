@@ -29,6 +29,7 @@
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
+#include "../../networkcommon/source/qstatslogger.hpp"
 
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
@@ -57,8 +58,7 @@ public:
     virtual void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) = 0;
     virtual void destroy_connection(struct ev_loop *loop, struct conn_io *conn_io) = 0;
     inline virtual struct ev_loop *get_mainloop() = 0;
-    virtual void parse_header(const uint8_t *name, size_t name_len,
-                              const uint8_t *value, size_t value_len, struct conn_io *conn_io) = 0;
+    virtual void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) = 0;
     virtual void parse(struct conn_io *conn_io) = 0;
 };
 
@@ -129,11 +129,16 @@ private:
     static void timeout_cb(EV_P_ ev_timer *w, int revents);
     
 protected:
-    void parse_header(const uint8_t *name, size_t name_len,
-                      const uint8_t *value, size_t value_len, struct conn_io *conn_io) override;
-    qtextfilelogger logger;
+    virtual void on_run_started() = 0;
+    virtual void on_run_end() = 0;
+    void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
+    static qtextfilelogger logger;
+    static qstatslogger stats_logger;
     
 public:
+    static qtextfilelogger& get_file_logger() { return logger; }
+    static qstatslogger& get_stats_loggeer() { return stats_logger; }
+    
     int run(const std::string& host, const std::string& port, fs::path& rootDir);
 };
 

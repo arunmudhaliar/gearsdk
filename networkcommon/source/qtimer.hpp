@@ -42,6 +42,7 @@ private:
 
 public:
     static void evtimer_cb(EV_P_ ev_timer *w, int revents) {
+        UNUSED(revents);
         qtimer* qtimer_ = (qtimer*)w->data;
         // repeat timer case
         if (qtimer_->count==-1) {
@@ -67,9 +68,9 @@ public:
     qtimer(struct ev_loop* loop, type_qtimer_cb timeout_callback, void* data, float delay = 1.0f, float count = 1) :
     loop(loop),
     timeout_callback(timeout_callback),
-    data(data),
+    count(count),
     delay(delay),
-    count(count) {
+    data(data) {
         ev_timer_init(&timer, evtimer_cb, delay, 0);
         timer.data = this;
         ev_timer_start(loop, &timer);

@@ -10,28 +10,29 @@
 
 #include <mongoc/mongoc.h>
 #include <map>
+#include "../../common/qstring.h"
 
 class interface_qmongo_connection {
 public:
     virtual void on_mongo_connect() = 0;
-    virtual void on_mongo_create_index_keys(const char* collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) = 0;
+    virtual void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) = 0;
 };
 
 class qmongo {
 public:
-    qmongo(interface_qmongo_connection* interfce, const char* app_name, const char* db_name, const char* uri_string = "mongodb://localhost:27017");
+    qmongo(interface_qmongo_connection* interfce, const qstring& app_name, const qstring& db_name, const qstring& uri_string = "mongodb://localhost:27017");
     ~qmongo();
 
     void cleanup();
-    int insert(const char* collection_name, bson_t& query);
-    int update(const char* collection_name, bson_t& query, bson_t& update);
-    mongoc_cursor_t* find(const char* collection_name, bson_t& query);
-    mongoc_collection_t* get_collection(const char* collection_name);
+    int insert(const qstring& collection_name, bson_t& query);
+    int update(const qstring& collection_name, bson_t& query, bson_t& update);
+    mongoc_cursor_t* find(const qstring& collection_name, bson_t& query);
+    mongoc_collection_t* get_collection(const qstring& collection_name);
     
 private:
     qmongo(){}
-    int connect(const char* app_name, const char* db_name, const char* uri_string);
-    int create_client_index_if_not(mongoc_collection_t* collection, const char* collection_name);
+    int connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string);
+    int create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name);
     
     mongoc_uri_t *uri = nullptr;
     mongoc_client_t *client = nullptr;

@@ -7,8 +7,12 @@
 
 #include "qh3server.hpp"
 
+qtextfilelogger qh3server::logger;
+qstatslogger qh3server::stats_logger;
+
 //void (*cb)(const uint8_t *line, void *argp), void *argp
 void qh3server::debug_log(const uint8_t *line, void *argp) {
+    UNUSED(argp);
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, (char*)line);
 }
 
@@ -159,30 +163,31 @@ struct conn_io *qh3server::create_conn(uint8_t *scid, size_t scid_len,
    size_t value_len,
    void *argp)
  */
-void qh3server::parse_header(const uint8_t *name, size_t name_len,
-                  const uint8_t *value, size_t value_len, struct conn_io *conn_io) {
-    if (memcmp(name, ":path", name_len)==0) {
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "got HTTP header: %.*s=%.*s",
-                (int) name_len, name, (int) value_len, value);
+void qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) {
+    if (name.compare(":path")==0) {
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "got HTTP header: %s=%s",
+                name.c_str(), value.c_str());
     } else {
-        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP header: %.*s=%.*s",
-                (int) name_len, name, (int) value_len, value);
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP header: %s=%s",
+                name.c_str(), value.c_str());
     }
-    conn_io->http_request->add_header(name, name_len, value, value_len);
+    conn_io->http_request->add_header(name, value);
 }
 
 void qh3server::parse(struct conn_io *conn_io) {
+    UNUSED(conn_io);
 }
 
 int qh3server::for_each_header(const uint8_t *name, size_t name_len,
                            const uint8_t *value, size_t value_len,
                            void *argp) {
     struct conn_io *conn_io = (struct conn_io *)argp;
-    conn_io->bridge->parse_header(name, name_len, value, value_len, conn_io);
+    conn_io->bridge->parse_header(qstring(name, name_len), qstring(value, value_len), conn_io);
     return 0;
 }
 
 void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
+    UNUSED(revents);
     qh3server* server = (qh3server *)w->data;
     struct connections *conns = server->conns;
     
@@ -230,6 +235,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                                     token, &token_len);
         if (rc < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
+            qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "parse_header_fail");
             return;
         }
 
@@ -246,6 +252,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                 if (written < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create vneg packet: %zd",
                             written);
+                    qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "version_negotiation_fail", "", qstring::format_string("failed to create vneg packet: %zd",written));
                     continue;
                 }
 
@@ -311,6 +318,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
             if (conn_io == NULL) {
                 continue;
             }
+            qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "", "qh3server", "create_conn_io");
         }
 
         RecvInfo recv_info = {
@@ -325,6 +333,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
         if (done < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
+            qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "process_packet_fail");
             continue;
         }
 
@@ -337,6 +346,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                 conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn,
                                                                    server->http3_config);
                 if (conn_io->http3 == NULL) {
+                    qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "http3_conn_fail");
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create HTTP/3 connection");
                     continue;
                 }
@@ -359,6 +369,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
 
                         if (rc != 0) {
                             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process headers");
+                            qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "process_header_fail");
                         }
                         break;
                     }
@@ -386,8 +397,12 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         
                         EV_START_RECORD(send_start_time);
                         conn_io_req_res::payload* payload = conn_io->http_response->payload_list.size() ? conn_io->http_response->payload_list[0] : nullptr;
-                        int number_of_digits = NumberOfDigits((int)payload->len);
-                        char content_length_data[number_of_digits+1];
+                        if (payload == nullptr) {
+                            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "no-response. ignoring the request!!!");
+                            break;
+                        }
+                        int number_of_digits_ = number_of_digits((int)payload->len);
+                        char content_length_data[number_of_digits_+1];
                         snprintf(content_length_data, sizeof(content_length_data), "%d", (int)payload->len);
                         
                         int header_size = 4;
@@ -425,13 +440,13 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         int additional_header_index=0;
                         for (auto it : conn_io->http_response->headers) {
                             headers[header_size+additional_header_index] = {
-                                .name = it.second->name,
-                                .name_len = it.second->name_len,
+                                .name = (uint8_t *) it.second->name.c_str(),
+                                .name_len = it.second->name.length(),
 
-                                .value = it.second->value,
-                                .value_len = it.second->value_len,
+                                .value = (uint8_t *) it.second->value.c_str(),
+                                .value_len = it.second->value.length(),
                             };
-                            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name, it.second->value);
+                            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
                             additional_header_index++;
                         }
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
@@ -443,6 +458,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         EV_STOP_RECORD(send_start_time, LOG_LEVEL_0, __LOGTAG__, "send-time t:%lu ms");
                         if (send_len!=payload->len) {
                             DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
+                            qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "response_send_fail");
                             break;
                         }
                         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response over %" PRId64 " with body %s", s, payload->buf);
@@ -497,6 +513,7 @@ void qh3server::destroy_connection(struct ev_loop *loop, struct conn_io *conn_io
 }
 
 void qh3server::timeout_cb(EV_P_ ev_timer *w, int revents) {
+    UNUSED(revents);
     struct conn_io *conn_io = (struct conn_io *)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
@@ -526,7 +543,9 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
         .ai_protocol = IPPROTO_UDP
     };
 
-    logger.start_session("qh3_logfile", sizeof("qh3_logfile"));
+    qh3server::get_file_logger().start_session("./logs/qh3_logfile", sizeof("./logs/qh3_logfile"));
+    qh3server::get_stats_loggeer().init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
+    qh3server::get_stats_loggeer().start_session("./stats/qh3_statfile", sizeof("./stats/qh3_statfile"));
 //    quiche_enable_debug_logging(debug_log, NULL);
 
     struct addrinfo *local;
@@ -610,14 +629,17 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
 
+    on_run_started();
     ev_loop(mainloop, 0);
-
+    on_run_end();
+    
     freeaddrinfo(local);
 
     quiche_h3_config_free(http3_config);
 
     quiche_config_free(config);
 
-    logger.end_session();
+    qh3server::get_stats_loggeer().end_session();
+    qh3server::get_file_logger().end_session();
     return 0;
 }

@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:qstats-crawler/qstats-crawler.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:qh3client/qh3client.xcodeproj">
    </FileRef>
    <FileRef

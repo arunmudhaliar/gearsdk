@@ -17,6 +17,11 @@ qlogfile::qlogfile(const char* path, size_t path_len, float flush_time, size_t m
 {
     logfile_path = new char[logfile_path_len];
     memcpy(logfile_path, path, logfile_path_len);
+    
+    fs::path log_dir = fs::path(logfile_path).parent_path();
+    if (!fs::is_directory(log_dir)) {
+        fs::create_directory(log_dir);
+    }
     create_new_logfile();
 }
 
@@ -33,9 +38,42 @@ qlogfile::~qlogfile() {
     }
 }
 
-bool file_exists(const char *filename)
+bool qlogfile::file_exists(const char *filename)
 {
     return access(filename, F_OK) == 0;
+}
+
+void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files ) {
+    unsigned int next_minor_counter_ = 0;
+    unsigned int next_major_version_ = 0;
+    fs::path current_logfile_path_;
+    bool file_exist_ = false;
+    unsigned int file_not_exist_counter = 0;
+    do {
+        current_logfile_path_ = path;
+        unsigned long size_ =  number_of_digits(next_minor_counter_)+7+number_of_digits(next_major_version_);
+        char* file_version_string = new char[size_];
+        file_version_string[size_-1] = '\0';
+        snprintf(file_version_string, size_, "-%d-%d.log", next_major_version_, next_minor_counter_);
+        current_logfile_path_+=file_version_string;
+        GX_DELETE_ARY(file_version_string);
+        next_minor_counter_++;
+        if (next_minor_counter_>=MINOR_VERSION_RESET_AT) {
+            next_major_version_++;
+            next_minor_counter_ = 0;
+            if (next_major_version_>MAJOR_VERSION_ALARM_AT) {
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+            }
+        }
+        file_exist_ = file_exists(current_logfile_path_.native().c_str());
+        if (file_exist_) {
+            files.push_back(current_logfile_path_);
+        } else {
+            file_not_exist_counter++;
+        }
+    } while(file_not_exist_counter<10);
 }
 
 int qlogfile::create_new_logfile() {
@@ -45,7 +83,7 @@ int qlogfile::create_new_logfile() {
     }
     
     do {
-        unsigned long size_ = logfile_path_len + NumberOfDigits(next_minor_counter)+6+NumberOfDigits(next_major_version);
+        unsigned long size_ = logfile_path_len + number_of_digits(next_minor_counter)+6+number_of_digits(next_major_version);
         GX_DELETE_ARY(current_logfile_path);
         current_logfile_path = new char[size_];
         snprintf(current_logfile_path, size_, "%s-%d-%d.log", logfile_path, next_major_version, next_minor_counter);
@@ -101,6 +139,19 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
     return total_record_sz;
 }
 
+size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
+    log_mutex.tryLock(__FUNCTION__);
+    if (fp==nullptr) {
+        return -1;
+    }
+    size_t total_record_sz = buffer_length + 2;   //+2 for \n
+    qbuffer* record = create_new_record(total_record_sz);   //+1 for \n
+    snprintf((char*)record->data, total_record_sz, "%s\n", buffer);
+    record->index = total_record_sz;
+    log_mutex.unLock();
+    return total_record_sz;
+}
+
 int qlogfile::flush(bool check_for_log_file_size) {
     log_mutex.tryLock(__FUNCTION__);
     if (fp==nullptr) {
@@ -110,7 +161,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
     int err_cnt = 0;
     for(auto it = records.cbegin();it!=records.cend();it++) {
         qbuffer* record = *it;
-        ssize_t bytes_written = fprintf(fp, "%*.*s", (int)record->index, (int)record->index, record->data);
+        ssize_t bytes_written = fprintf(fp, "%.*s", (int)record->index, record->data);
         if (bytes_written<0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "error while flushing - record - '%s' !!!", record->data);
             err_cnt++;

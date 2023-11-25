@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487552AEB8DA800C0F6CA /* libnetworkcommon.a */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
@@ -47,6 +48,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556ABAEB2B0AB4A600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		557487472AEA47E100C0F6CA /* roomserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roomserver.cpp; sourceTree = "<group>"; };
 		557487482AEA47E100C0F6CA /* roomserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = roomserver.hpp; sourceTree = "<group>"; };
 		557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = networkcommon.xcodeproj; path = ../networkcommon/networkcommon.xcodeproj; sourceTree = "<group>"; };
@@ -75,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
 				557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */,
@@ -98,6 +102,8 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556ABAEB2B0AB4A600D688DB /* libz.a */,
+				556ABAE92B0AB36A00D688DB /* libservercommon.a */,
 				557487AE2AED547500C0F6CA /* libquiche.a */,
 				557487AC2AED545E00C0F6CA /* libev.a */,
 				557487572AEB8E1A00C0F6CA /* libcommon.a */,
@@ -364,6 +370,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -384,6 +391,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;

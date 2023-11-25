@@ -10,7 +10,7 @@
 
 #include <string>
 #include "../../common/sdktypes.hpp"
-#include "../../common/gxcrc32.h"
+#include "../../common/qstring.h"
 #include "qtimer.hpp"
 #include "../../common/timer.h"
 #include <map>
@@ -27,8 +27,9 @@ namespace fs = std::__fs::filesystem;
 #include <netdb.h>
 #include <filesystem>
 #include <vector>
-#include <quiche.h>
+//#include <quiche.h>
 #include <zlib.h>
+#include <time.h>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
@@ -83,45 +84,46 @@ private:
 
 class essentials {
 public:
+    int init_essentials();
     static int32_t resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
                                   const std::string& version_string_, unsigned version_code_,
                                          std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir);
+    
+    static time_t get_time_local();
+    static qstring get_time_local_tostring();
+    static time_t get_time_utc();
+    static qstring get_time_utc_tostring();
+    static qstring get_time_utc_postgresql_format();
+    
+    static qstring get_sysname();
+    static qstring get_device_name();
+    static qstring get_device_arch();
+    static qstring get_device_release_str();
 };
 
 // h3 structs
 
 struct conn_io_req_res {
     typedef struct header {
-        header(const header& header_) {
-            set_header(header_.name, header_.name_len, header_.value, header_.value_len);
+        header(const header& header_) :
+            name(header_.name),
+            value(header_.value) {
         }
-        header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
-            set_header(name_, name_len_, value_, value_len_);
-        }
-        void set_header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
-            name_len = name_len_;
-            value_len = value_len_;
-            GX_DELETE_ARY(name);
-            GX_DELETE_ARY(value);
-            name = new uint8_t[name_len];
-            value = new uint8_t[value_len];
-            memcpy(name, name_, name_len);
-            memcpy(value, value_, value_len);
+        header(const qstring& name_, const qstring& value_) :
+            name(name_),
+            value(value_) {
         }
         ~header() {
-            GX_DELETE_ARY(name);
-            GX_DELETE_ARY(value);
         }
-      uint8_t *name = nullptr;
-      uintptr_t name_len = 0;
-      uint8_t *value = nullptr;
-      uintptr_t value_len = 0;
+        qstring name;
+        qstring value;
     } header;
     
     typedef struct payload {
         payload(const uint8_t* buf_, ssize_t len_) : len(len_) {
-            buf = new uint8_t[len];
+            buf = new uint8_t[len+1];
             memcpy(buf, buf_, len);
+            buf[len]=0;
         }
         ~payload() {
             GX_DELETE_ARY(buf);
@@ -132,7 +134,7 @@ struct conn_io_req_res {
     
     conn_io_req_res(const conn_io_req_res& data) {
         for(auto h : data.headers) {
-            add_header(h.second->name, h.second->name_len, h.second->value, h.second->value_len);
+            add_header(h.second->name, h.second->value);
         }
         for(std::vector<payload*>::const_iterator it=data.payload_list.begin(); it!= data.payload_list.end(); it++) {
             payload* payload = *it;
@@ -153,7 +155,7 @@ private:
     conn_io_req_res() {
     }
     conn_io_req_res(const header& header, const payload& payload) {
-        add_header(header.name, header.name_len, header.value, header.value_len);
+        add_header(header.name, header.value);
         add_payload(payload.buf, payload.len);
     }
 
@@ -161,12 +163,12 @@ public:
     static conn_io_req_res* create() {
         return new conn_io_req_res();
     }
-    static conn_io_req_res* create(const uint8_t* path, ssize_t path_len, const uint8_t* payload, ssize_t payload_len) {
-        return new conn_io_req_res(conn_io_req_res::header((const uint8_t*)":path", strlen(":path"), path, path_len),
+    static conn_io_req_res* create(const qstring& path, const uint8_t* payload, ssize_t payload_len) {
+        return new conn_io_req_res(conn_io_req_res::header(":path", path),
                          conn_io_req_res::payload(payload, payload_len));
     }
     payload* get_payload(int index) const {
-        if (index>=payload_list.size()) {
+        if (index>=(int)payload_list.size()) {
             return nullptr;
         }
         return payload_list[index];
@@ -176,19 +178,19 @@ public:
         payload_list.push_back(data);
     }
 
-    void add_header(const uint8_t *name_, uintptr_t name_len_, const uint8_t *value_, uintptr_t value_len_) {
+    void add_header(const qstring& name_, const qstring& value_) {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
-        crc = crc32_z(crc, (const unsigned char*)name_, name_len_);
+        crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         
         if (headers.find(crc)==headers.end()) {
-            header* data = new header(name_, name_len_, value_, value_len_);
+            header* data = new header(name_, value_);
             headers[crc] = data;
         }
     }
     
-    header* get_header(const uint8_t *name_, uintptr_t name_len_) const {
+    header* get_header(const qstring& name_) const {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
-        crc = crc32_z(crc, (const unsigned char*)name_, name_len_);
+        crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         std::map<unsigned long, header*>::const_iterator it = headers.find(crc);
         return it!=headers.end() ? it->second : nullptr;
     }

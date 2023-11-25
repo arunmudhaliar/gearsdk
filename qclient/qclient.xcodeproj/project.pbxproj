@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEE2B0AB4FB00D688DB /* libz.a */; };
 		557487402AE957ED00C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574873F2AE957ED00C0F6CA /* main.cpp */; };
 		557487622AEB909800C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487612AEB909800C0F6CA /* libcommon.a */; };
 		557487632AEB909C00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487602AEB8FF100C0F6CA /* libnetworkcommon.a */; };
@@ -42,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		556ABAEE2B0AB4FB00D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574873F2AE957ED00C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		557487612AEB909800C0F6CA /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		557487A82AED541700C0F6CA /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 				557487632AEB909C00C0F6CA /* libnetworkcommon.a in Frameworks */,
 				55D1C6D82AD326A500470E01 /* Security.framework in Frameworks */,
 				557487AB2AED542E00C0F6CA /* libquiche.a in Frameworks */,
+				556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */,
 				55E4D32A2ACAF58000555999 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -88,6 +91,7 @@
 		55853CE22AC32FF600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556ABAEE2B0AB4FB00D688DB /* libz.a */,
 				557487A82AED541700C0F6CA /* libev.a */,
 				557487A92AED541700C0F6CA /* libquiche.a */,
 				557487612AEB909800C0F6CA /* libcommon.a */,
@@ -340,6 +344,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -366,6 +371,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;

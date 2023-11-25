@@ -105,3 +105,10 @@ void qbuffer_writer::write( qbuffer& buffer, const uint8_t* data, ssize_t length
     memcpy(dest, data, length);
     buffer.index += length;
 }
+
+void qbuffer_writer::write( qbuffer& buffer, const qstring& data ) const {
+    buffer.do_resize_if_required(data.length());
+    uint8_t* dest = ((uint8_t*)(buffer.data+buffer.index));
+    memcpy(dest, data.c_str(), data.length());
+    buffer.index += data.length();
+}

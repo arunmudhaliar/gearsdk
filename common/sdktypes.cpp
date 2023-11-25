@@ -17,10 +17,23 @@
 
 
 #define LOGBUFFER_SIZE FILENAME_MAX * 2
+using namespace gsdk;
+
+struct utsname device::device_details;
 
 extern "C"
 {
-    void PrintCommonInfo()
+    int init_gsdk() {
+        errno = 0;
+        if(uname(&device::device_details)!=0)
+        {
+           perror("uname doesn't return 0, so there is an error");
+            return -1;
+        }
+        return 0;
+    }
+
+    void print_common_info()
     {
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
@@ -42,7 +55,7 @@ extern "C"
 #endif
     }
 
-    int NumberOfDigits(unsigned int num)
+    int number_of_digits(unsigned int num)
     {
         if (num==0) {
             return 1;
@@ -64,7 +77,7 @@ extern "C"
             return;
         }
         time_t givemetime = time(NULL);
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -80,7 +93,7 @@ extern "C"
 
     void DEBUG_PRINT_WARN(const char *tag, const char *format, ...)
     {
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -89,7 +102,7 @@ extern "C"
     }
     void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...)
     {
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -102,7 +115,7 @@ extern "C"
         {
             return;
         }
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -112,7 +125,7 @@ extern "C"
     }
     void DEBUG_PRINT_IMPORTANT(const char *tag, const char *format, ...)
     {
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -121,7 +134,7 @@ extern "C"
     }
     void DEBUG_PRINT_IMPORTANT2(const char *tag, const char *format, ...)
     {
-        char buffer[LOGBUFFER_SIZE];
+        char buffer[LOGBUFFER_SIZE+1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);

@@ -13,6 +13,7 @@ static std::string version_string = "0.1";
 static unsigned version_code = 1;
 
 int main(int argc, const char *argv[]) {
+    init_gsdk();
 // main http server
     std::string host = "localhost";
     std::string port = "4004";

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "../../common/sdktypes.hpp"
+#include "../../common/qstring.h"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qtextfilelogger"
@@ -65,6 +66,7 @@ public:
     void write( qbuffer& buffer, uint8_t value ) const;
     void write( qbuffer& buffer, const uint8_t* data, ssize_t length ) const;
     void write( qbuffer& buffer, unsigned long value ) const;
+    void write( qbuffer& buffer, const qstring& data ) const;
 }; //class BufferWriter
 
 #endif /* qbuffer_hpp */
