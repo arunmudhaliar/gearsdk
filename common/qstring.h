@@ -130,6 +130,10 @@ public:
         return utstring_len(ut_string);
     }
     
+    bool isempty() const {
+        return (utstring_len(ut_string) == 0) || compare("")==0;
+    }
+    
     void clear() {
         utstring_clear(ut_string);
     }

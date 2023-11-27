@@ -11,23 +11,30 @@
 int main(int argc, const char * argv[]) {
     UNUSED(argc);
     UNUSED(argv);
-    // insert code here...
+    
+    fs::path root_file_path = "./stats/qh3_statfile";
+    
+    if (argc%2<2) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Failed to resolve arguments !!!. Using default path %s", root_file_path.c_str());
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Usage : <executable> '--f <root file name>'");
+    } else {
+        // default to root
+        int pairs = (argc-1) / 2;
+        for(int x=0;x<pairs;x++) {
+            const char* lf = argv[1+x*2+0];
+            const char* rg = argv[1+x*2+1];
+            
+            if (strcmp(lf, "--f")==0) {
+                root_file_path = fs::path(rg);
+            }
+        }
+        //
+    }
+    
     init_gsdk();
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qstats crawler started...");
-    
-//    qstring server_utc_tstamp;
-//    server_utc_tstamp.format("%ld", essentials::get_time_utc()) ;
-//    qstring server_local_tstamp;
-//    server_local_tstamp.format("%ld", essentials::get_time_local()) ;
-//    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", server_utc_tstamp.c_str());
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", essentials::get_time_utc_tostring().c_str());
-//    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", server_local_tstamp.c_str());
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", essentials::get_time_local_tostring().c_str());
-    qstring server_utc_tstamp = essentials::get_time_utc_postgresql_format();
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", server_utc_tstamp.c_str());
-    
     qstats_crawler crawler;
-    crawler.try_crawl("./stats/qh3_statfile");
+    crawler.try_crawl(root_file_path.c_str());
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qstats crawler finished...");
     return 0;
 }

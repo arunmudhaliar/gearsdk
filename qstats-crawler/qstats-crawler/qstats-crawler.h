@@ -18,7 +18,7 @@ public:
     void try_crawl(const qstring& root_filename);
     
 private:
-    int parse_file(fs::path file);
+    int parse_file(fs::path file, int& parsed_lines);
     int parse_line(const qstring& line);
     int parse_count_stats(std::vector<qstring>& list);
     int parse_open_stats(std::vector<qstring>& list);
