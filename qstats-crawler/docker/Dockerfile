@@ -11,5 +11,12 @@ RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
 RUN apt-get install libsasl2-dev -y
 RUN apt-get install libzstd-dev -y
+RUN apt-get install wget -y
+RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
+RUN tar -xvzf postgresql-15.5.tar.gz
+RUN cd ./postgresql-15.5
+RUN mkdir build
+RUN ./configure --prefix=/app/postgresql-15.5/build
+RUN make install
 RUN sh make_qstats-crawler.sh
 CMD [ "sh", "run_qstats-crawler.sh" ]
