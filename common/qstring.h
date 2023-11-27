@@ -50,14 +50,17 @@ public:
     }
     
     void copy(const qstring& qstr) {
+        clear();
         utstring_printf(ut_string, "%.*s", (int)qstr.length(), qstr.c_str());
     }
     
     void copy(const char* str) {
+        clear();
         utstring_printf(ut_string, "%s", str);
     }
     
     void format(const char *fmt, ...) {
+        clear();
         va_list ap;
         va_start(ap,fmt);
         utstring_printf_va(ut_string,fmt,ap);
@@ -77,6 +80,16 @@ public:
         return utstring_find(ut_string, start_pos, sub_str.c_str(), sub_str.length());
     }
     
+    void replace(const qstring& sub_str, const qstring& str) {
+        std::vector<qstring> array;
+        split(sub_str, array);
+        clear();
+        for(auto s : array) {
+            utstring_concat(ut_string, s.ut_string);
+            utstring_concat(ut_string, str.ut_string);
+        }
+    }
+    
     void split(const qstring& sub_str, std::vector<qstring>& array, bool include_empty_string = true) const {
         long start_pos = 0;
         long prev_start_pos = start_pos;
@@ -89,7 +102,7 @@ public:
                 utstring_bincpy(new_str.ut_string, src, len);
                 array.push_back(new_str);
             }
-            prev_start_pos = start_pos+1;
+            prev_start_pos = start_pos+sub_str.length();
             found_atleast_one = true;
         }
         

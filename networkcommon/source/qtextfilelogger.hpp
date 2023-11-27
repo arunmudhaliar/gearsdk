@@ -18,7 +18,7 @@
 #define SINGLE_LOG_RECORD_LENGTH 512
 #define MINOR_VERSION_RESET_AT 100
 #define MAJOR_VERSION_ALARM_AT 100
-#define MAX_LOG_FILE_SIZE_IN_BYTES 1024 * 1024
+#define MAX_LOG_FILE_SIZE_IN_BYTES 1024 * 256
 
 class qlogfile {
 public:
@@ -30,27 +30,28 @@ public:
         level_4
     };
     
-    qlogfile(const char* path, size_t path_len, float flush_time=60.0f, size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
+    qlogfile(const qstring& path, float flush_time=60.0f, size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
     ~qlogfile();
     size_t log(log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length);
     size_t log_buffer(const char* buffer, size_t buffer_length);
     int flush(bool check_for_log_file_size);
     qbuffer* create_new_record(size_t buffer_size);
     
-    static bool file_exists(const char *filename);
+    static bool file_exists(const qstring& filename);
     static void get_all_log_files(fs::path& path, std::vector<fs::path>& files );
     
 private:
-    int create_new_logfile();
+    int finalise_logfile();
+    int create_new_logfile(bool finalize_prev_file);
     FILE* fp = nullptr;
     float flush_time = 60.0f;   // in 60 sec
-    char* logfile_path = nullptr;
+    qstring logfile_path;
     const size_t logfile_path_len = 0;
     size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES;
     size_t logfile_size = 0;
     unsigned int next_minor_counter = 0;
     unsigned int next_major_version = 0;
-    char* current_logfile_path = nullptr;
+    qstring current_logfile_path;
     std::vector<qbuffer*> records;
     qbuffer_writer buffer_writer;
     qmutex log_mutex;
@@ -62,18 +63,17 @@ public:
     virtual ~qtextfilelogger();
     struct qlog_config {
         qlog_config(){}
-        qlog_config(char* path, size_t path_len, float flush_time, qtextfilelogger* logger, size_t max_size_of_file) :
-        logfile_path(path), logfile_path_len(path_len), flush_time(flush_time), max_size_of_file(max_size_of_file), logger(logger) {
+        qlog_config(const qstring& path, float flush_time, qtextfilelogger* logger, size_t max_size_of_file) :
+        logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file), logger(logger) {
         }
-        char* logfile_path= nullptr;
-        size_t logfile_path_len = 0;
+        qstring logfile_path;
         float flush_time = 60;
         size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES;
         qtextfilelogger* logger = nullptr;
         bool finished = true;
         int pthread_returnValue = 0;
     };
-    int start_session(const char* path, size_t path_len, float flush_time=60.0f, size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
+    int start_session(const qstring& path, float flush_time=60.0f, size_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
     size_t log(qlogfile::log_lvls lvl, const char* tag, const char *format, ...);
     int end_session();
     

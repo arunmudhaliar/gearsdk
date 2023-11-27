@@ -12,35 +12,30 @@
 #include <time.h>
 #include <unistd.h>
 
-qlogfile::qlogfile(const char* path, size_t path_len, float flush_time, size_t max_size_of_file) :
-    logfile_path_len(path_len), flush_time(flush_time), max_size_of_file(max_size_of_file)
+qlogfile::qlogfile(const qstring& path, float flush_time, size_t max_size_of_file) :
+    logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file)
 {
-    logfile_path = new char[logfile_path_len];
-    memcpy(logfile_path, path, logfile_path_len);
-    
-    fs::path log_dir = fs::path(logfile_path).parent_path();
+    fs::path log_dir = fs::path(logfile_path.c_str()).parent_path();
     if (!fs::is_directory(log_dir)) {
         fs::create_directory(log_dir);
     }
-    create_new_logfile();
+    create_new_logfile(false);
 }
 
 qlogfile::~qlogfile() {
     flush(false);
-    GX_DELETE_ARY(logfile_path);
-    GX_DELETE_ARY(current_logfile_path);
     if (fp==nullptr) {
         return;
     }
     int result = fclose(fp);
     if (result!=0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close log file - %s, ret_val %d", logfile_path, result);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close log file - %s, ret_val %d", logfile_path.c_str(), result);
     }
 }
 
-bool qlogfile::file_exists(const char *filename)
+bool qlogfile::file_exists(const qstring& filename)
 {
-    return access(filename, F_OK) == 0;
+    return access(filename.c_str(), F_OK) == 0;
 }
 
 void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files ) {
@@ -51,12 +46,9 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files ) 
     unsigned int file_not_exist_counter = 0;
     do {
         current_logfile_path_ = path;
-        unsigned long size_ =  number_of_digits(next_minor_counter_)+7+number_of_digits(next_major_version_);
-        char* file_version_string = new char[size_];
-        file_version_string[size_-1] = '\0';
-        snprintf(file_version_string, size_, "-%d-%d.log", next_major_version_, next_minor_counter_);
-        current_logfile_path_+=file_version_string;
-        GX_DELETE_ARY(file_version_string);
+        qstring file_version_string;
+        file_version_string.format("-%d-%d.log", next_major_version_, next_minor_counter_);
+        current_logfile_path_+=file_version_string.c_str();
         next_minor_counter_++;
         if (next_minor_counter_>=MINOR_VERSION_RESET_AT) {
             next_major_version_++;
@@ -76,37 +68,80 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files ) 
     } while(file_not_exist_counter<10);
 }
 
-int qlogfile::create_new_logfile() {
+int qlogfile::finalise_logfile() {
+    if (!fp) {
+        return 1;
+    }
+    
+    qstring finalized_path = current_logfile_path;
+    finalized_path.replace(".tmp", ".log");
+    int result = rename(current_logfile_path.c_str(), finalized_path.c_str());
+ 
+    // Print the result
+    if (!result) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file renamed successfully");
+    }
+    else {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Couldn't rename logfile");
+    }
+    
     if (fp) {
         fclose(fp);
         fp = nullptr;
     }
     
+    return result;
+}
+
+int qlogfile::create_new_logfile(bool finalize_prev_file) {
+    if (finalize_prev_file) {
+        finalise_logfile(); // rename the file after closing, thus finalize it for processing.
+    } else {
+        if (fp) {           // just close the file.
+            fclose(fp);
+            fp = nullptr;
+        }
+    }
+    
+    qstring finalized_logfile_path;
     do {
-        unsigned long size_ = logfile_path_len + number_of_digits(next_minor_counter)+6+number_of_digits(next_major_version);
-        GX_DELETE_ARY(current_logfile_path);
-        current_logfile_path = new char[size_];
-        snprintf(current_logfile_path, size_, "%s-%d-%d.log", logfile_path, next_major_version, next_minor_counter);
+        finalized_logfile_path.clear();
+        current_logfile_path.clear();
+        current_logfile_path.format("%s-%d-%d.tmp", logfile_path.c_str(), next_major_version, next_minor_counter);
+        finalized_logfile_path.format("%s-%d-%d.log", logfile_path.c_str(), next_major_version, next_minor_counter);
         next_minor_counter++;
         if (next_minor_counter>=MINOR_VERSION_RESET_AT) {
             next_major_version++;
             next_minor_counter = 0;
             if (next_major_version>MAJOR_VERSION_ALARM_AT) {
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path);
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path);
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path);
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
+                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
             }
         }
-    } while(file_exists(current_logfile_path));
+        
+        if (file_exists(current_logfile_path)) {
+            // check if this file is above threshold
+            struct stat st;
+            stat(current_logfile_path.c_str(), &st);
+            if (st.st_size<max_size_of_file) {
+                break;  // open this file to append
+            }
+            //
+        }
+    } while(file_exists(current_logfile_path) || file_exists(finalized_logfile_path));
 
-    fp = fopen(current_logfile_path, "a");
+    fp = fopen(current_logfile_path.c_str(), "a");
     if (fp==nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open log file to append - %s", current_logfile_path);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open log file to append - %s - %d", current_logfile_path.c_str(), errno);
         return -1;
     } else {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file created - %s", current_logfile_path);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file opend for append - %s", current_logfile_path.c_str());
     }
-    logfile_size = 0;
+    
+    struct stat st;
+    stat(current_logfile_path.c_str(), &st);
+    logfile_size = st.st_size;
     return 0;
 }
 
@@ -180,7 +215,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
     }
     records.clear();
     if (check_for_log_file_size && logfile_size>max_size_of_file) {
-        create_new_logfile();
+        create_new_logfile(true);
     }
     log_mutex.unLock();
     return (int)flushed_cnt;
@@ -194,13 +229,12 @@ qtextfilelogger::qtextfilelogger() :
 qtextfilelogger::~qtextfilelogger() {
 }
 
-int qtextfilelogger::start_session(const char* path, size_t path_len, float flush_time, size_t max_size_of_file) {
+int qtextfilelogger::start_session(const qstring& path, float flush_time, size_t max_size_of_file) {
     if (!config.finished) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "file logger already running !!!");
         return -1;
     }
-    config.logfile_path = const_cast<char*>(path);
-    config.logfile_path_len = path_len;
+    config.logfile_path = path;
     config.flush_time = flush_time;
     config.max_size_of_file = max_size_of_file;
     config.logger = this;
@@ -223,7 +257,7 @@ void *qtextfilelogger::run_log_session(void *data) {
         pthread_exit(&config->pthread_returnValue);
     }
     GX_DELETE(logger->logfile);
-    logger->logfile = new qlogfile(config->logfile_path, config->logfile_path_len, config->flush_time, config->max_size_of_file );
+    logger->logfile = new qlogfile(config->logfile_path, config->flush_time, config->max_size_of_file );
     
     config->finished = false;
     logger->log_loop = ev_loop_new(0);

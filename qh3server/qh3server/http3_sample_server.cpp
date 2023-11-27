@@ -37,22 +37,24 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
     if (path_header->value.length()>1 && path_header->value.compare("/whoami")==0) {
         bool validate = conn_io->http_request->validate();
         if (!validate) {
-            
+            qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
         }
-        UNUSED(validate);
         const char* res_string = "{\"name\" : \"http3_sample_server\"}";
         conn_io->http_response->add_payload((uint8_t*)res_string, strlen(res_string));
         qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", path_header->value.c_str(), res_string);
-        qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str());
+        qh3server::get_stats_loggeer().server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
     } else if (path_header->value.length()>1 && path_header->value.compare("/user_get")==0) {
         bool validate = conn_io->http_request->validate();
-        UNUSED(validate);
+        if (!validate) {
+            qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        }
 //        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
         bson_error_t error;
         if (!bson_init_from_json (&bson, (const char*)payload->buf, payload->len, &error)) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
             qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", path_header->value.c_str(), error.message);
+            qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
            return;
         }
         
@@ -94,10 +96,8 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         
         unsigned long  crc = crc32(0L, Z_NULL, 0);
         crc = crc32_z(crc, buffer.data, buffer.index);
-        
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user id : %x", crc);
-        
         writer.write(buffer, crc);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user id : %x", crc);
         
         qstring user_id;
         user_id.format("%lx", crc);
@@ -106,7 +106,6 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         
         time_t givemetime = time(NULL);
         qstring login_time_str(strtok(ctime(&givemetime), "\n"));
-        
         writer.write(buffer, login_time_str);
         
         // calcualte sha
@@ -129,7 +128,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", path_header->value.c_str(), json_string);
             bson_free(json_string);
         }
-        mongoc_cursor_destroy (cursor);
+        mongoc_cursor_destroy(cursor);
         
         // if not found try insert. (This needs to improve)
         if (!found) {
@@ -139,8 +138,8 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             bson_t meta;
             bson_init(&meta);
             bson_append_document_begin (&res_bson, "user", 4, &meta);
-            bson_append_utf8(&meta, "pid", 3, user_id.c_str(), (int)user_id.length());
-            bson_append_utf8(&meta, "name", 4, user_name.c_str(), (int)user_name.length());
+            bson_append_utf8(&meta, "pid", strlen("pid"), user_id.c_str(), (int)user_id.length());
+            bson_append_utf8(&meta, "name", strlen("name"), user_name.c_str(), (int)user_name.length());
             bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name.c_str(), (int)sys_name.length());
             bson_append_utf8(&meta, "node_name", strlen("node_name"), node_name.c_str(), (int)node_name.length());
             bson_append_utf8(&meta, "arch", strlen("arch"), arch.c_str(), (int)arch.length());
@@ -167,6 +166,13 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         bson_destroy(update);
         bson_destroy (&find_query);
         //
+        
+        qh3server::get_stats_loggeer().server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
+    } else if (path_header->value.length()>1 && path_header->value.compare("/user_details")==0) {
+        bool validate = conn_io->http_request->validate();
+        if (!validate) {
+            qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        }
     }
 }
 

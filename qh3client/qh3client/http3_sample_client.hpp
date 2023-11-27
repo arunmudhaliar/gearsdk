@@ -19,6 +19,8 @@ public:
     
     void init_connection();
     
+    void on_login_complete(const qstring& token, bool result);
+    
 private:
     qtimer* keep_alive_loop = nullptr;
     std::string host = "192.168.0.230";
@@ -26,5 +28,7 @@ private:
     static int live_connections;
     static int total_connections_returned;
     void create_connections();
+    
+    qstring session_token;
 };
 #endif /* http3_sample_client_hpp */
