@@ -46,8 +46,8 @@ echo "use 'sudo docker build -t qstats-crawler-exp .' to build the docker"
 # sudo docker build -t qstats-crawler.
 
 # run
-echo "use 'sudo docker run --publish 4004:4004/udp --name qstats-crawler-container -d qstats-crawler-exp' to run the docker"
-# sudo docker run --publish 4004:4004/udp --name qstats-crawler-container -d qstats-crawler-exp
+echo "use 'sudo docker run --name qstats-crawler-container -d qstats-crawler-exp' to run the docker"
+# sudo docker run --name qstats-crawler-container -d qstats-crawler-exp
 
 # stop
 echo "use 'sudo docker stop qstats-crawler-container' to stop the docker"

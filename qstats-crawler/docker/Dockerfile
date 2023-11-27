@@ -1,10 +1,9 @@
 FROM ubuntu:20.04
-LABEL key="qh3server"
-EXPOSE 4004/udp
+LABEL key="qstats-crawler"
 WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
-COPY qh3server/ ./qh3server
+COPY qstats-crawler/ ./qstats-crawler
 COPY make_qstats-crawler.sh ./
 COPY run_qstats-crawler.sh ./
 RUN apt-get update && apt-get install make
