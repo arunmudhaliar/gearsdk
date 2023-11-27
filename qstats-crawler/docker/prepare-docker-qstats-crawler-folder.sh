@@ -10,6 +10,7 @@ cp -r ./servercommon/ ./docker-qstats-crawler/servercommon
 cp ./qstats-crawler/docker/Dockerfile ./docker-qstats-crawler/Dockerfile
 cp ./qstats-crawler/docker/make_qstats-crawler.sh ./docker-qstats-crawler/make_qstats-crawler.sh
 cp ./qstats-crawler/docker/run_qstats-crawler.sh ./docker-qstats-crawler/run_qstats-crawler.sh
+cp ./qstats-crawler/docker/make_postgresql.sh ./docker-qstats-crawler/make_postgresql.sh
 
 # docker-qstats-crawler
 rm -rf -- ./docker-qstats-crawler/**/*.o
