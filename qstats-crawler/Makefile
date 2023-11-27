@@ -29,7 +29,7 @@ CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a  -L./libs/linux -lpq -lpgport -lpgcommon -lpthread -lresolv
+	LIBS = ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a  -L./libs/linux -lpq -lpgport -lpgcommon -lssl -lcrypto -lsasl2 -pthread -lrt -Wl,--no-as-needed -ldl -lzstd -lresolv
 endif
 ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/macos/libev.a ../common/libs/macos/libz.a ./libs/macos/libpgcommon.a ./libs/macos/libpgport.a ./libs/macos/libpq.a -lresolv
