@@ -14,7 +14,7 @@ RUN apt-get install libzstd-dev -y
 RUN apt-get install wget -y
 RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
 RUN tar -xvzf postgresql-15.5.tar.gz
-RUN cd ./postgresql-15.5
+RUN cd postgresql-15.5
 RUN pwd
 RUN mkdir build
 RUN ls
