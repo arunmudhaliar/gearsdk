@@ -21,5 +21,8 @@ RUN mkdir /app/postgresql-15.5/build
 RUN ls
 RUN /app/postgresql-15.5/configure --prefix=/app/postgresql-15.5/build
 RUN make install
+RUN rm -r /app/qstats-crawler/libs/linux
+RUN mkdir /app/qstats-crawler/libs/linux
+RUN cp -a /app/postgresql-15.5/build/lib/. /app/qstats-crawler/libs/linux
 RUN sh make_qstats-crawler.sh
 CMD [ "sh", "run_qstats-crawler.sh" ]
