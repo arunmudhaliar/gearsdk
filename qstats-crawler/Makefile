@@ -10,6 +10,8 @@ $(COMMON_SRCDIR)/sdktypes.cpp \
 
 SRCDIR = .
 SRCS = $(SRCDIR)/qstats-crawler/main.cpp \
+$(SRCDIR)/qstats-crawler/qstats-crawler.cpp \
+$(SRCDIR)/qpgsql/qpgsql.cpp \
 $(NCOMMONSRCS) \
 
 INCLUDES = -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(COMMON_SRCDIR)/zlib" -I "$(SRCDIR)/libpgsql/include" -I "$(SRCDIR)/qpgsql"
