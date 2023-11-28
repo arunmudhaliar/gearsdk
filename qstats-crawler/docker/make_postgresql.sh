@@ -1,7 +1,7 @@
 cd ./postgresql-15.5
 mkdir ./build
-# ./configure --prefix=/app/postgresql-15.5/build
-./configure
+./configure --prefix=/app/postgresql-15.5/build
+# ./configure
 make clean
 make release
 make install
