@@ -399,13 +399,12 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         conn_io_req_res::payload* payload = conn_io->http_response->payload_list.size() ? conn_io->http_response->payload_list[0] : nullptr;
                         if (payload == nullptr) {
                             DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "no-response. ignoring the request!!!");
-                            break;
+                            payload = conn_io->http_response->add_payload((uint8_t *)"{}", strlen("{}"));
                         }
-                        int number_of_digits_ = number_of_digits((int)payload->len);
-                        char content_length_data[number_of_digits_+1];
-                        snprintf(content_length_data, sizeof(content_length_data), "%d", (int)payload->len);
+                        const qstring& content_length_data = qstring::format_string("%d", (int)payload->len);
+                        const qstring& crc = payload->get_crc();
                         
-                        int header_size = 4;
+                        int header_size = 5;
                         Header *headers = new Header[header_size + conn_io->http_response->headers.size()];
                         headers[0] = {
                             .name = (uint8_t *) ":status",
@@ -433,8 +432,15 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                             .name = (uint8_t *) "content-length",
                             .name_len = sizeof("content-length") - 1,
 
-                            .value = (uint8_t *) content_length_data,
-                            .value_len = sizeof(content_length_data) - 1,
+                            .value = (uint8_t *) content_length_data.c_str(),
+                            .value_len = content_length_data.length(),
+                        };
+                        headers[4] = {
+                            .name = (uint8_t *) "crc",
+                            .name_len = sizeof("crc") - 1,
+
+                            .value = (uint8_t *) crc.c_str(),
+                            .value_len = crc.length(),
                         };
 
                         int additional_header_index=0;

@@ -128,6 +128,12 @@ struct conn_io_req_res {
         ~payload() {
             GX_DELETE_ARY(buf);
         }
+        qstring get_crc() {
+            unsigned long  crc = crc32(0L, Z_NULL, 0);
+            crc = crc32_z(crc, (const unsigned char*)buf, len);
+            qstring crc_buffer = qstring::format_string("%lx", crc);
+            return crc_buffer;
+        }
         ssize_t len = 0;
         uint8_t* buf = nullptr;
     } payload;
@@ -173,19 +179,23 @@ public:
         }
         return payload_list[index];
     }
-    void add_payload(uint8_t* buf_, ssize_t len_ ) {
+    payload* add_payload(uint8_t* buf_, ssize_t len_ ) {
         payload* data = new payload(buf_, len_);
         payload_list.push_back(data);
+        return data;
     }
 
-    void add_header(const qstring& name_, const qstring& value_) {
+    header* add_header(const qstring& name_, const qstring& value_) {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
         crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         
-        if (headers.find(crc)==headers.end()) {
+        std::map<unsigned long, header*>::iterator it = headers.find(crc);
+        if (it==headers.end()) {
             header* data = new header(name_, value_);
             headers[crc] = data;
+            return data;
         }
+        return it->second;
     }
     
     header* get_header(const qstring& name_) const {

@@ -351,6 +351,13 @@ bool conn_io_req_res::validate() {
 
      payload* payload = get_payload(0);
      if (payload == nullptr) {
+         // check if its get method or not
+         header* method_header = get_header(":method");
+         if (method_header == nullptr) {
+              return  false;
+         } else if (crc_header->value == "0") { //for get methods there wont be any payload and the crc will be zero.
+             return true;
+         }
           return false;
      }
      unsigned long  crc_ = crc32(0L, Z_NULL, 0);
