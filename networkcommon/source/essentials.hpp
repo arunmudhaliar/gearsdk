@@ -143,7 +143,7 @@ struct conn_io_req_res {
         for(auto h : data.headers) {
             add_header(h.second->name, h.second->value);
         }
-        set_payload(data.payload_data.buffer);
+        set_payload(data.data.buffer);
     }
 
     ~conn_io_req_res() {
@@ -169,15 +169,15 @@ public:
                          conn_io_req_res::payload(payload_));
     }
     const payload& get_payload() const {
-        return payload_data;
+        return data;
     }
     const payload& set_payload(const qstring& payload_) {
-        payload_data.buffer = payload_;
-        return payload_data;
+        data.buffer = payload_;
+        return data;
     }
     const payload& append_to_payload(const qstring& payload_) {
-        payload_data.buffer += payload_;
-        return payload_data;
+        data.buffer += payload_;
+        return data;
     }
 
     header* add_header(const qstring& name_, const qstring& value_) {
@@ -200,9 +200,9 @@ public:
         return it!=headers.end() ? it->second : nullptr;
     }
     
-    bool is_postrequest() const { return payload_data.buffer.length()>0; }
+    bool is_postrequest() const { return data.buffer.length()>0; }
     bool validate();
-    payload payload_data;
+    payload data;
     std::map<unsigned long, header*> headers;
 };
 
