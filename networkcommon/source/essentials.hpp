@@ -120,38 +120,33 @@ struct conn_io_req_res {
     } header;
     
     typedef struct payload {
-        payload(const uint8_t* buf_, ssize_t len_) : len(len_) {
-            buf = new uint8_t[len+1];
-            memcpy(buf, buf_, len);
-            buf[len]=0;
+        payload(){}
+        payload(const qstring& buffer_) : buffer(buffer_) {
         }
         ~payload() {
-            GX_DELETE_ARY(buf);
         }
-        qstring get_crc() {
-            unsigned long  crc = crc32(0L, Z_NULL, 0);
-            crc = crc32_z(crc, (const unsigned char*)buf, len);
+        qstring get_crc_string() const {
+            unsigned long  crc = get_crc_value();
             qstring crc_buffer = qstring::format_string("%lx", crc);
             return crc_buffer;
         }
-        ssize_t len = 0;
-        uint8_t* buf = nullptr;
+        
+        unsigned long get_crc_value() const {
+            unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+            crc_ = crc32_z(crc_, (const unsigned char*)buffer.c_str(), buffer.length());
+            return crc_;
+        }
+        qstring buffer;
     } payload;
     
     conn_io_req_res(const conn_io_req_res& data) {
         for(auto h : data.headers) {
             add_header(h.second->name, h.second->value);
         }
-        for(std::vector<payload*>::const_iterator it=data.payload_list.begin(); it!= data.payload_list.end(); it++) {
-            payload* payload = *it;
-            add_payload(payload->buf, payload->len);
-        }
+        set_payload(data.payload_data.buffer);
     }
 
     ~conn_io_req_res() {
-        for(std::vector<payload*>::iterator it=payload_list.begin(); it!= payload_list.end(); it++) {
-            GX_DELETE(*it);
-        }
         for(auto h : headers) {
             GX_DELETE(h.second);
         }
@@ -162,27 +157,27 @@ private:
     }
     conn_io_req_res(const header& header, const payload& payload) {
         add_header(header.name, header.value);
-        add_payload(payload.buf, payload.len);
+        set_payload(payload.buffer);
     }
 
 public:
     static conn_io_req_res* create() {
         return new conn_io_req_res();
     }
-    static conn_io_req_res* create(const qstring& path, const uint8_t* payload, ssize_t payload_len) {
+    static conn_io_req_res* create(const qstring& path, const qstring& payload_) {
         return new conn_io_req_res(conn_io_req_res::header(":path", path),
-                         conn_io_req_res::payload(payload, payload_len));
+                         conn_io_req_res::payload(payload_));
     }
-    payload* get_payload(int index) const {
-        if (index>=(int)payload_list.size()) {
-            return nullptr;
-        }
-        return payload_list[index];
+    const payload& get_payload() const {
+        return payload_data;
     }
-    payload* add_payload(uint8_t* buf_, ssize_t len_ ) {
-        payload* data = new payload(buf_, len_);
-        payload_list.push_back(data);
-        return data;
+    const payload& set_payload(const qstring& payload_) {
+        payload_data.buffer = payload_;
+        return payload_data;
+    }
+    const payload& append_to_payload(const qstring& payload_) {
+        payload_data.buffer += payload_;
+        return payload_data;
     }
 
     header* add_header(const qstring& name_, const qstring& value_) {
@@ -205,9 +200,9 @@ public:
         return it!=headers.end() ? it->second : nullptr;
     }
     
-    bool is_postrequest() const { return payload_list.size()>0; }
+    bool is_postrequest() const { return payload_data.buffer.length()>0; }
     bool validate();
-    std::vector<payload*> payload_list;
+    payload payload_data;
     std::map<unsigned long, header*> headers;
 };
 

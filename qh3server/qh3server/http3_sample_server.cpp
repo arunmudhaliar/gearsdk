@@ -32,26 +32,28 @@ void http3_sample_server::parse_header(const qstring& name, const qstring& value
 
 void http3_sample_server::parse(struct conn_io *conn_io) {
     conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
-    conn_io_req_res::payload* payload = conn_io->http_request->get_payload(0);
+    const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
     
     if (path_header->value.length()>1 && path_header->value.compare("/whoami")==0) {
         bool validate = conn_io->http_request->validate();
+        assert(validate);
         if (!validate) {
             qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
         }
         const char* res_string = "{\"name\" : \"http3_sample_server\"}";
-        conn_io->http_response->add_payload((uint8_t*)res_string, strlen(res_string));
+        conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
         qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", path_header->value.c_str(), res_string);
         qh3server::get_stats_loggeer().server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
     } else if (path_header->value.length()>1 && path_header->value.compare("/user_get")==0) {
         bool validate = conn_io->http_request->validate();
+        assert(validate);
         if (!validate) {
             qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
         }
 //        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user_get - %s", conn_io->http_request.payload.c_str());
         bson_t bson;
         bson_error_t error;
-        if (!bson_init_from_json (&bson, (const char*)payload->buf, payload->len, &error)) {
+        if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
             qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", path_header->value.c_str(), error.message);
             qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
@@ -124,7 +126,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         while (mongoc_cursor_next(cursor, &doc)) {
             found = true;
             char* json_string = bson_as_json(doc, nullptr);
-            conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
+            conn_io->http_response->set_payload(qstring(json_string, strlen(json_string)));
             qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - user-found - %s", path_header->value.c_str(), json_string);
             bson_free(json_string);
         }
@@ -147,7 +149,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             bson_append_document_end (&res_bson, &meta);
             if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
                 char* json_string = bson_as_json(&res_bson, nullptr);
-                conn_io->http_response->add_payload((uint8_t *)json_string, strlen(json_string));
+                conn_io->http_response->set_payload(qstring(json_string, strlen(json_string)));
                 qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - new-user - %s", path_header->value.c_str(), json_string);
                 bson_free(json_string);
             } else {
@@ -170,6 +172,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         qh3server::get_stats_loggeer().server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
     } else if (path_header->value.length()>1 && path_header->value.compare("/user_details")==0) {
         bool validate = conn_io->http_request->validate();
+        assert(validate);
         if (!validate) {
             qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
         }

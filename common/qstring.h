@@ -36,14 +36,18 @@ public:
         utstring_new(ut_string);
         utstring_printf(ut_string, "%.*s", (int)len, str);
     }
-    qstring(const uint8_t* str, int len) {
-        utstring_new(ut_string);
-        utstring_printf(ut_string, "%.*s", len, str);
-    }
-    qstring(const uint8_t* str, unsigned long len) {
+//    qstring(const uint8_t* str, int len) {
+//        utstring_new(ut_string);
+//        utstring_printf(ut_string, "%.*s", len, str);
+//    }
+    qstring(const uint8_t* str, size_t len) {
         utstring_new(ut_string);
         utstring_printf(ut_string, "%.*s", (int)len, str);
     }
+//    qstring(const uint8_t* str, unsigned long len) {
+//        utstring_new(ut_string);
+//        utstring_printf(ut_string, "%.*s", (int)len, str);
+//    }
     qstring(const qstring& qstr) {
         utstring_new(ut_string);
         copy(qstr);

@@ -384,7 +384,7 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                             if (len <= 0) {
                                 break;
                             }
-                            conn_io->http_request->add_payload(buf, len);
+                            conn_io->http_request->set_payload(qstring(buf, len));
                             DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int) len, buf);
                         }
                         break;
@@ -396,13 +396,13 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%lu ms");
                         
                         EV_START_RECORD(send_start_time);
-                        conn_io_req_res::payload* payload = conn_io->http_response->payload_list.size() ? conn_io->http_response->payload_list[0] : nullptr;
-                        if (payload == nullptr) {
+                        const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
+                        if (payload.buffer.length() == 0) {
                             DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "no-response. ignoring the request!!!");
-                            payload = conn_io->http_response->add_payload((uint8_t *)"{}", strlen("{}"));
+                            conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
                         }
-                        const qstring& content_length_data = qstring::format_string("%d", (int)payload->len);
-                        const qstring& crc = payload->get_crc();
+                        const qstring& content_length_data = qstring::format_string("%d", (int)payload.buffer.length());
+                        const qstring& crc = payload.get_crc_string();
                         
                         int header_size = 5;
                         Header *headers = new Header[header_size + conn_io->http_response->headers.size()];
@@ -458,16 +458,16 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         quiche_h3_send_response(conn_io->http3, conn_io->conn,
                                                 s, headers, header_size + conn_io->http_response->headers.size(), false);
                         ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
-                                                               payload->buf, payload->len,
+                                                               (uint8_t *)payload.buffer.c_str(), payload.buffer.length(),
                                                                true);
                         GX_DELETE_ARY(headers);
                         EV_STOP_RECORD(send_start_time, LOG_LEVEL_0, __LOGTAG__, "send-time t:%lu ms");
-                        if (send_len!=payload->len) {
+                        if (send_len!=(ssize_t)payload.buffer.length()) {
                             DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
                             qh3server::get_stats_loggeer().server_count("recv_cb", "", "", "", "error", "qh3server", "response_send_fail");
                             break;
                         }
-                        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response over %" PRId64 " with body %s", s, payload->buf);
+                        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
                     }
                         break;
 

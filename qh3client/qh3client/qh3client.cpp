@@ -346,7 +346,7 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
 
                         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "received - %.*s", (int) len, conn_io->buf);
                         if (conn_io->response) {
-                            conn_io->response->add_payload(conn_io->buf, len);
+                            conn_io->response->set_payload(qstring(conn_io->buf, len));
                         }
                     }
 
