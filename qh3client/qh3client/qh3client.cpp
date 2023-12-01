@@ -75,7 +75,7 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
     if (conn_io->response == nullptr) {
         return 0;
     }
-    conn_io->response->add_header(qstring(name, name_len), qstring(value, value_len));
+    conn_io->response->add_or_get_header(qstring(name, name_len), qstring(value, value_len));
     return 0;
 }
 

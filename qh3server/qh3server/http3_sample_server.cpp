@@ -114,7 +114,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
         crypto_helper::sha256(sha_data);
         // session token header
-        conn_io->http_response->add_header("token", qstring(sha_data.out, strlen(sha_data.out)));
+        conn_io->http_response->add_or_get_header("token", qstring(sha_data.out, strlen(sha_data.out)));
         
         // try find the user. (This needs to improve)
         bool found = false;

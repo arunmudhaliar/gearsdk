@@ -141,7 +141,7 @@ struct conn_io_req_res {
     
     conn_io_req_res(const conn_io_req_res& data) {
         for(auto h : data.headers) {
-            add_header(h.second->name, h.second->value);
+            add_or_get_header(h.second->name, h.second->value);
         }
         set_payload(data.data.buffer);
     }
@@ -156,7 +156,7 @@ private:
     conn_io_req_res() {
     }
     conn_io_req_res(const header& header, const payload& payload) {
-        add_header(header.name, header.value);
+        add_or_get_header(header.name, header.value);
         set_payload(payload.buffer);
     }
 
@@ -180,7 +180,7 @@ public:
         return data;
     }
 
-    header* add_header(const qstring& name_, const qstring& value_) {
+    header* add_or_get_header(const qstring& name_, const qstring& value_) {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
         crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         

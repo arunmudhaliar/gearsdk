@@ -171,7 +171,7 @@ void qh3server::parse_header(const qstring& name, const qstring& value, struct c
         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got HTTP header: %s=%s",
                 name.c_str(), value.c_str());
     }
-    conn_io->http_request->add_header(name, value);
+    conn_io->http_request->add_or_get_header(name, value);
 }
 
 void qh3server::parse(struct conn_io *conn_io) {
@@ -405,13 +405,14 @@ void qh3server::recv_cb(EV_P_ ev_io *w, int revents) {
                         const qstring& crc = payload.get_crc_string();
                         
                         int header_size = 5;
+                        conn_io_req_res::header* status_header = conn_io->http_response->get_header(":status");
                         Header *headers = new Header[header_size + conn_io->http_response->headers.size()];
                         headers[0] = {
                             .name = (uint8_t *) ":status",
                             .name_len = sizeof(":status") - 1,
 
-                            .value = (uint8_t *) "200",
-                            .value_len = sizeof("200") - 1,
+                            .value = status_header ? (uint8_t *) status_header->value.c_str() : (uint8_t *) "200",
+                            .value_len = status_header ? status_header->value.length() : sizeof("200") - 1,
                         };
                         headers[1] = {
                             .name = (uint8_t *) "Alternate-Protocol",
