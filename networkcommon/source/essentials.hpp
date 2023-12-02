@@ -105,6 +105,7 @@ public:
 
 struct conn_io_req_res {
     typedef struct header {
+    private:
         header(const header& header_) :
             name(header_.name),
             value(header_.value) {
@@ -112,6 +113,11 @@ struct conn_io_req_res {
         header(const qstring& name_, const qstring& value_) :
             name(name_),
             value(value_) {
+        }
+    public:
+        static header* create(const qstring& name, const qstring& value) {
+            header* new_header = new header(name, value);
+            return new_header;
         }
         ~header() {
         }
@@ -138,13 +144,6 @@ struct conn_io_req_res {
         }
         qstring buffer;
     } payload;
-    
-    conn_io_req_res(const conn_io_req_res& data) {
-        for(auto h : data.headers) {
-            add_or_get_header(h.second->name, h.second->value);
-        }
-        set_payload(data.data.buffer);
-    }
 
     ~conn_io_req_res() {
         for(auto h : headers) {
@@ -155,9 +154,24 @@ struct conn_io_req_res {
 private:
     conn_io_req_res() {
     }
+    conn_io_req_res(const conn_io_req_res& data) {
+        for(auto h : data.headers) {
+            add_or_get_header(h.second->name, h.second->value);
+        }
+        set_payload(data.data.buffer);
+    }
+    
+    conn_io_req_res(const header& header) {
+        add_or_get_header(header.name, header.value);
+    }
     conn_io_req_res(const header& header, const payload& payload) {
         add_or_get_header(header.name, header.value);
         set_payload(payload.buffer);
+    }
+    
+    conn_io_req_res(const header& header, const qstring& payload) {
+        add_or_get_header(header.name, header.value);
+        set_payload(payload);
     }
 
 public:
@@ -165,8 +179,16 @@ public:
         return new conn_io_req_res();
     }
     static conn_io_req_res* create(const qstring& path, const qstring& payload_) {
-        return new conn_io_req_res(conn_io_req_res::header(":path", path),
-                         conn_io_req_res::payload(payload_));
+        conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
+        conn_io_req_res* new_rq_rs = new conn_io_req_res(*new_header, payload_);
+        GX_DELETE(new_header);
+        return new_rq_rs;
+    }
+    static conn_io_req_res* create(const qstring& path) {
+        conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
+        conn_io_req_res* new_rq_rs = new conn_io_req_res(*new_header);
+        GX_DELETE(new_header);
+        return new_rq_rs;
     }
     const payload& get_payload() const {
         return data;
@@ -186,7 +208,7 @@ public:
         
         std::map<unsigned long, header*>::iterator it = headers.find(crc);
         if (it==headers.end()) {
-            header* data = new header(name_, value_);
+            header* data = header::create(name_, value_);
             headers[crc] = data;
             return data;
         }
@@ -205,49 +227,5 @@ public:
     payload data;
     std::map<unsigned long, header*> headers;
 };
-
-struct getorpost_reqdata {
-    getorpost_reqdata(){
-    }
-    getorpost_reqdata(const std::string& path) :
-        path(path) {
-    }
-    getorpost_reqdata(const std::string& path, const std::string& payload) :
-        path(path), payload(payload) {
-    }
-    getorpost_reqdata(const getorpost_reqdata& data) {
-        path = data.path;
-        payload = data.payload;
-    }
-    ~getorpost_reqdata() {
-    }
-    bool is_postrequest() const { return payload.size()>0; }
-    void clear_payload() {
-        payload.clear();
-        reminder_payload.clear();
-    }
-    
-    bool validate();
-    std::string crc;
-    int crc_length=0;
-    std::string path;
-    std::string payload;
-    std::vector<std::string> reminder_payload;
-};
-
-/*
-struct getorpost_response_data {
-    getorpost_response_data() {
-    }
-    getorpost_response_data( const std::string& payload) :
-        payload(payload) {
-    }
-    void clear_payload() {
-        payload = "{}";
-    }
-    std::string payload = "{}"; // empty response
-    std::vector<Header> additional_headers;
-};
- */
 
 #endif /* essentials_hpp */

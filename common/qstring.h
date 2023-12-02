@@ -53,6 +53,11 @@ public:
         copy(qstr);
     }
     
+    static qstring* create(const uint8_t* str, size_t len) {
+        qstring* new_string = new qstring(str, len);
+        return new_string;
+    }
+    
     void copy(const qstring& qstr) {
         clear();
         utstring_printf(ut_string, "%.*s", (int)qstr.length(), qstr.c_str());

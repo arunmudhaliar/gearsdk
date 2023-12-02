@@ -329,20 +329,6 @@ qstring essentials::get_time_utc_postgresql_format() {
     return qstring(timestampStr);
 }
 
-bool getorpost_reqdata::validate() {
-    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-    crc_ = crc32_z(crc_, (const unsigned char*)payload.c_str(), payload.size());
-    
-    unsigned long crc_from_req = 0;
-    sscanf(crc.c_str(), "%lx", &crc_from_req);
-    
-    if (crc_from_req != crc_) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %d != %d, payload sz %d", crc_, crc_from_req, payload.size());
-        assert(crc_from_req == crc_);
-    }
-    return crc_from_req == crc_;
-}
-
 bool conn_io_req_res::validate() {
     header* crc_header = get_header("crc");
     if (crc_header == nullptr) {

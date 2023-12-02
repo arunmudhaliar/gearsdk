@@ -79,15 +79,9 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
     return 0;
 }
 
-int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
-    //int crc = gxcrc32::Calc((unsigned char*)data_getorpost_.payload.c_str(), 0, (int)data_getorpost_.payload.size());
-    unsigned long  crc = crc32(0L, Z_NULL, 0);
-    crc = crc32_z(crc, (const unsigned char*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size());
-    
-    char crc_buffer[32];
-    memset(crc_buffer, 0, sizeof(crc_buffer));
-    snprintf(crc_buffer, sizeof(crc_buffer), "%lx", crc);
-    
+int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io *conn_io) {
+    const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
+    conn_io_req_res::header* path_header = data_getorpost_->get_header(":path");
     Header headers_get[] = {
         {
             .name = (uint8_t *) ":method",
@@ -96,7 +90,6 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
             .value = (uint8_t *) "GET",
             .value_len = sizeof("GET") - 1,
         },
-
         {
             .name = (uint8_t *) ":scheme",
             .name_len = sizeof(":scheme") - 1,
@@ -104,7 +97,6 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
             .value = (uint8_t *) "https",
             .value_len = sizeof("https") - 1,
         },
-
         {
             .name = (uint8_t *) ":authority",
             .name_len = sizeof(":authority") - 1,
@@ -112,15 +104,13 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
             .value = (uint8_t *) conn_io->host,
             .value_len = strlen(conn_io->host),
         },
-
         {
             .name = (uint8_t *) ":path",
             .name_len = sizeof(":path") - 1,
 
-            .value = (uint8_t *) data_getorpost_.path.c_str(),
-            .value_len = data_getorpost_.path.size(),
+            .value = (uint8_t *) path_header->value.c_str(),
+            .value_len = path_header->value.length(),
         },
-
         {
             .name = (uint8_t *) "user-agent",
             .name_len = sizeof("user-agent") - 1,
@@ -132,8 +122,8 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
             .name = (uint8_t *) "crc",
             .name_len = sizeof("crc") - 1,
 
-            .value = (uint8_t *) crc_buffer,
-            .value_len = strlen(crc_buffer),
+            .value = (uint8_t *) crc_buffer.c_str(),
+            .value_len = crc_buffer.length(),
         },
     };
 
@@ -145,16 +135,12 @@ int64_t qh3client::send_get_http_request(const getorpost_reqdata& data_getorpost
     return stream_id;
 }
 
-int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpost_, struct conn_io *conn_io) {
-    int number_of_digits_ = number_of_digits((int)data_getorpost_.payload.size());
-    char content_length_data[number_of_digits_+1];
-    snprintf(content_length_data, sizeof(content_length_data), "%d", (int)data_getorpost_.payload.size());
-    unsigned long  crc = crc32(0L, Z_NULL, 0);
-    crc = crc32_z(crc, (const unsigned char*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size());
-    char crc_buffer[32];
-    memset(crc_buffer, 0, sizeof(crc_buffer));
-    snprintf(crc_buffer, sizeof(crc_buffer), "%lx", crc);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %lx - %s, payload sz %d", crc, crc_buffer, data_getorpost_.payload.size());
+int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io *conn_io) {
+    const qstring& content_length_data = qstring::format_string("%d", (int)data_getorpost_->data.buffer.length());
+    const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
+    
+    conn_io_req_res::header* path_header = data_getorpost_->get_header(":path");
     
     Header headers_get[] = {
         {
@@ -182,8 +168,8 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
             .name = (uint8_t *) ":path",
             .name_len = sizeof(":path") - 1,
 
-            .value = (uint8_t *) data_getorpost_.path.c_str(),
-            .value_len = data_getorpost_.path.size(),
+            .value = (uint8_t *) path_header->value.c_str(),
+            .value_len = path_header->value.length(),
         },
         {
             .name = (uint8_t *) "user-agent",
@@ -196,15 +182,15 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
             .name = (uint8_t *) "content-length",
             .name_len = sizeof("content-length") - 1,
 
-            .value = (uint8_t *) content_length_data,
-            .value_len = sizeof(content_length_data) - 1,
+            .value = (uint8_t *) content_length_data.c_str(),
+            .value_len = content_length_data.length(),
         },
         {
             .name = (uint8_t *) "crc",
             .name_len = sizeof("crc") - 1,
 
-            .value = (uint8_t *) crc_buffer,
-            .value_len = strlen(crc_buffer),
+            .value = (uint8_t *) crc_buffer.c_str(),
+            .value_len = crc_buffer.length(),
         },
     };
 
@@ -212,7 +198,7 @@ int64_t qh3client::send_post_http_request(const getorpost_reqdata& data_getorpos
                                                conn_io->conn,
                                                headers_get, 7, false);
     ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id,
-                                           (u_int8_t*)data_getorpost_.payload.c_str(), data_getorpost_.payload.size(),
+                                           (u_int8_t*)data_getorpost_->get_payload().buffer.c_str(), data_getorpost_->get_payload().buffer.length(),
                                            true);
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent HTTP POST request %" PRId64 " with body %ld", stream_id, send_len);
     return stream_id;
@@ -291,8 +277,8 @@ void qh3client::recv_cb(EV_P_ ev_io *w, int revents) {
 
         quiche_h3_config_free(config);
 
-        const getorpost_reqdata& data_getorpost_ = conn_io->bridge->get_getorpost_http_request();
-        if (data_getorpost_.is_postrequest()) {
+        const conn_io_req_res* data_getorpost_ = conn_io->bridge->get_getorpost_http_request();
+        if (data_getorpost_->is_postrequest()) {
             conn_io->bridge->send_post_http_request(data_getorpost_, conn_io);
         } else {
             conn_io->bridge->send_get_http_request(data_getorpost_, conn_io);
@@ -408,7 +394,7 @@ void qh3client::timeout_cb(EV_P_ ev_timer *w, int revents) {
     }
 }
 
-qh3client::qh3client(const std::string& host, const std::string& port) :
+qh3client::qh3client(const qstring& host, const qstring& port) :
 host(host),
 port(port) {
 }
@@ -426,7 +412,7 @@ int qh3client::close_socket( int sock ) {
     return result;
 }
 
-int qh3client::send_request(const getorpost_reqdata& data_get_) {
+int qh3client::send_request(const conn_io_req_res* data_get_) {
     this->http_request = data_get_;
     
     const struct addrinfo hints = {

@@ -14,7 +14,7 @@
 
 class http3_sample_client : public qtimer_sceduler {
 public:
-    http3_sample_client(const std::string& host, const std::string& port);
+    http3_sample_client(const qstring& host, const qstring& port);
     ~http3_sample_client();
     
     void init_connection();
@@ -23,8 +23,8 @@ public:
     
 private:
     qtimer* keep_alive_loop = nullptr;
-    std::string host = "192.168.0.230";
-    std::string port = "4004";
+    qstring host = "192.168.0.230";
+    qstring port = "4004";
     static int live_connections;
     static int total_connections_returned;
     void create_connections();

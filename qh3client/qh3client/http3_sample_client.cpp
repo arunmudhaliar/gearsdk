@@ -13,7 +13,7 @@
 int http3_sample_client::live_connections = 0;
 int http3_sample_client::total_connections_returned = 0;
 
-http3_sample_client::http3_sample_client(const std::string& host, const std::string& port) :
+http3_sample_client::http3_sample_client(const qstring& host, const qstring& port) :
  host(host), port(port) {
 }
 
@@ -35,7 +35,7 @@ void http3_sample_client::init_connection() {
     keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
         UNUSED(timer);
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client");
-        if (live_connections==0) {
+        if (live_connections<50) {
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections %d", total_connections_returned);
             create_connections();
         }
@@ -63,9 +63,9 @@ void http3_sample_client::create_connections() {
     size_t length = 0;
     char* json_string_data = bson_as_json(&parent, &length);
     bson_destroy(&parent);
-        
+
     for (int x=0;x<500;x++) {
-        qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_get", json_string_data),
+        qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data)),
                                     [this, x](conn_io_req_res* response) {
                                         conn_io_req_res::header *header = response->get_header("token");
                                         if (header == nullptr) {
@@ -77,7 +77,7 @@ void http3_sample_client::create_connections() {
                                         total_connections_returned++;
                                         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %s !!!", x, header->value.c_str());
             
-                                        this->on_login_complete(header->value, true);
+                                        //this->on_login_complete(header->value, true);
                                     });
         live_connections++;
     }
@@ -105,7 +105,7 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 //    char* json_string_data = bson_as_json(&parent, &length);
 //    bson_destroy(&parent);
     
-    qh3client_helper::send_async_request(host, port, getorpost_reqdata("/user_details"),
+    qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_details"),
         [this](conn_io_req_res* response) {
             conn_io_req_res::header *header = response->get_header("token");
             if (header == nullptr) {
