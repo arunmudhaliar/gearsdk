@@ -12,9 +12,12 @@
 
 http3_sample_server::http3_sample_server(const char* mongodb_uri) {
     mongo = new qmongo(this, "qh3", "db_name", mongodb_uri);
+    hiredis = new qhiredis();
+    hiredis->connect_redis();
 }
 
 http3_sample_server::~http3_sample_server() {
+    GX_DELETE(hiredis);
     GX_DELETE(mongo);
 }
 
@@ -32,6 +35,10 @@ void http3_sample_server::parse_header(const qstring& name, const qstring& value
 
 void http3_sample_server::parse(struct conn_io *conn_io) {
     conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
+    if (path_header == nullptr) {
+        qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "path_not_found");
+        return;
+    }
     const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
     
     if (path_header->value.length()>1 && path_header->value.compare("/whoami")==0) {
@@ -101,8 +108,8 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         writer.write(buffer, crc);
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "user id : %x", crc);
         
-        qstring user_id;
-        user_id.format("%lx", crc);
+        qstring pid;
+        pid.format("%lx", crc);
         qstring user_name;
         user_name.format("guest-%lx", crc);
         
@@ -114,13 +121,14 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
         crypto_helper::sha256(sha_data);
         // session token header
-        conn_io->http_response->add_or_get_header("token", qstring(sha_data.out, strlen(sha_data.out)));
+        qstring token(sha_data.out, strlen(sha_data.out));
+        conn_io->http_response->add_or_get_header("token", token);
         
         // try find the user. (This needs to improve)
         bool found = false;
         bson_t find_query;
         bson_init(&find_query);
-        bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), user_id.c_str(), (int)user_id.length());
+        bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), pid.c_str(), (int)pid.length());
         mongoc_cursor_t* cursor = mongo->find("users", find_query);
         const bson_t *doc = nullptr;
         while (mongoc_cursor_next(cursor, &doc)) {
@@ -140,7 +148,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
             bson_t meta;
             bson_init(&meta);
             bson_append_document_begin (&res_bson, "user", 4, &meta);
-            bson_append_utf8(&meta, "pid", strlen("pid"), user_id.c_str(), (int)user_id.length());
+            bson_append_utf8(&meta, "pid", strlen("pid"), pid.c_str(), (int)pid.length());
             bson_append_utf8(&meta, "name", strlen("name"), user_name.c_str(), (int)user_name.length());
             bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name.c_str(), (int)sys_name.length());
             bson_append_utf8(&meta, "node_name", strlen("node_name"), node_name.c_str(), (int)node_name.length());
@@ -161,12 +169,16 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         
         bson_t* update = BCON_NEW ("$set", "{", "user.last_login", BCON_UTF8 (login_time_str.c_str()), "}");
         if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
-            qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "user-last-login - %s, pid:%s", login_time_str.c_str(), user_id.c_str());
+            qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "user-last-login - %s, pid:%s", login_time_str.c_str(), pid.c_str());
         } else {
-            qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - %s", path_header->value.c_str(), user_id.c_str());
+            qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - %s", path_header->value.c_str(), pid.c_str());
         }
         bson_destroy(update);
         bson_destroy (&find_query);
+        //
+        
+        // set session token on redis
+        hiredis->set_value(pid, token, 5*60);   // 5 minutes
         //
         
         qh3server::get_stats_loggeer().server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
@@ -175,6 +187,46 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         assert(validate);
         if (!validate) {
             qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        }
+        conn_io_req_res::header* token_header = conn_io->http_request->get_header("token");
+        if (token_header == nullptr) {
+            return;
+        }
+        
+        bson_t bson;
+        bson_error_t error;
+        if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
+            qh3server::get_file_logger().log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", path_header->value.c_str(), error.message);
+            qh3server::get_stats_loggeer().server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
+           return;
+        }
+        
+        // parse
+        bson_iter_t iter;
+        bson_iter_t sub_iter;
+        qstring pid;
+        qbuffer buffer;
+        buffer.allocate(128);
+        qbuffer_writer writer;
+        if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "user.pid", &sub_iter)) {
+            pid = bson_iter_utf8 (&sub_iter, NULL);
+            if (pid.length()) {
+                writer.write(buffer, pid);
+            }
+        } else {
+            bson_destroy (&bson);
+            return;
+        }
+        bson_destroy (&bson);
+
+        // check with redis
+        qstring token_in_redis;
+        hiredis->get_value(pid, token_in_redis);
+        if (token_in_redis==token_header->value) {
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Valid user");
+        } else {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "NOT a Valid user !!!");
         }
     }
 }

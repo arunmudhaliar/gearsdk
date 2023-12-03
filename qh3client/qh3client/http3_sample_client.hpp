@@ -30,5 +30,6 @@ private:
     void create_connections();
     
     qstring session_token;
+    qstring pid;
 };
 #endif /* http3_sample_client_hpp */

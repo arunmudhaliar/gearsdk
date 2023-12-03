@@ -10,6 +10,7 @@
 
 #include "qh3server.hpp"
 #include "../../servercommon/source/qmongo/qmongo.hpp"
+#include "../../qhiredis/source/qhiredis.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
@@ -26,7 +27,7 @@ protected:
     void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) override final;
     
     qmongo* mongo = nullptr;
-    
+    qhiredis* hiredis = nullptr;
 public:
     http3_sample_server(const char* mongodb_uri);
     ~http3_sample_server();

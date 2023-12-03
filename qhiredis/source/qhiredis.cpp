@@ -7,6 +7,80 @@
 
 #include "qhiredis.hpp"
 
+qhiredis::qhiredis() {
+    context = nullptr;
+}
+qhiredis::~qhiredis() {
+    disconnect_redis();
+}
+
+int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket) {
+    if (context) {
+        return 2;
+    }
+    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+    if (unix_socket) {
+        context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
+    } else {
+        context = redisConnectWithTimeout(hostname.c_str(), port, timeout);
+    }
+    if (context == nullptr || context->err) {
+        if (context) {
+            printf("Connection error: %s\n", context->errstr);
+            disconnect_redis();
+        } else {
+            printf("Connection error: can't allocate redis context\n");
+        }
+        return 1;
+    }
+    return 0;
+}
+
+void qhiredis::disconnect_redis() {
+    if (!context) {
+        return;
+    }
+    /* Disconnects and frees the context */
+    redisFree(context);
+    context = nullptr;
+}
+
+int qhiredis::set_value(const qstring& key, const qstring& value) {
+    if (!context) {
+        return 2;
+    }
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b", key.c_str(), key.length(), value.c_str(), value.length());
+    if (reply == nullptr) {
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
+
+int qhiredis::set_value(const qstring& key, const qstring& value, int expiry_in_sec) {
+    if (!context) {
+        return 2;
+    }
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b EX %d", key.c_str(), key.length(), value.c_str(), value.length(), expiry_in_sec);
+    if (reply == nullptr) {
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
+
+int qhiredis::get_value(const qstring& key, qstring& value) {
+    if (!context) {
+        return 2;
+    }
+    qstring cmd = qstring::format_string("GET %s", key.c_str());
+    redisReply* reply = (redisReply*)redisCommand(context, cmd.c_str());
+    value = qstring::format_string("%.*s", reply->len, reply->str);
+    freeReplyObject(reply);
+    return 0;
+}
+
+#if 0
 void qhiredis::example_argv_command(redisContext *c, int n) {
     char **argv, tmp[42];
     size_t *argvlen;
@@ -143,3 +217,4 @@ int qhiredis::hiredis_main(int argc, char **argv) {
 
     return 0;
 }
+#endif

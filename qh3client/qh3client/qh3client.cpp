@@ -81,56 +81,61 @@ int qh3client::for_each_header(const uint8_t *name, size_t name_len,
 
 int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io *conn_io) {
     const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
-    conn_io_req_res::header* path_header = data_getorpost_->get_header(":path");
-    Header headers_get[] = {
-        {
+    int header_size = 5;
+    Header *headers = new Header[header_size + data_getorpost_->headers.size()];
+    headers[0] = {
             .name = (uint8_t *) ":method",
             .name_len = sizeof(":method") - 1,
 
             .value = (uint8_t *) "GET",
             .value_len = sizeof("GET") - 1,
-        },
-        {
+    };
+    headers[1] = {
             .name = (uint8_t *) ":scheme",
             .name_len = sizeof(":scheme") - 1,
 
             .value = (uint8_t *) "https",
             .value_len = sizeof("https") - 1,
-        },
-        {
+    };
+    headers[2] = {
             .name = (uint8_t *) ":authority",
             .name_len = sizeof(":authority") - 1,
 
             .value = (uint8_t *) conn_io->host,
             .value_len = strlen(conn_io->host),
-        },
-        {
-            .name = (uint8_t *) ":path",
-            .name_len = sizeof(":path") - 1,
-
-            .value = (uint8_t *) path_header->value.c_str(),
-            .value_len = path_header->value.length(),
-        },
-        {
+    };
+    headers[3] = {
             .name = (uint8_t *) "user-agent",
             .name_len = sizeof("user-agent") - 1,
 
             .value = (uint8_t *) "quiche",
             .value_len = sizeof("quiche") - 1,
-        },
-        {
+    };
+    headers[4] = {
             .name = (uint8_t *) "crc",
             .name_len = sizeof("crc") - 1,
 
             .value = (uint8_t *) crc_buffer.c_str(),
             .value_len = crc_buffer.length(),
-        },
     };
 
+    int additional_header_index=0;
+    for (auto it : data_getorpost_->headers) {
+        headers[header_size+additional_header_index] = {
+            .name = (uint8_t *) it.second->name.c_str(),
+            .name_len = it.second->name.length(),
+
+            .value = (uint8_t *) it.second->value.c_str(),
+            .value_len = it.second->value.length(),
+        };
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+        additional_header_index++;
+    }
+    
     int64_t stream_id = quiche_h3_send_request(conn_io->http3,
                                                conn_io->conn,
-                                               headers_get, 6, true);
-
+                                               headers, header_size + data_getorpost_->headers.size(), true);
+    GX_DELETE_ARY(headers);
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent HTTP GET request %" PRId64 "", stream_id);
     return stream_id;
 }
@@ -140,66 +145,71 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
     const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
     
-    conn_io_req_res::header* path_header = data_getorpost_->get_header(":path");
-    
-    Header headers_get[] = {
-        {
+    int header_size = 6;
+    Header *headers = new Header[header_size + data_getorpost_->headers.size()];
+    headers[0] = {
             .name = (uint8_t *) ":method",
             .name_len = sizeof(":method") - 1,
 
             .value = (uint8_t *) "POST",
             .value_len = sizeof("POST") - 1,
-        },
-        {
+    };
+    headers[1] = {
             .name = (uint8_t *) ":scheme",
             .name_len = sizeof(":scheme") - 1,
 
             .value = (uint8_t *) "https",
             .value_len = sizeof("https") - 1,
-        },
-        {
+    };
+    headers[2] = {
             .name = (uint8_t *) ":authority",
             .name_len = sizeof(":authority") - 1,
 
             .value = (uint8_t *) conn_io->host,
             .value_len = strlen(conn_io->host),
-        },
-        {
-            .name = (uint8_t *) ":path",
-            .name_len = sizeof(":path") - 1,
-
-            .value = (uint8_t *) path_header->value.c_str(),
-            .value_len = path_header->value.length(),
-        },
-        {
+    };
+    headers[3] = {
             .name = (uint8_t *) "user-agent",
             .name_len = sizeof("user-agent") - 1,
 
             .value = (uint8_t *) "quiche",
             .value_len = sizeof("quiche") - 1,
-        },
-        {
+    };
+    headers[4] = {
             .name = (uint8_t *) "content-length",
             .name_len = sizeof("content-length") - 1,
 
             .value = (uint8_t *) content_length_data.c_str(),
             .value_len = content_length_data.length(),
-        },
-        {
+    };
+    headers[5] = {
             .name = (uint8_t *) "crc",
             .name_len = sizeof("crc") - 1,
 
             .value = (uint8_t *) crc_buffer.c_str(),
             .value_len = crc_buffer.length(),
-        },
     };
 
+    int additional_header_index=0;
+    for (auto it : data_getorpost_->headers) {
+        headers[header_size+additional_header_index] = {
+            .name = (uint8_t *) it.second->name.c_str(),
+            .name_len = it.second->name.length(),
+
+            .value = (uint8_t *) it.second->value.c_str(),
+            .value_len = it.second->value.length(),
+        };
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+        additional_header_index++;
+    }
+    
     int64_t stream_id = quiche_h3_send_request(conn_io->http3,
                                                conn_io->conn,
-                                               headers_get, 7, false);
+                                               headers, header_size + data_getorpost_->headers.size(), false);
     ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id,
                                            (u_int8_t*)data_getorpost_->get_payload().buffer.c_str(), data_getorpost_->get_payload().buffer.length(),
                                            true);
+    GX_DELETE_ARY(headers);
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent HTTP POST request %" PRId64 " with body %ld", stream_id, send_len);
     return stream_id;
 }

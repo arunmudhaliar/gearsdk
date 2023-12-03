@@ -65,20 +65,37 @@ void http3_sample_client::create_connections() {
     bson_destroy(&parent);
 
     for (int x=0;x<500;x++) {
-        qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data)),
-                                    [this, x](conn_io_req_res* response) {
-                                        conn_io_req_res::header *header = response->get_header("token");
-                                        if (header == nullptr) {
-                                            this->on_login_complete("", false);
-                                            return;
-                                        }
-                                        
-                                        live_connections--;
-                                        total_connections_returned++;
-                                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %s !!!", x, header->value.c_str());
-            
-                                        //this->on_login_complete(header->value, true);
-                                    });
+        qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data, length)),
+            [this, x](conn_io_req_res* response) {
+                conn_io_req_res::header* token_header = response->get_header("token");
+                if (token_header == nullptr) {
+                    this->on_login_complete("", false);
+                    return;
+                }
+                
+                const conn_io_req_res::payload& payload = response->data;
+                bson_t bson;
+                bson_error_t error;
+                if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
+                   return;
+                }
+                
+                // parse
+                bson_iter_t iter;
+                bson_iter_t sub_iter;
+                if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "user.pid", &sub_iter)) {
+                    pid = bson_iter_utf8 (&sub_iter, NULL);
+                }
+                bson_destroy (&bson);
+
+                live_connections--;
+                total_connections_returned++;
+                DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+
+                session_token = token_header->value;
+                this->on_login_complete(token_header->value, token_header->value.length()>0);
+            });
         live_connections++;
     }
     bson_free(json_string_data);
@@ -86,37 +103,30 @@ void http3_sample_client::create_connections() {
 
 void http3_sample_client::on_login_complete(const qstring& token, bool result) {
     if (result == false) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Login failed !!!");
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Login failed t:%s !!!", token.c_str());
         return;
     }
-    session_token = token;
     
-//    bson_t parent;
-//    bson_init(&parent);
-//    bson_t meta;
-//    bson_append_document_begin (&parent, "details", strlen("details"), &meta);
-//    bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name.c_str(), (int)sys_name.length());
-//    bson_append_utf8(&meta, "node_name", strlen("node_name"), device_name.c_str(), (int)device_name.length());
-//    bson_append_utf8(&meta, "release", strlen("release"), release_str.c_str(), (int)release_str.length());
-//    bson_append_utf8(&meta, "arch", strlen("arch"), arch.c_str(), (int)arch.length());
-//    bson_append_document_end (&parent, &meta);
-//
-//    size_t length = 0;
-//    char* json_string_data = bson_as_json(&parent, &length);
-//    bson_destroy(&parent);
+    bson_t parent;
+    bson_init(&parent);
+    bson_t meta;
+    bson_append_document_begin (&parent, "user", strlen("user"), &meta);
+    bson_append_utf8(&meta, "pid", strlen("pid"), pid.c_str(), (int)pid.length());
+    bson_append_document_end (&parent, &meta);
     
-    qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_details"),
-        [this](conn_io_req_res* response) {
-            conn_io_req_res::header *header = response->get_header("token");
-            if (header == nullptr) {
-                return;
-            }
-            
+    size_t length = 0;
+    char* json_string_data = bson_as_json(&parent, &length);
+    bson_destroy(&parent);
+    
+    conn_io_req_res* req = conn_io_req_res::create("/user_details", qstring(json_string_data, length));
+    req->add_or_get_header("token", session_token);
+    qh3client_helper::send_async_request(host, port, req,
+        [](conn_io_req_res* response) {
             live_connections--;
             total_connections_returned++;
-            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async 2 returned %d - %s !!!", header->value.c_str());
-
-            this->on_login_complete(header->value, true);
+            const conn_io_req_res::payload& payload = response->get_payload();
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str());
         });
     live_connections++;
+    bson_free(json_string_data);
 }
