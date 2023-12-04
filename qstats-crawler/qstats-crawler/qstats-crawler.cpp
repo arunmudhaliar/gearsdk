@@ -7,6 +7,9 @@
 
 #include "qstats-crawler.h"
 
+#define COUNT_STATS_BATCH_COUNT 200
+#define OPEN_STATS_BATCH_COUNT 70
+
 qstats_crawler::qstats_crawler() {
 }
 
@@ -72,9 +75,6 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     fclose(fp);
     return 0;
 }
-
-#define COUNT_STATS_BATCH_COUNT 200
-#define OPEN_STATS_BATCH_COUNT 70
 
 int qstats_crawler::parse_line(const qstring& line) {
     std::vector<qstring> list;

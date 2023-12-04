@@ -10,7 +10,6 @@
 		556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEE2B0AB4FB00D688DB /* libz.a */; };
 		557487402AE957ED00C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574873F2AE957ED00C0F6CA /* main.cpp */; };
 		557487622AEB909800C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487612AEB909800C0F6CA /* libcommon.a */; };
-		557487632AEB909C00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487602AEB8FF100C0F6CA /* libnetworkcommon.a */; };
 		557487AA2AED542300C0F6CA /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487A82AED541700C0F6CA /* libev.a */; };
 		557487AB2AED542E00C0F6CA /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487A92AED541700C0F6CA /* libquiche.a */; };
 		5574E6BA2AD86EDC00FAFE08 /* qnetworkclient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B82AD86EDC00FAFE08 /* qnetworkclient.cpp */; };
@@ -19,16 +18,6 @@
 		55D1C6D82AD326A500470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D72AD326A500470E01 /* Security.framework */; };
 		55E4D32A2ACAF58000555999 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55E4D3182ACAF45800555999 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		5574875F2AEB8FF100C0F6CA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 55B372D72AC3094C00F0095E /* networkcommon.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 55B372CF2AC3091000F0095E;
-			remoteInfo = networkcommon;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		55B372A12AC2AB4A00F0095E /* CopyFiles */ = {
@@ -54,7 +43,6 @@
 		5574E6C82ADC3A2F00FAFE08 /* gameclient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameclient.hpp; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* qclient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qclient; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372A62AC2AB4A00F0095E /* networkclient_tester.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = networkclient_tester.cpp; sourceTree = "<group>"; };
-		55B372D72AC3094C00F0095E /* networkcommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = networkcommon.xcodeproj; path = ../networkcommon/networkcommon.xcodeproj; sourceTree = "<group>"; };
 		55D1C6D32AD3269800470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/libquiche.a; sourceTree = "<group>"; };
 		55D1C6D42AD3269800470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/libev.a; sourceTree = "<group>"; };
 		55D1C6D72AD326A500470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -69,7 +57,6 @@
 			files = (
 				557487622AEB909800C0F6CA /* libcommon.a in Frameworks */,
 				557487AA2AED542300C0F6CA /* libev.a in Frameworks */,
-				557487632AEB909C00C0F6CA /* libnetworkcommon.a in Frameworks */,
 				55D1C6D82AD326A500470E01 /* Security.framework in Frameworks */,
 				557487AB2AED542E00C0F6CA /* libquiche.a in Frameworks */,
 				556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */,
@@ -80,14 +67,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5574875C2AEB8FF100C0F6CA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				557487602AEB8FF100C0F6CA /* libnetworkcommon.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		55853CE22AC32FF600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -106,7 +85,6 @@
 		55B3729A2AC2AB4A00F0095E = {
 			isa = PBXGroup;
 			children = (
-				55B372D72AC3094C00F0095E /* networkcommon.xcodeproj */,
 				55B372A52AC2AB4A00F0095E /* source */,
 				55B372A42AC2AB4A00F0095E /* Products */,
 				55853CE22AC32FF600901E52 /* Frameworks */,
@@ -179,28 +157,12 @@
 			mainGroup = 55B3729A2AC2AB4A00F0095E;
 			productRefGroup = 55B372A42AC2AB4A00F0095E /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 5574875C2AEB8FF100C0F6CA /* Products */;
-					ProjectRef = 55B372D72AC3094C00F0095E /* networkcommon.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				55B372A22AC2AB4A00F0095E /* qclient */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		557487602AEB8FF100C0F6CA /* libnetworkcommon.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libnetworkcommon.a;
-			remoteRef = 5574875F2AEB8FF100C0F6CA /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B3729F2AC2AB4A00F0095E /* Sources */ = {

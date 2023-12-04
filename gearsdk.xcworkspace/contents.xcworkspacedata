@@ -17,6 +17,12 @@
       location = "group:qserver/qserver.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:qclient/../networkcommon/networkcommon.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:networkcommon/../common/common.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:qclient/qclient.xcodeproj">
    </FileRef>
    <FileRef

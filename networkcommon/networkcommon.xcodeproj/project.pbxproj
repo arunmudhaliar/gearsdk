@@ -21,16 +21,6 @@
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		5574874E2AEB8D3700C0F6CA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 55B373022AC325D000F0095E /* common.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 55B372FA2AC325B200F0095E;
-			remoteInfo = common;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfilelogger.cpp; sourceTree = "<group>"; };
 		556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfilelogger.hpp; sourceTree = "<group>"; };
@@ -44,7 +34,6 @@
 		5574879C2AEC227500C0F6CA /* qtimer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer.cpp; sourceTree = "<group>"; };
 		5574879D2AEC227500C0F6CA /* qtimer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtimer.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		55B373022AC325D000F0095E /* common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = common.xcodeproj; path = ../common/common.xcodeproj; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
 		55FB29BE2ACF1D010051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = quiche_lib/release/libquiche.a; sourceTree = "<group>"; };
@@ -61,14 +50,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5574874B2AEB8D3700C0F6CA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5574874F2AEB8D3700C0F6CA /* libcommon.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		55853CCA2AC32AD200901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -81,7 +62,6 @@
 		55B372C62AC3091000F0095E = {
 			isa = PBXGroup;
 			children = (
-				55B373022AC325D000F0095E /* common.xcodeproj */,
 				55B372E52AC3097700F0095E /* source */,
 				55B372D02AC3091000F0095E /* Products */,
 				55853CCA2AC32AD200901E52 /* Frameworks */,
@@ -183,28 +163,12 @@
 			mainGroup = 55B372C62AC3091000F0095E;
 			productRefGroup = 55B372D02AC3091000F0095E /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 5574874B2AEB8D3700C0F6CA /* Products */;
-					ProjectRef = 55B373022AC325D000F0095E /* common.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				55B372CE2AC3091000F0095E /* networkcommon */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		5574874F2AEB8D3700C0F6CA /* libcommon.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libcommon.a;
-			remoteRef = 5574874E2AEB8D3700C0F6CA /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B372CC2AC3091000F0095E /* Sources */ = {
