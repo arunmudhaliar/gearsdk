@@ -93,6 +93,7 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qs
     bson_error_t error;
     bson_t indexkey;
     mongoc_index_opt_t opt;
+    mongoc_index_opt_init (&opt);
     bson_init (&indexkey);
     interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
     if (!mongoc_collection_create_index (collection, &indexkey, &opt, &error)) {
