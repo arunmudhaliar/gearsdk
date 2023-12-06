@@ -346,6 +346,11 @@ qstring essentials::get_time_utc_postgresql_format() {
     return qstring(timestampStr);
 }
 
+bool conn_io_req_res::has_crc_header() {
+    header* crc_header = get_header("crc");
+    return crc_header != nullptr;
+}
+
 bool conn_io_req_res::validate() {
     header* crc_header = get_header("crc");
     if (crc_header == nullptr) {

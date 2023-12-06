@@ -40,8 +40,15 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         return;
     }
     if (path_header->value.length()>1 && path_header->value.compare("/shutdown-test")==0) {
-        bool validate = conn_io->http_request->validate();
-        assert(validate);
+        if (conn_io->http_request->has_crc_header()) {
+            bool validate = conn_io->http_request->validate();
+            assert(validate);
+            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", "", "shutdown-test");
+        } else {
+            // may be called from a browser
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
+            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", "no-crc", "shutdown-test");
+        }
         ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
         return;
     }

@@ -225,6 +225,7 @@ public:
     
     bool is_postrequest() const { return data.buffer.length()>0; }
     bool validate();
+    bool has_crc_header();
     payload data;
     std::map<unsigned long, header*> headers;
 };
