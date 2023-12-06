@@ -14,6 +14,10 @@
 #include <hiredis.h>
 
 #include "../../common/qstring.h"
+#include "../../common/sdktypes.hpp"
+
+#undef __LOGTAG__
+#define __LOGTAG__ "qhiredis"
 
 //https://www.tutorialspoint.com/redis/redis_server.htm
 //https://redis.io/docs/management/persistence/

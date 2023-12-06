@@ -16,6 +16,7 @@ qhiredis::~qhiredis() {
 
 int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket) {
     if (context) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!!");
         return 2;
     }
     struct timeval timeout = { 5, 500000 }; // 5.5 seconds
@@ -27,14 +28,15 @@ int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket)
     }
     if (context == nullptr || context->err) {
         if (context) {
-            printf("Connection error: %s\n", context->errstr);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s", context->errstr);
             disconnect_redis();
         }
         else {
-            printf("Connection error: can't allocate redis context\n");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context");
         }
         return 1;
     }
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
     return 0;
 }
 

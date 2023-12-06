@@ -11,6 +11,10 @@
 #include <mongoc/mongoc.h>
 #include <map>
 #include "../../common/qstring.h"
+#include "../../common/sdktypes.hpp"
+
+#undef __LOGTAG__
+#define __LOGTAG__ "qmongo"
 
 class interface_qmongo_connection {
 public:

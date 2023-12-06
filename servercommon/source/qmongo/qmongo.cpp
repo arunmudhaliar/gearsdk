@@ -50,9 +50,8 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
     bson_error_t error;
     uri = mongoc_uri_new_with_error(uri_string.c_str(), &error);
     if (!uri) {
-        fprintf(stderr,
-            "failed to parse URI: %s\n"
-            "error message:       %s\n",
+        DEBUG_PRINT_ERROR(__LOGTAG__,
+            "failed to parse URI: %s, error message: %s",
             uri_string.c_str(),
             error.message);
         cleanup();
@@ -65,6 +64,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
     client = mongoc_client_new_from_uri(uri);
     if (!client) {
         cleanup();
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create client !!!");
         return EXIT_FAILURE;
     }
 
@@ -79,6 +79,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
      */
     database = mongoc_client_get_database(client, db_name.c_str());
 
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
     if (interface) {
         interface->on_mongo_connect();
     }
