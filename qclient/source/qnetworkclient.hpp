@@ -33,34 +33,30 @@ extern "C"
 #define LOCAL_CONN_ID_LEN 16
 #define MAX_DATAGRAM_SIZE 1350
 
-struct qdata
-{
-    qdata(uint8_t *_data, ssize_t sz, bool fin = false) : size(sz), fin(fin)
-    {
+struct qdata {
+    qdata(uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
         this->data = new uint8_t[sz];
         memcpy(this->data, _data, sz);
     }
-    ~qdata()
-    {
+    ~qdata() {
         GX_DELETE_ARY(this->data);
     }
-    uint8_t *data = nullptr;
+    uint8_t* data = nullptr;
     ssize_t size = 0;
     bool fin = false;
 };
 
 class bridge_qcommand;
-class qconnection
-{
+class qconnection {
 private:
-    qconnection(){};
+    qconnection() {};
 
 public:
-    qconnection(bridge_qcommand *bridge, int id);
-    qconnection(bridge_qcommand *bridge, Config *config, int id);
+    qconnection(bridge_qcommand* bridge, int id);
+    qconnection(bridge_qcommand* bridge, Config* config, int id);
     ~qconnection();
 
-    void SetConfig(Config *config) { this->config = config; }
+    void SetConfig(Config* config) { this->config = config; }
     int id = -1;
     ev_timer timer;
     ev_timer sendTimer;
@@ -68,72 +64,67 @@ public:
     int sock;
     struct sockaddr_storage local_addr;
     socklen_t local_addr_len;
-    Connection *conn = nullptr;
-    bridge_qcommand *bridge = nullptr;
-    Config *config = nullptr;
-    struct addrinfo *peer = nullptr;
+    Connection* conn = nullptr;
+    bridge_qcommand* bridge = nullptr;
+    Config* config = nullptr;
+    struct addrinfo* peer = nullptr;
     int Connect(std::string host, std::string port);
-    ssize_t SendMessage(const char *buf, size_t buflen, bool fin);
-    ssize_t SendMessage(const std::string &buffer, bool fin);
+    ssize_t SendMessage(const char* buf, size_t buflen, bool fin);
+    ssize_t SendMessage(const std::string& buffer, bool fin);
     int ConnectionActive();
     void Release();
 
     uint8_t recv_buf[65535];
     uint8_t egress_out[MAX_DATAGRAM_SIZE];
 
-    std::vector<qdata *> sendBuffer;
+    std::vector<qdata*> sendBuffer;
 };
 
-class bridge_qconnection
-{
+class bridge_qconnection {
 public:
-    virtual void onconnect(qconnection *qconnection) = 0;
-    virtual void onmessage(ssize_t recv_len, uint8_t *buf, qconnection *qconnection) = 0;
-    virtual void onreleaseconnection(qconnection *qconnection) = 0;
-    virtual void onclose(qconnection *qconnection) = 0;
+    virtual void onconnect(qconnection* qconnection) = 0;
+    virtual void onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) = 0;
+    virtual void onreleaseconnection(qconnection* qconnection) = 0;
+    virtual void onclose(qconnection* qconnection) = 0;
 };
 
-enum CON_STATE
-{
+enum CON_STATE {
     STATE_OPEN,
     STATE_CONNECT,
     STATE_CLOSE
 };
 
-class bridge_qcommand
-{
+class bridge_qcommand {
 public:
-    virtual void flushegress(struct ev_loop *loop, qconnection *qconnection) = 0;
-    virtual int release_connection(struct ev_loop *loop, qconnection *qconnection) = 0;
-    inline virtual struct ev_loop *getmainloop() = 0;
+    virtual void flushegress(struct ev_loop* loop, qconnection* qconnection) = 0;
+    virtual int release_connection(struct ev_loop* loop, qconnection* qconnection) = 0;
+    inline virtual struct ev_loop* getmainloop() = 0;
 
-    virtual void event_connect(qconnection *qconnection) = 0;
-    virtual void event_msg_received(ssize_t recv_len, uint8_t *buf, qconnection *qconnection) = 0;
-    virtual void event_close(qconnection *qconnection) = 0;
-    virtual int sendMessage(const std::string &buffer, bool flush) = 0;
+    virtual void event_connect(qconnection* qconnection) = 0;
+    virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) = 0;
+    virtual void event_close(qconnection* qconnection) = 0;
+    virtual int sendMessage(const std::string& buffer, bool flush) = 0;
     virtual int close() = 0;
     virtual CON_STATE getstate() = 0;
 
-    virtual qmutex *get_run_mutex() = 0;
-    virtual qmutex *het_close_mutex() = 0;
-    virtual qmutex *get_send_mutex() = 0;
-    virtual qmutex *get_sendloop_mutex() = 0;
+    virtual qmutex* get_run_mutex() = 0;
+    virtual qmutex* het_close_mutex() = 0;
+    virtual qmutex* get_send_mutex() = 0;
+    virtual qmutex* get_sendloop_mutex() = 0;
 };
 
-class qnetworkclient : public bridge_qcommand, public bridge_qconnection
-{
+class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 private:
-    struct RunConfig
-    {
+    struct RunConfig {
         std::string host;
         std::string port;
-        qnetworkclient *thiz;
+        qnetworkclient* thiz;
         int pthread_returnValue;
         bool finished = false;
         int id = -1;
     };
     static int connectionID;
-    struct ev_loop *mainloop = nullptr;
+    struct ev_loop* mainloop = nullptr;
     struct RunConfig runConfig;
 
 #if USE_PTHREAD
@@ -145,11 +136,11 @@ private:
     pthread_t run_thread_id;
 #endif
 
-    static void debug_log(const uint8_t *line, void *argp);
-    static void recv_cb(EV_P_ ev_io *w, int revents);
-    static void timeout_cb(EV_P_ ev_timer *w, int revents);
-    static void send_cb(EV_P_ ev_timer *w, int revents);
-    static void *run_internal(void *data);
+    static void debug_log(const uint8_t* line, void* argp);
+    static void recv_cb(EV_P_ ev_io* w, int revents);
+    static void timeout_cb(EV_P_ ev_timer* w, int revents);
+    static void send_cb(EV_P_ ev_timer* w, int revents);
+    static void* run_internal(void* data);
 
     void setstate(CON_STATE state);
     inline CON_STATE getstate() override final { return state; }
@@ -158,48 +149,43 @@ private:
     CON_STATE state = STATE_OPEN;
 
 protected:
-    void flushegress(struct ev_loop *loop, qconnection *qconnection) override final;
-    int release_connection(struct ev_loop *loop, qconnection *qconnection) override final;
-    void onconnect(qconnection *qconnection) override;
-    void onmessage(ssize_t recv_len, uint8_t *buf, qconnection *qconnection) override;
-    void onreleaseconnection(qconnection *qconnection) override;
-    void onclose(qconnection *qconnection) override;
-    inline struct ev_loop *getmainloop() override final
-    {
+    void flushegress(struct ev_loop* loop, qconnection* qconnection) override final;
+    int release_connection(struct ev_loop* loop, qconnection* qconnection) override final;
+    void onconnect(qconnection* qconnection) override;
+    void onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) override;
+    void onreleaseconnection(qconnection* qconnection) override;
+    void onclose(qconnection* qconnection) override;
+    inline struct ev_loop* getmainloop() override final {
         return mainloop;
     }
-    void event_connect(qconnection *qconnection) override final;
-    void event_msg_received(ssize_t recv_len, uint8_t *buf, qconnection *qconnection) override final;
-    void event_close(qconnection *qconnection) override final;
+    void event_connect(qconnection* qconnection) override final;
+    void event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) override final;
+    void event_close(qconnection* qconnection) override final;
 
-    qmutex *get_run_mutex() override final
-    {
+    qmutex* get_run_mutex() override final {
         return &run_mutex;
     }
-    qmutex *het_close_mutex() override final
-    {
+    qmutex* het_close_mutex() override final {
         return &close_mutex;
     }
-    qmutex *get_sendloop_mutex() override final
-    {
+    qmutex* get_sendloop_mutex() override final {
         return &sendloop_mutex;
     }
 
-    qmutex *get_send_mutex() override final
-    {
+    qmutex* get_send_mutex() override final {
         return &send_mutex;
     }
-    qconnection *qclient_connection = nullptr;
+    qconnection* qclient_connection = nullptr;
 
 public:
     qnetworkclient();
     ~qnetworkclient();
 
-    int sendMessage(const std::string &buffer, bool flush) override final;
+    int sendMessage(const std::string& buffer, bool flush) override final;
     int close() override final;
     bool is_runfinished();
     int run(std::string host, std::string port);
     void forcerelease();
-    inline qmutex &get_runconfigmutex() { return runconfig_mutex; }
+    inline qmutex& get_runconfigmutex() { return runconfig_mutex; }
 };
 #endif /* qnetworkclient_hpp */

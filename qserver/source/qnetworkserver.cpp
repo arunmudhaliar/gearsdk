@@ -602,6 +602,7 @@ void *qnetworkserver::run_internal(void *data)
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0)
     {
+        freeaddrinfo(local);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -611,6 +612,7 @@ void *qnetworkserver::run_internal(void *data)
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0)
     {
+        freeaddrinfo(local);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -620,6 +622,7 @@ void *qnetworkserver::run_internal(void *data)
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0)
     {
+        freeaddrinfo(local);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -630,6 +633,7 @@ void *qnetworkserver::run_internal(void *data)
     thiz->config = quiche_config_new(PROTOCOL_VERSION);
     if (thiz->config == nullptr)
     {
+        freeaddrinfo(local);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -680,7 +684,8 @@ void *qnetworkserver::run_internal(void *data)
     thiz->network_server_begin();
     
     ev_loop(thiz->mainloop, 0);
-
+    ev_loop_destroy(thiz->mainloop);
+    
     thiz->network_server_end();
     
     freeaddrinfo(local);

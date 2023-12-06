@@ -14,9 +14,9 @@ class qstats_crawler {
 public:
     qstats_crawler();
     ~qstats_crawler();
-    
+
     void try_crawl(const qstring& root_filename);
-    
+
 private:
     int parse_file(fs::path file, int& parsed_lines);
     int parse_line(const qstring& line);
@@ -26,7 +26,7 @@ private:
     int parse_open_stats(std::vector<qstring>& list);
     int append_open_stats(qstring& values, std::vector<qstring>& list);
     void batch_send_open_stats();
-    
+
     qpgsql pgsql_client;
     int count_stats_counter = 0;
     qstring batch_count_stats_values;

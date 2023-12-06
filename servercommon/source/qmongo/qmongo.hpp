@@ -28,15 +28,15 @@ public:
     int update(const qstring& collection_name, bson_t& query, bson_t& update);
     mongoc_cursor_t* find(const qstring& collection_name, bson_t& query);
     mongoc_collection_t* get_collection(const qstring& collection_name);
-    
+
 private:
-    qmongo(){}
+    qmongo() {}
     int connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string);
     int create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name);
-    
-    mongoc_uri_t *uri = nullptr;
-    mongoc_client_t *client = nullptr;
-    mongoc_database_t *database = nullptr;
+
+    mongoc_uri_t* uri = nullptr;
+    mongoc_client_t* client = nullptr;
+    mongoc_database_t* database = nullptr;
     std::map<unsigned long, mongoc_collection_t*> collections;
     interface_qmongo_connection* interface = nullptr;
 };

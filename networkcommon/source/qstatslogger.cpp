@@ -8,7 +8,7 @@
 #include "qstatslogger.hpp"
 
 qstatslogger::qstatslogger() :
-qtextfilelogger() {
+    qtextfilelogger() {
     inited = false;
 }
 
@@ -61,72 +61,72 @@ void qstatslogger::set_client_pid(const qstring& pid_str) {
 size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story) {
     qstring seperator("|");
     qstring buffer("open");
-    buffer+=seperator;
-    buffer+=client_version; buffer+=seperator;
-    buffer+=duid; buffer+=seperator;
-    buffer+=epic; buffer+=seperator;
-    buffer+=myth; buffer+=seperator;
-    buffer+=legend; buffer+=seperator;
-    buffer+=story; buffer+=seperator;
-    buffer+=install_os; buffer+=seperator;
-    buffer+="NULL"; buffer+=seperator;              // client_tstamp
-    buffer+=device_name; buffer+=seperator;
-    buffer+=device_model; buffer+=seperator;
-    buffer+=qstring(total_ram);
+    buffer += seperator;
+    buffer += client_version; buffer += seperator;
+    buffer += duid; buffer += seperator;
+    buffer += epic; buffer += seperator;
+    buffer += myth; buffer += seperator;
+    buffer += legend; buffer += seperator;
+    buffer += story; buffer += seperator;
+    buffer += install_os; buffer += seperator;
+    buffer += "NULL"; buffer += seperator;              // client_tstamp
+    buffer += device_name; buffer += seperator;
+    buffer += device_model; buffer += seperator;
+    buffer += qstring(total_ram);
     return log_stats(buffer);
 }
 
 size_t qstatslogger::server_count(const qstring& count, const qstring& session, const qstring& pid, const qstring& version,
-                   const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
-                    const qstring& message) {
+    const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+    const qstring& message) {
     qstring server_utc_tstamp = essentials::get_time_utc_postgresql_format();
     return server_count_internal(count, session, pid, version, epic, myth, legend, story, server_utc_tstamp, message);
 }
 
 size_t qstatslogger::server_count_internal(const qstring& count, const qstring& session, const qstring& pid, const qstring& version,
-                   const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
-                    const qstring& server_tstamp, const qstring& message) {
+    const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+    const qstring& server_tstamp, const qstring& message) {
     qstring seperator("|");
     qstring buffer("count");
-    buffer+=seperator;
-    buffer+=count; buffer+=seperator;
-    buffer+=client_session; buffer+=seperator;
-    buffer+=client_pid; buffer+=seperator;
-    buffer+=client_version; buffer+=seperator;
-    buffer+=epic; buffer+=seperator;
-    buffer+=myth; buffer+=seperator;
-    buffer+=legend; buffer+=seperator;
-    buffer+=story; buffer+=seperator;
-    buffer+=install_os; buffer+=seperator;
-    buffer+=server_tstamp; buffer+=seperator;              // server_tstamp
-    buffer+="NULL"; buffer+=seperator;              // client_tstamp
-    buffer+=message; buffer+=seperator;
-    buffer+=device_name; buffer+=seperator;
-    buffer+=device_model; buffer+=seperator;
-    buffer+=qstring(total_ram);
+    buffer += seperator;
+    buffer += count; buffer += seperator;
+    buffer += client_session; buffer += seperator;
+    buffer += client_pid; buffer += seperator;
+    buffer += client_version; buffer += seperator;
+    buffer += epic; buffer += seperator;
+    buffer += myth; buffer += seperator;
+    buffer += legend; buffer += seperator;
+    buffer += story; buffer += seperator;
+    buffer += install_os; buffer += seperator;
+    buffer += server_tstamp; buffer += seperator;              // server_tstamp
+    buffer += "NULL"; buffer += seperator;              // client_tstamp
+    buffer += message; buffer += seperator;
+    buffer += device_name; buffer += seperator;
+    buffer += device_model; buffer += seperator;
+    buffer += qstring(total_ram);
     return log_stats(buffer);
 }
 
 size_t qstatslogger::client_count(const qstring& count, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
-                                  const qstring& message) {
+    const qstring& message) {
     qstring client_utc_tstamp = essentials::get_time_utc_postgresql_format();
     qstring seperator("|");
     qstring buffer("count");
-    buffer+=seperator;
-    buffer+=count; buffer+=seperator;
-    buffer+=client_session; buffer+=seperator;
-    buffer+=client_pid; buffer+=seperator;
-    buffer+=client_version; buffer+=seperator;
-    buffer+=epic; buffer+=seperator;
-    buffer+=myth; buffer+=seperator;
-    buffer+=legend; buffer+=seperator;
-    buffer+=story; buffer+=seperator;
-    buffer+=install_os; buffer+=seperator;
-    buffer+="NULL"; buffer+=seperator;              // server_tstamp
-    buffer+=client_utc_tstamp; buffer+=seperator;              // client_tstamp
-    buffer+=message; buffer+=seperator;
-    buffer+=device_name; buffer+=seperator;
-    buffer+=device_model; buffer+=seperator;
-    buffer+=qstring(total_ram);
+    buffer += seperator;
+    buffer += count; buffer += seperator;
+    buffer += client_session; buffer += seperator;
+    buffer += client_pid; buffer += seperator;
+    buffer += client_version; buffer += seperator;
+    buffer += epic; buffer += seperator;
+    buffer += myth; buffer += seperator;
+    buffer += legend; buffer += seperator;
+    buffer += story; buffer += seperator;
+    buffer += install_os; buffer += seperator;
+    buffer += "NULL"; buffer += seperator;              // server_tstamp
+    buffer += client_utc_tstamp; buffer += seperator;              // client_tstamp
+    buffer += message; buffer += seperator;
+    buffer += device_name; buffer += seperator;
+    buffer += device_model; buffer += seperator;
+    buffer += qstring(total_ram);
     return log_stats(buffer);
 }

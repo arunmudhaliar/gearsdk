@@ -23,7 +23,7 @@ struct qbuffer {
     }
     void allocate(ssize_t sz) {
         GX_DELETE_ARY(data);
-        data = new uint8_t[sz];
+        data = DEBUG_NEW uint8_t[sz];
         size = sz;
         index = pushed_index = 0;
     }
@@ -31,18 +31,18 @@ struct qbuffer {
         index = 0;
     }
     void do_resize_if_required(ssize_t bytes_needed);
-    
+
     void stash() {
         pushed_index = index;
     }
     ssize_t pop() {
-        if (pushed_index>size) {
+        if (pushed_index > size) {
             return -1;
         }
         index = pushed_index;
         return index;
     }
-    
+
     uint8_t* data = nullptr;    // pointer to buffer data
     ssize_t size = 0;           // size of buffer data (bytes)
     ssize_t index = 0;          // index of next byte to be read/written
@@ -51,22 +51,22 @@ struct qbuffer {
 
 class qbuffer_reader {
 public:
-    void read( qbuffer& buffer, uint32_t& value );
-    void read( qbuffer& buffer, uint16_t& value );
-    void read( qbuffer& buffer, uint8_t& value );
-    void read( qbuffer& buffer, uint8_t* data, ssize_t length );
-    void read( qbuffer& buffer, unsigned long& value );
+    void read(qbuffer& buffer, uint32_t& value);
+    void read(qbuffer& buffer, uint16_t& value);
+    void read(qbuffer& buffer, uint8_t& value);
+    void read(qbuffer& buffer, uint8_t* data, ssize_t length);
+    void read(qbuffer& buffer, unsigned long& value);
 }; //class BufferReader
 
 class qbuffer_writer {
 public:
-    void write( qbuffer& buffer, int32_t value ) const;
-    void write( qbuffer& buffer, uint32_t value ) const;
-    void write( qbuffer& buffer, uint16_t value ) const;
-    void write( qbuffer& buffer, uint8_t value ) const;
-    void write( qbuffer& buffer, const uint8_t* data, ssize_t length ) const;
-    void write( qbuffer& buffer, unsigned long value ) const;
-    void write( qbuffer& buffer, const qstring& data ) const;
+    void write(qbuffer& buffer, int32_t value) const;
+    void write(qbuffer& buffer, uint32_t value) const;
+    void write(qbuffer& buffer, uint16_t value) const;
+    void write(qbuffer& buffer, uint8_t value) const;
+    void write(qbuffer& buffer, const uint8_t* data, ssize_t length) const;
+    void write(qbuffer& buffer, unsigned long value) const;
+    void write(qbuffer& buffer, const qstring& data) const;
 }; //class BufferWriter
 
 #endif /* qbuffer_hpp */

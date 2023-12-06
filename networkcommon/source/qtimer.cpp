@@ -11,7 +11,10 @@ qtimer_sceduler::qtimer_sceduler() {
 }
 
 qtimer_sceduler::~qtimer_sceduler() {
-    for(auto it = timers.cbegin();it!=timers.cend();it++) {
+    destroy_all();
+}
+void qtimer_sceduler::destroy_all() {
+    for (auto it = timers.cbegin();it != timers.cend();it++) {
         qtimer* qtimer_ = *it;
         qtimer_->finished = true;
         ev_timer_stop(qtimer_->loop, &qtimer_->timer);
@@ -34,10 +37,10 @@ bool qtimer_sceduler::destroy_timer(qtimer* qtimer_) {
     if (!qtimer_->finished) {
         return false;
     }
-    
+
     int oldSz = (int)timers.size();
     timers.erase(std::remove(timers.begin(), timers.end(), qtimer_), timers.end());
-    if(oldSz!=timers.size()) {
+    if (oldSz != timers.size()) {
         qtimer_sceduler_data* data = (qtimer_sceduler_data*)qtimer_->data;
         GX_DELETE(data);
         GX_DELETE(qtimer_);
@@ -46,26 +49,35 @@ bool qtimer_sceduler::destroy_timer(qtimer* qtimer_) {
     return false;
 }
 
-bool qtimer_sceduler::cancel_timer(qtimer* qtimer_) {
+void qtimer_sceduler::cancel_timer(qtimer* qtimer_) {
+    qtimer_->finished = true;
+    ev_timer_stop(qtimer_->loop, &qtimer_->timer);
+}
+
+bool qtimer_sceduler::cancel_and_destroy_timer(qtimer* qtimer_) {
     qtimer_->finished = true;
     ev_timer_stop(qtimer_->loop, &qtimer_->timer);
     return destroy_timer(qtimer_);
 }
 
 qtimer* qtimer_sceduler::schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data) {
-    qtimer* qtimer_ = new qtimer(loop, evtimer_scheduler_cb, new qtimer_sceduler_data(data, this, timeout_callback), delay);
+    qtimer* qtimer_ = DEBUG_NEW qtimer(loop, evtimer_scheduler_cb, DEBUG_NEW qtimer_sceduler_data(data, this, timeout_callback), delay);
     timers.push_back(qtimer_);
     return qtimer_;
 }
 
 qtimer* qtimer_sceduler::schedule_count_timer(type_qtimer_cb timeout_callback, float delay, int count, void* data) {
-    qtimer* qtimer_ = new qtimer(loop, evtimer_scheduler_cb, new qtimer_sceduler_data(data, this, timeout_callback), delay, count);
+    qtimer* qtimer_ = DEBUG_NEW qtimer(loop, evtimer_scheduler_cb, DEBUG_NEW qtimer_sceduler_data(data, this, timeout_callback), delay, count);
     timers.push_back(qtimer_);
     return qtimer_;
 }
 
-qtimer* qtimer_sceduler::schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data){
-    qtimer* qtimer_ = new qtimer(loop, evtimer_scheduler_cb, new qtimer_sceduler_data(data, this, timeout_callback), delay, -1);
+qtimer* qtimer_sceduler::schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data) {
+    qtimer* qtimer_ = DEBUG_NEW qtimer(loop, evtimer_scheduler_cb, DEBUG_NEW qtimer_sceduler_data(data, this, timeout_callback), delay, -1);
     timers.push_back(qtimer_);
     return qtimer_;
+}
+
+void qtimer_sceduler::shutdown_mainloop() {
+    ev_break(EV_A_ EVBREAK_ONE);
 }

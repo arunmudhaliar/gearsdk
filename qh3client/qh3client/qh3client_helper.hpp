@@ -18,8 +18,8 @@ class qh3client_helper {
 public:
     struct qh3_req_obj {
         qh3_req_obj(const qstring host, const qstring port,
-                       const conn_io_req_res* data) :
-         host(host), port(port), data(data) {
+            const conn_io_req_res* data) :
+            host(host), port(port), data(data) {
         }
         ~qh3_req_obj() {
             GX_DELETE(data);
@@ -30,13 +30,13 @@ public:
         pthread_t run_thread_id;
         type_qh3client_helper_cb async_cb = nullptr;
     };
-    
+
     static int send_request(const qstring host, const qstring port,
-                            const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
+        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
     static int send_async_request(const qstring host, const qstring port,
-                            const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
-    
+        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
+
 private:
-    static void *run_internal(void *data);
+    static void* run_internal(void* data);
 };
 #endif /* qh3client_helper_hpp */

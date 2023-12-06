@@ -13,7 +13,7 @@
 
 class crypto_helper {
 public:
-    struct sha256_data{
+    struct sha256_data {
         sha256_data(const char* in_, int sz) {
             in = in_;
             size = sz;
@@ -22,7 +22,7 @@ public:
         const char* in = nullptr;
         int size = 0;
         uint8_t hash[SHA256_HASH_SIZE];
-        char out[SHA256_HASH_SIZE*2];
+        char out[SHA256_HASH_SIZE * 2];
     };
     struct sha256_salt {
         sha256_salt(const char* salt_, int sz) {
@@ -32,7 +32,7 @@ public:
         const char* salt = nullptr;
         int size = 0;
     };
-    
+
     static bool sha256(sha256_data& data);
     static bool sha256(sha256_data& data, sha256_salt& salt);
 };

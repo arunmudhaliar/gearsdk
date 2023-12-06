@@ -5,6 +5,7 @@ COMMON_SRCDIR = ../common
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
+$(NETWORK_COMMON_SRCDIR)/qstatslogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
@@ -13,7 +14,7 @@ $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
 
-INCLUDES = -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0"
+INCLUDES = -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0"
 SRCDIR = ./qh3server
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/qh3server.cpp \

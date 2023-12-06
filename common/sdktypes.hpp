@@ -24,6 +24,9 @@
 #define PLATFORM PLATFORM_UNIX
 #endif
 
+#ifndef DEBUG_NEW
+#include "./nvwa/debug_new.pch"
+#endif
 #include "endian_check.h"
 
 #define DECLSPEC
@@ -55,7 +58,7 @@
 #include <bits/stdc++.h>
 #endif
 
-#include<sys/utsname.h>
+#include <sys/utsname.h>
 
 #define LOG_LEVEL_0 0
 #define LOG_LEVEL_1 1
@@ -68,17 +71,17 @@
 extern "C" DECLSPEC int init_gsdk();
 extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
-extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char *tag, const char *format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...);
-extern "C" DECLSPEC void DEBUG_ASSERT(const char *tag, bool condition, const char *format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char *tag, const char *format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char *tag, const char *format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...);
 
 namespace gsdk {
-class device {
-public:
-    static struct utsname device_details;
-};
+    class device {
+    public:
+        static struct utsname device_details;
+    };
 };
 #endif /* sdktypes_hpp */

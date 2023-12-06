@@ -1,0 +1,8 @@
+#pragma once
+
+#if defined(_DEBUG) || defined(DEBUG)
+#define _DEBUG_NEW_REDEFINE_NEW 0
+#include "debug_new.h"
+#else
+#define DEBUG_NEW new
+#endif

@@ -55,18 +55,18 @@
 
 class bridge_h3_connection {
 public:
-    virtual void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) = 0;
-    virtual void destroy_connection(struct ev_loop *loop, struct conn_io *conn_io) = 0;
-    inline virtual struct ev_loop *get_mainloop() = 0;
-    virtual void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) = 0;
-    virtual void parse(struct conn_io *conn_io) = 0;
+    virtual void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
+    virtual void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) = 0;
+    inline virtual struct ev_loop* get_mainloop() = 0;
+    virtual void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) = 0;
+    virtual void parse(struct conn_io* conn_io) = 0;
 };
 
 struct connections {
     int sock;
-    struct sockaddr *local_addr = nullptr;
+    struct sockaddr* local_addr = nullptr;
     socklen_t local_addr_len;
-    struct conn_io *h = nullptr;
+    struct conn_io* h = nullptr;
     std::string server_port;
     std::string quic_alternate_protocol_str;
 };
@@ -83,8 +83,8 @@ struct conn_io {
     ev_timer timer;
     int sock;
     uint8_t cid[LOCAL_CONN_ID_LEN];
-    Connection *conn = nullptr;
-    Connection *http3 = nullptr;
+    Connection* conn = nullptr;
+    Connection* http3 = nullptr;
     struct sockaddr_storage peer_addr;
     socklen_t peer_addr_len;
     UT_hash_handle hh;
@@ -95,50 +95,50 @@ struct conn_io {
 
 class qh3server : public bridge_h3_connection {
 private:
-    Config *config = nullptr;
-    Config *http3_config = nullptr;
-    struct connections *conns = nullptr;
-    struct ev_loop *mainloop = nullptr;
-    
-    static void debug_log(const uint8_t *line, void *argp);
-    void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) override final;
-    void destroy_connection(struct ev_loop *loop, struct conn_io *conn_io) override final;
-    inline virtual struct ev_loop *get_mainloop() override final {
+    Config* config = nullptr;
+    Config* http3_config = nullptr;
+    struct connections* conns = nullptr;
+    struct ev_loop* mainloop = nullptr;
+
+    static void debug_log(const uint8_t* line, void* argp);
+    void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
+    void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) override final;
+    inline virtual struct ev_loop* get_mainloop() override final {
         return mainloop;
     }
 
-    void parse(struct conn_io *conn_io) override;
-    
-    void mint_token(const uint8_t *dcid, size_t dcid_len,
-                           struct sockaddr_storage *addr, socklen_t addr_len,
-                           uint8_t *token, size_t *token_len);
-    bool validate_token(const uint8_t *token, size_t token_len,
-                               struct sockaddr_storage *addr, socklen_t addr_len,
-                               uint8_t *odcid, size_t *odcid_len);
-    static uint8_t *gen_cid(uint8_t *cid, size_t cid_len);
-    struct conn_io *create_conn(uint8_t *scid, size_t scid_len,
-                                       uint8_t *odcid, size_t odcid_len,
-                                       struct sockaddr *local_addr,
-                                       socklen_t local_addr_len,
-                                       struct sockaddr_storage *peer_addr,
-                                       socklen_t peer_addr_len);
-    static int for_each_header(const uint8_t *name, size_t name_len,
-                               const uint8_t *value, size_t value_len,
-                               void *argp);
-    static void recv_cb(EV_P_ ev_io *w, int revents);
-    static void timeout_cb(EV_P_ ev_timer *w, int revents);
-    
+    void parse(struct conn_io* conn_io) override;
+
+    void mint_token(const uint8_t* dcid, size_t dcid_len,
+        struct sockaddr_storage* addr, socklen_t addr_len,
+        uint8_t* token, size_t* token_len);
+    bool validate_token(const uint8_t* token, size_t token_len,
+        struct sockaddr_storage* addr, socklen_t addr_len,
+        uint8_t* odcid, size_t* odcid_len);
+    static uint8_t* gen_cid(uint8_t* cid, size_t cid_len);
+    struct conn_io* create_conn(uint8_t* scid, size_t scid_len,
+        uint8_t* odcid, size_t odcid_len,
+        struct sockaddr* local_addr,
+        socklen_t local_addr_len,
+        struct sockaddr_storage* peer_addr,
+        socklen_t peer_addr_len);
+    static int for_each_header(const uint8_t* name, size_t name_len,
+        const uint8_t* value, size_t value_len,
+        void* argp);
+    static void recv_cb(EV_P_ ev_io* w, int revents);
+    static void timeout_cb(EV_P_ ev_timer* w, int revents);
+
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
-    void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
-    static qtextfilelogger logger;
-    static qstatslogger stats_logger;
-    
+    void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) override;
+    static qtextfilelogger* logger;
+    static qstatslogger* stats_logger;
+
 public:
-    static qtextfilelogger& get_file_logger() { return logger; }
-    static qstatslogger& get_stats_loggeer() { return stats_logger; }
-    
+    static qtextfilelogger* get_file_logger() { return logger; }
+    static qstatslogger* get_stats_loggeer() { return stats_logger; }
+
     int run(const std::string& host, const std::string& port, fs::path& rootDir);
 };
 

@@ -116,7 +116,7 @@ struct conn_io_req_res {
         }
     public:
         static header* create(const qstring& name, const qstring& value) {
-            header* new_header = new header(name, value);
+            header* new_header = DEBUG_NEW header(name, value);
             return new_header;
         }
         ~header() {
@@ -176,17 +176,17 @@ private:
 
 public:
     static conn_io_req_res* create() {
-        return new conn_io_req_res();
+        return DEBUG_NEW conn_io_req_res();
     }
     static conn_io_req_res* create(const qstring& path, const qstring& payload_) {
         conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
-        conn_io_req_res* new_rq_rs = new conn_io_req_res(*new_header, payload_);
+        conn_io_req_res* new_rq_rs = DEBUG_NEW conn_io_req_res(*new_header, payload_);
         GX_DELETE(new_header);
         return new_rq_rs;
     }
     static conn_io_req_res* create(const qstring& path) {
         conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
-        conn_io_req_res* new_rq_rs = new conn_io_req_res(*new_header);
+        conn_io_req_res* new_rq_rs = DEBUG_NEW conn_io_req_res(*new_header);
         GX_DELETE(new_header);
         return new_rq_rs;
     }

@@ -6,7 +6,6 @@
 //
 
 #include "sdktypes.hpp"
-
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
@@ -16,7 +15,7 @@
 #endif
 
 
-#define LOGBUFFER_SIZE FILENAME_MAX * 2
+#define LOGBUFFER_SIZE 256 * 2
 using namespace gsdk;
 
 struct utsname device::device_details;
@@ -25,16 +24,14 @@ extern "C"
 {
     int init_gsdk() {
         errno = 0;
-        if(uname(&device::device_details)!=0)
-        {
-           perror("uname doesn't return 0, so there is an error");
+        if (uname(&device::device_details) != 0) {
+            perror("uname doesn't return 0, so there is an error");
             return -1;
         }
         return 0;
     }
 
-    void print_common_info()
-    {
+    void print_common_info() {
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
         DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
@@ -42,12 +39,10 @@ extern "C"
         DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
 
         char cwd[PATH_MAX];
-        if (getcwd(cwd, sizeof(cwd)) != NULL)
-        {
+        if (getcwd(cwd, sizeof(cwd)) != NULL) {
             DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
         }
-        else
-        {
+        else {
             DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
         }
 #if DEBUG
@@ -55,29 +50,25 @@ extern "C"
 #endif
     }
 
-    int number_of_digits(unsigned int num)
-    {
-        if (num==0) {
+    int number_of_digits(unsigned int num) {
+        if (num == 0) {
             return 1;
         }
         int len = 0;
         unsigned int n = num;
-        while (n != 0)
-        {
+        while (n != 0) {
             len++;
             n /= 10;
         }
         return len;
     }
 
-    void DEBUG_PRINT(int logLevel, const char *tag, const char *format, ...)
-    {
-        if (logLevel > LOG_LEVEL)
-        {
+    void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
+        if (logLevel > LOG_LEVEL) {
             return;
         }
         time_t givemetime = time(NULL);
-        char buffer[LOGBUFFER_SIZE+1];
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -91,31 +82,27 @@ extern "C"
 #endif
     }
 
-    void DEBUG_PRINT_WARN(const char *tag, const char *format, ...)
-    {
-        char buffer[LOGBUFFER_SIZE+1];
+    void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1B[33mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
     }
-    void DEBUG_PRINT_ERROR(const char *tag, const char *format, ...)
-    {
-        char buffer[LOGBUFFER_SIZE+1];
+    void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1B[31mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
     }
-    void DEBUG_ASSERT(const char *tag, bool condition, const char *format, ...)
-    {
-        if (condition)
-        {
+    void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
+        if (condition) {
             return;
         }
-        char buffer[LOGBUFFER_SIZE+1];
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
@@ -123,18 +110,16 @@ extern "C"
         DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : %s\x1b[0m", tag, buffer);
         assert(condition);
     }
-    void DEBUG_PRINT_IMPORTANT(const char *tag, const char *format, ...)
-    {
-        char buffer[LOGBUFFER_SIZE+1];
+    void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1B[32m****", "[%s] : %s\x1b[0m", tag, buffer);
     }
-    void DEBUG_PRINT_IMPORTANT2(const char *tag, const char *format, ...)
-    {
-        char buffer[LOGBUFFER_SIZE+1];
+    void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
+        char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);

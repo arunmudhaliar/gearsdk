@@ -17,7 +17,7 @@ qstats_crawler::~qstats_crawler() {
 }
 
 void qstats_crawler::try_crawl(const qstring& root_filename) {
-    fs::path crawled_dir = fs::path(root_filename.c_str()).parent_path()/fs::path("crawled");
+    fs::path crawled_dir = fs::path(root_filename.c_str()).parent_path() / fs::path("crawled");
     if (!fs::is_directory(crawled_dir)) {
         fs::create_directory(crawled_dir);
     }
@@ -26,7 +26,7 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
     qlogfile::get_all_log_files(logfile_path, files);
 
     pgsql_client.connect_db();
-    for(fs::path f : files) {
+    for (fs::path f : files) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "crawling...  %s", f.c_str());
         int parsed_lines = 0;
         if (parse_file(f, parsed_lines) == 0) {
@@ -38,7 +38,8 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
             else {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "failed to move stats file %s", f.c_str());
             }
-        } else {
+        }
+        else {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to crawl stats file %s", f.c_str());
         }
     }
@@ -51,24 +52,24 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 
     std::string fname = file.string();
     /* opening file for reading */
-    FILE *fp = fopen(file.string().c_str() , "r");
-    if(fp == NULL) {
+    FILE* fp = fopen(file.string().c_str(), "r");
+    if (fp == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "Error opening stats file");
         return(-1);
     }
     parsed_lines = 0;
-    while(fgets(str, max_chars_in_a_line, fp)) {
+    while (fgets(str, max_chars_in_a_line, fp)) {
         /* writing content to stdout */
         puts(str);
-        if (parse_line(qstring(str))==0) {
+        if (parse_line(qstring(str)) == 0) {
             parsed_lines++;
         }
     }
     // reminders if any
-    if (count_stats_counter>0) {
+    if (count_stats_counter > 0) {
         batch_send_count_stats();
     }
-    if (open_stats_counter>0) {
+    if (open_stats_counter > 0) {
         batch_send_open_stats();
     }
     //
@@ -79,32 +80,34 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 int qstats_crawler::parse_line(const qstring& line) {
     std::vector<qstring> list;
     line.split("|", list);
-    
-    if (list.size()==0) {
+
+    if (list.size() == 0) {
         // nothing to parse.
         return -1;
     }
-    
+
     if (list[0] == "count") {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "processing count stats ...");
-        if (append_count_stats(batch_count_stats_values, list)==0) {
+        if (append_count_stats(batch_count_stats_values, list) == 0) {
             count_stats_counter++;
         }
-        if (count_stats_counter>=COUNT_STATS_BATCH_COUNT) {
+        if (count_stats_counter >= COUNT_STATS_BATCH_COUNT) {
             batch_send_count_stats();
         }
-    } else if (list[0] == "open") {
+    }
+    else if (list[0] == "open") {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "processing open stats ...");
-        if (append_open_stats(batch_open_stats_values, list)==0) {
+        if (append_open_stats(batch_open_stats_values, list) == 0) {
             open_stats_counter++;
         }
-        if (open_stats_counter>=OPEN_STATS_BATCH_COUNT) {
+        if (open_stats_counter >= OPEN_STATS_BATCH_COUNT) {
             batch_send_open_stats();
         }
-    } else {
+    }
+    else {
         DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats ... %s", list[0].c_str());
     }
-    
+
     return 0;
 }
 
@@ -122,96 +125,96 @@ int qstats_crawler::parse_line(const qstring& line) {
 
 void qstats_crawler::batch_send_count_stats() {
     qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, message, device_name, device_model, total_ram) VALUES");
-    qstring sql_script = insert_header+batch_count_stats_values;
-    sql_script+=";";
+    qstring sql_script = insert_header + batch_count_stats_values;
+    sql_script += ";";
     pgsql_client.execute_query(sql_script);
     batch_count_stats_values.clear();
     count_stats_counter = 0;
 }
 
 int qstats_crawler::append_count_stats(qstring& values, std::vector<qstring>& list) {
-    if (list.size()!=16) {
+    if (list.size() != 16) {
         DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats format ... size 16!=%d", list.size());
         return 1;
     }
-    
+
     qstring format_string("(");
-    for (size_t x=1; x<list.size(); x++) {
-        format_string += (list[x]=="NULL") ? "%s" : "'%s'";
-        if (x<list.size()-1) {
+    for (size_t x = 1; x < list.size(); x++) {
+        format_string += (list[x] == "NULL") ? "%s" : "'%s'";
+        if (x < list.size() - 1) {
             format_string += ",";
         }
     }
-    format_string+=")";
+    format_string += ")";
     qstring insert_values = qstring::format_string(format_string.c_str(),
-                                                   list[1].c_str(),
-                                                   list[2].c_str(),
-                                                   list[3].c_str(),
-                                                   list[4].c_str(),
-                                                   list[5].c_str(),
-                                                   list[6].c_str(),
-                                                   list[7].c_str(),
-                                                   list[8].c_str(),
-                                                   list[9].c_str(),
-                                                   list[10].c_str(),
-                                                   list[11].c_str(),
-                                                   list[12].c_str(),
-                                                   list[13].c_str(),
-                                                   list[14].c_str(),
-                                                   list[15].c_str()
-                                                   );
-    if (count_stats_counter>0) {
-        values+=",";
+        list[1].c_str(),
+        list[2].c_str(),
+        list[3].c_str(),
+        list[4].c_str(),
+        list[5].c_str(),
+        list[6].c_str(),
+        list[7].c_str(),
+        list[8].c_str(),
+        list[9].c_str(),
+        list[10].c_str(),
+        list[11].c_str(),
+        list[12].c_str(),
+        list[13].c_str(),
+        list[14].c_str(),
+        list[15].c_str()
+    );
+    if (count_stats_counter > 0) {
+        values += ",";
     }
-    values+=insert_values;
+    values += insert_values;
     return 0;
 }
 
 int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
-    if (list.size()!=16) {
+    if (list.size() != 16) {
         DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats format ... size 16!=%d", list.size());
         return 1;
     }
-    
+
     /*
      INSERT INTO
          qtest_pgdb_schema.stats_count(count, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, message, device_name, device_model, total_ram)
      VALUES
          ('0','test0','','','','','','','','2020-07-06 09:30:00.646533','2020-07-06 09:30:00.646533','','','',0),
          ('1','test2','','','','','','','','2020-07-06 09:30:00.646533','2020-07-06 09:30:00.646533','','','',0)
-         
+
      */
     qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, message, device_name, device_model, total_ram) VALUES");
-    
+
     qstring format_string("(");
-    for (size_t x=1; x<list.size(); x++) {
-        format_string += (list[x]=="NULL") ? "%s" : "'%s'";
-        if (x<list.size()-1) {
+    for (size_t x = 1; x < list.size(); x++) {
+        format_string += (list[x] == "NULL") ? "%s" : "'%s'";
+        if (x < list.size() - 1) {
             format_string += ",";
         }
     }
-    format_string+=");";
-    
+    format_string += ");";
+
     qstring insert_values = qstring::format_string(format_string.c_str(),
-                                                   list[1].c_str(),
-                                                   list[2].c_str(),
-                                                   list[3].c_str(),
-                                                   list[4].c_str(),
-                                                   list[5].c_str(),
-                                                   list[6].c_str(),
-                                                   list[7].c_str(),
-                                                   list[8].c_str(),
-                                                   list[9].c_str(),
-                                                   list[10].c_str(),
-                                                   list[11].c_str(),
-                                                   list[12].c_str(),
-                                                   list[13].c_str(),
-                                                   list[14].c_str(),
-                                                   list[15].c_str()
-                                                   );
-    qstring sql_script = insert_header+insert_values;
-    
-//    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%.*s", sql_script.length(), sql_script.c_str());
+        list[1].c_str(),
+        list[2].c_str(),
+        list[3].c_str(),
+        list[4].c_str(),
+        list[5].c_str(),
+        list[6].c_str(),
+        list[7].c_str(),
+        list[8].c_str(),
+        list[9].c_str(),
+        list[10].c_str(),
+        list[11].c_str(),
+        list[12].c_str(),
+        list[13].c_str(),
+        list[14].c_str(),
+        list[15].c_str()
+    );
+    qstring sql_script = insert_header + insert_values;
+
+    //    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%.*s", sql_script.length(), sql_script.c_str());
     pgsql_client.execute_query(sql_script);
     return 0;
 }

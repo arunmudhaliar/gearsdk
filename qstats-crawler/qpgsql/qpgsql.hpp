@@ -17,11 +17,11 @@ class qpgsql {
 public:
     qpgsql();
     ~qpgsql();
-    
+
     int connect_db();
     void close_db();
     int execute_query(const qstring& query);
-    
+
 private:
     PGconn* db_connection = nullptr;
 };

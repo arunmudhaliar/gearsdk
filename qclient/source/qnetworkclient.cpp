@@ -24,26 +24,21 @@
 int qnetworkclient::connectionID = 0;
 
 #pragma region QConnection
-qconnection::qconnection(bridge_qcommand *bridge, int id) : bridge(bridge),
-                                                            id(id)
-{
+qconnection::qconnection(bridge_qcommand* bridge, int id) : bridge(bridge),
+id(id) {
 }
 
-qconnection::qconnection(bridge_qcommand *bridge, Config *config, int id) : bridge(bridge),
-                                                                            config(config),
-                                                                            id(id)
-{
+qconnection::qconnection(bridge_qcommand* bridge, Config* config, int id) : bridge(bridge),
+config(config),
+id(id) {
 }
 
-qconnection::~qconnection()
-{
+qconnection::~qconnection() {
     Release();
 }
 
-void qconnection::Release()
-{
-    if (peer)
-    {
+void qconnection::Release() {
+    if (peer) {
         freeaddrinfo(peer);
         peer = nullptr;
     }
@@ -53,55 +48,47 @@ void qconnection::Release()
     watcher.data = nullptr;
     ev_io_stop(bridge->getmainloop(), &watcher);
     ev_break(bridge->getmainloop(), EVBREAK_ONE);
-    if (conn)
-    {
+    if (conn) {
         quiche_conn_free(conn);
         conn = nullptr;
     }
 }
 
-int qconnection::Connect(std::string host, std::string port)
-{
+int qconnection::Connect(std::string host, std::string port) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
-        .ai_protocol = IPPROTO_UDP};
+        .ai_protocol = IPPROTO_UDP };
 
-    if (peer)
-    {
+    if (peer) {
         freeaddrinfo(peer);
         peer = nullptr;
     }
-    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0)
-    {
+    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
         return -1;
     }
 
     sock = socket(peer->ai_family, SOCK_DGRAM, 0);
-    if (sock < 0)
-    {
+    if (sock < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
         return -1;
     }
 
-    if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0)
-    {
+    if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
         return -1;
     }
 
     uint8_t scid[LOCAL_CONN_ID_LEN];
     int rng = open("/dev/urandom", O_RDONLY);
-    if (rng < 0)
-    {
+    if (rng < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open /dev/urandom");
         return -1;
     }
 
     ssize_t rand_len = read(rng, &scid, sizeof(scid));
-    if (rand_len < 0)
-    {
+    if (rand_len < 0) {
         close(rng);
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection ID");
         return -1;
@@ -109,20 +96,18 @@ int qconnection::Connect(std::string host, std::string port)
     close(rng);
 
     local_addr_len = sizeof(local_addr);
-    if (getsockname(sock, (struct sockaddr *)&local_addr,
-                    &local_addr_len) != 0)
-    {
+    if (getsockname(sock, (struct sockaddr*)&local_addr,
+        &local_addr_len) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to get local address of socket");
         return -1;
     };
 
-    conn = quiche_connect(host.c_str(), (const uint8_t *)scid, sizeof(scid),
-                          (struct sockaddr *)&local_addr,
-                          local_addr_len,
-                          peer->ai_addr, peer->ai_addrlen, config);
+    conn = quiche_connect(host.c_str(), (const uint8_t*)scid, sizeof(scid),
+        (struct sockaddr*)&local_addr,
+        local_addr_len,
+        peer->ai_addr, peer->ai_addrlen, config);
 
-    if (conn == NULL)
-    {
+    if (conn == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection");
         return -1;
     }
@@ -130,61 +115,50 @@ int qconnection::Connect(std::string host, std::string port)
     return 0;
 }
 
-int qconnection::ConnectionActive()
-{
-    if (!conn)
-    {
+int qconnection::ConnectionActive() {
+    if (!conn) {
         return -1;
     }
-    if (!quiche_conn_is_established(conn))
-    {
+    if (!quiche_conn_is_established(conn)) {
         return -2;
     }
 
-    if (quiche_conn_is_closed(conn))
-    {
+    if (quiche_conn_is_closed(conn)) {
         return -3;
     }
 
     return 0;
 }
 
-ssize_t qconnection::SendMessage(const std::string &buffer, bool fin)
-{
+ssize_t qconnection::SendMessage(const std::string& buffer, bool fin) {
     return SendMessage(buffer.c_str(), buffer.size(), fin);
 }
 
-ssize_t qconnection::SendMessage(const char *buf, size_t buflen, bool fin)
-{
+ssize_t qconnection::SendMessage(const char* buf, size_t buflen, bool fin) {
     int conn_active = ConnectionActive();
-    if (conn_active < 0)
-    {
+    if (conn_active < 0) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, conn is null or not active = %d", conn_active);
         return conn_active;
     }
 
-    if (!quiche_conn_is_established(conn))
-    {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char *)buf);
+    if (!quiche_conn_is_established(conn)) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
         return -2;
     }
 
-    if (quiche_conn_is_closed(conn))
-    {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection closed - ", (char *)buf);
+    if (quiche_conn_is_closed(conn)) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection closed - ", (char*)buf);
         return -3;
     }
 
     ssize_t result = -4;
     uint64_t s = 0;
-    StreamIter *writable = quiche_conn_writable(conn);
-    while (quiche_stream_iter_next(writable, &s))
-    {
+    StreamIter* writable = quiche_conn_writable(conn);
+    while (quiche_stream_iter_next(writable, &s)) {
         //        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-        ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *)buf,
-                                                   buflen, fin);
-        if (sent_len != buflen)
-        {
+        ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*)buf,
+            buflen, fin);
+        if (sent_len != buflen) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
@@ -198,46 +172,38 @@ ssize_t qconnection::SendMessage(const char *buf, size_t buflen, bool fin)
 }
 #pragma endregion QConnection
 
-void qnetworkclient::setstate(CON_STATE state)
-{
-    if (this->state >= state)
-    {
+void qnetworkclient::setstate(CON_STATE state) {
+    if (this->state >= state) {
         DEBUG_PRINT_WARN(__LOGTAG__, "QConnection state >= state, this->state %d, incoming state %d", this->state, state);
     }
     this->state = state;
 }
 
-void qnetworkclient::debug_log(const uint8_t *line, void *argp)
-{
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char *)line);
+void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*)line);
 }
 
-void qnetworkclient::flushegress(struct ev_loop *loop, qconnection *qconnection)
-{
+void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection) {
     SendInfo send_info;
-    while (true)
-    {
+    while (true) {
         ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out),
-                                           &send_info);
+            &send_info);
 
-        if (written == QUICHE_ERR_DONE)
-        {
+        if (written == QUICHE_ERR_DONE) {
             DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
             break;
         }
 
-        if (written < 0)
-        {
+        if (written < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create packet: %zd", written);
             return;
         }
 
         ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0,
-                              (struct sockaddr *)&send_info.to,
-                              send_info.to_len);
+            (struct sockaddr*)&send_info.to,
+            send_info.to_len);
 
-        if (sent != written)
-        {
+        if (sent != written) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
             return;
         }
@@ -252,21 +218,17 @@ void qnetworkclient::flushegress(struct ev_loop *loop, qconnection *qconnection)
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
-void qnetworkclient::event_connect(qconnection *qconnection)
-{
+void qnetworkclient::event_connect(qconnection* qconnection) {
     setstate(STATE_CONNECT);
     onconnect(qconnection);
 }
 
-void qnetworkclient::event_msg_received(ssize_t recv_len, uint8_t *buf, qconnection *qconnection)
-{
+void qnetworkclient::event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) {
     onmessage(recv_len, buf, qconnection);
 }
 
-void qnetworkclient::event_close(qconnection *qconnection)
-{
-    if (isclosed())
-    {
+void qnetworkclient::event_close(qconnection* qconnection) {
+    if (isclosed()) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "Connection already closed, Event_Close returning...");
         return;
     }
@@ -274,34 +236,28 @@ void qnetworkclient::event_close(qconnection *qconnection)
     onclose(qconnection);
 }
 
-void qnetworkclient::forcerelease()
-{
-    if (release_connection(getmainloop(), qclient_connection) == 0)
-    {
+void qnetworkclient::forcerelease() {
+    if (release_connection(getmainloop(), qclient_connection) == 0) {
         GX_DELETE(qclient_connection);
     }
 }
 
-int qnetworkclient::release_connection(struct ev_loop *loop, qconnection *qconnection)
-{
+int qnetworkclient::release_connection(struct ev_loop* loop, qconnection* qconnection) {
     int retVal = 0;
-    if (qconnection != nullptr)
-    {
+    if (qconnection != nullptr) {
         qconnection->Release();
         onreleaseconnection(qconnection);
         GX_DELETE(qclient_connection);
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Connection released !!!");
     }
-    else
-    {
+    else {
         retVal = -1;
         DEBUG_PRINT_ERROR(__LOGTAG__, "Already destroyed.. Ignoring...");
     }
     return retVal;
 }
 
-int qnetworkclient::close()
-{
+int qnetworkclient::close() {
     // lock
     DEBUG_ASSERT(__LOGTAG__, (close_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     close_mutex.conditionalWait(__FUNCTION__);
@@ -310,15 +266,12 @@ int qnetworkclient::close()
     send_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
 
-    if (state == CON_STATE::STATE_CONNECT)
-    {
-        if (qclient_connection)
-        {
+    if (state == CON_STATE::STATE_CONNECT) {
+        if (qclient_connection) {
             int conActive = qclient_connection->ConnectionActive();
-            if (conActive == 0)
-            {
+            if (conActive == 0) {
                 const uint8_t bye[] = "Bye\r\n";
-                qclient_connection->sendBuffer.push_back(new qdata((uint8_t *)bye, sizeof(bye), true));
+                qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)bye, sizeof(bye), true));
             }
         }
     }
@@ -328,8 +281,7 @@ int qnetworkclient::close()
     return 0;
 }
 
-int qnetworkclient::sendMessage(const std::string &buffer, bool flush)
-{
+int qnetworkclient::sendMessage(const std::string& buffer, bool flush) {
     // lock
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     send_mutex.conditionalWait(__FUNCTION__);
@@ -337,9 +289,8 @@ int qnetworkclient::sendMessage(const std::string &buffer, bool flush)
     // block
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
-    if (qclient_connection)
-    {
-        qclient_connection->sendBuffer.push_back(new qdata((uint8_t *)buffer.c_str(), buffer.size()));
+    if (qclient_connection) {
+        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.size()));
     }
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
@@ -347,28 +298,23 @@ int qnetworkclient::sendMessage(const std::string &buffer, bool flush)
     return 0;
 }
 
-void qnetworkclient::recv_cb(EV_P_ ev_io *w, int revents)
-{
-    qconnection *qconnection_ = (qconnection *)w->data;
-    if (qconnection_->conn == nullptr)
-    {
+void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
+    qconnection* qconnection_ = (qconnection*)w->data;
+    if (qconnection_->conn == nullptr) {
         return;
     }
 
-    while (true)
-    {
+    while (true) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
 
         ssize_t read = recvfrom(qconnection_->sock, qconnection_->recv_buf, sizeof(qconnection_->recv_buf), 0,
-                                (struct sockaddr *)&peer_addr,
-                                &peer_addr_len);
+            (struct sockaddr*)&peer_addr,
+            &peer_addr_len);
 
-        if (read < 0)
-        {
-            if ((errno == EWOULDBLOCK) || (errno == EAGAIN))
-            {
+        if (read < 0) {
+            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
                 DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
                 break;
             }
@@ -378,17 +324,16 @@ void qnetworkclient::recv_cb(EV_P_ ev_io *w, int revents)
         }
 
         RecvInfo recv_info = {
-            (struct sockaddr *)&peer_addr,
+            (struct sockaddr*)&peer_addr,
             peer_addr_len,
 
-            (struct sockaddr *)&qconnection_->local_addr,
+            (struct sockaddr*)&qconnection_->local_addr,
             qconnection_->local_addr_len,
         };
 
         ssize_t done = quiche_conn_recv(qconnection_->conn, qconnection_->recv_buf, read, &recv_info);
 
-        if (done < 0)
-        {
+        if (done < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet");
             continue;
         }
@@ -398,47 +343,40 @@ void qnetworkclient::recv_cb(EV_P_ ev_io *w, int revents)
 
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done reading");
 
-    if (quiche_conn_is_established(qconnection_->conn) && qconnection_->bridge->getstate() == CON_STATE::STATE_OPEN)
-    {
-        const uint8_t *app_proto;
+    if (quiche_conn_is_established(qconnection_->conn) && qconnection_->bridge->getstate() == CON_STATE::STATE_OPEN) {
+        const uint8_t* app_proto;
         size_t app_proto_len;
 
         quiche_conn_application_proto(qconnection_->conn, &app_proto, &app_proto_len);
 
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection established: %.*s",
-                    (int)app_proto_len, app_proto);
+            (int)app_proto_len, app_proto);
         qconnection_->bridge->event_connect(qconnection_);
 
         const static uint8_t hi[] = "Hi\r\n";
-        if (quiche_conn_stream_send(qconnection_->conn, 4, hi, sizeof(hi), false) < 0)
-        {
+        if (quiche_conn_stream_send(qconnection_->conn, 4, hi, sizeof(hi), false) < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send Hi request");
             return;
         }
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent Hi request");
     }
 
-    if (quiche_conn_is_established(qconnection_->conn))
-    {
+    if (quiche_conn_is_established(qconnection_->conn)) {
         uint64_t s = 0;
-        StreamIter *readable = quiche_conn_readable(qconnection_->conn);
-        while (quiche_stream_iter_next(readable, &s))
-        {
+        StreamIter* readable = quiche_conn_readable(qconnection_->conn);
+        while (quiche_stream_iter_next(readable, &s)) {
             DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 
             bool fin = false;
             ssize_t recv_len = quiche_conn_stream_recv(qconnection_->conn, s,
-                                                       qconnection_->recv_buf, sizeof(qconnection_->recv_buf),
-                                                       &fin);
-            if (recv_len < 0)
-            {
+                qconnection_->recv_buf, sizeof(qconnection_->recv_buf),
+                &fin);
+            if (recv_len < 0) {
                 break;
             }
 
-            if (fin)
-            {
-                if (quiche_conn_close(qconnection_->conn, true, 0, NULL, 0) < 0)
-                {
+            if (fin) {
+                if (quiche_conn_close(qconnection_->conn, true, 0, NULL, 0) < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection");
                 }
                 DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
@@ -448,15 +386,13 @@ void qnetworkclient::recv_cb(EV_P_ ev_io *w, int revents)
         quiche_stream_iter_free(readable);
     }
 
-    if (qconnection_->conn)
-    {
+    if (qconnection_->conn) {
         qconnection_->bridge->flushegress(loop, qconnection_);
     }
 }
 
-void qnetworkclient::send_cb(EV_P_ ev_timer *w, int revents)
-{
-    qconnection *qconnection_ = (qconnection *)w->data;
+void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
+    qconnection* qconnection_ = (qconnection*)w->data;
     // lock
     DEBUG_ASSERT(__LOGTAG__, (qconnection_->bridge->get_sendloop_mutex()->tryLock(__FUNCTION__) == 0), __FUNCTION__);
     qconnection_->bridge->get_sendloop_mutex()->conditionalWait(__FUNCTION__);
@@ -465,31 +401,25 @@ void qnetworkclient::send_cb(EV_P_ ev_timer *w, int revents)
     qconnection_->bridge->het_close_mutex()->block(__FUNCTION__);
     qconnection_->bridge->get_send_mutex()->block(__FUNCTION__);
 
-    if (qconnection_->bridge->getstate() == CON_STATE::STATE_CONNECT)
-    {
-        std::vector<qdata *> successfullySent;
-        for (auto it = qconnection_->sendBuffer.cbegin(); it != qconnection_->sendBuffer.cend(); it++)
-        {
-            qdata *sd = *it;
-            ssize_t send_res = qconnection_->SendMessage((const char *)sd->data, sd->size, sd->fin);
-            if (sd->size != send_res)
-            {
+    if (qconnection_->bridge->getstate() == CON_STATE::STATE_CONNECT) {
+        std::vector<qdata*> successfullySent;
+        for (auto it = qconnection_->sendBuffer.cbegin(); it != qconnection_->sendBuffer.cend(); it++) {
+            qdata* sd = *it;
+            ssize_t send_res = qconnection_->SendMessage((const char*)sd->data, sd->size, sd->fin);
+            if (sd->size != send_res) {
                 DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "send_cb failed for %s, err %d", sd->data, send_res);
             }
-            else
-            {
+            else {
                 successfullySent.push_back(sd);
                 qconnection_->bridge->flushegress(qconnection_->bridge->getmainloop(), qconnection_);
             }
         }
 
-        for (auto it = successfullySent.cbegin(); it != successfullySent.cend(); it++)
-        {
-            qdata *fd = *it;
+        for (auto it = successfullySent.cbegin(); it != successfullySent.cend(); it++) {
+            qdata* fd = *it;
             int oldSz = (int)qconnection_->sendBuffer.size();
             qconnection_->sendBuffer.erase(std::remove(qconnection_->sendBuffer.begin(), qconnection_->sendBuffer.end(), fd), qconnection_->sendBuffer.end());
-            if (oldSz != qconnection_->sendBuffer.size())
-            {
+            if (oldSz != qconnection_->sendBuffer.size()) {
                 GX_DELETE(fd);
             }
         }
@@ -499,11 +429,9 @@ void qnetworkclient::send_cb(EV_P_ ev_timer *w, int revents)
     qconnection_->bridge->het_close_mutex()->unBlock(__FUNCTION__);
 }
 
-void qnetworkclient::timeout_cb(EV_P_ ev_timer *w, int revents)
-{
-    qconnection *qconnection_ = (qconnection *)w->data;
-    if (qconnection_->conn == nullptr)
-    {
+void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
+    qconnection* qconnection_ = (qconnection*)w->data;
+    if (qconnection_->conn == nullptr) {
         ev_break(EV_A_ EVBREAK_ONE);
         return;
     }
@@ -513,8 +441,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer *w, int revents)
     quiche_conn_on_timeout(qconnection_->conn);
     qconnection_->bridge->flushegress(loop, qconnection_);
 
-    if (quiche_conn_is_closed(qconnection_->conn))
-    {
+    if (quiche_conn_is_closed(qconnection_->conn)) {
         Stats stats;
         PathStats path_stats;
 
@@ -522,43 +449,37 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer *w, int revents)
         quiche_conn_path_stats(qconnection_->conn, 0, &path_stats);
 
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
-                    stats.recv, stats.sent, stats.lost, path_stats.rtt);
+            stats.recv, stats.sent, stats.lost, path_stats.rtt);
         qconnection_->bridge->event_close(qconnection_);
         ev_break(EV_A_ EVBREAK_ONE);
         return;
     }
-    else
-    {
+    else {
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection not closed");
     }
 }
 
-void qnetworkclient::onconnect(qconnection *qconnection)
-{
+void qnetworkclient::onconnect(qconnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CONNECTED ########## - %d", qconnection->id);
 }
 
-void qnetworkclient::onclose(qconnection *qconnection)
-{
+void qnetworkclient::onclose(qconnection* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "########## CLOSED ########## - %d", qconnection->id);
 }
 
-void qnetworkclient::onmessage(ssize_t recv_len, uint8_t *buf, qconnection *qconnection)
-{
-    uint8_t *copybuf = new uint8_t[recv_len + 1];
+void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) {
+    uint8_t* copybuf = new uint8_t[recv_len + 1];
     memcpy(copybuf, buf, recv_len);
     copybuf[recv_len] = '\0';
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len:%d]", copybuf, recv_len);
     GX_DELETE_ARY(copybuf);
 }
 
-void qnetworkclient::onreleaseconnection(qconnection *qconnection)
-{
+void qnetworkclient::onreleaseconnection(qconnection* qconnection) {
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection about to release !!!");
 }
 
-qnetworkclient::qnetworkclient()
-{
+qnetworkclient::qnetworkclient() {
 #if USE_PTHREAD
     DEBUG_ASSERT(__LOGTAG__, (run_mutex.init("run") == 0), "qnetworkclient Constructor - CHECK !!!");
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.init("send") == 0), "qnetworkclient Constructor - CHECK !!!");
@@ -568,20 +489,17 @@ qnetworkclient::qnetworkclient()
 #endif
 }
 
-qnetworkclient::~qnetworkclient()
-{
+qnetworkclient::~qnetworkclient() {
     release_connection(mainloop, qclient_connection);
 }
 
-void *qnetworkclient::run_internal(void *data)
-{
-    RunConfig *runConfig = (RunConfig *)data;
+void* qnetworkclient::run_internal(void* data) {
+    RunConfig* runConfig = (RunConfig*)data;
     std::string host = runConfig->host;
     std::string port = runConfig->port;
-    qnetworkclient *thiz = runConfig->thiz;
+    qnetworkclient* thiz = runConfig->thiz;
 #if USE_PTHREAD
-    if (thiz->run_mutex.tryLock(__FUNCTION__) != 0)
-    {
+    if (thiz->run_mutex.tryLock(__FUNCTION__) != 0) {
         runConfig->finished = true;
         runConfig->pthread_returnValue = -1;
         pthread_exit(&runConfig->pthread_returnValue);
@@ -590,9 +508,8 @@ void *qnetworkclient::run_internal(void *data)
 
     //    quiche_enable_debug_logging(debug_log, nullptr);
 
-    Config *config = quiche_config_new(0xbabababa);
-    if (config == NULL)
-    {
+    Config* config = quiche_config_new(0xbabababa);
+    if (config == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -605,7 +522,7 @@ void *qnetworkclient::run_internal(void *data)
     }
 
     quiche_config_set_application_protos(config,
-                                         (uint8_t *)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
+        (uint8_t*)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
     quiche_config_set_max_idle_timeout(config, 30000);
     quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
@@ -618,8 +535,7 @@ void *qnetworkclient::run_internal(void *data)
     quiche_config_set_initial_max_streams_uni(config, 100);
     quiche_config_set_disable_active_migration(config, true);
 
-    if (getenv("SSLKEYLOGFILE"))
-    {
+    if (getenv("SSLKEYLOGFILE")) {
         quiche_config_log_keys(config);
     }
 
@@ -628,8 +544,7 @@ void *qnetworkclient::run_internal(void *data)
     thiz->send_mutex.block(__FUNCTION__);
 
     thiz->qclient_connection = new qconnection(thiz, config, runConfig->id);
-    if (thiz->qclient_connection == NULL)
-    {
+    if (thiz->qclient_connection == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create qconnection");
         runConfig->pthread_returnValue = -1;
         runConfig->finished = true;
@@ -681,16 +596,14 @@ void *qnetworkclient::run_internal(void *data)
 #endif
 }
 
-bool qnetworkclient::is_runfinished()
-{
+bool qnetworkclient::is_runfinished() {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     bool retVal = runConfig.finished;
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
     return retVal;
 }
 
-int qnetworkclient::run(std::string host, std::string port)
-{
+int qnetworkclient::run(std::string host, std::string port) {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     runConfig.host = host;
     runConfig.port = port;
@@ -699,13 +612,12 @@ int qnetworkclient::run(std::string host, std::string port)
     runConfig.id = qnetworkclient::connectionID++;
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
 #if USE_PTHREAD
-    if (pthread_create(&run_thread_id, nullptr, qnetworkclient::run_internal, (void *)&runConfig) < 0)
-    {
+    if (pthread_create(&run_thread_id, nullptr, qnetworkclient::run_internal, (void*)&runConfig) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
         return -1;
     }
 #else
-    qnetworkclient::run_internal((void *)&runConfig);
+    qnetworkclient::run_internal((void*)&runConfig);
 #endif
     return 0;
 }

@@ -66,9 +66,9 @@
 #endif // GSDK_ENDIAN
 
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
-    #pragma message ( "Little endian machine !!!" )
+#pragma message ( "Little endian machine !!!" )
 #else
-    #pragma message ( "Big endian machine !!!" )
+#pragma message ( "Big endian machine !!!" )
 #endif
 
 #endif /* endian_check_h */
