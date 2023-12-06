@@ -40,15 +40,15 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
         return;
     }
     if (path_header->value.length()>1 && path_header->value.compare("/shutdown-test")==0) {
-        if (conn_io->http_request->has_crc_header()) {
+        bool has_crc_header = conn_io->http_request->has_crc_header();
+        if (has_crc_header) {
             bool validate = conn_io->http_request->validate();
             assert(validate);
-            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", "", "shutdown-test");
         } else {
             // may be called from a browser
             DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
-            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", "no-crc", "shutdown-test");
         }
+        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
         ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
         return;
     }
@@ -56,15 +56,21 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
     const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
     
     if (path_header->value.length()>1 && path_header->value.compare("/whoami")==0) {
-        bool validate = conn_io->http_request->validate();
-        assert(validate);
-        if (!validate) {
-            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        bool has_crc_header = conn_io->http_request->has_crc_header();
+        if (has_crc_header) {
+            bool validate = conn_io->http_request->validate();
+            if (!validate) {
+                qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+            }
+            assert(validate);
+        } else {
+            // may be called from a browser
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
         }
         const char* res_string = "{\"name\" : \"http3_sample_server\"}";
         conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
         qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", path_header->value.c_str(), res_string);
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
+        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
     } else if (path_header->value.length()>1 && path_header->value.compare("/user_get")==0) {
         bool validate = conn_io->http_request->validate();
         assert(validate);
