@@ -215,10 +215,11 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
     const std::string& version_string_, unsigned version_code_,
-    std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir) {
+    std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir,
+    std::string& redis_ip, int& redis_port) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
         return -1;
     }
 
@@ -227,7 +228,7 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 
     if (argc % 2 == 0) {
         DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
         return -1;
     }
 
@@ -256,6 +257,14 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
         else if (strcmp(lf, "--db") == 0) {
             mongodb_uri = rg;
         }
+        else if (strcmp(lf, "--rh") == 0) {
+            redis_ip = rg;
+        }
+        else if (strcmp(lf, "--rp") == 0) {
+            if (gsdk::str2int(&redis_port, rg, 10) != gsdk::STR2INT_SUCCESS) {
+                DEBUG_PRINT_ERROR(tag, "Unable to parse redis port, defaulting to %d !!!", redis_port);
+            }
+        }
     }
 
     // check host and port
@@ -267,14 +276,14 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
     struct addrinfo* peer = nullptr;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
         DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>'");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
         return -1;
     }
     if (peer) {
         freeaddrinfo(peer);
         peer = nullptr;
     }
-    DEBUG_PRINT_IMPORTANT(tag, "host:%s, port:%s, mongodb_uri:%s", host.c_str(), port.c_str(), mongodb_uri.c_str());
+    DEBUG_PRINT_IMPORTANT(tag, "server %s:%s, mongodb_uri %s, redis %s:%d", host.c_str(), port.c_str(), mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
     //
 
     DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());

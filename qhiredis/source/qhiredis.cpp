@@ -18,7 +18,7 @@ int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket)
     if (context) {
         return 2;
     }
-    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+    struct timeval timeout = { 5, 500000 }; // 5.5 seconds
     if (unix_socket) {
         context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
     }

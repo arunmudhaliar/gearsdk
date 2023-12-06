@@ -18,15 +18,16 @@ int main(int argc, const char* argv[]) {
     std::string host = "localhost";
     std::string port = "4004";
     std::string mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
-
+    std::string redis_ip = "127.0.0.1";
+    int redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
         version_string, version_code,
-        host, port, mongodb_uri, rootDir);
+        host, port, mongodb_uri, rootDir, redis_ip, redis_port);
     if (result < 0) {
         exit(0);
     }
-    http3_sample_server server(mongodb_uri.c_str());
+    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
     server.run(host, port, rootDir);
     //    server.test_mongo_db();
 

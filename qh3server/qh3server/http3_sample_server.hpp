@@ -29,7 +29,7 @@ protected:
     qmongo* mongo = nullptr;
     qhiredis* hiredis = nullptr;
 public:
-    http3_sample_server(const char* mongodb_uri);
+    http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, int redis_port);
     ~http3_sample_server();
     
     void test_mongo_db();
