@@ -84,8 +84,7 @@ Useful tips
 
 ** Make sure to modify the url and port before trying on your machine.
 
-- Mongo
-    https://www.mongodb.com/
+- Mongo (NoSql db) - https://www.mongodb.com/
     
     Built libs used in our codebase from this git repo
     mongo-c-driver
@@ -98,12 +97,16 @@ Useful tips
         - brew services start mongodb/brew/mongodb-community
         - brew services stop mongodb/brew/mongodb-community
 
-- Redis
-    Installation
-        Please refer the official site for respective OS.
+- Redis (in-memory data structure store) - https://redis.io/
+        Installation - Please refer the official site for respective OS.
 
     Built libs used in our codebase from this git repo
     git https://github.com/redis/hiredis.git
+
+- Postgresql (relational database) - https://www.postgresql.org/
+        Installation - Please refer the official site for respective OS.
+        For now we using postgresql db for storing stats. 
+        Good reads - https://www.postgresqltutorial.com/
 
 - QUICHE
     QUIC protocol code base
@@ -115,8 +118,15 @@ Useful tips
     `sudo docker exec -it qh3server-container /bin/bash`
 
 - Tailing the log file for dedbug purpose
-    // tail last 100 lines.
-    `tail -f -n 100 <logfile path>   [./qh3_logfile-0-0.log]`
+```bash
+# tail last 100 lines.
+tail -f -n 100 <logfile path>   [./qh3_logfile-0-0.log]
+```
+
+- **debug_new** cross platform memory leak detection.
+    http://wyw.dcweb.cn/leakage.htm
+    Make sure to remove these flags from Xcode or any editor [-Wall, -Wextra, -Werror]
+
 	
 	
 	
@@ -129,10 +139,11 @@ https://carol-nichols.com/2017/04/20/rust-profiling-with-dtrace-on-osx/
 # generate the stacks file
 sudo dtrace -c './qh3server' -o ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server_sample.stacks -n 'profile-997 /execname == "qh3server"/ { @[ustack(100)] = count(); }'
 
-# generate the flame graph
+# generate the flamegraph
 stackcollapse.pl 2023-12-07_23.14.47-qh3server_sample.stacks | flamegraph.pl > ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server-pretty-graph.svg
 ```
 qh3server
 [![qh3server flamegraph](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")
 
+*updated on 08-Dec-2023.*
 *formatted by https://pandao.github.io/editor.md/en.html*
