@@ -126,6 +126,7 @@ tail -f -n 100 <logfile path>   [./qh3_logfile-0-0.log]
 - **debug_new** cross platform memory leak detection.
     http://wyw.dcweb.cn/leakage.htm
     Make sure to remove these flags from Xcode or any editor [-Wall, -Wextra, -Werror]
+
 	
 	
 	
@@ -144,5 +145,5 @@ stackcollapse.pl 2023-12-07_23.14.47-qh3server_sample.stacks | flamegraph.pl > .
 qh3server
 [![qh3server flamegraph](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")
 
-*updated on 08-Dec-2023*
+*updated on 08-Dec-2023.*
 *formatted by https://pandao.github.io/editor.md/en.html*
