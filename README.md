@@ -120,9 +120,10 @@ Useful tips
 	
 	
 	
-- Flame graph using dtrace
-    (Not working for me) ~~https://stackoverflow.com/questions/75506839/how-to-generate-flamegraphs-from-macos-process-samples~~
-    (working) https://carol-nichols.com/2017/04/20/rust-profiling-with-dtrace-on-osx/
+
+Flamegraph using dtrace
+-----------------------------------
+https://carol-nichols.com/2017/04/20/rust-profiling-with-dtrace-on-osx/
 
 ```bash
 # generate the stacks file
@@ -131,6 +132,7 @@ sudo dtrace -c './qh3server' -o ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server_sample.
 # generate the flame graph
 stackcollapse.pl 2023-12-07_23.14.47-qh3server_sample.stacks | flamegraph.pl > ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server-pretty-graph.svg
 ```
+qh3server
 [![qh3server flamegraph](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")
 
 *formatted by https://pandao.github.io/editor.md/en.html*
