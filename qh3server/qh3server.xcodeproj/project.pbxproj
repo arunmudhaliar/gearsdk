@@ -9,21 +9,21 @@
 /* Begin PBXBuildFile section */
 		556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C82AF01D0500D688DB /* cert.key */; };
 		556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C92AF01D0500D688DB /* cert.crt */; };
-		556AB5CE2AF0308800D688DB /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
 		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
 		556AB6102AF50A8900D688DB /* libmongoc-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB60F2AF50A8900D688DB /* libmongoc-static-1.0.a */; };
 		556AB6BC2AF50E3B00D688DB /* libservercommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB6BB2AF50E3B00D688DB /* libservercommon.a */; };
 		556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB6BD2AF514E900D688DB /* libsasl2.tbd */; };
 		556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB6FC2AF5742000D688DB /* libbson-static-1.0.a */; };
-		55A4ADA32AEF825800BC4CED /* main_h3_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */; };
+		5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20E2B1F727B007C93AA /* debug_new.cpp */; };
+		5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
+		5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
 		55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC12AEF838200BC4CED /* libev.a */; };
 		55A4ADC42AEF83A800BC4CED /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC32AEF839B00BC4CED /* libquiche.a */; };
 		55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */; };
 		55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC72AEFA40F00BC4CED /* Security.framework */; };
-		55A4ADD82AEFBA6300BC4CED /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
 		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -54,6 +54,10 @@
 		556AB6BB2AF50E3B00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556AB6BD2AF514E900D688DB /* libsasl2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsasl2.tbd; path = usr/lib/libsasl2.tbd; sourceTree = SDKROOT; };
 		556AB6FC2AF5742000D688DB /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos/libbson-static-1.0.a"; sourceTree = "<group>"; };
+		556ABABB2B0A318800D688DB /* libpq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpq.a; path = ../servercommon/libs/macos/libpq.a; sourceTree = "<group>"; };
+		556ABAC12B0A784A00D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = ../servercommon/libs/macos/libpgcommon.a; sourceTree = "<group>"; };
+		556ABAC32B0A78FA00D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = ../servercommon/libs/macos/libpgport.a; sourceTree = "<group>"; };
+		5574F20E2B1F727B007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,6 +106,7 @@
 		55A4AD962AEF825700BC4CED = {
 			isa = PBXGroup;
 			children = (
+				5574F20E2B1F727B007C93AA /* debug_new.cpp */,
 				556AB5C72AF01D0500D688DB /* certs */,
 				55A4ADA12AEF825800BC4CED /* qh3server */,
 				55A4ADA02AEF825800BC4CED /* Products */,
@@ -133,6 +138,9 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				556ABAC32B0A78FA00D688DB /* libpgport.a */,
+				556ABAC12B0A784A00D688DB /* libpgcommon.a */,
+				556ABABB2B0A318800D688DB /* libpq.a */,
 				556AB6FC2AF5742000D688DB /* libbson-static-1.0.a */,
 				556AB6BD2AF514E900D688DB /* libsasl2.tbd */,
 				556AB6BB2AF50E3B00D688DB /* libservercommon.a */,
@@ -208,10 +216,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A4ADA32AEF825800BC4CED /* main_h3_server.cpp in Sources */,
-				55A4ADD82AEFBA6300BC4CED /* qh3server.cpp in Sources */,
-				556AB5CE2AF0308800D688DB /* http3_sample_server.cpp in Sources */,
+				5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */,
+				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
+				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +341,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/../common/nvwa/debug_new.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"LOG_LEVEL=0",
@@ -344,6 +353,8 @@
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -353,6 +364,7 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 			};
 			name = Debug;
 		};
@@ -369,6 +381,8 @@
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -376,8 +390,10 @@
 					"\"$(SRCROOT)/../servercommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 			};
 			name = Release;
 		};

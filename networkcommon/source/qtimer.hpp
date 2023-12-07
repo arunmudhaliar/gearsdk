@@ -41,35 +41,37 @@ private:
     qtimer() {}
 
 public:
-    static void evtimer_cb(EV_P_ ev_timer *w, int revents) {
+    static void evtimer_cb(EV_P_ ev_timer* w, int revents) {
+        UNUSED(revents);
         qtimer* qtimer_ = (qtimer*)w->data;
         // repeat timer case
-        if (qtimer_->count==-1) {
+        if (qtimer_->count == -1) {
             w->repeat = qtimer_->delay;
             ev_timer_again(loop, w);
             qtimer_->timeout_callback(*qtimer_);
             return;
         }
         //
-        
+
         // other timers
         qtimer_->count--;
-        if (qtimer_->count<=0) {
+        if (qtimer_->count <= 0) {
             ev_timer_stop(loop, &qtimer_->timer);
             qtimer_->finished = true;
-        } else {
+        }
+        else {
             w->repeat = qtimer_->delay;
             ev_timer_again(loop, w);
         }
         qtimer_->timeout_callback(*qtimer_);
     }
-    
+
     qtimer(struct ev_loop* loop, type_qtimer_cb timeout_callback, void* data, float delay = 1.0f, float count = 1) :
-    loop(loop),
-    timeout_callback(timeout_callback),
-    data(data),
-    delay(delay),
-    count(count) {
+        loop(loop),
+        timeout_callback(timeout_callback),
+        count(count),
+        delay(delay),
+        data(data) {
         ev_timer_init(&timer, evtimer_cb, delay, 0);
         timer.data = this;
         ev_timer_start(loop, &timer);
@@ -91,13 +93,15 @@ class qtimer_sceduler {
 public:
     qtimer_sceduler();
     virtual ~qtimer_sceduler();
-    
+
     void set_ev_lopp(struct ev_loop* loop) { this->loop = loop; }
     qtimer* schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);
     qtimer* schedule_count_timer(type_qtimer_cb timeout_callback, float delay, int count, void* data = nullptr);
     qtimer* schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);
-    bool cancel_timer(qtimer* qtimer_);
-    
+    void cancel_timer(qtimer* qtimer_);
+    bool cancel_and_destroy_timer(qtimer* qtimer_);
+    void shutdown_mainloop();   // carefull
+
 private:
     struct qtimer_sceduler_data {
         qtimer_sceduler_data(void* data, void* scheduler, const type_qtimer_cb timeout_callback) :
@@ -116,7 +120,9 @@ private:
     };
     bool destroy_timer(qtimer* qtimer_);
     static void evtimer_scheduler_cb(qtimer& qtimer_);
-    
+
+    void destroy_all();
+
     struct ev_loop* loop;
     std::vector<qtimer*> timers;
 };

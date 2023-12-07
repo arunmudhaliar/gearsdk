@@ -11,6 +11,8 @@
 		556AB5F72AF260DD00D688DB /* qtextfilelogger.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */; };
 		556AB5FA2AF3A2C700D688DB /* qbuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5F82AF3A2C700D688DB /* qbuffer.cpp */; };
 		556AB5FB2AF3A2C700D688DB /* qbuffer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB5F92AF3A2C700D688DB /* qbuffer.hpp */; };
+		556ABAE52B0A8E7E00D688DB /* qstatslogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556ABAE32B0A8E7E00D688DB /* qstatslogger.cpp */; };
+		556ABAE62B0A8E7E00D688DB /* qstatslogger.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556ABAE42B0A8E7E00D688DB /* qstatslogger.hpp */; };
 		557487382AE9530500C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487372AE9530500C0F6CA /* main.cpp */; };
 		557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487422AE9A78D00C0F6CA /* essentials.cpp */; };
 		557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557487432AE9A78D00C0F6CA /* essentials.hpp */; };
@@ -19,28 +21,19 @@
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		5574874E2AEB8D3700C0F6CA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 55B373022AC325D000F0095E /* common.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 55B372FA2AC325B200F0095E;
-			remoteInfo = common;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfilelogger.cpp; sourceTree = "<group>"; };
 		556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfilelogger.hpp; sourceTree = "<group>"; };
 		556AB5F82AF3A2C700D688DB /* qbuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qbuffer.cpp; sourceTree = "<group>"; };
 		556AB5F92AF3A2C700D688DB /* qbuffer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qbuffer.hpp; sourceTree = "<group>"; };
+		556ABAE32B0A8E7E00D688DB /* qstatslogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qstatslogger.cpp; sourceTree = "<group>"; };
+		556ABAE42B0A8E7E00D688DB /* qstatslogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qstatslogger.hpp; sourceTree = "<group>"; };
 		557487372AE9530500C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		557487422AE9A78D00C0F6CA /* essentials.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = essentials.cpp; sourceTree = "<group>"; };
 		557487432AE9A78D00C0F6CA /* essentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = essentials.hpp; sourceTree = "<group>"; };
 		5574879C2AEC227500C0F6CA /* qtimer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer.cpp; sourceTree = "<group>"; };
 		5574879D2AEC227500C0F6CA /* qtimer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtimer.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		55B373022AC325D000F0095E /* common.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = common.xcodeproj; path = ../common/common.xcodeproj; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
 		55FB29BE2ACF1D010051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = quiche_lib/release/libquiche.a; sourceTree = "<group>"; };
@@ -57,14 +50,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5574874B2AEB8D3700C0F6CA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5574874F2AEB8D3700C0F6CA /* libcommon.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		55853CCA2AC32AD200901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -77,7 +62,6 @@
 		55B372C62AC3091000F0095E = {
 			isa = PBXGroup;
 			children = (
-				55B373022AC325D000F0095E /* common.xcodeproj */,
 				55B372E52AC3097700F0095E /* source */,
 				55B372D02AC3091000F0095E /* Products */,
 				55853CCA2AC32AD200901E52 /* Frameworks */,
@@ -105,6 +89,8 @@
 				556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */,
 				556AB5F82AF3A2C700D688DB /* qbuffer.cpp */,
 				556AB5F92AF3A2C700D688DB /* qbuffer.hpp */,
+				556ABAE32B0A8E7E00D688DB /* qstatslogger.cpp */,
+				556ABAE42B0A8E7E00D688DB /* qstatslogger.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -126,6 +112,7 @@
 			files = (
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
 				5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */,
+				556ABAE62B0A8E7E00D688DB /* qstatslogger.hpp in Headers */,
 				557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */,
 				556AB5F72AF260DD00D688DB /* qtextfilelogger.hpp in Headers */,
 				556AB5FB2AF3A2C700D688DB /* qbuffer.hpp in Headers */,
@@ -176,12 +163,6 @@
 			mainGroup = 55B372C62AC3091000F0095E;
 			productRefGroup = 55B372D02AC3091000F0095E /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 5574874B2AEB8D3700C0F6CA /* Products */;
-					ProjectRef = 55B373022AC325D000F0095E /* common.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				55B372CE2AC3091000F0095E /* networkcommon */,
@@ -189,22 +170,13 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXReferenceProxy section */
-		5574874F2AEB8D3700C0F6CA /* libcommon.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libcommon.a;
-			remoteRef = 5574874E2AEB8D3700C0F6CA /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
-
 /* Begin PBXSourcesBuildPhase section */
 		55B372CC2AC3091000F0095E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */,
+				556ABAE52B0A8E7E00D688DB /* qstatslogger.cpp in Sources */,
 				5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */,
 				556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,
@@ -332,6 +304,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREFIX_HEADER = "$(SRCROOT)/../common/nvwa/debug_new.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",

@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		556ABAD22B0A8AAD00D688DB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556ABAD12B0A8AAD00D688DB /* main.cpp */; };
+		556ABADB2B0A8BDA00D688DB /* qpgsql.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556ABAD92B0A8BDA00D688DB /* qpgsql.cpp */; };
+		556ABADE2B0A8D1300D688DB /* libpq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABADD2B0A8D1300D688DB /* libpq.a */; };
+		556ABAE12B0A8D2200D688DB /* libpgport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABADF2B0A8D2200D688DB /* libpgport.a */; };
+		556ABAE22B0A8D2200D688DB /* libpgcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAE02B0A8D2200D688DB /* libpgcommon.a */; };
+		556ABAF12B0BDF4E00D688DB /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAF02B0BDF4E00D688DB /* libnetworkcommon.a */; };
+		556ABAF32B0BDF6D00D688DB /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAF22B0BDF6D00D688DB /* libcommon.a */; };
+		556ABAF52B0BDFA800D688DB /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAF42B0BDFA400D688DB /* libev.a */; };
+		556ABAF72B0BDFC900D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAF62B0BDFC500D688DB /* libz.a */; };
+		5574F20C2B11D9AC007C93AA /* qstats-crawler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */; };
+		5574F2202B20ECB2007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F21F2B20ECB2007C93AA /* debug_new.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		556ABACC2B0A8AAD00D688DB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		556ABACE2B0A8AAD00D688DB /* qstats-crawler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "qstats-crawler"; sourceTree = BUILT_PRODUCTS_DIR; };
+		556ABAD12B0A8AAD00D688DB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		556ABAD92B0A8BDA00D688DB /* qpgsql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qpgsql.cpp; sourceTree = "<group>"; };
+		556ABADA2B0A8BDA00D688DB /* qpgsql.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = qpgsql.hpp; sourceTree = "<group>"; };
+		556ABADD2B0A8D1300D688DB /* libpq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpq.a; path = libs/macos/libpq.a; sourceTree = "<group>"; };
+		556ABADF2B0A8D2200D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = libs/macos/libpgport.a; sourceTree = "<group>"; };
+		556ABAE02B0A8D2200D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = libs/macos/libpgcommon.a; sourceTree = "<group>"; };
+		556ABAF02B0BDF4E00D688DB /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556ABAF22B0BDF6D00D688DB /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556ABAF42B0BDFA400D688DB /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
+		556ABAF62B0BDFC500D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
+		5574F20A2B11D941007C93AA /* qstats-crawler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "qstats-crawler.h"; path = "qstats-crawler/qstats-crawler.h"; sourceTree = SOURCE_ROOT; };
+		5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "qstats-crawler.cpp"; sourceTree = "<group>"; };
+		5574F21F2B20ECB2007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		556ABACB2B0A8AAD00D688DB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				556ABAF52B0BDFA800D688DB /* libev.a in Frameworks */,
+				556ABAF32B0BDF6D00D688DB /* libcommon.a in Frameworks */,
+				556ABADE2B0A8D1300D688DB /* libpq.a in Frameworks */,
+				556ABAE12B0A8D2200D688DB /* libpgport.a in Frameworks */,
+				556ABAE22B0A8D2200D688DB /* libpgcommon.a in Frameworks */,
+				556ABAF72B0BDFC900D688DB /* libz.a in Frameworks */,
+				556ABAF12B0BDF4E00D688DB /* libnetworkcommon.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		556ABAC52B0A8AAD00D688DB = {
+			isa = PBXGroup;
+			children = (
+				5574F21F2B20ECB2007C93AA /* debug_new.cpp */,
+				556ABAD82B0A8BDA00D688DB /* qpgsql */,
+				556ABAD02B0A8AAD00D688DB /* qstats-crawler */,
+				556ABACF2B0A8AAD00D688DB /* Products */,
+				556ABADC2B0A8D1300D688DB /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		556ABACF2B0A8AAD00D688DB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				556ABACE2B0A8AAD00D688DB /* qstats-crawler */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		556ABAD02B0A8AAD00D688DB /* qstats-crawler */ = {
+			isa = PBXGroup;
+			children = (
+				5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */,
+				5574F20A2B11D941007C93AA /* qstats-crawler.h */,
+				556ABAD12B0A8AAD00D688DB /* main.cpp */,
+			);
+			path = "qstats-crawler";
+			sourceTree = "<group>";
+		};
+		556ABAD82B0A8BDA00D688DB /* qpgsql */ = {
+			isa = PBXGroup;
+			children = (
+				556ABAD92B0A8BDA00D688DB /* qpgsql.cpp */,
+				556ABADA2B0A8BDA00D688DB /* qpgsql.hpp */,
+			);
+			path = qpgsql;
+			sourceTree = "<group>";
+		};
+		556ABADC2B0A8D1300D688DB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				556ABAF62B0BDFC500D688DB /* libz.a */,
+				556ABAF42B0BDFA400D688DB /* libev.a */,
+				556ABAF22B0BDF6D00D688DB /* libcommon.a */,
+				556ABAF02B0BDF4E00D688DB /* libnetworkcommon.a */,
+				556ABAE02B0A8D2200D688DB /* libpgcommon.a */,
+				556ABADF2B0A8D2200D688DB /* libpgport.a */,
+				556ABADD2B0A8D1300D688DB /* libpq.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		556ABACD2B0A8AAD00D688DB /* qstats-crawler */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 556ABAD52B0A8AAD00D688DB /* Build configuration list for PBXNativeTarget "qstats-crawler" */;
+			buildPhases = (
+				556ABACA2B0A8AAD00D688DB /* Sources */,
+				556ABACB2B0A8AAD00D688DB /* Frameworks */,
+				556ABACC2B0A8AAD00D688DB /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "qstats-crawler";
+			productName = "qstats-crawler";
+			productReference = 556ABACE2B0A8AAD00D688DB /* qstats-crawler */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		556ABAC62B0A8AAD00D688DB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					556ABACD2B0A8AAD00D688DB = {
+						CreatedOnToolsVersion = 13.4;
+					};
+				};
+			};
+			buildConfigurationList = 556ABAC92B0A8AAD00D688DB /* Build configuration list for PBXProject "qstats-crawler" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 556ABAC52B0A8AAD00D688DB;
+			productRefGroup = 556ABACF2B0A8AAD00D688DB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				556ABACD2B0A8AAD00D688DB /* qstats-crawler */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		556ABACA2B0A8AAD00D688DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				556ABAD22B0A8AAD00D688DB /* main.cpp in Sources */,
+				556ABADB2B0A8BDA00D688DB /* qpgsql.cpp in Sources */,
+				5574F20C2B11D9AC007C93AA /* qstats-crawler.cpp in Sources */,
+				5574F2202B20ECB2007C93AA /* debug_new.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		556ABAD32B0A8AAD00D688DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		556ABAD42B0A8AAD00D688DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		556ABAD62B0A8AAD00D688DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/libpgsql/include\"",
+					"\"$(SRCROOT)/qpgsql\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libs/macos",
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
+			};
+			name = Debug;
+		};
+		556ABAD72B0A8AAD00D688DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/libpgsql/include\"",
+					"\"$(SRCROOT)/qpgsql\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libs/macos",
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+					"-Werror",
+				);
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		556ABAC92B0A8AAD00D688DB /* Build configuration list for PBXProject "qstats-crawler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				556ABAD32B0A8AAD00D688DB /* Debug */,
+				556ABAD42B0A8AAD00D688DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		556ABAD52B0A8AAD00D688DB /* Build configuration list for PBXNativeTarget "qstats-crawler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				556ABAD62B0A8AAD00D688DB /* Debug */,
+				556ABAD72B0A8AAD00D688DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 556ABAC62B0A8AAD00D688DB /* Project object */;
+}

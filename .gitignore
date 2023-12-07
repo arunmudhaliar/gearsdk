@@ -73,3 +73,5 @@ qserver-app
 docker-server
 qh3server-app
 docker-qh3server
+docker-qstats-crawler
+qstats-crawler-app

@@ -1,4 +1,9 @@
 {
     "makefile.makefilePath": "./qserver",
-    "makefile.compileCommandsPath": "./qserver"
+    "makefile.compileCommandsPath": "./qserver",
+    "files.associations": {
+        "*.pch": "cpp"
+    },
+    "editor.formatOnSave": true,
+    "C_Cpp.formatting": "vcFormat"
 }

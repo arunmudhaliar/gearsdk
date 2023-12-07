@@ -13,6 +13,7 @@ static std::string version_string = "0.1";
 static unsigned version_code = 1;
 
 int32_t main(int32_t argc, const char * argv[]) {
+    init_gsdk();
     std::string host = "localhost";
     std::string port = "4000";
     std::string mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";

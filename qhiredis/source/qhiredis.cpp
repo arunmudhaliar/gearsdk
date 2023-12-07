@@ -7,14 +7,92 @@
 
 #include "qhiredis.hpp"
 
-void qhiredis::example_argv_command(redisContext *c, int n) {
-    char **argv, tmp[42];
-    size_t *argvlen;
-    redisReply *reply;
+qhiredis::qhiredis() {
+    context = nullptr;
+}
+qhiredis::~qhiredis() {
+    disconnect_redis();
+}
+
+int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket) {
+    if (context) {
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!!");
+        return 2;
+    }
+    struct timeval timeout = { 5, 500000 }; // 5.5 seconds
+    if (unix_socket) {
+        context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
+    }
+    else {
+        context = redisConnectWithTimeout(hostname.c_str(), port, timeout);
+    }
+    if (context == nullptr || context->err) {
+        if (context) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s", context->errstr);
+            disconnect_redis();
+        }
+        else {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context");
+        }
+        return 1;
+    }
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
+    return 0;
+}
+
+void qhiredis::disconnect_redis() {
+    if (!context) {
+        return;
+    }
+    /* Disconnects and frees the context */
+    redisFree(context);
+    context = nullptr;
+}
+
+int qhiredis::set_value(const qstring& key, const qstring& value) {
+    if (!context) {
+        return 2;
+    }
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b", key.c_str(), key.length(), value.c_str(), value.length());
+    if (reply == nullptr) {
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
+
+int qhiredis::set_value(const qstring& key, const qstring& value, int expiry_in_sec) {
+    if (!context) {
+        return 2;
+    }
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b EX %d", key.c_str(), key.length(), value.c_str(), value.length(), expiry_in_sec);
+    if (reply == nullptr) {
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
+
+int qhiredis::get_value(const qstring& key, qstring& value) {
+    if (!context) {
+        return 2;
+    }
+    qstring cmd = qstring::format_string("GET %s", key.c_str());
+    redisReply* reply = (redisReply*)redisCommand(context, cmd.c_str());
+    value = qstring::format_string("%.*s", reply->len, reply->str);
+    freeReplyObject(reply);
+    return 0;
+}
+
+#if 0
+void qhiredis::example_argv_command(redisContext* c, int n) {
+    char** argv, tmp[42];
+    size_t* argvlen;
+    redisReply* reply;
 
     /* We're allocating two additional elements for command and key */
-    argv = (char **)malloc(sizeof(*argv) * (2 + n));
-    argvlen = (size_t *)malloc(sizeof(*argvlen) * (2 + n));
+    argv = (char**)malloc(sizeof(*argv) * (2 + n));
+    argvlen = (size_t*)malloc(sizeof(*argvlen) * (2 + n));
 
     /* First the command */
     argv[0] = (char*)"RPUSH";
@@ -33,7 +111,7 @@ void qhiredis::example_argv_command(redisContext *c, int n) {
     /* Execute the command using redisCommandArgv.  We're sending the arguments with
      * two explicit arrays.  One for each argument's string, and the other for its
      * length. */
-    reply = (redisReply*)redisCommandArgv(c, n + 2, (const char **)argv, (const size_t*)argvlen);
+    reply = (redisReply*)redisCommandArgv(c, n + 2, (const char**)argv, (const size_t*)argvlen);
 
     if (reply == NULL || c->err) {
         fprintf(stderr, "Error:  Couldn't execute redisCommandArgv\n");
@@ -55,11 +133,11 @@ void qhiredis::example_argv_command(redisContext *c, int n) {
     free(argvlen);
 }
 
-int qhiredis::hiredis_main(int argc, char **argv) {
+int qhiredis::hiredis_main(int argc, char** argv) {
     unsigned int j, isunix = 0;
-    redisContext *c;
-    redisReply *reply;
-    const char *hostname = (argc > 1) ? argv[1] : "127.0.0.1";
+    redisContext* c;
+    redisReply* reply;
+    const char* hostname = (argc > 1) ? argv[1] : "127.0.0.1";
 
     if (argc > 2) {
         if (*argv[2] == 'u' || *argv[2] == 'U') {
@@ -74,60 +152,62 @@ int qhiredis::hiredis_main(int argc, char **argv) {
     struct timeval timeout = { 1, 500000 }; // 1.5 seconds
     if (isunix) {
         c = redisConnectUnixWithTimeout(hostname, timeout);
-    } else {
+    }
+    else {
         c = redisConnectWithTimeout(hostname, port, timeout);
     }
     if (c == NULL || c->err) {
         if (c) {
             printf("Connection error: %s\n", c->errstr);
             redisFree(c);
-        } else {
+        }
+        else {
             printf("Connection error: can't allocate redis context\n");
         }
         exit(1);
     }
 
     /* PING server */
-    reply = (redisReply*)redisCommand(c,"PING");
+    reply = (redisReply*)redisCommand(c, "PING");
     printf("PING: %s\n", reply->str);
     freeReplyObject(reply);
 
     /* Set a key */
-    reply = (redisReply*)redisCommand(c,"SET %s %s", "foo", "hello world");
+    reply = (redisReply*)redisCommand(c, "SET %s %s", "foo", "hello world");
     printf("SET: %s\n", reply->str);
     freeReplyObject(reply);
 
     /* Set a key using binary safe API */
-    reply = (redisReply*)redisCommand(c,"SET %b %b", "bar", (size_t) 3, "hello", (size_t) 5);
+    reply = (redisReply*)redisCommand(c, "SET %b %b", "bar", (size_t)3, "hello", (size_t)5);
     printf("SET (binary API): %s\n", reply->str);
     freeReplyObject(reply);
 
     /* Try a GET and two INCR */
-    reply = (redisReply*)redisCommand(c,"GET foo");
+    reply = (redisReply*)redisCommand(c, "GET foo");
     printf("GET foo: %s\n", reply->str);
     freeReplyObject(reply);
 
-    reply = (redisReply*)redisCommand(c,"INCR counter");
+    reply = (redisReply*)redisCommand(c, "INCR counter");
     printf("INCR counter: %lld\n", reply->integer);
     freeReplyObject(reply);
     /* again ... */
-    reply = (redisReply*)redisCommand(c,"INCR counter");
+    reply = (redisReply*)redisCommand(c, "INCR counter");
     printf("INCR counter: %lld\n", reply->integer);
     freeReplyObject(reply);
 
     /* Create a list of numbers, from 0 to 9 */
-    reply = (redisReply*)redisCommand(c,"DEL mylist");
+    reply = (redisReply*)redisCommand(c, "DEL mylist");
     freeReplyObject(reply);
     for (j = 0; j < 10; j++) {
         char buf[64];
 
-        snprintf(buf,64,"%u",j);
-        reply = (redisReply*)redisCommand(c,"LPUSH mylist element-%s", buf);
+        snprintf(buf, 64, "%u", j);
+        reply = (redisReply*)redisCommand(c, "LPUSH mylist element-%s", buf);
         freeReplyObject(reply);
     }
 
     /* Let's check what we have inside the list */
-    reply = (redisReply*)redisCommand(c,"LRANGE mylist 0 -1");
+    reply = (redisReply*)redisCommand(c, "LRANGE mylist 0 -1");
     if (reply->type == REDIS_REPLY_ARRAY) {
         for (j = 0; j < reply->elements; j++) {
             printf("%u) %s\n", j, reply->element[j]->str);
@@ -143,3 +223,4 @@ int qhiredis::hiredis_main(int argc, char **argv) {
 
     return 0;
 }
+#endif

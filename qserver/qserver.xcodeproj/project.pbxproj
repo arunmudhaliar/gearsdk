@@ -7,30 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
-		557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487552AEB8DA800C0F6CA /* libnetworkcommon.a */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
 		557487A52AEC6BE000C0F6CA /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487A32AEC6BE000C0F6CA /* room.cpp */; };
 		557487AD2AED546A00C0F6CA /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487AC2AED545E00C0F6CA /* libev.a */; };
 		557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487AE2AED547500C0F6CA /* libquiche.a */; };
 		5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */; };
 		5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
+		5574F2182B20EB53007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2172B20EB53007C93AA /* debug_new.cpp */; };
+		5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5574F2192B20EBC9007C93AA /* libnetworkcommon.a */; };
 		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
 		55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D02AD2A49B00470E01 /* Security.framework */; };
 		55D1C6DE2AD32E9300470E01 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DC2AD32E8800470E01 /* cert.key */; };
 		55D1C6DF2AD32E9300470E01 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DD2AD32E8800470E01 /* cert.crt */; };
 		55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55E4D31B2ACAF47E00555999 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		557487542AEB8DA800C0F6CA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 55B372CF2AC3091000F0095E;
-			remoteInfo = networkcommon;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		55B372B62AC2ABCD00F0095E /* CopyFiles */ = {
@@ -47,9 +39,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		556ABAEB2B0AB4A600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		557487472AEA47E100C0F6CA /* roomserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roomserver.cpp; sourceTree = "<group>"; };
 		557487482AEA47E100C0F6CA /* roomserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = roomserver.hpp; sourceTree = "<group>"; };
-		557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = networkcommon.xcodeproj; path = ../networkcommon/networkcommon.xcodeproj; sourceTree = "<group>"; };
 		557487572AEB8E1A00C0F6CA /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		557487A32AEC6BE000C0F6CA /* room.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = room.cpp; sourceTree = "<group>"; };
 		557487A42AEC6BE000C0F6CA /* room.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = room.hpp; sourceTree = "<group>"; };
@@ -59,6 +52,8 @@
 		5574E6B52AD84A3A00FAFE08 /* qnetworkserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qnetworkserver.hpp; sourceTree = "<group>"; };
 		5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gameserver.cpp; sourceTree = "<group>"; };
 		5574E6C22ADBB1CD00FAFE08 /* gameserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameserver.hpp; sourceTree = "<group>"; };
+		5574F2172B20EB53007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		5574F2192B20EBC9007C93AA /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372B82AC2ABCD00F0095E /* qserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qserver; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372BB2AC2ABCD00F0095E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55D1C6CC2AD2A48D00470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/libev.a; sourceTree = "<group>"; };
@@ -75,9 +70,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
+				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
-				557487562AEB8E0E00C0F6CA /* libnetworkcommon.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
 				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
 				55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */,
@@ -87,17 +83,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		557487512AEB8DA800C0F6CA /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				557487552AEB8DA800C0F6CA /* libnetworkcommon.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5574F2192B20EBC9007C93AA /* libnetworkcommon.a */,
+				556ABAEB2B0AB4A600D688DB /* libz.a */,
+				556ABAE92B0AB36A00D688DB /* libservercommon.a */,
 				557487AE2AED547500C0F6CA /* libquiche.a */,
 				557487AC2AED545E00C0F6CA /* libev.a */,
 				557487572AEB8E1A00C0F6CA /* libcommon.a */,
@@ -113,7 +104,7 @@
 		55B372AF2AC2ABCD00F0095E = {
 			isa = PBXGroup;
 			children = (
-				557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */,
+				5574F2172B20EB53007C93AA /* debug_new.cpp */,
 				55D1C6DB2AD32E8800470E01 /* certs */,
 				55B372BA2AC2ABCD00F0095E /* source */,
 				55B372B92AC2ABCD00F0095E /* Products */,
@@ -198,28 +189,12 @@
 			mainGroup = 55B372AF2AC2ABCD00F0095E;
 			productRefGroup = 55B372B92AC2ABCD00F0095E /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 557487512AEB8DA800C0F6CA /* Products */;
-					ProjectRef = 557487502AEB8DA800C0F6CA /* networkcommon.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				55B372B72AC2ABCD00F0095E /* qserver */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		557487552AEB8DA800C0F6CA /* libnetworkcommon.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libnetworkcommon.a;
-			remoteRef = 557487542AEB8DA800C0F6CA /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B372B42AC2ABCD00F0095E /* Sources */ = {
@@ -231,6 +206,7 @@
 				5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */,
 				557487A52AEC6BE000C0F6CA /* room.cpp in Sources */,
 				557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */,
+				5574F2182B20EB53007C93AA /* debug_new.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,6 +340,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -384,6 +361,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
