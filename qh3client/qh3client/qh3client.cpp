@@ -82,7 +82,7 @@ int qh3client::for_each_header(const uint8_t* name, size_t name_len,
 int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) {
     const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
     int header_size = 5;
-    Header* headers = new Header[header_size + data_getorpost_->headers.size()];
+    Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
     headers[0] = {
             .name = (uint8_t*)":method",
             .name_len = sizeof(":method") - 1,
@@ -146,7 +146,7 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
     DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
 
     int header_size = 6;
-    Header* headers = new Header[header_size + data_getorpost_->headers.size()];
+    Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
     headers[0] = {
             .name = (uint8_t*)":method",
             .name_len = sizeof(":method") - 1,
@@ -503,7 +503,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     close(rng);
 
     GX_DELETE(conn_io);
-    conn_io = new struct conn_io();
+    conn_io = DEBUG_NEW struct conn_io();
     if (conn_io == NULL) {
         fprintf(stderr, "failed to allocate connection IO\n");
         freeaddrinfo(peer);
