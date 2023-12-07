@@ -393,7 +393,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 case Event_type::Finished: {
                     EV_START_RECORD(parse_start_time);
                     conn_io->bridge->parse(conn_io);
-                    EV_STOP_RECORD(parse_start_time, LOG_LEVEL_0, __LOGTAG__, "parse-time t:%lu ms");
+                    EV_STOP_RECORD(parse_start_time, __LOGTAG__, "parse-time t:%lu ms", 500);
 
                     EV_START_RECORD(send_start_time);
                     const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
@@ -462,7 +462,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                         (uint8_t*)payload.buffer.c_str(), payload.buffer.length(),
                         true);
                     GX_DELETE_ARY(headers);
-                    EV_STOP_RECORD(send_start_time, LOG_LEVEL_0, __LOGTAG__, "send-time t:%lu ms");
+                    EV_STOP_RECORD(send_start_time, __LOGTAG__, "send-time t:%lu ms", 200);
                     if (send_len != (ssize_t)payload.buffer.length()) {
                         DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
                         qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "response_send_fail");

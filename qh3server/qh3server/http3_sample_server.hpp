@@ -33,5 +33,11 @@ public:
     ~http3_sample_server();
     
     void test_mongo_db();
+    
+private:
+    void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    void parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    void parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    void parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io);
 };
 #endif /* http3_sample_server_hpp */

@@ -35,7 +35,12 @@ namespace fs = std::__fs::filesystem;
 #define __LOGTAG__ "essentials"
 
 #define EV_START_RECORD(timestamp_)  unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_STOP_RECORD(timestamp_, log_level, tag, formatted_msg) DEBUG_PRINT(log_level, tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_)
+#define EV_STOP_RECORD(timestamp_, tag, formatted_msg, warn_after_ms) \
+unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_; \
+if (elapsed_since_##timestamp_ > warn_after_ms) \
+{ \
+    DEBUG_PRINT_WARN(tag, formatted_msg, elapsed_since_##timestamp_); \
+}
 
 class qmutex;
 class qmutexcondition {
