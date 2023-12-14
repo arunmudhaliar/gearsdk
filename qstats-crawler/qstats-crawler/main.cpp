@@ -18,10 +18,6 @@ void do_crawl(const qstring& root_file_path) {
 }
 
 int main(int argc, const char * argv[]) {
-    UNUSED(argc);
-    UNUSED(argv);
-    
-#if 1
     fs::path root_file_path = "./stats/qh3_statfile";
     
     if (argc%2<2) {
@@ -42,7 +38,6 @@ int main(int argc, const char * argv[]) {
     }
     
     init_gsdk();
-#endif
     
     do_crawl(root_file_path.c_str());
     

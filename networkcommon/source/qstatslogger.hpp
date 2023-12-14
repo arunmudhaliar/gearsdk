@@ -27,14 +27,14 @@ public:
      */
     size_t client_open(const qstring& duid, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story);
 
-    size_t server_count(const qstring& count, const qstring& session, const qstring& pid, const qstring& version = "",
+    size_t server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version = "",
         const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "",
         const qstring& message = "");
 
-    size_t server_count_internal(const qstring& count, const qstring& session, const qstring& pid, const qstring& version,
+    size_t server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version,
         const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
         const qstring& server_tstamp, const qstring& message);
-    size_t client_count(const qstring& count, const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "",
+    size_t client_count(const qstring& count, long count_val, const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "",
         const qstring& message = "");
 
     void set_client_session(const qstring& session_str);

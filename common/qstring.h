@@ -34,6 +34,11 @@ public:
         utstring_new(ut_string);
         utstring_printf(ut_string, "%d", n);
     }
+    
+    qstring(const long n) {
+        utstring_new(ut_string);
+        utstring_printf(ut_string, "%ld", n);
+    }
 
     qstring(const char* str, int len) {
         utstring_new(ut_string);

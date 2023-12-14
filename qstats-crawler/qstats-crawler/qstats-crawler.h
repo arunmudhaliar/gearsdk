@@ -22,10 +22,10 @@ private:
     int parse_line(const qstring& line);
     int parse_count_stats(std::vector<qstring>& list);
     int append_count_stats(qstring& values, std::vector<qstring>& list);
-    void batch_send_count_stats();
+    int batch_send_count_stats();
     int parse_open_stats(std::vector<qstring>& list);
     int append_open_stats(qstring& values, std::vector<qstring>& list);
-    void batch_send_open_stats();
+    int batch_send_open_stats();
 
     qpgsql pgsql_client;
     int count_stats_counter = 0;

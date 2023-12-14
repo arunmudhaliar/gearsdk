@@ -98,7 +98,8 @@ public:
     static time_t get_time_local();
     static qstring get_time_local_tostring();
     static time_t get_time_utc();
-    static qstring get_time_utc_tostring();
+    static qstring get_time_utc_string();
+    static qstring get_time_utc_readable();
     static qstring get_time_utc_postgresql_format();
     
     static qstring get_sysname();
