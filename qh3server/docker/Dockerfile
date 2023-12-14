@@ -30,7 +30,7 @@ RUN sh make_qh3server.sh
 COPY qstats-crawler/ ./qstats-crawler
 COPY make_qstats-crawler.sh ./
 COPY run_qstats-crawler.sh ./
-COPY run_qh3server-and-qstats-crawler.sh ./
+# COPY run_qh3server-and-qstats-crawler.sh ./
 COPY make_postgresql.sh ./
 # RUN apt-get update && apt-get install make
 # RUN apt-get install build-essential -y
@@ -47,4 +47,9 @@ RUN sh make_postgresql.sh
 RUN pwd
 RUN sh make_qstats-crawler.sh
 # CMD [ "sh", "run_qstats-crawler.sh" ]
-CMD [ "sh", "run_qh3server-and-qstats-crawler.sh" ]
+
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN apt-get install -y supervisor
+RUN mkdir -p /var/log/supervisor
+CMD ["/usr/bin/supervisord"]
+# CMD [ "sh", "run_qh3server-and-qstats-crawler.sh" ]
