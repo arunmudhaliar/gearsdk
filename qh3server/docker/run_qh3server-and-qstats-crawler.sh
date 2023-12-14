@@ -10,9 +10,10 @@ redis_ip=192.168.0.230
 redis_port=6379
 pwd
 # ./qh3server-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port
-../qstats-crawler/qstats-crawler-app --f "./stats/qh3_statfile"
-# ./qh3server-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port &
-# ../qstats-crawler/qstats-crawler-app --f "./stats/qh3_statfile" &
+# ../qstats-crawler/qstats-crawler-app --f "./stats/qh3_statfile"
+./qh3server-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port &
+cd ../qstats-crawler
+./qstats-crawler-app --f "./stats/qh3_statfile" &
 
 # # # Wait for any process to exit
 # wait -n
