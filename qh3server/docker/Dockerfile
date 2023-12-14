@@ -48,6 +48,9 @@ RUN pwd
 RUN sh make_qstats-crawler.sh
 # CMD [ "sh", "run_qstats-crawler.sh" ]
 
+RUN chmod 755 /run_qh3server.sh
+RUN chmod 755 /run_qstats-crawler.sh
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get install -y supervisor
 RUN mkdir -p /var/log/supervisor
