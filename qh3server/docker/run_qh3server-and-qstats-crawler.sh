@@ -11,8 +11,8 @@ redis_port=6379
 ./qh3server-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port &
 ../qstats-crawler/qstats-crawler-app --f "./stats/qh3_statfile" &
 
-# # Wait for any process to exit
-wait -n
+# # # Wait for any process to exit
+# wait -n
 
-# # Exit with status of process that exited first
-exit $?
+# # # Exit with status of process that exited first
+# exit $?
