@@ -1,3 +1,4 @@
+#!/bin/sh
 pwd
 echo "This script only works in linux. 'ip' cmd not available in other OS."
 #https://unix.stackexchange.com/questions/8518/how-to-get-my-own-ip-address-and-save-it-to-a-variable-in-a-shell-script
