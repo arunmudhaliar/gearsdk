@@ -15,6 +15,7 @@
 #include "./uthash/utstring.h"
 #include <string>
 #include <vector>
+#include <cstdint>
 
 class qstring {
 public:
