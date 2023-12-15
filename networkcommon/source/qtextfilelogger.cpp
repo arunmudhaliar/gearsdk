@@ -58,8 +58,6 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
                 } else {
                     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
-                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
-                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
                 }
                 break;
             }
