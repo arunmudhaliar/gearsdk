@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install make
 RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
 RUN apt-get install libsasl2-dev -y
-# RUN apt install libmongoc-dev -y
 RUN apt install libsnappy-dev -y
 RUN apt-get install libzstd-dev -y
 RUN apt install iproute2 -y
@@ -25,18 +24,10 @@ RUN sh make_qh3server.sh
 # ------- qstats-crawler -------
 # ------- qstats-crawler -------
 # ------- qstats-crawler -------
-# COPY common ./common
-# COPY networkcommon/ ./networkcommon
 COPY qstats-crawler/ ./qstats-crawler
 COPY make_qstats-crawler.sh ./
 COPY run_qstats-crawler.sh ./
-# COPY run_qh3server-and-qstats-crawler.sh ./
 COPY make_postgresql.sh ./
-# RUN apt-get update && apt-get install make
-# RUN apt-get install build-essential -y
-# RUN apt-get install libssl-dev -y
-# RUN apt-get install libsasl2-dev -y
-# RUN apt-get install libzstd-dev -y
 RUN apt-get install wget -y
 RUN apt-get install libreadline-dev -y
 RUN apt-get install zlib1g-dev -y
@@ -46,14 +37,10 @@ RUN pwd
 RUN sh make_postgresql.sh
 RUN pwd
 RUN sh make_qstats-crawler.sh
-# CMD [ "sh", "run_qstats-crawler.sh" ]
 
 RUN chmod 755 ./run_qh3server.sh
 RUN chmod 755 ./run_qstats-crawler.sh
-
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get install -y supervisor
 RUN mkdir -p /var/log/supervisor
-# CMD ["/usr/bin/supervisord"]
 CMD ["/usr/bin/supervisord","-n"]
-# CMD [ "sh", "run_qh3server-and-qstats-crawler.sh" ]

@@ -2,6 +2,8 @@ cd ../../
 rm -rf ./docker-qh3server
 
 mkdir ./docker-qh3server
+
+# qh3server files
 cp -r ./common ./docker-qh3server/common
 cp -r ./networkcommon/ ./docker-qh3server/networkcommon
 cp -r ./qh3server/ ./docker-qh3server/qh3server
@@ -11,9 +13,11 @@ cp -r ./servercommon/ ./docker-qh3server/servercommon
 cp ./qh3server/docker/Dockerfile ./docker-qh3server/Dockerfile
 cp ./qh3server/docker/make_qh3server.sh ./docker-qh3server/make_qh3server.sh
 cp ./qh3server/docker/run_qh3server.sh ./docker-qh3server/run_qh3server.sh
-# cp ./qh3server/docker/run_qh3server-and-qstats-crawler.sh ./docker-qh3server/run_qh3server-and-qstats-crawler.sh
+
+# supervisor
 cp ./qh3server/docker/supervisord.conf ./docker-qh3server/supervisord.conf
 
+# qstats-crawler files
 cp ./qstats-crawler/docker/make_qstats-crawler.sh ./docker-qh3server/make_qstats-crawler.sh
 cp ./qstats-crawler/docker/run_qstats-crawler.sh ./docker-qh3server/run_qstats-crawler.sh
 cp ./qstats-crawler/docker/make_postgresql.sh ./docker-qh3server/make_postgresql.sh
