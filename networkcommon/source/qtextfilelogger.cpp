@@ -52,9 +52,16 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
             next_major_version_++;
             next_minor_counter_ = 0;
             if (next_major_version_ > MAJOR_VERSION_ALARM_AT) {
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
-                DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                if (files.size() > 0) {
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                } else {
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
+                }
+                break;
             }
         }
         file_exist_ = file_exists(current_logfile_path_.native().c_str());
@@ -64,7 +71,7 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
         else {
             file_not_exist_counter++;
         }
-    } while (file_not_exist_counter < 50);
+    } while (file_not_exist_counter < INT_MAX-1);
 }
 
 int qlogfile::finalise_logfile() {
