@@ -29,6 +29,7 @@ private:
 
     qpgsql pgsql_client;
     int count_stats_counter = 0;
+    int total_records_sent_to_db_through_batching = 0;
     qstring batch_count_stats_values;
     int open_stats_counter = 0;
     qstring batch_open_stats_values;

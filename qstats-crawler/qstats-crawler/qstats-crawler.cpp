@@ -53,7 +53,8 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
 int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     const int max_chars_in_a_line = 1024;
     char str[max_chars_in_a_line];
-
+    total_records_sent_to_db_through_batching = 0;
+    
     std::string fname = file.string();
     /* opening file for reading */
     FILE* fp = fopen(file.string().c_str(), "r");
@@ -84,6 +85,7 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     }
     //
     fclose(fp);
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d records sent to stats db through batching.", total_records_sent_to_db_through_batching);
     return 0;
 }
 
@@ -97,7 +99,7 @@ int qstats_crawler::parse_line(const qstring& line) {
     }
 
     if (list[0] == "count") {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "processing count stats ...");
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "processing count stats ...");
         if (append_count_stats(batch_count_stats_values, list) == 0) {
             count_stats_counter++;
         }
@@ -106,7 +108,7 @@ int qstats_crawler::parse_line(const qstring& line) {
         }
     }
     else if (list[0] == "open") {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "processing open stats ...");
+        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "processing open stats ...");
         if (append_open_stats(batch_open_stats_values, list) == 0) {
             open_stats_counter++;
         }
@@ -142,6 +144,7 @@ int qstats_crawler::batch_send_count_stats() {
         return -1;
     }
     batch_count_stats_values.clear();
+    total_records_sent_to_db_through_batching += count_stats_counter;
     count_stats_counter = 0;
     return 0;
 }
