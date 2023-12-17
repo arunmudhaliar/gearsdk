@@ -95,8 +95,8 @@ size_t qstatslogger::server_count_internal(const qstring& count, long count_val,
     buffer += seperator;
     buffer += count; buffer += seperator;
     buffer += count_val; buffer += seperator;
-    buffer += client_session; buffer += seperator;
-    buffer += client_pid; buffer += seperator;
+    buffer += session; buffer += seperator;
+    buffer += pid; buffer += seperator;
     buffer += client_version; buffer += seperator;
     buffer += epic; buffer += seperator;
     buffer += myth; buffer += seperator;
