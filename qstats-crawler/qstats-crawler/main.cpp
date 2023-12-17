@@ -19,7 +19,6 @@ void do_crawl(const qstring& root_file_path) {
 
 int main(int argc, const char * argv[]) {
     fs::path root_file_path = "./stats/qh3_statfile";
-    
     if (argc%2==0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "Failed to resolve arguments !!!. Using default path %s, argc %d", root_file_path.c_str(), argc);
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Usage : <executable> '--f <root file name>'");

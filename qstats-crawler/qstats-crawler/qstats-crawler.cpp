@@ -26,6 +26,11 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
     if (!fs::is_directory(crawled_dir)) {
         fs::create_directories(crawled_dir);
     }
+    fs::path crawl_failed_dir = fs::path(root_filename.c_str()).parent_path() / fs::path("crawl-failed");
+    if (!fs::is_directory(crawl_failed_dir)) {
+        fs::create_directories(crawl_failed_dir);
+    }
+    
     std::vector<fs::path> files;
     fs::path logfile_path = root_filename.c_str();
     qlogfile::get_all_log_files(logfile_path, files);
@@ -44,7 +49,15 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
             }
         }
         else {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to crawl stats file %s", f.c_str());
+            fs::path dest = crawl_failed_dir / fs::path(f.c_str()).filename();
+            int result = rename(f.c_str(), dest.c_str());
+            if (!result) {
+                DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats file failed while parsing !!!. moved to %s", dest.c_str());
+            }
+            else {
+                DEBUG_PRINT_ERROR(__LOGTAG__, "failed to move parse-failed-stats file %s", f.c_str());
+            }
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to crawl stats file %s", f.c_str());
         }
     }
     pgsql_client.close_db();
@@ -66,19 +79,22 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     while (fgets(str, max_chars_in_a_line, fp)) {
         /* writing content to stdout */
         puts(str);
-        if (parse_line(qstring(str)) == 0) {
+        if (parse_line(file, qstring(str)) == 0) {
             parsed_lines++;
+        } else {
+            fclose(fp);
+            return -1;
         }
     }
     // reminders if any
     if (count_stats_counter > 0) {
-        if (batch_send_count_stats() != 0) {
+        if (batch_send_count_stats(file) != 0) {
             fclose(fp);
             return -1;
         }
     }
     if (open_stats_counter > 0) {
-        if (batch_send_open_stats() != 0) {
+        if (batch_send_open_stats(file) != 0) {
             fclose(fp);
             return -1;
         }
@@ -89,22 +105,29 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     return 0;
 }
 
-int qstats_crawler::parse_line(const qstring& line) {
+int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
     std::vector<qstring> list;
     line.split("|", list);
-
+    
     if (list.size() == 0) {
         // nothing to parse.
         return -1;
     }
 
+    qstring single_quote("'");
+    qstring single_hash("#");
+    for (int x=0; x<list.size(); x++) {
+        list[x].replace(single_quote, single_hash);
+    }
     if (list[0] == "count") {
         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "processing count stats ...");
         if (append_count_stats(batch_count_stats_values, list) == 0) {
             count_stats_counter++;
         }
         if (count_stats_counter >= COUNT_STATS_BATCH_COUNT) {
-            batch_send_count_stats();
+            if (batch_send_count_stats(current_file) !=0) {
+                return -1;
+            }
         }
     }
     else if (list[0] == "open") {
@@ -113,7 +136,9 @@ int qstats_crawler::parse_line(const qstring& line) {
             open_stats_counter++;
         }
         if (open_stats_counter >= OPEN_STATS_BATCH_COUNT) {
-            batch_send_open_stats();
+            if (batch_send_open_stats(current_file) !=0) {
+                return -1;
+            }
         }
     }
     else {
@@ -135,12 +160,25 @@ int qstats_crawler::parse_line(const qstring& line) {
                       device_name TEXT, device_model TEXT, total_ram INT4);
  */
 
-int qstats_crawler::batch_send_count_stats() {
+int qstats_crawler::batch_send_count_stats(fs::path current_file) {
     qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram) VALUES");
     qstring sql_script = insert_header + batch_count_stats_values;
     sql_script += ";";
     if (pgsql_client.execute_query(sql_script) !=0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "pgsql_client.execute_query failed. returning !!!");
+        batch_count_stats_values.clear();
+        count_stats_counter = 0;
+        
+        // write the error on to error file.
+        fs::path current_stats_filename = fs::path(current_file).filename().replace_extension("txt");
+        qstring stats_error_file_name = qstring::format_string("stats_error_out-%s", current_stats_filename.c_str());
+        fs::path error_file_path = fs::path(current_file).parent_path()/fs::path(stats_error_file_name.c_str());
+
+        FILE* err_file = fopen(error_file_path.c_str(), "a");
+        if (err_file != nullptr) {
+            fprintf(err_file, "%.*s", (int)sql_script.length(), sql_script.c_str());
+            fclose(err_file);
+        }
         return -1;
     }
     batch_count_stats_values.clear();
@@ -189,7 +227,7 @@ int qstats_crawler::append_count_stats(qstring& values, std::vector<qstring>& li
     return 0;
 }
 
-int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
+int qstats_crawler::parse_count_stats(fs::path current_file, std::vector<qstring>& list) {
     if (list.size() != 18) {
         DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats format ... size 18!=%d", list.size());
         return 1;
@@ -203,7 +241,7 @@ int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
          ('1',0,'test2','','','','','','','','2020-07-06 09:30:00.646533','2020-07-06 09:30:00.646533', 0, '','','',0)
 
      */
-    qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram) VALUES");
+    qstring insert_header = qstring::format_string("INSERT INTO qtest_pgdb_schema.stats_count(count, count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram)\n VALUES");
 
     qstring format_string("(");
     for (size_t x = 1; x < list.size(); x++) {
@@ -240,7 +278,7 @@ int qstats_crawler::parse_count_stats(std::vector<qstring>& list) {
     return 0;
 }
 
-int qstats_crawler::parse_open_stats(std::vector<qstring>& list) {
+int qstats_crawler::parse_open_stats(fs::path current_file, std::vector<qstring>& list) {
     UNUSED(list);
     return 0;
 }
@@ -251,6 +289,6 @@ int qstats_crawler::append_open_stats(qstring& values, std::vector<qstring>& lis
     return 0;
 }
 
-int qstats_crawler::batch_send_open_stats() {
+int qstats_crawler::batch_send_open_stats(fs::path current_file) {
     return 0;
 }

@@ -118,12 +118,22 @@ public:
     }
 
     void replace(const qstring& sub_str, const qstring& str) {
+        if (length()==0) {
+            return;
+        }
         std::vector<qstring> array;
         split(sub_str, array);
+        bool is_last_char_match = (sub_str.length()==1 && (length()-1)==find(length()-1, sub_str));
+        if (array.size()==0) {
+            return;
+        }
         clear();
+        int itr = 0;
         for (auto s : array) {
             utstring_concat(ut_string, s.ut_string);
-            utstring_concat(ut_string, str.ut_string);
+            if (itr<array.size()-1 || is_last_char_match)
+                utstring_concat(ut_string, str.ut_string);
+            itr++;
         }
     }
 
