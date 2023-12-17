@@ -42,7 +42,7 @@ void qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
             return;
         }
-
+        qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "");
         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
     }
 
@@ -215,6 +215,8 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             return;
         }
 
+        qh3server::get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "");
+        
         uint8_t type;
         uint32_t version;
 
@@ -235,7 +237,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             token, &token_len);
         if (rc < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
-            qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "parse_header_fail");
+            qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail");
             return;
         }
 
@@ -252,7 +254,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 if (written < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create vneg packet: %zd",
                         written);
-                    qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "version_negotiation_fail", "", qstring::format_string("failed to create vneg packet: %zd", written));
+                    qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "version_negotiation_fail", "", qstring::format_string("failed to create vneg packet: %zd", written));
                     continue;
                 }
 
@@ -264,6 +266,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
+                qh3server::get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "");
                 DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
@@ -300,6 +303,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
+                qh3server::get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "");
                 DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
@@ -318,7 +322,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             if (conn_io == NULL) {
                 continue;
             }
-            qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "", "qh3server", "create_conn_io");
+            qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io");
         }
 
         RecvInfo recv_info = {
@@ -333,7 +337,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (done < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
-            qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "process_packet_fail");
+            qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_packet_fail");
             continue;
         }
 
@@ -346,7 +350,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn,
                     server->http3_config);
                 if (conn_io->http3 == NULL) {
-                    qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "http3_conn_fail");
+                    qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "http3_conn_fail");
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create HTTP/3 connection");
                     continue;
                 }
@@ -369,7 +373,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                     if (rc != 0) {
                         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process headers");
-                        qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "process_header_fail");
+                        qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_header_fail");
                     }
                     break;
                 }
@@ -465,7 +469,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     EV_STOP_RECORD(send_start_time, __LOGTAG__, "send-time t:%lu ms", 200);
                     if (send_len != (ssize_t)payload.buffer.length()) {
                         DEBUG_PRINT_ERROR(__LOGTAG__, "HTTP response send failure");
-                        qh3server::get_stats_loggeer()->server_count("recv_cb", "", "", "", "error", "qh3server", "response_send_fail");
+                        qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "response_send_fail");
                         break;
                     }
                     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());

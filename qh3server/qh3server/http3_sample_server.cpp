@@ -37,13 +37,13 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
     conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
     if (path_header == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "path_header == null, returning. !!!");
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", "", "path_not_found");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", "", "path_not_found");
         return;
     }
     
     if (path_header->value.length()<=1) {
         DEBUG_PRINT_WARN(__LOGTAG__, "path is very short - %s, returning. !!!", path_header->value.c_str());
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "warn", "http3_sample_server", path_header->value.c_str(), "short_path");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", "http3_sample_server", path_header->value.c_str(), "short_path");
         return;
     }
     
@@ -68,7 +68,7 @@ void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_head
         // may be called from a browser
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
     }
-    qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
+    qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
     ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
 }
 
@@ -77,7 +77,7 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, str
     if (has_crc_header) {
         bool validate = conn_io->http_request->validate();
         if (!validate) {
-            qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+            qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
         }
         assert(validate);
     } else {
@@ -87,7 +87,7 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, str
     const char* res_string = "{\"name\" : \"http3_sample_server\"}";
     conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
     qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "%s - whoami - %s", path_header->value.c_str(), res_string);
-    qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
+    qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", path_header->value.c_str());
 }
 
 void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
@@ -95,7 +95,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     bool validate = conn_io->http_request->validate();
     assert(validate);
     if (!validate) {
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
     }
     
     bson_t bson;
@@ -103,7 +103,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
         qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s, returning. !!!", path_header->value.c_str(), error.message);
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
        return;
     }
     
@@ -220,7 +220,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     // set session token on redis
     hiredis->set_value(pid, token, 5*60);   // 5 minutes
     //
-    qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
+    qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str());
 }
 
 void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
@@ -228,13 +228,13 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
     bool validate = conn_io->http_request->validate();
     assert(validate);
     if (!validate) {
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "crc_fail");
     }
     conn_io_req_res::header* token_header = conn_io->http_request->get_header("token");
     if (token_header == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "No token header in %s", path_header->value.c_str());
         qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "No token header in %s", path_header->value.c_str());
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "no_token");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "no_token");
         return;
     }
     
@@ -243,7 +243,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
     if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
         qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "%s - ERROR - %s", path_header->value.c_str(), error.message);
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "payload_deserialise_fail");
        return;
     }
     
@@ -263,7 +263,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
         bson_destroy (&bson);
         DEBUG_PRINT_ERROR(__LOGTAG__, "user.pid parse failed %s", path_header->value.c_str());
         qh3server::get_file_logger()->log(qlogfile::level_0, __LOGTAG__, "user.pid parse failed %s", path_header->value.c_str());
-        qh3server::get_stats_loggeer()->server_count("parse", "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "user.pid_parse_fail");
+        qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), "user.pid_parse_fail");
         return;
     }
     bson_destroy (&bson);
@@ -276,6 +276,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
     } else {
         DEBUG_PRINT_ERROR(__LOGTAG__, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
     }
+    qh3server::get_stats_loggeer()->server_count("parse", 1, token_in_redis, pid, "", "", "http3_sample_server", path_header->value.c_str(), "user.token_check", token_header->value);
 }
 
 void http3_sample_server::test_mongo_db() {

@@ -55,6 +55,10 @@ int qpgsql::connect_db() {
 }
 
 int qpgsql::execute_query(const qstring& query) {
+    if (db_connection == NULL) {
+        connect_db();
+    }
+    
     /* Set always-secure search path, so malicious users can't take control. */
     PGresult* res = PQexec(db_connection, query.c_str());
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {

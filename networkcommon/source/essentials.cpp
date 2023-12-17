@@ -329,7 +329,13 @@ time_t essentials::get_time_utc() {
     return utc_time;
 }
 
-qstring essentials::get_time_utc_tostring() {
+qstring essentials::get_time_utc_string() {
+    time_t utc_time = get_time_utc();
+    qstring tmp = qstring::format_string("%ld", utc_time);
+    return tmp;
+}
+
+qstring essentials::get_time_utc_readable() {
     time_t utc_time = get_time_utc();
     qstring tmp(ctime(&utc_time));
     return tmp;

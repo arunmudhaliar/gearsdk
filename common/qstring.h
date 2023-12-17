@@ -15,6 +15,7 @@
 #include "./uthash/utstring.h"
 #include <string>
 #include <vector>
+#include <cstdint>
 
 class qstring {
 public:
@@ -33,6 +34,11 @@ public:
     qstring(const int n) {
         utstring_new(ut_string);
         utstring_printf(ut_string, "%d", n);
+    }
+    
+    qstring(const long n) {
+        utstring_new(ut_string);
+        utstring_printf(ut_string, "%ld", n);
     }
 
     qstring(const char* str, int len) {
@@ -112,12 +118,23 @@ public:
     }
 
     void replace(const qstring& sub_str, const qstring& str) {
+        if (length()==0) {
+            return;
+        }
         std::vector<qstring> array;
         split(sub_str, array);
+        if (array.size()==0) {
+            return;
+        }
+        bool is_last_char_match = (length()-sub_str.length())==find(length()-str.length(), sub_str);
+//        bool is_last_char_match = array[array.size()-1].length()>=str.length() && (length()-sub_str.length())==find(length()-str.length(), sub_str);
         clear();
+        int itr = 0;
         for (auto s : array) {
             utstring_concat(ut_string, s.ut_string);
-            utstring_concat(ut_string, str.ut_string);
+            if (itr<array.size()-1 || is_last_char_match)
+                utstring_concat(ut_string, str.ut_string);
+            itr++;
         }
     }
 
@@ -130,6 +147,8 @@ public:
             const char* src = c_str() + prev_start_pos;
             long len = start_pos - prev_start_pos;
             if (include_empty_string || len) {
+//                // Note : len==0 means empty string
+//                utstring_bincpy(new_str.ut_string, src, len==0 ? sub_str.length() : len);
                 utstring_bincpy(new_str.ut_string, src, len);
                 array.push_back(new_str);
             }
