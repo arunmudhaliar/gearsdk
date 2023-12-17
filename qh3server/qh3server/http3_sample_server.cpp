@@ -276,6 +276,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
     } else {
         DEBUG_PRINT_ERROR(__LOGTAG__, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
     }
+    qh3server::get_stats_loggeer()->server_count("parse", 1, token_in_redis, pid, "", "", "http3_sample_server", path_header->value.c_str(), "user.token_check");
 }
 
 void http3_sample_server::test_mongo_db() {
