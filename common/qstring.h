@@ -123,10 +123,11 @@ public:
         }
         std::vector<qstring> array;
         split(sub_str, array);
-        bool is_last_char_match = (sub_str.length()==1 && (length()-1)==find(length()-1, sub_str));
         if (array.size()==0) {
             return;
         }
+        bool is_last_char_match = (length()-sub_str.length())==find(length()-str.length(), sub_str);
+//        bool is_last_char_match = array[array.size()-1].length()>=str.length() && (length()-sub_str.length())==find(length()-str.length(), sub_str);
         clear();
         int itr = 0;
         for (auto s : array) {
@@ -146,6 +147,8 @@ public:
             const char* src = c_str() + prev_start_pos;
             long len = start_pos - prev_start_pos;
             if (include_empty_string || len) {
+//                // Note : len==0 means empty string
+//                utstring_bincpy(new_str.ut_string, src, len==0 ? sub_str.length() : len);
                 utstring_bincpy(new_str.ut_string, src, len);
                 array.push_back(new_str);
             }
