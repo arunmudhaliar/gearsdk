@@ -17,11 +17,6 @@ qstats_crawler::~qstats_crawler() {
 }
 
 void qstats_crawler::try_crawl(const qstring& root_filename) {
-    if (pgsql_client.connect_db()!=0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect db. returning !!!");
-        return;
-    }
-    
     fs::path crawled_dir = fs::path(root_filename.c_str()).parent_path() / fs::path("crawled");
     if (!fs::is_directory(crawled_dir)) {
         fs::create_directories(crawled_dir);
@@ -29,7 +24,15 @@ void qstats_crawler::try_crawl(const qstring& root_filename) {
     std::vector<fs::path> files;
     fs::path logfile_path = root_filename.c_str();
     qlogfile::get_all_log_files(logfile_path, files);
-
+    if (files.size()==0) {
+        return;
+    }
+    
+    if (pgsql_client.connect_db()!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect db. returning !!!");
+        return;
+    }
+    
     for (fs::path f : files) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "crawling...  %s", f.c_str());
         int parsed_lines = 0;
