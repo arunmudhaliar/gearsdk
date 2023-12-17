@@ -52,11 +52,9 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
             next_major_version_++;
             next_minor_counter_ = 0;
             if (next_major_version_ > MAJOR_VERSION_ALARM_AT) {
-                if (files.size() > 0) {
+                if (files.size() > 50) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
-                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
-                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
-                } else {
+                } else if (files.size() == 0) {
                     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
                 }
                 break;

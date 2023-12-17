@@ -111,7 +111,8 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
     
     if (list.size() == 0) {
         // nothing to parse.
-        return -1;
+        DEBUG_PRINT_WARN(__LOGTAG__, "list.size() == 0");
+        return 0;
     }
 
     qstring single_quote("'");
