@@ -325,7 +325,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             if (conn_io == NULL) {
                 continue;
             }
-            qh3server::get_stats_loggeer()->set_total_ram((int)(essentials::get_ram_used()));
+            qh3server::get_stats_loggeer()->set_total_ram((int)(essentials::get_process_used_mem()));
             qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io");
         }
 

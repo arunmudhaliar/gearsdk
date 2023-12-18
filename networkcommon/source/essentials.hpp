@@ -109,7 +109,8 @@ public:
     
     static int get_memory_info(int& currRealMem, int& peakRealMem, int& currVirtMem, int& peakVirtMem);
     static long long get_total_ram();
-    static long long get_ram_used();
+    static long long get_used_mem();
+    static int get_process_used_mem();
 };
 
 // h3 structs

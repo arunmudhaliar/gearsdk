@@ -388,6 +388,28 @@ int essentials::get_memory_info(int& currRealMem, int& peakRealMem, int& currVir
     return 0;
 }
 
+int essentials::get_process_used_mem() {
+    int currRealMem=0;
+#if PLATFORM == PLATFORM_LINUX
+    // stores each word in status file
+    char buffer[1024] = "";
+    // linux file contains this-process info
+    FILE* file = fopen("/proc/self/status", "r");
+    if (file == nullptr) {
+        return currRealMem;
+    }
+    // read the entire file
+    while (fscanf(file, " %1023s", buffer) == 1) {
+        if (strcmp(buffer, "VmRSS:") == 0) {
+            fscanf(file, " %d", &currRealMem);
+            break;
+        }
+    }
+    fclose(file);
+#endif
+    return currRealMem;
+}
+
 long long essentials::get_total_ram() {
 #if PLATFORM == PLATFORM_LINUX
     struct sysinfo memInfo;
@@ -402,7 +424,7 @@ long long essentials::get_total_ram() {
 #endif
 }
 
-long long essentials::get_ram_used() {
+long long essentials::get_used_mem() {
 #if PLATFORM == PLATFORM_LINUX
     struct sysinfo memInfo;
     if (sysinfo(&memInfo) == -1) return 0;
