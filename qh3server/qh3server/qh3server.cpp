@@ -567,6 +567,9 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     qh3server::get_stats_loggeer()->start_session("./stats/qh3_statfile", sizeof("./stats/qh3_statfile"));
     quiche_enable_debug_logging(debug_log, this);
 
+    if (is_log_quiche()) {
+        DEBUG_PRINT_WARN(__LOGTAG__, "quiche log is enabled. Perfomance may get affected due to excess logs !!!");
+    }
     struct addrinfo* local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
