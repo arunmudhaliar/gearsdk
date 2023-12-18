@@ -396,7 +396,7 @@ long long essentials::get_total_ram() {
     long long total_phys_mem = memInfo.totalram;
     //Multiply in next statement to avoid int overflow on right hand side...
     total_phys_mem *= memInfo.mem_unit;
-    return total_phys_mem / 1024;
+    return total_phys_mem / (1024 * 1024);
 #else
     return 0;
 #endif
@@ -409,7 +409,7 @@ long long essentials::get_ram_used() {
     long long phys_mem_used = memInfo.totalram - memInfo.freeram;
     //Multiply in next statement to avoid int overflow on right hand side...
     phys_mem_used *= memInfo.mem_unit;
-    return phys_mem_used / 1024;
+    return phys_mem_used / (1024 * 1024);
 #else
     return 0;
 #endif
