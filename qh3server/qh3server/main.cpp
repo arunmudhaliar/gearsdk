@@ -12,6 +12,9 @@
 static std::string version_string = "0.1";
 static unsigned version_code = 1;
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qh3server-main"
+
 int main(int argc, const char* argv[]) {
     init_gsdk();
     // main http server
