@@ -29,6 +29,17 @@ void http3_sample_server::on_run_end() {
     
 }
 
+bool http3_sample_server::is_log_quiche() {
+    if (hiredis == nullptr) {
+        return false;
+    }
+    qstring is_log_quiche;
+    if (hiredis->get_value("is_log_quiche", is_log_quiche)==0) {
+        return is_log_quiche=="true";
+    }
+    return false;
+}
+
 void http3_sample_server::parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) {
     qh3server::parse_header(name, value, conn_io);
 }

@@ -60,6 +60,7 @@ public:
     inline virtual struct ev_loop* get_mainloop() = 0;
     virtual void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) = 0;
     virtual void parse(struct conn_io* conn_io) = 0;
+    virtual bool is_log_quiche() = 0;   //NOTE : TODO - This is polling which is not a recommended solution. Need to use event based system.
 };
 
 struct connections {
@@ -106,7 +107,10 @@ private:
     inline virtual struct ev_loop* get_mainloop() override final {
         return mainloop;
     }
-
+    inline virtual bool is_log_quiche() override {
+        return false;
+    }
+    
     void parse(struct conn_io* conn_io) override;
 
     void mint_token(const uint8_t* dcid, size_t dcid_len,

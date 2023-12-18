@@ -13,7 +13,10 @@ qstatslogger* qh3server::stats_logger = nullptr;
 //void (*cb)(const uint8_t *line, void *argp), void *argp
 void qh3server::debug_log(const uint8_t* line, void* argp) {
     UNUSED(argp);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, (char*)line);
+    qh3server* server = (qh3server*)argp;
+    if (server!=nullptr && server->is_log_quiche()) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, (char*)line);
+    }
 }
 
 void qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
@@ -562,7 +565,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     qh3server::get_file_logger()->start_session("./logs/qh3_logfile", sizeof("./logs/qh3_logfile"));
     qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
     qh3server::get_stats_loggeer()->start_session("./stats/qh3_statfile", sizeof("./stats/qh3_statfile"));
-    //    quiche_enable_debug_logging(debug_log, NULL);
+    quiche_enable_debug_logging(debug_log, this);
 
     struct addrinfo* local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {

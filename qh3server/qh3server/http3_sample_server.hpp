@@ -18,6 +18,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
     void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
     void parse(struct conn_io *conn_io) override;
+    inline bool is_log_quiche() override;
     
     void on_run_started() override;
     void on_run_end() override;
