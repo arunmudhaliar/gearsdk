@@ -106,6 +106,10 @@ public:
     static qstring get_device_name();
     static qstring get_device_arch();
     static qstring get_device_release_str();
+    
+    static int get_memory_info(int& currRealMem, int& peakRealMem, int& currVirtMem, int& peakVirtMem);
+    static long long get_total_ram();
+    static long long get_ram_used();
 };
 
 // h3 structs

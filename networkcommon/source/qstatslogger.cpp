@@ -46,6 +46,10 @@ void qstatslogger::set_client_pid(const qstring& pid_str) {
     client_pid = pid_str;
 }
 
+void qstatslogger::set_total_ram(int ram) {
+    total_ram = ram;
+}
+
 /*
  CREATE TABLE stats_count (count TEXT, session TEXT, pid TEXT, version TEXT,
                      epic TEXT, myth TEXT, legend TEXT, story TEXT,
