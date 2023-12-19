@@ -657,6 +657,36 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
 
+    //
+    qtimer_sceduler close_dangling_connections_scheduler;
+    close_dangling_connections_scheduler.set_ev_lopp(mainloop);
+    close_dangling_connections_scheduler.schedule_repeat_timer([this](qtimer& timer) {
+            struct conn_io* tmp, * conn_io = NULL;
+            HASH_ITER(hh, conns->h, conn_io, tmp) {
+                //flush_egress(mainloop, conn_io);
+                if (conn_io->timer.repeat == 0) {
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "closing dangling connection !!!");
+                    Stats stats;
+                    PathStats path_stats;
+
+                    quiche_conn_stats(conn_io->conn, &stats);
+                    quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "dangling connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
+                        stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+
+                    HASH_DELETE(hh, conns->h, conn_io);
+
+                    ev_timer_stop(mainloop, &conn_io->timer);
+
+                    quiche_conn_free(conn_io->conn);
+                    GX_DELETE(conn_io);
+                }
+            }
+            //
+        }, 3);
+    //
+    
     on_run_started();
     ev_loop(mainloop, 0);
     on_run_end();
@@ -666,7 +696,9 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     HASH_ITER(hh, conns->h, conn_io, tmp) {
         flush_egress(mainloop, conn_io);
 
-        //if (quiche_conn_is_closed(conn_io->conn)) {
+        if (quiche_conn_is_closed(conn_io->conn)) {
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
+        }
         Stats stats;
         PathStats path_stats;
 
@@ -682,7 +714,6 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
 
         quiche_conn_free(conn_io->conn);
         GX_DELETE(conn_io);
-        //}
     }
     //
 
