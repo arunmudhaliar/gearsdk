@@ -60,6 +60,7 @@ struct conn_io {
     uint8_t out[MAX_DATAGRAM_SIZE];
     conn_io_req_res* response = nullptr;
     bool res_received = false;
+    ev_tstamp creation_time = 0;
 };
 
 class bridge_h3client_connection {

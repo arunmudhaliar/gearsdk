@@ -391,6 +391,7 @@ int essentials::get_memory_info(int& currRealMem, int& peakRealMem, int& currVir
 int essentials::get_process_used_mem() {
     int currRealMem=0;
 #if PLATFORM == PLATFORM_LINUX
+    //https://itecnote.com/tecnote/macos-memory-used-by-a-process-under-mac-os-x/
     // stores each word in status file
     char buffer[1024] = "";
     // linux file contains this-process info

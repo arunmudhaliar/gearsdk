@@ -412,7 +412,7 @@ qh3client::qh3client(const qstring& host, const qstring& port) :
 
 qh3client::~qh3client() {
     GX_DELETE(conn_io);
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qh3client destroyed");
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qh3client destroyed");
 }
 
 int qh3client::close_socket(int sock) {
@@ -432,7 +432,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
         .ai_protocol = IPPROTO_UDP
     };
 
-    //    quiche_enable_debug_logging(debug_log, NULL);
+//    quiche_enable_debug_logging(debug_log, NULL);
 
     struct addrinfo* peer;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
@@ -547,7 +547,8 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 
     ev_init(&conn_io->timer, timeout_cb);
     conn_io->timer.data = conn_io;
-
+    conn_io->creation_time = ev_now(mainloop);
+    
     flush_egress(mainloop, conn_io);
 
     ev_loop(mainloop, 0);

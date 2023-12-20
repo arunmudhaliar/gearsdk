@@ -671,7 +671,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
                         DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "try flush : connection is still open");
                         flush_egress(mainloop, conn_io);
                     }
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "closing dangling connection !!!");
+                    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "closing dangling connection !!!");
                     Stats stats;
                     PathStats path_stats;
                     quiche_conn_stats(conn_io->conn, &stats);
