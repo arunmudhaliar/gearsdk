@@ -92,6 +92,7 @@ struct conn_io {
     bridge_h3_connection* bridge = nullptr;
     conn_io_req_res* http_request = nullptr;
     conn_io_req_res* http_response = nullptr;
+    ev_tstamp creation_time = 0;
 };
 
 class qh3server : public bridge_h3_connection {
