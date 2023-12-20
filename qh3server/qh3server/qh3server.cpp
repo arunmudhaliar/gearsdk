@@ -581,18 +581,21 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
+        close(sock);    // (amudaliar) : Needed for running as virtual servers. Else new servers wont be able to bind
         freeaddrinfo(local);
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
+        close(sock);
         freeaddrinfo(local);
         return -1;
     }
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
+        close(sock);
         freeaddrinfo(local);
         return -1;
     }
@@ -600,6 +603,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     config = quiche_config_new(PROTOCOL_VERSION);
     if (config == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
+        close(sock);
         freeaddrinfo(local);
         return -1;
     }
@@ -636,6 +640,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     http3_config = quiche_h3_config_new();
     if (http3_config == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create HTTP/3 config");
+        close(sock);
         freeaddrinfo(local);
         return -1;
     }
@@ -717,7 +722,8 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     //
 
     freeaddrinfo(local);
-
+    close(sock);
+    
     quiche_h3_config_free(http3_config);
 
     quiche_config_free(config);
