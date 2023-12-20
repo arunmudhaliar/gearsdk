@@ -65,7 +65,7 @@ if [ $PREP_DOCKER = true ] ; then
          set -x
          docker stop qserver-container
          docker rm --force qserver-container
-         docker run --name qserver-container -d qserver-exp
+         docker run --publish 4000:4000/udp --name qserver-container -d qserver-exp
       fi
    fi
 fi
