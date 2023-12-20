@@ -7,6 +7,10 @@
 
 #include "essentials.hpp"
 #include <cstring>
+#if PLATFORM == PLATFORM_LINUX
+#include <sys/types.h>
+#include <sys/sysinfo.h>
+#endif
 
 using namespace gsdk;
 
@@ -350,6 +354,88 @@ qstring essentials::get_time_utc_postgresql_format() {
         tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
         tm->tm_hour, tm->tm_min, tm->tm_sec);
     return qstring(timestampStr);
+}
+
+/*
+ * Measures the current (and peak) resident and virtual memories
+ * usage of your linux C process, in kB
+ */
+int essentials::get_memory_info(int& currRealMem, int& peakRealMem, int& currVirtMem, int& peakVirtMem) {
+    // stores each word in status file
+    char buffer[1024] = "";
+    // linux file contains this-process info
+    FILE* file = fopen("/proc/self/status", "r");
+    if (file == nullptr) {
+        currRealMem = peakRealMem = currVirtMem = peakVirtMem = 0;
+        return -1;
+    }
+    // read the entire file
+    while (fscanf(file, " %1023s", buffer) == 1) {
+        if (strcmp(buffer, "VmRSS:") == 0) {
+            fscanf(file, " %d", &currRealMem);
+        }
+        if (strcmp(buffer, "VmHWM:") == 0) {
+            fscanf(file, " %d", &peakRealMem);
+        }
+        if (strcmp(buffer, "VmSize:") == 0) {
+            fscanf(file, " %d", &currVirtMem);
+        }
+        if (strcmp(buffer, "VmPeak:") == 0) {
+            fscanf(file, " %d", &peakVirtMem);
+        }
+    }
+    fclose(file);
+    return 0;
+}
+
+int essentials::get_process_used_mem() {
+    int currRealMem=0;
+#if PLATFORM == PLATFORM_LINUX
+    //https://itecnote.com/tecnote/macos-memory-used-by-a-process-under-mac-os-x/
+    // stores each word in status file
+    char buffer[1024] = "";
+    // linux file contains this-process info
+    FILE* file = fopen("/proc/self/status", "r");
+    if (file == nullptr) {
+        return currRealMem;
+    }
+    // read the entire file
+    while (fscanf(file, " %1023s", buffer) == 1) {
+        if (strcmp(buffer, "VmRSS:") == 0) {
+            fscanf(file, " %d", &currRealMem);
+            break;
+        }
+    }
+    fclose(file);
+#endif
+    return currRealMem;
+}
+
+long long essentials::get_total_ram() {
+#if PLATFORM == PLATFORM_LINUX
+    struct sysinfo memInfo;
+    if (sysinfo(&memInfo) == -1) return 0;
+//    uint64_t total_ram = ((uint64_t)memInfo.totalram * memInfo.mem_unit)/1024;
+    long long total_phys_mem = memInfo.totalram;
+    //Multiply in next statement to avoid int overflow on right hand side...
+    total_phys_mem *= memInfo.mem_unit;
+    return total_phys_mem / (1024 * 1024);
+#else
+    return 0;
+#endif
+}
+
+long long essentials::get_used_mem() {
+#if PLATFORM == PLATFORM_LINUX
+    struct sysinfo memInfo;
+    if (sysinfo(&memInfo) == -1) return 0;
+    long long phys_mem_used = memInfo.totalram - memInfo.freeram;
+    //Multiply in next statement to avoid int overflow on right hand side...
+    phys_mem_used *= memInfo.mem_unit;
+    return phys_mem_used / (1024 * 1024);
+#else
+    return 0;
+#endif
 }
 
 bool conn_io_req_res::has_crc_header() {

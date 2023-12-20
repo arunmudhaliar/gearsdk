@@ -267,7 +267,7 @@ void* qtextfilelogger::run_log_session(void* data) {
     logger->set_ev_lopp(logger->log_loop);
     logger->logtimer = logger->schedule_repeat_timer([logger, creation_time](qtimer& timer) {
         if (logger->logfile->flush(true) > 0) {
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
         }
         }, config->flush_time);
     logger->log(qlogfile::level_0, __LOGTAG__, "start-session");

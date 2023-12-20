@@ -19,7 +19,7 @@
 struct qbuffer {
     ~qbuffer() {
         GX_DELETE_ARY(data);
-        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "Buffer destroyed.");
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "Buffer destroyed.");
     }
     void allocate(ssize_t sz) {
         GX_DELETE_ARY(data);

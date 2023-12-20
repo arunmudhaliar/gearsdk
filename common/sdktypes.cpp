@@ -88,7 +88,7 @@ extern "C"
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[33mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
     }
     void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -96,7 +96,7 @@ extern "C"
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
     }
     void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
         if (condition) {
@@ -116,7 +116,7 @@ extern "C"
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[32m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, "\x1b[36m****", "[%s] : %s\x1b[0m", tag, buffer);
     }
     void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -124,7 +124,7 @@ extern "C"
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[35m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, "\x1b[96m****", "[%s] : %s\x1b[0m", tag, buffer);
     }
 namespace gsdk {
     str2int_errno str2int(int *out, const char *s, int base) {

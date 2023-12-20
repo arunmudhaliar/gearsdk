@@ -40,7 +40,8 @@ public:
     void set_client_session(const qstring& session_str);
     void set_client_version(const qstring& version_str);
     void set_client_pid(const qstring& pid_str);
-
+    void set_total_ram(int ram);
+    
 private:
     // only for client
     qstring client_session;

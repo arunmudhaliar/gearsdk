@@ -13,7 +13,10 @@ qstatslogger* qh3server::stats_logger = nullptr;
 //void (*cb)(const uint8_t *line, void *argp), void *argp
 void qh3server::debug_log(const uint8_t* line, void* argp) {
     UNUSED(argp);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, (char*)line);
+    qh3server* server = (qh3server*)argp;
+    if (server!=nullptr && server->is_log_quiche()) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, (char*)line);
+    }
 }
 
 void qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
@@ -118,7 +121,8 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate connection IO");
         return NULL;
     }
-
+    new_conn_io->creation_time = ev_now(mainloop);
+    
     if (scid_len != LOCAL_CONN_ID_LEN) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed, scid length too short");
     }
@@ -322,6 +326,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             if (conn_io == NULL) {
                 continue;
             }
+            qh3server::get_stats_loggeer()->set_total_ram((int)(essentials::get_process_used_mem()));
             qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io");
         }
 
@@ -562,8 +567,11 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     qh3server::get_file_logger()->start_session("./logs/qh3_logfile", sizeof("./logs/qh3_logfile"));
     qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
     qh3server::get_stats_loggeer()->start_session("./stats/qh3_statfile", sizeof("./stats/qh3_statfile"));
-    //    quiche_enable_debug_logging(debug_log, NULL);
+    quiche_enable_debug_logging(debug_log, this);
 
+    if (is_log_quiche()) {
+        DEBUG_PRINT_WARN(__LOGTAG__, "quiche log is enabled. Perfomance may get affected due to excess logs !!!");
+    }
     struct addrinfo* local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
@@ -650,6 +658,40 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
 
+    //
+    qtimer_sceduler close_dangling_connections_scheduler;
+    close_dangling_connections_scheduler.set_ev_lopp(mainloop);
+    close_dangling_connections_scheduler.schedule_repeat_timer([this](qtimer& timer) {
+            int dangling_connections = 0;
+            struct conn_io* tmp, * conn_io = NULL;
+            HASH_ITER(hh, conns->h, conn_io, tmp) {
+                //flush_egress(mainloop, conn_io);
+                if (conn_io->timer.repeat == 0) {
+                    if (!quiche_conn_is_closed(conn_io->conn)) {
+                        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "try flush : connection is still open");
+                        flush_egress(mainloop, conn_io);
+                    }
+                    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "closing dangling connection !!!");
+                    Stats stats;
+                    PathStats path_stats;
+                    quiche_conn_stats(conn_io->conn, &stats);
+                    quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+                    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__,
+                                "dangling connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
+                        stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, ev_now(mainloop) - conn_io->creation_time);
+                    HASH_DELETE(hh, conns->h, conn_io);
+                    ev_timer_stop(mainloop, &conn_io->timer);
+                    quiche_conn_free(conn_io->conn);
+                    GX_DELETE(conn_io);
+                    dangling_connections++;
+                }
+            }
+            if (dangling_connections>0) {
+                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Force closed %d dangling connections.", dangling_connections);
+            }
+        }, 3);
+    //
+    
     on_run_started();
     ev_loop(mainloop, 0);
     on_run_end();
@@ -658,24 +700,19 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     struct conn_io* tmp, * conn_io = NULL;
     HASH_ITER(hh, conns->h, conn_io, tmp) {
         flush_egress(mainloop, conn_io);
-
-        //if (quiche_conn_is_closed(conn_io->conn)) {
+        if (quiche_conn_is_closed(conn_io->conn)) {
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
+        }
         Stats stats;
         PathStats path_stats;
-
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
             stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
-
         HASH_DELETE(hh, conns->h, conn_io);
-
         ev_timer_stop(mainloop, &conn_io->timer);
-
         quiche_conn_free(conn_io->conn);
         GX_DELETE(conn_io);
-        //}
     }
     //
 

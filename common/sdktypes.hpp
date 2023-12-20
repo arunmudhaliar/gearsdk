@@ -64,6 +64,7 @@
 #define LOG_LEVEL_1 1
 #define LOG_LEVEL_2 2
 #define LOG_LEVEL_3 3
+#define LOG_LEVEL_4 4
 
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_2

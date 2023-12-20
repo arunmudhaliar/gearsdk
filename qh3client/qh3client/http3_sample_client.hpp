@@ -9,6 +9,7 @@
 #define http3_sample_client_hpp
 
 #include "qh3client_helper.hpp"
+#include <atomic>
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
@@ -23,8 +24,10 @@ private:
     qtimer* keep_alive_loop = nullptr;
     qstring host = "192.168.0.230";
     qstring port = "4004";
-    static int live_connections;
-    static int total_connections_returned;
+    std::atomic<int> live_connections = 0;
+    std::atomic<int> total_connections_returned = 0;
+    std::atomic<int> total_connections_returned_success = 0;
+    std::atomic<int> total_connections_issued = 0;
     void create_connections();
 
     qstring session_token;
