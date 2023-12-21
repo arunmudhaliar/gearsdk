@@ -13,7 +13,7 @@
 
 class networkclient_tester {
 public:
-    void run(const std::string& host, const std::string& port, float sendInterval, float closeTimeout);
+    void run(const qstring& host, const qstring& port, float sendInterval, float closeTimeout);
 
 private:
     static void send_msg_timer_cb(EV_P_ ev_timer* w, int revents);

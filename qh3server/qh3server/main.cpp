@@ -9,7 +9,7 @@
 
 //#include "../../qhiredis/source/qhiredis.hpp"
 
-static std::string version_string = "0.1";
+static qstring version_string = "0.1";
 static unsigned version_code = 1;
 
 #undef __LOGTAG__
@@ -18,10 +18,10 @@ static unsigned version_code = 1;
 int main(int argc, const char* argv[]) {
     init_gsdk();
     // main http server
-    std::string host = "localhost";
-    std::string port = "4004";
-    std::string mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
-    std::string redis_ip = "127.0.0.1";
+    qstring host = "localhost";
+    qstring port = "4004";
+    qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
+    qstring redis_ip = "127.0.0.1";
     int redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,

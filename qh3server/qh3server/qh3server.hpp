@@ -68,8 +68,8 @@ struct connections {
     struct sockaddr* local_addr = nullptr;
     socklen_t local_addr_len;
     struct conn_io* h = nullptr;
-    std::string server_port;
-    std::string quic_alternate_protocol_str;
+    qstring server_port;
+    qstring quic_alternate_protocol_str;
 };
 
 struct conn_io {
@@ -133,6 +133,10 @@ private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
+    uint8_t out[MAX_DATAGRAM_SIZE];
+    uint8_t buf[65535];
+//    static uint8_t out[MAX_DATAGRAM_SIZE];
+    
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
@@ -144,7 +148,7 @@ public:
     static qtextfilelogger* get_file_logger() { return logger; }
     static qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const std::string& host, const std::string& port, fs::path& rootDir);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir);
 };
 
 #endif /* qh3server_hpp */

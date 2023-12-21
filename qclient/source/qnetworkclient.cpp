@@ -54,7 +54,7 @@ void qconnection::Release() {
     }
 }
 
-int qconnection::Connect(std::string host, std::string port) {
+int qconnection::Connect(qstring host, qstring port) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -130,8 +130,8 @@ int qconnection::ConnectionActive() {
     return 0;
 }
 
-ssize_t qconnection::SendMessage(const std::string& buffer, bool fin) {
-    return SendMessage(buffer.c_str(), buffer.size(), fin);
+ssize_t qconnection::SendMessage(const qstring& buffer, bool fin) {
+    return SendMessage(buffer.c_str(), buffer.length(), fin);
 }
 
 ssize_t qconnection::SendMessage(const char* buf, size_t buflen, bool fin) {
@@ -281,7 +281,7 @@ int qnetworkclient::close() {
     return 0;
 }
 
-int qnetworkclient::sendMessage(const std::string& buffer, bool flush) {
+int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
     // lock
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     send_mutex.conditionalWait(__FUNCTION__);
@@ -290,7 +290,7 @@ int qnetworkclient::sendMessage(const std::string& buffer, bool flush) {
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
     if (qclient_connection) {
-        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.size()));
+        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.length()));
     }
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
@@ -495,8 +495,8 @@ qnetworkclient::~qnetworkclient() {
 
 void* qnetworkclient::run_internal(void* data) {
     RunConfig* runConfig = (RunConfig*)data;
-    std::string host = runConfig->host;
-    std::string port = runConfig->port;
+    qstring host = runConfig->host;
+    qstring port = runConfig->port;
     qnetworkclient* thiz = runConfig->thiz;
 #if USE_PTHREAD
     if (thiz->run_mutex.tryLock(__FUNCTION__) != 0) {
@@ -603,7 +603,7 @@ bool qnetworkclient::is_runfinished() {
     return retVal;
 }
 
-int qnetworkclient::run(std::string host, std::string port) {
+int qnetworkclient::run(qstring host, qstring port) {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     runConfig.host = host;
     runConfig.port = port;

@@ -20,7 +20,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 }
 
 void qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
-    static uint8_t out[MAX_DATAGRAM_SIZE];
+//    static uint8_t out[MAX_DATAGRAM_SIZE];
 
     SendInfo send_info;
 
@@ -197,15 +197,15 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
     struct conn_io* tmp, * conn_io = NULL;
 
-    static uint8_t buf[65535];
-    static uint8_t out[MAX_DATAGRAM_SIZE];
+//    static uint8_t buf[65535];
+//    static uint8_t out[MAX_DATAGRAM_SIZE];
 
     while (1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
 
-        ssize_t read = recvfrom(conns->sock, buf, sizeof(buf), 0,
+        ssize_t read = recvfrom(conns->sock, server->buf, sizeof(buf), 0,
             (struct sockaddr*)&peer_addr,
             &peer_addr_len);
 
@@ -236,7 +236,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
         uint8_t token[MAX_TOKEN_LEN];
         size_t token_len = sizeof(token);
 
-        int rc = quiche_header_info(buf, read, LOCAL_CONN_ID_LEN, &version,
+        int rc = quiche_header_info(server->buf, read, LOCAL_CONN_ID_LEN, &version,
             &type, scid, &scid_len, dcid, &dcid_len,
             token, &token_len);
         if (rc < 0) {
@@ -244,7 +244,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail");
             return;
         }
-
+        
         HASH_FIND(hh, conns->h, dcid, dcid_len, conn_io);
 
         if (conn_io == NULL) {
@@ -253,7 +253,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                     dcid, dcid_len,
-                    out, sizeof(out));
+                    server->out, sizeof(server->out));
 
                 if (written < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create vneg packet: %zd",
@@ -262,7 +262,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
-                ssize_t sent = sendto(conns->sock, out, written, 0,
+                ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
                 if (sent != written) {
@@ -291,7 +291,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     dcid, dcid_len,
                     new_cid, LOCAL_CONN_ID_LEN,
                     token, token_len,
-                    version, out, sizeof(out));
+                    version, server->out, sizeof(server->out));
 
                 if (written < 0) {
                     DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create retry packet: %zd",
@@ -299,7 +299,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
-                ssize_t sent = sendto(conns->sock, out, written, 0,
+                ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
                 if (sent != written) {
@@ -338,7 +338,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             conns->local_addr_len,
         };
 
-        ssize_t done = quiche_conn_recv(conn_io->conn, buf, read, &recv_info);
+        ssize_t done = quiche_conn_recv(conn_io->conn, server->buf, read, &recv_info);
 
         if (done < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
@@ -389,12 +389,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     for (;;) {
                         ssize_t len = quiche_h3_recv_body(conn_io->http3,
                             conn_io->conn, s,
-                            buf, sizeof(buf));
+                            server->buf, sizeof(server->buf));
                         if (len <= 0) {
                             break;
                         }
-                        conn_io->http_request->set_payload(qstring(buf, len));
-                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int)len, buf);
+                        conn_io->http_request->set_payload(qstring(server->buf, len));
+                        DEBUG_PRINT(LOG_LEVEL_1, __LOGTAG__, "%.*s", (int)len, server->buf);
                     }
                     break;
                 }
@@ -428,7 +428,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                         .name_len = sizeof("Alternate-Protocol") - 1,
 
                         .value = (uint8_t*)conns->quic_alternate_protocol_str.c_str(),
-                        .value_len = conns->quic_alternate_protocol_str.size() - 1,
+                        .value_len = conns->quic_alternate_protocol_str.length() - 1,
                     };
 
                     headers[2] = {
@@ -552,7 +552,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-int qh3server::run(const std::string& host, const std::string& port, fs::path& rootDir) {
+int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -564,9 +564,12 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     logger = DEBUG_NEW qtextfilelogger();
     stats_logger = DEBUG_NEW qstatslogger();
 
-    qh3server::get_file_logger()->start_session("./logs/qh3_logfile", sizeof("./logs/qh3_logfile"));
+    qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
+    qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
+    
+    qh3server::get_file_logger()->start_session(log_path, log_path.length());
     qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
-    qh3server::get_stats_loggeer()->start_session("./stats/qh3_statfile", sizeof("./stats/qh3_statfile"));
+    qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
     quiche_enable_debug_logging(debug_log, this);
 
     if (is_log_quiche()) {
@@ -581,14 +584,13 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
-        close(sock);    // (amudaliar) : Needed for running as virtual servers. Else new servers wont be able to bind
         freeaddrinfo(local);
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
-        close(sock);
+        close(sock);    // (amudaliar) : Needed for running as virtual servers. Else new servers wont be able to bind.
         freeaddrinfo(local);
         return -1;
     }
@@ -651,7 +653,7 @@ int qh3server::run(const std::string& host, const std::string& port, fs::path& r
     c.local_addr = local->ai_addr;
     c.local_addr_len = local->ai_addrlen;
     c.server_port = port;
-    c.quic_alternate_protocol_str = "quic:" + port;
+    c.quic_alternate_protocol_str = qstring("quic:") + port;
 
     conns = &c;
 

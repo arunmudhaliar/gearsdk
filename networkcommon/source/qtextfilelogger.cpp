@@ -16,7 +16,7 @@ qlogfile::qlogfile(const qstring& path, float flush_time, size_t max_size_of_fil
     logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file) {
     fs::path log_dir = fs::path(logfile_path.c_str()).parent_path();
     if (!fs::is_directory(log_dir)) {
-        fs::create_directory(log_dir);
+        fs::create_directories(log_dir);
     }
     create_new_logfile(false);
 }

@@ -68,9 +68,9 @@ public:
     bridge_qcommand* bridge = nullptr;
     Config* config = nullptr;
     struct addrinfo* peer = nullptr;
-    int Connect(std::string host, std::string port);
+    int Connect(qstring host, qstring port);
     ssize_t SendMessage(const char* buf, size_t buflen, bool fin);
-    ssize_t SendMessage(const std::string& buffer, bool fin);
+    ssize_t SendMessage(const qstring& buffer, bool fin);
     int ConnectionActive();
     void Release();
 
@@ -103,7 +103,7 @@ public:
     virtual void event_connect(qconnection* qconnection) = 0;
     virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) = 0;
     virtual void event_close(qconnection* qconnection) = 0;
-    virtual int sendMessage(const std::string& buffer, bool flush) = 0;
+    virtual int sendMessage(const qstring& buffer, bool flush) = 0;
     virtual int close() = 0;
     virtual CON_STATE getstate() = 0;
 
@@ -116,8 +116,8 @@ public:
 class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 private:
     struct RunConfig {
-        std::string host;
-        std::string port;
+        qstring host;
+        qstring port;
         qnetworkclient* thiz;
         int pthread_returnValue;
         bool finished = false;
@@ -181,10 +181,10 @@ public:
     qnetworkclient();
     ~qnetworkclient();
 
-    int sendMessage(const std::string& buffer, bool flush) override final;
+    int sendMessage(const qstring& buffer, bool flush) override final;
     int close() override final;
     bool is_runfinished();
-    int run(std::string host, std::string port);
+    int run(qstring host, qstring port);
     void forcerelease();
     inline qmutex& get_runconfigmutex() { return runconfig_mutex; }
 };

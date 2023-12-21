@@ -61,7 +61,7 @@ public:
     ~qpeerconnection();
 
     void sendmessage(const char* buf, size_t buflen, bool flush);
-    void sendmessage(const std::string& buffer, bool flush);
+    void sendmessage(const qstring& buffer, bool flush);
     void close();
 
     bridge_qpeerconnection* bridge = nullptr;
@@ -81,8 +81,8 @@ public:
 class qnetworkserver : protected bridge_qpeerconnection {
 private:
     struct runserverconfig {
-        std::string host;
-        std::string port;
+        qstring host;
+        qstring port;
         qnetworkserver* thiz;
         int pthread_returnValue;
         bool finished = false;
@@ -92,8 +92,8 @@ private:
     static int runID;
 
 public:
-    int run(std::string host, std::string port, fs::path executablePath);
-    void broadcast_message(const std::string& buffer, bool flush);
+    int run(qstring host, qstring port, fs::path executablePath);
+    void broadcast_message(const qstring& buffer, bool flush);
     void network_server_begin();
     void network_server_end();
 

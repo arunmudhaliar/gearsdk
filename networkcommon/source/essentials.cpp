@@ -218,9 +218,9 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 
 
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
-    const std::string& version_string_, unsigned version_code_,
-    std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir,
-    std::string& redis_ip, int& redis_port) {
+    const qstring& version_string_, unsigned version_code_,
+    qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
+    qstring& redis_ip, int& redis_port) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
         DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");

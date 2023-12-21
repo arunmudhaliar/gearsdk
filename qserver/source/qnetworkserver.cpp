@@ -42,9 +42,9 @@ qpeerconnection::~qpeerconnection()
     }
 }
 
-void qpeerconnection::sendmessage(const std::string &buffer, bool flush)
+void qpeerconnection::sendmessage(const qstring &buffer, bool flush)
 {
-    sendmessage(buffer.c_str(), buffer.size(), flush);
+    sendmessage(buffer.c_str(), buffer.length(), flush);
 }
 
 void qpeerconnection::sendmessage(const char *buf, size_t buflen, bool flush)
@@ -243,9 +243,8 @@ void qnetworkserver::on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection 
     GX_DELETE_ARY(copybuf);
 
     // TODO : Comment this for development.
-    std::stringstream ss;
-    ss << "HELLO from server-" << qconnection->itrmsg++;
-    qconnection->sendmessage(ss.str(), true);
+    qstring ss = qstring::format_string("HELLO from server-%d", qconnection->itrmsg++);
+    qconnection->sendmessage(ss, true);
 }
 
 void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnection)
@@ -542,7 +541,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
     }
 }
 
-void qnetworkserver::broadcast_message(const std::string &buffer, bool flush)
+void qnetworkserver::broadcast_message(const qstring &buffer, bool flush)
 {
     qpeerconnection *qconnection = nullptr;
     qpeerconnection *tmp = nullptr;
@@ -570,8 +569,8 @@ void qnetworkserver::network_server_end() {
 void *qnetworkserver::run_internal(void *data)
 {
     runserverconfig *runConfig = (runserverconfig *)data;
-    std::string host = runConfig->host;
-    std::string port = runConfig->port;
+    qstring host = runConfig->host;
+    qstring port = runConfig->port;
     qnetworkserver *thiz = runConfig->thiz;
 
     if (thiz->run_mutex.tryLock(__FUNCTION__) != 0)
@@ -586,7 +585,8 @@ void *qnetworkserver::run_internal(void *data)
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP};
 
-    thiz->logger.start_session("q_logfile", sizeof("q_logfile"));
+    qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
+    thiz->logger.start_session(log_path, log_path.length());
     quiche_enable_debug_logging(debug_log, nullptr);
 
     struct addrinfo *local;
@@ -698,7 +698,7 @@ void *qnetworkserver::run_internal(void *data)
 
 int qnetworkserver::runID = 0;
 
-int qnetworkserver::run(std::string host, std::string port, fs::path rootDir)
+int qnetworkserver::run(qstring host, qstring port, fs::path rootDir)
 {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     run_server_config.host = host;

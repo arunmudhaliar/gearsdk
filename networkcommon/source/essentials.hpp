@@ -91,9 +91,9 @@ class essentials {
 public:
     int init_essentials();
     static int32_t resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
-                                  const std::string& version_string_, unsigned version_code_,
-                                         std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir,
-                                         std::string& redis_ip, int& redis_port);
+                                  const qstring& version_string_, unsigned version_code_,
+                                         qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
+                                         qstring& redis_ip, int& redis_port);
     
     static time_t get_time_local();
     static qstring get_time_local_tostring();

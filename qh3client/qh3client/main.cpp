@@ -11,8 +11,8 @@ int main(int argc, const char* argv[]) {
     UNUSED(argc); UNUSED(argv);
     
     init_gsdk();
-    qstring host = "192.168.0.230";
-//    qstring host = "localhost";
+//    qstring host = "192.168.0.230";
+    qstring host = "localhost";
 
     struct ev_loop* loop = ev_default_loop(0);
 
