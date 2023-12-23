@@ -19,27 +19,27 @@ RUN apt install libsnappy-dev -y
 RUN apt-get install libzstd-dev -y
 RUN apt install iproute2 -y
 RUN sh make_qh3server.sh
-# CMD [ "sh", "run_qh3server.sh" ]
-
-# ------- qstats-crawler -------
-# ------- qstats-crawler -------
-# ------- qstats-crawler -------
-COPY qstats-crawler/ ./qstats-crawler
-COPY make_qstats-crawler.sh ./
-COPY run_qstats-crawler.sh ./
-COPY make_postgresql.sh ./
-RUN apt-get install wget -y
-RUN apt-get install libreadline-dev -y
-RUN apt-get install zlib1g-dev -y
-RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
-RUN tar -xvzf postgresql-15.5.tar.gz
-RUN pwd
-RUN sh make_postgresql.sh
-RUN pwd
-RUN sh make_qstats-crawler.sh
-
 RUN chmod 755 ./run_qh3server.sh
-RUN chmod 755 ./run_qstats-crawler.sh
+
+# # ------- qstats-crawler -------
+# # ------- qstats-crawler -------
+# # ------- qstats-crawler -------
+# COPY qstats-crawler/ ./qstats-crawler
+# COPY make_qstats-crawler.sh ./
+# COPY run_qstats-crawler.sh ./
+# COPY make_postgresql.sh ./
+# RUN apt-get install wget -y
+# RUN apt-get install libreadline-dev -y
+# RUN apt-get install zlib1g-dev -y
+# RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
+# RUN tar -xvzf postgresql-15.5.tar.gz
+# RUN pwd
+# RUN sh make_postgresql.sh
+# RUN pwd
+# RUN sh make_qstats-crawler.sh
+# RUN chmod 755 ./run_qstats-crawler.sh
+
+# ------- supervisor -------
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get install -y supervisor
 RUN mkdir -p /var/log/supervisor
