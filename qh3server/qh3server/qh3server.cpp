@@ -296,6 +296,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     getnameinfo(server->router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1--> %s:%s peer_addr_len %d", name, port, peer_addr_len);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1 packet--> %.*s %d", (int)written, server->out, (int)written);
+                    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+                    crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
