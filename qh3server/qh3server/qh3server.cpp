@@ -42,7 +42,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             char name[INET6_ADDRSTRLEN];
             char port[10];
             getnameinfo(router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            printf("qh3server - sending3--> %s:%s peer_addr_len %d (%d) \n", name, port, (int)peet_addr_len, (int)conn_io->peer_addr_len);
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending3--> %s:%s peer_addr_len %d (%d)", name, port, (int)peet_addr_len, (int)conn_io->peer_addr_len);
         }
         //
         
@@ -240,7 +240,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             char name[INET6_ADDRSTRLEN];
             char port[10];
             getnameinfo(client_info, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            printf("qh3server <--- %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server <--- %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
         }
         //
         
@@ -294,8 +294,8 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
                     getnameinfo(server->router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                    printf("qh3server - sending1--> %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
-                    printf("qh3server - sending1 packet--> %.*s %d\n", (int)written, server->out, (int)written);
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1--> %s:%s peer_addr_len %d", name, port, peer_addr_len);
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1 packet--> %.*s %d", (int)written, server->out, (int)written);
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -344,7 +344,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
                     getnameinfo(server->router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                    printf("qh3server - sending2--> %s:%s peer_addr_len %d (%d)\n", name, port, (int)peet_addr_len, (int)peer_addr_len);
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending2--> %s:%s peer_addr_len %d (%d)", name, port, (int)peet_addr_len, (int)peer_addr_len);
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,

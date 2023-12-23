@@ -160,7 +160,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
         getnameinfo(peer_addr_to_pass, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        printf("router <--- %s:%s\n", name, port);
+        DEBUG_PRINT(LOG_LEVEL_0, "router <--- %s:%s", name, port);
         
         route->relay(buf, read+peer_addr_len);
     }
@@ -223,7 +223,7 @@ void route::router_recv_cb(EV_P_ ev_io* w, int revents) {
 ssize_t route::relay(uint8_t* buf, ssize_t len) {
     ssize_t sent = sendto(bridge_sock, buf, len, 0, peer->ai_addr, peer->ai_addrlen);
     if (sent != len) {
-        perror("failed to send");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
         return -1;
     }
     return sent;
@@ -236,19 +236,19 @@ int route::create_bridge(struct ev_loop* loop) {
     };
 
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-        perror("failed to resolve host");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
         return -1;
     }
 
     bridge_sock = socket(peer->ai_family, SOCK_DGRAM, 0);
     if (bridge_sock < 0) {
-        perror("failed to create socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
         freeaddrinfo(peer);
         return -1;
     }
 
     if (fcntl(bridge_sock, F_SETFL, O_NONBLOCK) != 0) {
-        perror("failed to make socket non-blocking");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
         freeaddrinfo(peer);
         close_socket();
         return -1;
@@ -257,7 +257,7 @@ int route::create_bridge(struct ev_loop* loop) {
     local_addr_len = sizeof(local_addr);
     if (getsockname(bridge_sock, (struct sockaddr*)&local_addr,
         &local_addr_len) != 0) {
-        perror("failed to get local address of socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to get local address of socket");
         freeaddrinfo(peer);
         close_socket();
         return -1;
