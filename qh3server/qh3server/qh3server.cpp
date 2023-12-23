@@ -299,6 +299,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
                     crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
+                    for (int x=0;x<written;x++) {
+                        fprintf(stderr, "%d", server->out[x]);
+                    }
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
