@@ -301,7 +301,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - written %ld", (int)written);
                     for (int x=0;x<written;x++) {
-                        fprintf(stderr, "%d", server->out[x]);
+                        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d", server->out[x]);
                     }
                 }
                 //
