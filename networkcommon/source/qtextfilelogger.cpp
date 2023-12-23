@@ -174,8 +174,8 @@ qbuffer* qlogfile::create_new_record(size_t buffer_size, std::vector<qbuffer*>& 
 }
 
 size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length) {
-    bool locked = log_mutex.tryLock(__FUNCTION__) == 0;
-    if (locked) {
+    bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+    if (!locked) {
         DEBUG_PRINT_WARN(__LOGTAG__, "logging failed - '%s' !!!", buffer);
     } else {
         // move pending records if any
@@ -207,8 +207,8 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
 }
 
 size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
-    bool locked = log_mutex.tryLock(__FUNCTION__) == 0;
-    if (locked) {
+    bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+    if (!locked) {
         DEBUG_PRINT_WARN(__LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
     } else {
         // move pending records if any
