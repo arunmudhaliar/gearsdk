@@ -438,6 +438,20 @@ long long essentials::get_used_mem() {
 #endif
 }
 
+int essentials::get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names) {
+    try {
+        for (const auto& entry : fs::directory_iterator(folder_path)) {
+            if (fs::is_directory(entry.path())) {
+                names.push_back(entry.path());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
+        return 1;
+    }
+    return 0;
+}
+
 bool conn_io_req_res::has_crc_header() {
     header* crc_header = get_header("crc");
     return crc_header != nullptr;

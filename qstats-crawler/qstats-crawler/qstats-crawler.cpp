@@ -16,8 +16,8 @@ qstats_crawler::qstats_crawler() {
 qstats_crawler::~qstats_crawler() {
 }
 
-void qstats_crawler::try_crawl(const qstring& root_filename) {
-    if (pgsql_client.connect_db()!=0) {
+void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host, const qstring& port) {
+    if (pgsql_client.connect_db(host, port)!=0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect db. returning !!!");
         return;
     }
@@ -78,7 +78,7 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
     parsed_lines = 0;
     while (fgets(str, max_chars_in_a_line, fp)) {
         /* writing content to stdout */
-        puts(str);
+        // puts(str);
         if (parse_line(file, qstring(str)) == 0) {
             parsed_lines++;
         } else {

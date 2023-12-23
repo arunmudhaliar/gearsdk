@@ -6,6 +6,7 @@
 //
 
 #include "http3_sample_server.hpp"
+#include "qh3simple_router.hpp"
 
 //#include "../../qhiredis/source/qhiredis.hpp"
 
@@ -30,8 +31,14 @@ int main(int argc, const char* argv[]) {
     if (result < 0) {
         exit(0);
     }
-    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
-    server.run(host, port, rootDir);
+    
+//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
+//    server.run(host, port, rootDir, nullptr);
+    
+    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr);
+    qh3simple_router router(config);
+    router.run();
+    
     //    server.test_mongo_db();
 
     // log file

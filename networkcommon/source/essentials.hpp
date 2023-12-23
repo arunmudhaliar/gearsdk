@@ -111,6 +111,9 @@ public:
     static long long get_total_ram();
     static long long get_used_mem();
     static int get_process_used_mem();
+    
+    // fs
+    static int get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names);
 };
 
 // h3 structs

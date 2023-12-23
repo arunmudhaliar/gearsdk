@@ -79,6 +79,9 @@ int qhiredis::get_value(const qstring& key, qstring& value) {
     }
     qstring cmd = qstring::format_string("GET %s", key.c_str());
     redisReply* reply = (redisReply*)redisCommand(context, cmd.c_str());
+    if (reply == nullptr) {
+        return 1;
+    }
     value = qstring::format_string("%.*s", reply->len, reply->str);
     freeReplyObject(reply);
     return 0;

@@ -18,6 +18,7 @@
 		5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20E2B1F727B007C93AA /* debug_new.cpp */; };
 		5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
 		5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
+		5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
 		55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC12AEF838200BC4CED /* libev.a */; };
@@ -58,6 +59,8 @@
 		556ABAC12B0A784A00D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = ../servercommon/libs/macos/libpgcommon.a; sourceTree = "<group>"; };
 		556ABAC32B0A78FA00D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = ../servercommon/libs/macos/libpgport.a; sourceTree = "<group>"; };
 		5574F20E2B1F727B007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router.cpp; sourceTree = "<group>"; };
+		5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3simple_router.hpp; sourceTree = "<group>"; };
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -131,6 +134,8 @@
 				55A4ADD92AEFBD2600BC4CED /* main.cpp */,
 				556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */,
 				556AB5CD2AF0308800D688DB /* http3_sample_server.hpp */,
+				5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */,
+				5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */,
 			);
 			path = qh3server;
 			sourceTree = "<group>";
@@ -220,6 +225,7 @@
 				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
+				5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

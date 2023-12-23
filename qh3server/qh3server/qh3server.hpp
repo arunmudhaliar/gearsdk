@@ -43,7 +43,7 @@
 #define __LOGTAG__ "qh3server"
 
 #define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define MAX_DATAGRAM_SIZE 1350 - sizeof(struct sockaddr)
 
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
@@ -55,7 +55,7 @@
 
 class bridge_h3_connection {
 public:
-    virtual void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
+    virtual ssize_t flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
     virtual void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
     virtual void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) = 0;
@@ -103,7 +103,7 @@ private:
     struct ev_loop* mainloop = nullptr;
 
     static void debug_log(const uint8_t* line, void* argp);
-    void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
+    ssize_t flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
     void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) override final;
     inline virtual struct ev_loop* get_mainloop() override final {
         return mainloop;
@@ -133,22 +133,23 @@ private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
-    uint8_t out[MAX_DATAGRAM_SIZE];
+    uint8_t out[MAX_DATAGRAM_SIZE+sizeof(struct sockaddr)];
     uint8_t buf[65535];
-//    static uint8_t out[MAX_DATAGRAM_SIZE];
-    
+    struct addrinfo* router = nullptr;
+
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
     void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) override;
-    static qtextfilelogger* logger;
-    static qstatslogger* stats_logger;
-
+    qtextfilelogger* logger = nullptr;
+    qstatslogger* stats_logger = nullptr;
+    qstring logtag = __LOGTAG__;
+    
 public:
-    static qtextfilelogger* get_file_logger() { return logger; }
-    static qstatslogger* get_stats_loggeer() { return stats_logger; }
+    qtextfilelogger* get_file_logger() { return logger; }
+    qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const qstring& host, const qstring& port, fs::path& rootDir);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router);
 };
 
 #endif /* qh3server_hpp */

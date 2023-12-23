@@ -14,6 +14,9 @@
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
+#undef __LOGTAG__
+#define __LOGTAG__ "http3_sample_server"
+
 class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
     void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
