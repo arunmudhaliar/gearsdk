@@ -185,6 +185,9 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
         records_waiting.clear();
     }
     if (fp == nullptr) {
+        if (locked) {
+            log_mutex.unLock();
+        }
         return -1;
     }
     time_t givemetime = time(NULL);
@@ -215,6 +218,9 @@ size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
         records_waiting.clear();
     }
     if (fp == nullptr) {
+        if (locked) {
+            log_mutex.unLock();
+        }
         return -1;
     }
     size_t total_record_sz = buffer_length + 2;   //+2 for \n
@@ -233,6 +239,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
         return -2;
     }
     if (fp == nullptr) {
+        log_mutex.unLock();
         return -1;
     }
 
