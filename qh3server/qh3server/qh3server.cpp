@@ -290,6 +290,11 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     ssize_t peet_addr_len = sizeof(struct sockaddr);
                     memcpy((void*)&server->out[written], (void*)server->router->ai_addr, peet_addr_len);
                     sockaddr test;
+                    uint16_t* nb = (uint16_t*)&server->out[written];
+                    for (int x=0;x<peet_addr_len/sizeof(uint16_t);x++) {
+//                        printf("%x|", htons(pp[x]));
+                        nb[x] = htons(nb[x]);
+                    }
                     memcpy((void*)&test, (void*)&server->out[written], peet_addr_len);
                     written+=peet_addr_len;
                     
