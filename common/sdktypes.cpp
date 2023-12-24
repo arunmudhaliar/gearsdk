@@ -37,6 +37,9 @@ extern "C"
         DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
         DEBUG_PRINT(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
         DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
+        DEBUG_PRINT(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
+        DEBUG_PRINT(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
+        
 
         char cwd[PATH_MAX];
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
