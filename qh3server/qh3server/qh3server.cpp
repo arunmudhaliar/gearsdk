@@ -306,7 +306,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
 
-                    const uint16_t* pp = (const uint16_t*)&server->out[written-peet_addr_len];
+                    const uint8_t* pp = (const uint8_t*)&server->out[written-peet_addr_len];
                     qstring tmp;
                     for (int x=0;x<peer_addr_len;x++) {
                         tmp+=qstring::format_string("0x%02x|", pp[x]);
