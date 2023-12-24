@@ -34,15 +34,10 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
         }
 
         // if relay through router
-        if (router) {
-            ssize_t peet_addr_len = sizeof(struct sockaddr);
-            memcpy((void*)&out[written], (void*)router->ai_addr, peet_addr_len);
-            written+=peet_addr_len;
-            
-            char name[INET6_ADDRSTRLEN];
-            char port[10];
-            getnameinfo(router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending3--> %s:%s peer_addr_len %d (%d)", name, port, (int)peet_addr_len, (int)conn_io->peer_addr_len);
+        if (router_info) {
+            ssize_t addr_buffer_len = router_info->serialised_buffer.length();
+            memcpy((void*)&out[written], (void*)router_info->serialised_buffer.c_str(), addr_buffer_len);
+            written+=addr_buffer_len;
         }
         //
         
@@ -231,16 +226,15 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
         server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "");
         
         // if relay through router
-        if (server->router) {
+        if (server->router_info) {
             memset(&peer_addr, 0, peer_addr_len);
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
-            
-            char name[INET6_ADDRSTRLEN];
-            char port[10];
-            getnameinfo(client_info, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server <--- %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
+//            char name[INET6_ADDRSTRLEN];
+//            char port[10];
+//            getnameinfo(client_info, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+//            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server <--- %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
         }
         //
         
@@ -286,27 +280,16 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
 
                 // if relay through router
-                if (server->router) {
-                    ssize_t peet_addr_len = sizeof(struct sockaddr);
-                    memcpy((void*)&server->out[written], (void*)server->router->ai_addr, peet_addr_len);
-                    sockaddr test;
-//                    uint16_t* nb = (uint16_t*)&server->out[written];
-//                    for (int x=0;x<peet_addr_len/sizeof(uint16_t);x++) {
-//                        nb[x] = htons(nb[x]);
-//                    }
-                    memcpy((void*)&test, (void*)&server->out[written], peet_addr_len);
-                    written+=peet_addr_len;
+                if (server->router_info) {
+                    ssize_t addr_buffer_len = server->router_info->serialised_buffer.length();
+                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), addr_buffer_len);
+                    written+=addr_buffer_len;
                     
-                    char name[INET6_ADDRSTRLEN];
-                    char port[10];
-                    getnameinfo(&test, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1--> %s:%s peer_addr_len %d, sss %d", name, port, peer_addr_len);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1 packet--> %.*s %d", (int)written, server->out, (int)written);
                     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
                     crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
 
-                    const uint8_t* pp = (const uint8_t*)&server->out[written-peet_addr_len];
+                    const uint8_t* pp = (const uint8_t*)&server->out[written-addr_buffer_len];
                     qstring tmp;
                     for (int x=0;x<peer_addr_len;x++) {
                         tmp+=qstring::format_string("0x%02x|", pp[x]);
@@ -353,15 +336,10 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
 
                 // if relay through router
-                if (server->router) {
-                    ssize_t peet_addr_len = sizeof(struct sockaddr);
-                    memcpy((void*)&server->out[written], (void*)server->router->ai_addr, peet_addr_len);
-                    written+=peet_addr_len;
-                    
-                    char name[INET6_ADDRSTRLEN];
-                    char port[10];
-                    getnameinfo(server->router->ai_addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending2--> %s:%s peer_addr_len %d (%d)", name, port, (int)peet_addr_len, (int)peer_addr_len);
+                if (server->router_info) {
+                    ssize_t addr_buffer_len = server->router_info->serialised_buffer.length();
+                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), addr_buffer_len);
+                    written+=addr_buffer_len;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -623,7 +601,11 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP
     };
-    router = router_;
+//    router = router_;
+    if (router_ != nullptr) {
+        GX_DELETE(router_info);
+        router_info = DEBUG_NEW struct router_info(router_);
+    }
     logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
     const char* const_logtag = logtag.c_str();
     GX_DELETE(logger);
@@ -676,7 +658,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         freeaddrinfo(local);
         return -1;
     }
-
 
     fs::path certFile(rootDir / "cert.crt");
     fs::path keyFile(rootDir / "cert.key");
@@ -838,6 +819,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         }, 3);
     ev_run(wait_loop, 0);
 
+    GX_DELETE(router_info);
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
     return 0;

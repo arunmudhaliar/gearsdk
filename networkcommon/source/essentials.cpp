@@ -7,6 +7,7 @@
 
 #include "essentials.hpp"
 #include <cstring>
+#include <arpa/inet.h>
 #if PLATFORM == PLATFORM_LINUX
 #include <sys/types.h>
 #include <sys/sysinfo.h>
@@ -449,6 +450,20 @@ int essentials::get_all_child_folders(const fs::path& folder_path, std::vector<f
         DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
         return 1;
     }
+    return 0;
+}
+
+int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port) {
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    if (inet_pton(AF_INET, ip, &(addr.sin_addr)) <= 0) {
+        perror("Invalid IP address");
+        return -1;
+    }
+    memset(&storage, 0, sizeof(storage));
+    memcpy(&storage, &addr, sizeof(addr));
     return 0;
 }
 

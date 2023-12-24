@@ -114,6 +114,8 @@ public:
     
     // fs
     static int get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names);
+    
+    static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
 };
 
 // h3 structs
@@ -244,4 +246,80 @@ public:
     std::map<unsigned long, header*> headers;
 };
 
+
+struct qaddress {
+    qaddress() {
+        port = 0;
+        ip.clear();
+    }
+    qaddress(const qstring& ip_, uint16_t port_) : ip(ip_), port(port_) {
+    }
+    qaddress(const qstring& ip_, const qstring& port_) {
+        set(ip_, port_);
+    }
+    qaddress(struct sockaddr& addr) {
+        set(addr);
+    }
+    int set(struct sockaddr& addr) {
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        if (getnameinfo(&addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV) !=0) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to parse sockaddr !!!");
+            return -1;
+        }
+        return set(name, port);
+    }
+    int set(const qstring& ip_, const qstring& port_) {
+        ip = ip_;
+        int tmp = 0;
+        if (gsdk::str2int(&tmp, port_.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to parse port !!! - %s", port_.c_str());
+            return -1;
+        }
+        port = (uint16_t)tmp;
+        return 0;
+    }
+    
+    int serialise(qstring& buf) {
+        uint8_t tmp[16];
+        uint32_t index = 0;
+        *((uint16_t*)(tmp + index)) = htons(port);
+        index+=sizeof(uint16_t);
+        std::vector<qstring> array;
+        ip.split(".", array);
+        for(auto n : array) {
+            int v = 0;
+            if (gsdk::str2int(&v, n.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+                DEBUG_PRINT_ERROR("qaddress", "Unable to serialise value !!! - %s", n.c_str());
+                return -1;
+            }
+            *((uint8_t*)(tmp + index)) = (uint8_t)v;
+            index+=sizeof(uint8_t);
+        }
+        buf.bin_copy(tmp, index);
+        return 0;
+    }
+    
+    int deserialise(const uint8_t* buf, ssize_t len) {
+        const uint8_t* tmp = buf;
+        if (len<6) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to de-serialise buffer !!! - length = %d", len);
+            return -1;
+        }
+        uint32_t index = 0;
+        port = ntohs(*((uint16_t*)(tmp + index)));
+        index+=sizeof(uint16_t);
+        ip.clear();
+        uint8_t v[4];
+        for (int x=0;x<4;x++) {
+            v[x] = *((uint8_t*)(tmp + index));
+            index+=sizeof(uint8_t);
+        }
+        ip.format("%d.%d.%d.%d", v[0], v[1], v[2], v[3]);
+        return 0;
+    }
+    
+    uint16_t port;
+    qstring ip;
+};
 #endif /* essentials_hpp */

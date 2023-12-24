@@ -96,6 +96,14 @@ public:
         utstring_printf(ut_string, "%s", str);
     }
 
+    void bin_copy(const uint8_t* buf, ssize_t len) {
+        if (buf == nullptr) {
+            return;
+        }
+        clear();
+        utstring_bincpy(ut_string, buf, len);
+    }
+    
     void format(const char* fmt, ...) {
         clear();
         va_list ap;
