@@ -48,7 +48,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             DEBUG_PRINT_ERROR(const_logtag, "failed to send");
             return -1;
         }
-        qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "");
+        qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
         DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
         return sent;
     }
@@ -203,7 +203,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     struct connections* conns = server->conns;
     struct conn_io* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
-    
+    const char* port_id_cstr = server->port_id.c_str();
     while (1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
@@ -223,7 +223,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             return;
         }
 
-        server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "");
+        server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "", port_id_cstr);
         
         // if relay through router
         if (server->router_info) {
@@ -231,10 +231,6 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
-//            char name[INET6_ADDRSTRLEN];
-//            char port[10];
-//            getnameinfo(client_info, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server <--- %s:%s peer_addr_len %d\n", name, port, peer_addr_len);
         }
         //
         
@@ -258,7 +254,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             token, &token_len);
         if (rc < 0) {
             DEBUG_PRINT_ERROR(const_logtag, "failed to parse header: %d", rc);
-            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail");
+            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail", port_id_cstr);
             return;
         }
         
@@ -275,7 +271,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 if (written < 0) {
                     DEBUG_PRINT_ERROR(const_logtag, "failed to create vneg packet: %zd",
                         written);
-                    server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "version_negotiation_fail", "", qstring::format_string("failed to create vneg packet: %zd", written));
+                    server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "version_negotiation_fail", port_id_cstr, qstring::format_string("failed to create vneg packet: %zd", written));
                     continue;
                 }
 
@@ -284,18 +280,6 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     ssize_t addr_buffer_len = server->router_info->serialised_buffer.length();
                     memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), addr_buffer_len);
                     written+=addr_buffer_len;
-                    
-                    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-                    crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
-
-                    const uint8_t* pp = (const uint8_t*)&server->out[written-addr_buffer_len];
-                    qstring tmp;
-                    for (int x=0;x<peer_addr_len;x++) {
-                        tmp+=qstring::format_string("0x%02x|", pp[x]);
-                    }
-                    
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", tmp.c_str());
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -306,7 +290,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
-                server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "");
+                server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
                 DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
                 continue;
             }
@@ -350,7 +334,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     continue;
                 }
 
-                server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "");
+                server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
                 DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
                 continue;
             }
@@ -370,7 +354,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 continue;
             }
             server->get_stats_loggeer()->set_total_ram((int)(essentials::get_process_used_mem()));
-            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io");
+            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io", port_id_cstr);
         }
 
         RecvInfo recv_info = {
@@ -385,7 +369,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (done < 0) {
             DEBUG_PRINT_ERROR(const_logtag, "failed to process packet: %zd", done);
-            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_packet_fail");
+            server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_packet_fail", port_id_cstr);
             continue;
         }
 
@@ -398,7 +382,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn,
                     server->http3_config);
                 if (conn_io->http3 == NULL) {
-                    server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "http3_conn_fail");
+                    server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "http3_conn_fail", port_id_cstr);
                     DEBUG_PRINT_ERROR(const_logtag, "failed to create HTTP/3 connection");
                     continue;
                 }
@@ -421,7 +405,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                     if (rc != 0) {
                         DEBUG_PRINT_ERROR(const_logtag, "failed to process headers");
-                        server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_header_fail");
+                        server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "process_header_fail", port_id_cstr);
                     }
                     break;
                 }
@@ -517,7 +501,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 200);
                     if (send_len != (ssize_t)payload.buffer.length()) {
                         DEBUG_PRINT_ERROR(const_logtag, "HTTP response send failure");
-                        server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "response_send_fail");
+                        server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "response_send_fail", port_id_cstr);
                         break;
                     }
                     DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
@@ -601,7 +585,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP
     };
-//    router = router_;
+
+    port_id = port;
     if (router_ != nullptr) {
         GX_DELETE(router_info);
         router_info = DEBUG_NEW struct routerinfo(router_);

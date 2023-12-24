@@ -157,11 +157,6 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         struct sockaddr* peer_addr_to_pass = (struct sockaddr*)&peer_addr;
         memcpy((void*)&buf[read], (void*)peer_addr_to_pass, peer_addr_len);
         
-        char name[INET6_ADDRSTRLEN];
-        char port[10];
-        getnameinfo(peer_addr_to_pass, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_0, "router <--- %s:%s", name, port);
-        
         route->relay(buf, read+peer_addr_len);
     }
 }
