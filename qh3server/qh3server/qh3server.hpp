@@ -95,8 +95,8 @@ struct conn_io {
     ev_tstamp creation_time = 0;
 };
 
-struct router_info {
-    router_info(struct addrinfo* router_) {
+struct routerinfo {
+    routerinfo(struct addrinfo* router_) {
         router_address = DEBUG_NEW qaddress(*router_->ai_addr);
         router_address->serialise(serialised_buffer);
     }
@@ -145,7 +145,7 @@ private:
 
     uint8_t out[MAX_DATAGRAM_SIZE+sizeof(struct sockaddr)];
     uint8_t buf[65535];
-    router_info* router_info = nullptr;
+    routerinfo* router_info = nullptr;
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;

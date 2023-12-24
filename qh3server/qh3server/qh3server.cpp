@@ -604,7 +604,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 //    router = router_;
     if (router_ != nullptr) {
         GX_DELETE(router_info);
-        router_info = DEBUG_NEW struct router_info(router_);
+        router_info = DEBUG_NEW struct routerinfo(router_);
     }
     logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
     const char* const_logtag = logtag.c_str();
