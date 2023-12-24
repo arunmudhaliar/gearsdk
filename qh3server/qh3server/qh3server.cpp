@@ -604,7 +604,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     qh3server::get_file_logger()->start_session(log_path, log_path.length());
     qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
     qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
-    quiche_enable_debug_logging(debug_log, this);
+//    quiche_enable_debug_logging(debug_log, this);
 
     if (is_log_quiche()) {
         DEBUG_PRINT_WARN(const_logtag, "quiche log is enabled. Perfomance may get affected due to excess logs !!!");
