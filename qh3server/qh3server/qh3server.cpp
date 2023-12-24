@@ -45,7 +45,11 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             (struct sockaddr*)&conn_io->peer_addr,
             conn_io->peer_addr_len);
         if (sent != written) {
-            DEBUG_PRINT_ERROR(const_logtag, "failed to send");
+            char name[INET6_ADDRSTRLEN];
+            char port[10];
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(sa), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "ERROR (flush_egress) sending to %s:%s\n", name, port);
+            DEBUG_PRINT_ERROR(const_logtag, "failed to send - flush_egress %d<>%d", sent, written);
             return -1;
         }
         qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
@@ -286,7 +290,11 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
                 if (sent != written) {
-                    DEBUG_PRINT_ERROR(const_logtag, "failed to send");
+                    char name[INET6_ADDRSTRLEN];
+                    char port[10];
+                    getnameinfo((struct sockaddr*)&peer_addr, sizeof(sa), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                    DEBUG_PRINT_ERROR(const_logtag, "ERROR (conn_io == NULL) sending to %s:%s\n", name, port);
+                    DEBUG_PRINT_ERROR(const_logtag, "failed to send - recv_cb (conn_io == NULL) %d<>%d", sent, written);
                     continue;
                 }
 
@@ -330,6 +338,10 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
                 if (sent != written) {
+                    char name[INET6_ADDRSTRLEN];
+                    char port[10];
+                    getnameinfo((struct sockaddr*)&peer_addr, sizeof(sa), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                    DEBUG_PRINT_ERROR(const_logtag, "ERROR sending to %s:%s\n", name, port);
                     DEBUG_PRINT_ERROR(const_logtag, "failed to send");
                     continue;
                 }
