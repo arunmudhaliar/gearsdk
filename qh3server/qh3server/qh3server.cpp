@@ -306,6 +306,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 //                    for (int x=0;x<written;x++) {
 //                        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d", server->out[x]);
 //                    }
+                    for (int x=written-peer_addr_len;x<written;x++) {
+                        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%x", server->out[x]);
+                    }
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
