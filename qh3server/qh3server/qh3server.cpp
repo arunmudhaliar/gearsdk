@@ -290,30 +290,28 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     ssize_t peet_addr_len = sizeof(struct sockaddr);
                     memcpy((void*)&server->out[written], (void*)server->router->ai_addr, peet_addr_len);
                     sockaddr test;
-                    uint16_t* nb = (uint16_t*)&server->out[written];
-                    for (int x=0;x<peet_addr_len/sizeof(uint16_t);x++) {
-//                        printf("%x|", htons(pp[x]));
-                        nb[x] = htons(nb[x]);
-                    }
+//                    uint16_t* nb = (uint16_t*)&server->out[written];
+//                    for (int x=0;x<peet_addr_len/sizeof(uint16_t);x++) {
+//                        nb[x] = htons(nb[x]);
+//                    }
                     memcpy((void*)&test, (void*)&server->out[written], peet_addr_len);
                     written+=peet_addr_len;
                     
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
                     getnameinfo(&test, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                    int sss = sizeof(server->out);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1--> %s:%s peer_addr_len %d, sss %d", name, port, peer_addr_len, sss);
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1--> %s:%s peer_addr_len %d, sss %d", name, port, peer_addr_len);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - sending1 packet--> %.*s %d", (int)written, server->out, (int)written);
                     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
                     crc_ = crc32_z(crc_, (const unsigned char*)server->out, written);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - crc--> %ld", crc_);
-                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qh3server - written %ld", (int)written);
-//                    for (int x=0;x<written;x++) {
-//                        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d", server->out[x]);
-//                    }
-                    for (int x=written-peer_addr_len;x<written;x++) {
-                        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%x", server->out[x]);
+
+                    const uint16_t* pp = (const uint16_t*)&server->out[written-peet_addr_len];
+                    qstring tmp;
+                    for (int x=0;x<peer_addr_len/sizeof(uint16_t);x++) {
+                        tmp+=qstring::format_string("0x%04x|", pp[x]);
                     }
+                    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", tmp.c_str());
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
