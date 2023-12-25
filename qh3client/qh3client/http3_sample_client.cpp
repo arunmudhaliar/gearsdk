@@ -36,7 +36,7 @@ void http3_sample_client::init_connection() {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
                               total_connections_issued.load(), total_connections_returned.load(),
                               total_connections_returned_success.load(), live_connections.load());
-        if (live_connections<50) {
+        if (live_connections<30) {
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections");
             create_connections();
             //shutdown_mainloop();
@@ -66,7 +66,7 @@ void http3_sample_client::create_connections() {
     char* json_string_data = bson_as_json(&parent, &length);
     bson_destroy(&parent);
 
-    for (int x = 0;x < 500;x++) {
+    for (int x = 0;x < 200;x++) {
         qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data, length)),
             [this, x](conn_io_req_res* response) {
                 bool validate = response->validate();
@@ -99,7 +99,7 @@ void http3_sample_client::create_connections() {
                 bson_destroy(&bson);
 
                 total_connections_returned_success++;
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
 
                 session_token = token_header->value;
                 this->on_login_complete(token_header->value, token_header->value.length() > 0);
