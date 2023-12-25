@@ -51,7 +51,10 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             DEBUG_PRINT_ERROR(const_logtag, "ERROR (flush_egress) sending to %s:%s\n", name, port);
             DEBUG_PRINT_ERROR(const_logtag, "failed to send - flush_egress %d<>%d", sent, written);
             return -1;
+        } else  {
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "send-to in (flush_egress) %d", sent);
         }
+
         qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
         DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
         return sent;
@@ -235,6 +238,13 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
+            
+            char name[INET6_ADDRSTRLEN];
+            char port[10];
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "first %s:%s\n", name, port);
+            getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "second %s:%s\n", name, port);
         }
         //
         
@@ -296,6 +306,8 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     DEBUG_PRINT_ERROR(const_logtag, "ERROR (conn_io == NULL) sending to %s:%s\n", name, port);
                     DEBUG_PRINT_ERROR(const_logtag, "failed to send - recv_cb (conn_io == NULL) %d<>%d", sent, written);
                     continue;
+                } else {
+                    DEBUG_PRINT_IMPORTANT2(const_logtag, "send-to in (conn_io == NULL) %d", sent);
                 }
 
                 server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
@@ -344,7 +356,10 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     DEBUG_PRINT_ERROR(const_logtag, "ERROR sending to %s:%s\n", name, port);
                     DEBUG_PRINT_ERROR(const_logtag, "failed to send");
                     continue;
+                } else {
+                    DEBUG_PRINT_IMPORTANT2(const_logtag, "send-to in (conn_io == NULL)-222  %d", sent);
                 }
+
 
                 server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
                 DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
