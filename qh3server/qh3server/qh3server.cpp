@@ -239,6 +239,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
             
+            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "in server crc = 0x%x", essentials::get_crc(&server->buf[read], peer_addr_len));
             char name[INET6_ADDRSTRLEN];
             char port[10];
             getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);

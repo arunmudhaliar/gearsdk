@@ -467,6 +467,12 @@ int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* i
     return 0;
 }
 
+unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
+    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+    crc_ = crc32_z(crc_, (const unsigned char*)buffer, len);
+    return crc_;
+}
+
 bool conn_io_req_res::has_crc_header() {
     header* crc_header = get_header("crc");
     return crc_header != nullptr;

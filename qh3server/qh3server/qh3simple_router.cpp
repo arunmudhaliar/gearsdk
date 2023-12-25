@@ -157,6 +157,8 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         struct sockaddr* peer_addr_to_pass = (struct sockaddr*)&peer_addr;
         memcpy((void*)&buf[read], (void*)peer_addr_to_pass, peer_addr_len);
         
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "in router crc = 0x%x", essentials::get_crc(&buf[read], peer_addr_len));
+        
         route->relay(buf, read+peer_addr_len);
     }
 }
