@@ -18,6 +18,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 
 ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
+    const bool via_router = router_info && router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
     SendInfo send_info;
     while (1) {
         ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out),
@@ -34,10 +35,9 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
         }
 
         // if relay through router
-        if (router_info) {
-            ssize_t addr_buffer_len = router_info->serialised_buffer.length();
-            memcpy((void*)&out[written], (void*)router_info->serialised_buffer.c_str(), addr_buffer_len);
-            written+=addr_buffer_len;
+        if (via_router) {
+            memcpy((void*)&out[written], (void*)router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+            written+=PORT_FIELD_SZ;
         }
         //
         
@@ -209,6 +209,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     struct conn_io* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
     const char* port_id_cstr = server->port_id.c_str();
+    const bool via_router = server->router_info && server->router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
     while (1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
@@ -294,10 +295,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
 
                 // if relay through router
-                if (server->router_info) {
-                    ssize_t addr_buffer_len = server->router_info->serialised_buffer.length();
-                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), addr_buffer_len);
-                    written+=addr_buffer_len;
+                if (via_router) {
+                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+                    written+=PORT_FIELD_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -342,10 +342,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
 
                 // if relay through router
-                if (server->router_info) {
-                    ssize_t addr_buffer_len = server->router_info->serialised_buffer.length();
-                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), addr_buffer_len);
-                    written+=addr_buffer_len;
+                if (via_router) {
+                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+                    written+=PORT_FIELD_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,

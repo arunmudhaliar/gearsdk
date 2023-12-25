@@ -467,6 +467,24 @@ int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* i
     return 0;
 }
 
+int essentials::update_port(struct sockaddr* sa, uint16_t newPort) {
+    if (sa->sa_family == AF_INET) {
+        // IPv4
+        struct sockaddr_in* sa_in = (struct sockaddr_in*)sa;
+        sa_in->sin_port = htons(newPort);
+        return 0;
+    } else if (sa->sa_family == AF_INET6) {
+        // IPv6
+        struct sockaddr_in6* sa_in6 = (struct sockaddr_in6*)sa;
+        sa_in6->sin6_port = htons(newPort);
+        return 0;
+    } else {
+        // Unknown address family or unsupported type
+        fprintf(stderr, "Unsupported address family\n");
+    }
+    return -1;
+}
+
 unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
     crc_ = crc32_z(crc_, (const unsigned char*)buffer, len);

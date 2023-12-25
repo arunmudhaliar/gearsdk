@@ -43,7 +43,8 @@
 #define __LOGTAG__ "qh3server"
 
 #define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350 - sizeof(struct sockaddr)
+#define PORT_FIELD_SZ sizeof(uint16_t)
+#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
 
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
@@ -143,7 +144,7 @@ private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
-    uint8_t out[MAX_DATAGRAM_SIZE+sizeof(struct sockaddr)];
+    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
     uint8_t buf[65535];
     routerinfo* router_info = nullptr;
 protected:

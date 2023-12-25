@@ -118,6 +118,7 @@ public:
     static unsigned long get_crc(const uint8_t* buffer, ssize_t len);
     
     static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
+    static int update_port(struct sockaddr* sa, uint16_t newPort);
 };
 
 // h3 structs
