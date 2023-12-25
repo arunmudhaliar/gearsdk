@@ -60,8 +60,8 @@ struct route {
     static void router_recv_cb(EV_P_ ev_io* w, int revents);
 };
 struct port_range {
-    const int min = 5000;
-    const int max = 6000;
+    const int min = 5100;
+    const int max = 5200;
 };
 
 class qh3simple_router {
