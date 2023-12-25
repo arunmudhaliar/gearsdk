@@ -234,14 +234,18 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
         
         // if relay through router
         if (server->router_info) {
+            char name[INET6_ADDRSTRLEN];
+            char port[10];
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "unmodified - first %s:%s\n", name, port);
+            
             memset(&peer_addr, 0, peer_addr_len);
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
             
             DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "in server crc = 0x%x", essentials::get_crc(&server->buf[read], peer_addr_len));
-            char name[INET6_ADDRSTRLEN];
-            char port[10];
+
             getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
             DEBUG_PRINT_ERROR(const_logtag, "first %s:%s\n", name, port);
             getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
