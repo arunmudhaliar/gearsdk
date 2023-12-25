@@ -9,6 +9,7 @@
 #define qh3simple_router_hpp
 
 #include "http3_sample_server.hpp"
+#include "http3_command_server.hpp"
 
 #define MAX_ROUTES 16
 
@@ -18,16 +19,16 @@
 struct router_config {
     router_config(const qstring& host, const qstring& port,
                   const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-                  const fs::path& rootDir, struct addrinfo* router_) :
+                  const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_) :
                     host(host), port(port),
                     mongodb_uri(mongodb_uri), redis_ip(redis_ip), redis_port(redis_port_),
-                    rootDir(rootDir), router(router_) {
+                    rootDir(rootDir), router(router_), command_port(command_port_) {
     }
     
     router_config(const router_config& config) :
                     host(config.host), port(config.port),
                     mongodb_uri(config.mongodb_uri), redis_ip(config.redis_ip), redis_port(config.redis_port),
-                    rootDir(config.rootDir) {
+                    rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port) {
     }
     qstring host = "localhost";
     qstring port = "4034";
@@ -37,6 +38,8 @@ struct router_config {
     fs::path rootDir = ".";
     pthread_t run_thread_id = 0;
     struct addrinfo* router = nullptr;  //only for slaves
+    bool command_server = false;
+    uint16_t command_port = 4010;
 };
 
 struct route {
@@ -44,10 +47,10 @@ struct route {
     host(host), port(port), server_id(server_id_) {
     }
     ~route() {
-        close_socket();
+        close_bridge_socket();
     }
-    int create_bridge(struct ev_loop* loop);
-    int close_socket();
+    int create_bridge(struct ev_loop* loop, bool enable_command_receive);
+    int close_bridge_socket();
     ssize_t relay(uint8_t* buf, ssize_t len);
     qstring host;
     qstring port;
@@ -56,8 +59,8 @@ struct route {
     struct sockaddr_storage local_addr;
     socklen_t local_addr_len;
     struct addrinfo* peer = nullptr;
-    ev_io watcher;
-    static void router_recv_cb(EV_P_ ev_io* w, int revents);
+    ev_io command_watcher;
+    static void router_command_recv_cb(EV_P_ ev_io* w, int revents);
 };
 struct port_range {
     const int min = 5100;
@@ -75,14 +78,14 @@ private:
     int sock = -1;
     
     // qh3
-    route* spawn_qh3server(const qstring& host, const qstring& port,
-                        const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-                        const fs::path& rootDir);
+    route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config);
+    route* spawn_qh3server(const qstring& host, const qstring& port, const router_config& config);
     static void* spawn_qh3server_internal(void* data);
     
     static int next_available_port(const qstring& host, port_range& range, int index);  // index starts with 0
     static int is_port_available(const qstring& host, int port_number);
     
+    route* command_route = nullptr;
     std::vector<route*> routes;
     int server_counter = 0;
     port_range range;

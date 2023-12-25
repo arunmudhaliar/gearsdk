@@ -13,6 +13,7 @@ qh3simple_router::~qh3simple_router() {
     for(auto r : routes) {
         GX_DELETE(r);
     }
+    GX_DELETE(command_route);
 }
 
 int qh3simple_router::run() {
@@ -62,6 +63,18 @@ int qh3simple_router::run() {
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
     
+    // command server
+    GX_DELETE(command_route);
+    command_route = spawn_qh3server_command_server(config.host, config.command_port, config);
+    if (command_route == nullptr) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create command server !!!");
+        freeaddrinfo(router);
+        router = nullptr;
+        close(sock);
+        return -1;
+    }
+    //
+    
     // spawn initial servers
     int spawned_servers = 0;
     int overflow = 0;
@@ -79,7 +92,7 @@ int qh3simple_router::run() {
             DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
             break;
         }
-        route* route = spawn_qh3server(config.host, qstring::format_string("%d", free_port), config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir);
+        route* route = spawn_qh3server(config.host, qstring::format_string("%d", free_port), config);
         if (route==nullptr) {
             continue;
         }
@@ -170,7 +183,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 
-void route::router_recv_cb(EV_P_ ev_io* w, int revents) {
+void route::router_command_recv_cb(EV_P_ ev_io* w, int revents) {
     UNUSED(revents);
     route* route_client = (route*)w->data;
     static uint8_t buf_r[65535];
@@ -231,7 +244,7 @@ ssize_t route::relay(uint8_t* buf, ssize_t len) {
     }
     return sent;
 }
-int route::create_bridge(struct ev_loop* loop) {
+int route::create_bridge(struct ev_loop* loop, bool enable_command_receive) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -253,7 +266,7 @@ int route::create_bridge(struct ev_loop* loop) {
     if (fcntl(bridge_sock, F_SETFL, O_NONBLOCK) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
         freeaddrinfo(peer);
-        close_socket();
+        close_bridge_socket();
         return -1;
     }
     
@@ -262,18 +275,21 @@ int route::create_bridge(struct ev_loop* loop) {
         &local_addr_len) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to get local address of socket");
         freeaddrinfo(peer);
-        close_socket();
+        close_bridge_socket();
         return -1;
     };
 
-//    ev_io_init(&watcher, router_recv_cb, bridge_sock, EV_READ);
-//    ev_io_start(loop, &watcher);
-//    watcher.data = this;
+    if (enable_command_receive) {
+        ev_io_init(&command_watcher, router_command_recv_cb, bridge_sock, EV_READ);
+        ev_io_start(loop, &command_watcher);
+        command_watcher.data = this;
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Bridge socket enabled for receive in %s:%s", host.c_str(), port.c_str());
+    }
     
     return 0;
 }
 
-int route::close_socket() {
+int route::close_bridge_socket() {
     if (bridge_sock==-1) {
         return -1;
     }
@@ -284,18 +300,32 @@ int route::close_socket() {
     return result;
 }
 
-route* qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
-                                      const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-                                      const fs::path& rootDir) {
-    router_config* config = DEBUG_NEW router_config(host, port, mongodb_uri, redis_ip, redis_port_, rootDir, router);
-    if (pthread_create(&config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)config) < 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
-        GX_DELETE(config);
+route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config) {
+    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port);
+    new_config->command_server = true;
+    if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
+        GX_DELETE(new_config);
         return nullptr;
     }
     route* child = DEBUG_NEW route(host, port, server_counter++);
-    child->create_bridge(mainloop);
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3 command server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
+    child->create_bridge(mainloop, true);
+    return child;
+}
+
+route* qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
+                                         const router_config& config) {
+    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port);
+    if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+        GX_DELETE(new_config);
+        return nullptr;
+    }
+    route* child = DEBUG_NEW route(host, port, server_counter++);
     routes.push_back(child);
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
+    child->create_bridge(mainloop, false);
     return child;
 }
 
@@ -307,9 +337,15 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
     qstring& redis_ip = config->redis_ip;
     int redis_port = config->redis_port;
     fs::path& rootDir = config->rootDir;
-    http3_sample_server* new_server = DEBUG_NEW http3_sample_server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
-    new_server->run(host.c_str(), port.c_str(), rootDir, config->router);
-    GX_DELETE(new_server);
+    if (config->command_server) {
+        http3_command_server* new_server = DEBUG_NEW http3_command_server(redis_ip.c_str(), redis_port);
+        new_server->run(host.c_str(), port.c_str(), rootDir, config->router);
+        GX_DELETE(new_server);
+    } else {
+        http3_sample_server* new_server = DEBUG_NEW http3_sample_server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
+        new_server->run(host.c_str(), port.c_str(), rootDir, config->router);
+        GX_DELETE(new_server);
+    }
     GX_DELETE(config);
     pthread_exit(0);
 }

@@ -36,7 +36,7 @@ int main(int argc, const char* argv[]) {
 //    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
 //    server.run(host, port, rootDir, nullptr);
     
-    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr);
+    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010);
     qh3simple_router router(config);
     router.run();
     

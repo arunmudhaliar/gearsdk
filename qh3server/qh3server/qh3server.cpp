@@ -612,6 +612,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         .ai_protocol = IPPROTO_UDP
     };
 
+    host_id = host;
     port_id = port;
     if (router_ != nullptr) {
         GX_DELETE(router_info);

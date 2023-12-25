@@ -19,6 +19,7 @@ SRCDIR = ./qh3server
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/qh3server.cpp \
 $(SRCDIR)/qh3simple_router.cpp \
+$(SRCDIR)/http3_command_server.cpp \
 $(SRCDIR)/http3_sample_server.cpp \
 $(NCOMMONSRCS) \
 
