@@ -1,7 +1,7 @@
 FROM ubuntu:23.10
 LABEL key="qh3server"
 EXPOSE 4004/udp
-EXPOSE 5000-5016/udp
+EXPOSE 5100-5116/udp
 WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
