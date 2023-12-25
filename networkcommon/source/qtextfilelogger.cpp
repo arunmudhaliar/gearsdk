@@ -182,7 +182,7 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
         for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
             records.push_back(*it);
         }
-        DEBUG_PRINT_WARN(__LOGTAG__, "pending logs pushed - '%d' !!!", records_waiting.size());
+        DEBUG_WARN_COND(__LOGTAG__, records_waiting.size()>0, "pending logs pushed - '%d' !!!", records_waiting.size());
         records_waiting.clear();
     }
     if (fp == nullptr) {
@@ -216,7 +216,7 @@ size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
         for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
             records.push_back(*it);
         }
-        DEBUG_PRINT_WARN(__LOGTAG__, "pending logs pushed - '%d' !!!", records_waiting.size());
+        DEBUG_WARN_COND(__LOGTAG__, records_waiting.size()>0, "pending logs(buffer) pushed - '%d' !!!", records_waiting.size());
         records_waiting.clear();
     }
     if (fp == nullptr) {

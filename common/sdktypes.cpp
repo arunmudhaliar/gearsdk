@@ -97,6 +97,17 @@ extern "C"
         DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
     }
 
+    void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
+        if (condition == false) {
+            return;
+        }
+        char buffer[LOGBUFFER_SIZE + 1];
+        va_list v;
+        va_start(v, format);
+        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+        va_end(v);
+        DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+    }
     void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
