@@ -153,7 +153,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT_ERROR(__LOGTAG__, "in router, from %s:%s\n", name, port);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "in router, from %s:%s", name, port);
 
         
         unsigned long  crc_ = crc32(0L, Z_NULL, 0);

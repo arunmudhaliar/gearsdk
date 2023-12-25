@@ -20,6 +20,7 @@ int main(int argc, const char* argv[]) {
     init_gsdk();
     // main http server
     qstring host = "localhost";
+//    qstring host = "192.168.0.65";
     qstring port = "4004";
     qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
     qstring redis_ip = "127.0.0.1";
@@ -32,12 +33,12 @@ int main(int argc, const char* argv[]) {
         exit(0);
     }
     
-//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
-//    server.run(host, port, rootDir, nullptr);
+    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
+    server.run(host, port, rootDir, nullptr);
     
-    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr);
-    qh3simple_router router(config);
-    router.run();
+//    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr);
+//    qh3simple_router router(config);
+//    router.run();
     
     //    server.test_mongo_db();
 
