@@ -176,12 +176,13 @@ qbuffer* qlogfile::create_new_record(size_t buffer_size, std::vector<qbuffer*>& 
 size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length) {
     bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
     if (!locked) {
-        DEBUG_PRINT_WARN(__LOGTAG__, "logging failed - '%s' !!!", buffer);
+        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "logging failed - '%s' !!!", buffer);
     } else {
         // move pending records if any
         for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
             records.push_back(*it);
         }
+        DEBUG_PRINT_WARN(__LOGTAG__, "pending logs pushed - '%d' !!!", records_waiting.size());
         records_waiting.clear();
     }
     if (fp == nullptr) {
@@ -209,12 +210,13 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
 size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
     bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
     if (!locked) {
-        DEBUG_PRINT_WARN(__LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
+        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
     } else {
         // move pending records if any
         for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
             records.push_back(*it);
         }
+        DEBUG_PRINT_WARN(__LOGTAG__, "pending logs pushed - '%d' !!!", records_waiting.size());
         records_waiting.clear();
     }
     if (fp == nullptr) {
@@ -235,7 +237,7 @@ size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
 
 int qlogfile::flush(bool check_for_log_file_size) {
     if (log_mutex.tryLock(__FUNCTION__) != 0) {
-        DEBUG_PRINT_WARN(__LOGTAG__, "flush failed - '%d' !!!", check_for_log_file_size);
+        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "flush failed - '%d' !!!", check_for_log_file_size);
         return -2;
     }
     if (fp == nullptr) {
