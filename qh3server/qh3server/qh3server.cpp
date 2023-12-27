@@ -731,6 +731,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     close_dangling_connections_scheduler.set_ev_lopp(mainloop);
     close_dangling_connections_scheduler.schedule_repeat_timer([this, const_logtag](qtimer& timer) {
             int dangling_connections = 0;
+            int dangling_with_response = 0;
+            int flushed_on_exit = 0;
             struct conn_io* tmp, * conn_io = NULL;
             HASH_ITER(hh, conns->h, conn_io, tmp) {
                 //flush_egress(mainloop, conn_io);
@@ -740,7 +742,12 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
                         ssize_t sent_bytes = flush_egress(mainloop, conn_io);
                         if (sent_bytes) {
                             DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
+                            flushed_on_exit++;
                         }
+                    }
+                    
+                    if (conn_io->http_response->get_payload().buffer.length()>3) {
+                        dangling_with_response++;
                     }
                     DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "closing dangling connection !!!");
                     Stats stats;
@@ -759,11 +766,17 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             }
             if (dangling_connections>0) {
                 if (dangling_connections<10) {
-                    DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "Force closed %d dangling connections.", dangling_connections);
+                    DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
+                                dangling_connections, flushed_on_exit);
                 } else if (dangling_connections>=10 && dangling_connections <20) {
-                    DEBUG_PRINT_IMPORTANT2(const_logtag, "Force closed %d dangling connections.", dangling_connections);
+                    DEBUG_PRINT_IMPORTANT2(const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
+                                           dangling_connections, flushed_on_exit);
                 } else if (dangling_connections>=20) {
-                    DEBUG_PRINT_WARN(const_logtag, "Force closed %d dangling connections.", dangling_connections);
+                    DEBUG_PRINT_WARN(const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
+                                     dangling_connections, flushed_on_exit);
+                }
+                if (dangling_with_response) {
+                    DEBUG_PRINT_ERROR(const_logtag, "Force closed %d dangling connections with response %d", dangling_with_response);
                 }
             }
         }, 3);
