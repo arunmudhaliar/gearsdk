@@ -25,7 +25,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
             &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "done writing");
             break;
         }
 
@@ -54,7 +54,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
         }
 
         qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
-        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
         return sent;
     }
 
@@ -165,7 +165,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
 
     HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, new_conn_io);
 
-    DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "new connection");
+    DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "new connection");
 
     return new_conn_io;
 }
@@ -221,7 +221,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "recv would block");
                 break;
             }
 
@@ -281,7 +281,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (conn_io == NULL) {
             if (!quiche_version_is_supported(version)) {
-                DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "version negotiation");
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                     dcid, dcid_len,
@@ -313,12 +313,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
 
                 server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
-                DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
                 continue;
             }
 
             if (token_len == 0) {
-                DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "stateless retry");
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "stateless retry");
 
                 server->mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                     token, &token_len);
@@ -355,13 +355,13 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     char port[10];
                     getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
                     DEBUG_PRINT_ERROR(const_logtag, "ERROR sending to %s:%s", name, port);
-                    DEBUG_PRINT_ERROR(const_logtag, "failed to send");
+                    DEBUG_PRINT_ERROR(const_logtag, "failed to send %d<>%d", sent, written);
                     continue;
                 }
 
 
                 server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
-                DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -399,7 +399,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(conn_io->conn)) {
             Event* ev;
@@ -447,7 +447,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                             break;
                         }
                         conn_io->http_request->set_payload(qstring(server->buf, len));
-                        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "%.*s", (int)len, server->buf);
+                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%.*s", (int)len, server->buf);
                     }
                     break;
                 }
@@ -515,7 +515,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                             .value = (uint8_t*)it.second->value.c_str(),
                             .value_len = it.second->value.length(),
                         };
-                        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
                         additional_header_index++;
                     }
                     quiche_h3_send_response(conn_io->http3, conn_io->conn,
@@ -530,7 +530,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                         server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "response_send_fail", port_id_cstr);
                         break;
                     }
-                    DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
+                    DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
                 }
                     break;
 
@@ -561,7 +561,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             quiche_conn_stats(conn_io->conn, &stats);
             quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-            DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
+            DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
                 stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
             HASH_DELETE(hh, conns->h, conn_io);
@@ -586,7 +586,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
     struct conn_io* conn_io = (struct conn_io*)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
-    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "timeout");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
 
     conn_io->bridge->flush_egress(loop, conn_io);
 
@@ -597,7 +597,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu",
             stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
         conn_io->bridge->destroy_connection(loop, conn_io);
@@ -687,7 +687,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         (uint8_t*)QUICHE_H3_APPLICATION_PROTOCOL,
         sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
 
-    quiche_config_set_max_idle_timeout(config, 5000);
+    quiche_config_set_max_idle_timeout(config, 25000);
     quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(config, 10000000);
@@ -736,18 +736,18 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
                 //flush_egress(mainloop, conn_io);
                 if (conn_io->timer.repeat == 0) {
                     if (!quiche_conn_is_closed(conn_io->conn)) {
-                        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "dangling : try flush : connection is still open");
+                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
                         ssize_t sent_bytes = flush_egress(mainloop, conn_io);
                         if (sent_bytes) {
-                            DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
+                            DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
                         }
                     }
-                    DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "closing dangling connection !!!");
+                    DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "closing dangling connection !!!");
                     Stats stats;
                     PathStats path_stats;
                     quiche_conn_stats(conn_io->conn, &stats);
                     quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-                    DEBUG_PRINT(LOG_LEVEL_3, const_logtag,
+                    DEBUG_PRINT(LOG_LEVEL_4, const_logtag,
                                 "dangling connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
                         stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, ev_now(mainloop) - conn_io->creation_time);
                     HASH_DELETE(hh, conns->h, conn_io);

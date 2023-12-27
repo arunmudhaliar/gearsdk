@@ -257,7 +257,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
 
         if (written == QUICHE_ERR_DONE)
         {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
             break;
         }
 
@@ -277,7 +277,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -316,7 +316,7 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer *w, int revents)
         quiche_conn_stats(qconnection->conn, &stats);
         quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
                     stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
         qconnection->bridge->destroy_connection(loop, qconnection);
@@ -349,7 +349,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN))
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -387,7 +387,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         {
             if (!quiche_version_is_supported(version))
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "version negotiation");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
@@ -409,13 +409,13 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
             if (token_len == 0)
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stateless retry");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stateless retry");
 
                 mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
@@ -449,7 +449,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -486,7 +486,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(qconnection->conn))
         {

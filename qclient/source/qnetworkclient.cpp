@@ -190,7 +190,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection)
             &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
             break;
         }
 
@@ -208,7 +208,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection)
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -315,7 +315,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -338,10 +338,10 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
     }
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done reading");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done reading");
 
     if (quiche_conn_is_established(qconnection_->conn) && qconnection_->bridge->getstate() == CON_STATE::STATE_OPEN) {
         const uint8_t* app_proto;
@@ -436,7 +436,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
         return;
     }
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
 
     quiche_conn_on_timeout(qconnection_->conn);
     qconnection_->bridge->flushegress(loop, qconnection_);
@@ -448,7 +448,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
         quiche_conn_stats(qconnection_->conn, &stats);
         quiche_conn_path_stats(qconnection_->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
             stats.recv, stats.sent, stats.lost, path_stats.rtt);
         qconnection_->bridge->event_close(qconnection_);
         ev_break(EV_A_ EVBREAK_ONE);

@@ -165,7 +165,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     unsigned long  crc = crc32(0L, Z_NULL, 0);
     crc = crc32_z(crc, buffer.data, buffer.index);
     writer.write(buffer, crc);
-    DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "%s - user id : %x", path_header->value.c_str(), crc);
+    DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%s - user id : %x", path_header->value.c_str(), crc);
     
     qstring pid;
     pid.format("%lx", crc);

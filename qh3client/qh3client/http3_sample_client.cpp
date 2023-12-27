@@ -99,7 +99,7 @@ void http3_sample_client::create_connections() {
                 bson_destroy(&bson);
 
                 total_connections_returned_success++;
-                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
 
                 session_token = token_header->value;
                 this->on_login_complete(token_header->value, token_header->value.length() > 0);
