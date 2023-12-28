@@ -136,48 +136,46 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
             return;
         }
 
-//        qh3server::get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "");
-        
-        uint8_t type;
-        uint32_t version;
-
-        uint8_t scid[MAX_CID_LEN];
-        size_t scid_len = sizeof(scid);
-
-        uint8_t dcid[MAX_CID_LEN];
-        size_t dcid_len = sizeof(dcid);
-
-//        uint8_t odcid[MAX_CID_LEN];
-//        size_t odcid_len = sizeof(odcid);
-
-        uint8_t token[MAX_TOKEN_LEN];
-        size_t token_len = sizeof(token);
-
-        int rc = quiche_header_info(buf, read, LOCAL_CONN_ID_LEN, &version,
-            &type, scid, &scid_len, dcid, &dcid_len,
-            token, &token_len);
-        if (rc < 0) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
-//            qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail");
-            return;
-        }
+////        qh3server::get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "");
+//        
+//        uint8_t type;
+//        uint32_t version;
+//
+//        uint8_t scid[MAX_CID_LEN];
+//        size_t scid_len = sizeof(scid);
+//
+//        uint8_t dcid[MAX_CID_LEN];
+//        size_t dcid_len = sizeof(dcid);
+//
+////        uint8_t odcid[MAX_CID_LEN];
+////        size_t odcid_len = sizeof(odcid);
+//
+//        uint8_t token[MAX_TOKEN_LEN];
+//        size_t token_len = sizeof(token);
+//
+//        int rc = quiche_header_info(buf, read, LOCAL_CONN_ID_LEN, &version,
+//            &type, scid, &scid_len, dcid, &dcid_len,
+//            token, &token_len);
+//        if (rc < 0) {
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
+////            qh3server::get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "parse_header_fail");
+//            return;
+//        }
         
         
 //        char name[INET6_ADDRSTRLEN];
 //        char port[10];
 //        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//        DEBUG_PRINT_ERROR(__LOGTAG__, "in router, from %s:%s", name, port);
-//
+////        DEBUG_PRINT_ERROR(__LOGTAG__, "in router, from %s:%s", name, port);
 
-        unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-        crc_ = crc32_z(crc_, (const unsigned char*)dcid, dcid_len);
-        int index = crc_%(int)router->routes.size();
-        route* route = router->routes[index];
         struct sockaddr* peer_addr_to_pass = (struct sockaddr*)&peer_addr;
         memcpy((void*)&buf[read], (void*)peer_addr_to_pass, peer_addr_len);
         
-//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "in router crc = 0x%x", essentials::get_crc(&buf[read], peer_addr_len));
-        
+        unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+//        crc_ = crc32_z(crc_, (const unsigned char*)dcid, dcid_len);
+        crc_ = crc32_z(crc_, (const unsigned char*)&buf[read], peer_addr_len);
+        int index = crc_%(int)router->routes.size();
+        route* route = router->routes[index];
         route->relay(buf, read+peer_addr_len);
     }
 }

@@ -180,7 +180,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
 void qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
     if (name.compare(":path") == 0) {
-        DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "got HTTP header: %s=%s",
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "got HTTP header: %s=%s",
             name.c_str(), value.c_str());
     }
     else {
@@ -736,7 +736,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             struct conn_io* tmp, * conn_io = NULL;
             HASH_ITER(hh, conns->h, conn_io, tmp) {
                 //flush_egress(mainloop, conn_io);
-                if (conn_io->timer.repeat == 0) {
+                ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
+                if (elapsed > 20.0f && conn_io->timer.repeat == 0) {    // 20 seconds after connection creation time.
                     if (!quiche_conn_is_closed(conn_io->conn)) {
                         DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
                         ssize_t sent_bytes = flush_egress(mainloop, conn_io);
@@ -776,7 +777,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
                                      dangling_connections, flushed_on_exit);
                 }
                 if (dangling_with_response) {
-                    DEBUG_PRINT_ERROR(const_logtag, "Force closed %d dangling connections with response %d", dangling_with_response);
+                    DEBUG_PRINT_ERROR(const_logtag, "Force closed %d dangling connections with response", dangling_with_response);
                 }
             }
         }, 3);

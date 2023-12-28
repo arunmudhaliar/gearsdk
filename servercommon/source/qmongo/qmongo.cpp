@@ -91,16 +91,21 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qs
         return EXIT_FAILURE;
     }
     bson_error_t error;
+    bson_t reply;
     bson_t indexkey;
     mongoc_index_opt_t opt;
     mongoc_index_opt_init(&opt);
     bson_init(&indexkey);
     interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
-    if (!mongoc_collection_create_index(collection, &indexkey, &opt, &error)) {
-        fprintf(stderr, "%s\n", error.message);
+    if (!mongoc_collection_create_index_with_opts(collection, &indexkey, &opt, nullptr,  &reply, &error)) {
+        fprintf(stderr, "%s : err_code %d\n", error.message, error.code);
         bson_destroy(&indexkey);
+        bson_validate(&reply, BSON_VALIDATE_NONE, NULL);
+        bson_destroy (&reply);
         return EXIT_FAILURE;
     }
+    bson_validate (&reply, BSON_VALIDATE_NONE, NULL);
+    bson_destroy (&reply);
     bson_destroy(&indexkey);
     return EXIT_SUCCESS;
 }
@@ -136,10 +141,13 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qs
 
 int qmongo::insert(const qstring& collection_name, bson_t& query) {
     bson_error_t error;
-    if (!mongoc_collection_insert_one(get_collection(collection_name.c_str()), &query, nullptr, nullptr, &error)) {
-        fprintf(stderr, "%s\n", error.message);
+    bson_t reply;
+    if (!mongoc_collection_insert_one(get_collection(collection_name.c_str()), &query, nullptr, &reply, &error)) {
+        fprintf(stderr, "%s : err_code %d\n", error.message, error.code);
+        bson_destroy (&reply);
         return EXIT_FAILURE;
     }
+    bson_destroy (&reply);
     return EXIT_SUCCESS;
 }
 
@@ -158,11 +166,11 @@ int qmongo::update(const qstring& collection_name, bson_t& query, bson_t& update
     bool result = mongoc_collection_find_and_modify_with_opts(
         get_collection(collection_name), &query, opts, &reply, &error);
     if (!result) {
-        fprintf(stderr, "%s\n", error.message);
+        fprintf(stderr, "%s : err_code %d\n", error.message, error.code);
     }
 
     //    char* json_string = bson_as_json(&reply, nullptr);
-    //    bson_destroy (&reply);
+    bson_destroy (&reply);
     mongoc_find_and_modify_opts_destroy(opts);
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

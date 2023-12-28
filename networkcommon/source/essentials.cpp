@@ -28,7 +28,7 @@ int qmutex::init(const std::string& name) {
     else {
         inited = true;
         condition.init(name);
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s mutex init", name.c_str());
+        DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex init", name.c_str());
     }
     return ret_val;
 }
@@ -37,7 +37,7 @@ qmutex::~qmutex() {
     if (inited) {
         pthread_mutex_destroy(&mutex);
     }
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s mutex destroyed", name.c_str());
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex destroyed", name.c_str());
 }
 
 int qmutex::tryInitIfNot() {
@@ -149,7 +149,7 @@ int qmutexcondition::init(const std::string& name) {
     }
     else {
         inited = true;
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s condtion init", name.c_str());
+        DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condtion init", name.c_str());
     }
     return retVal;
 }
@@ -169,7 +169,7 @@ qmutexcondition::~qmutexcondition() {
     if (inited) {
         pthread_cond_destroy(&cond);
     }
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s condition destroyed", name.c_str());
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condition destroyed", name.c_str());
 }
 
 int qmutexcondition::signal(const char* msg) {
