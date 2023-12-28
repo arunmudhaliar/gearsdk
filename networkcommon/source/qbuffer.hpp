@@ -14,7 +14,7 @@
 #include "../../common/qstring.h"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "qtextfilelogger"
+#define __LOGTAG__ "qbuffer"
 
 struct qbuffer {
     ~qbuffer() {

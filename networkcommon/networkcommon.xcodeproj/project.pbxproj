@@ -18,6 +18,8 @@
 		557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557487432AE9A78D00C0F6CA /* essentials.hpp */; };
 		5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574879C2AEC227500C0F6CA /* qtimer.cpp */; };
 		5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574879D2AEC227500C0F6CA /* qtimer.hpp */; };
+		5594E2262B3DD61900E47984 /* qtextfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2242B3DD61900E47984 /* qtextfile.cpp */; };
+		5594E2272B3DD61900E47984 /* qtextfile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5594E2252B3DD61900E47984 /* qtextfile.hpp */; };
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +35,8 @@
 		557487432AE9A78D00C0F6CA /* essentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = essentials.hpp; sourceTree = "<group>"; };
 		5574879C2AEC227500C0F6CA /* qtimer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer.cpp; sourceTree = "<group>"; };
 		5574879D2AEC227500C0F6CA /* qtimer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtimer.hpp; sourceTree = "<group>"; };
+		5594E2242B3DD61900E47984 /* qtextfile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfile.cpp; sourceTree = "<group>"; };
+		5594E2252B3DD61900E47984 /* qtextfile.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfile.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
@@ -91,6 +95,8 @@
 				556AB5F92AF3A2C700D688DB /* qbuffer.hpp */,
 				556ABAE32B0A8E7E00D688DB /* qstatslogger.cpp */,
 				556ABAE42B0A8E7E00D688DB /* qstatslogger.hpp */,
+				5594E2242B3DD61900E47984 /* qtextfile.cpp */,
+				5594E2252B3DD61900E47984 /* qtextfile.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -110,6 +116,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5594E2272B3DD61900E47984 /* qtextfile.hpp in Headers */,
 				55FB29C02ACF20990051DDF9 /* quiche.h in Headers */,
 				5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */,
 				556ABAE62B0A8E7E00D688DB /* qstatslogger.hpp in Headers */,
@@ -178,6 +185,7 @@
 				557487442AE9A78D00C0F6CA /* essentials.cpp in Sources */,
 				556ABAE52B0A8E7E00D688DB /* qstatslogger.cpp in Sources */,
 				5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */,
+				5594E2262B3DD61900E47984 /* qtextfile.cpp in Sources */,
 				556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,
 				556AB5FA2AF3A2C700D688DB /* qbuffer.cpp in Sources */,

@@ -24,6 +24,17 @@
 #define PLATFORM PLATFORM_UNIX
 #endif
 
+#include <filesystem>
+
+#if PLATFORM == PLATFORM_MAC
+namespace fs = std::__fs::filesystem;
+#elif PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+namespace fs = std::filesystem;
+#else
+namespace fs = std::__fs::filesystem;
+#endif
+
 #ifndef DEBUG_NEW
 #include "./nvwa/debug_new.pch"
 #endif

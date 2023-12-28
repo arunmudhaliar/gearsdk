@@ -15,17 +15,7 @@
 #include "../../common/timer.h"
 #include <map>
 
-#if PLATFORM == PLATFORM_MAC
-namespace fs = std::__fs::filesystem;
-#elif PLATFORM == PLATFORM_LINUX
-#include <linux/limits.h>
-namespace fs = std::filesystem;
-#else
-namespace fs = std::__fs::filesystem;
-#endif
-
 #include <netdb.h>
-#include <filesystem>
 #include <vector>
 //#include <quiche.h>
 #include <zlib.h>
