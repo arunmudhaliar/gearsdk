@@ -75,6 +75,7 @@ private:
     qmutexcondition condition;
     long blockCount = 0;
     int wanted = 0;
+    static int log_flag;
 };
 
 class essentials {
@@ -207,9 +208,13 @@ public:
         data.buffer = payload_;
         return data;
     }
-    const payload& append_to_payload(const qstring& payload_) {
-        data.buffer += payload_;
+    const payload& append_to_payload(const uint8_t* str, ssize_t len) {
+        data.buffer.run_printf((const char*)str, len);
         return data;
+    }
+    
+    void clear_payload() {
+        data.buffer.clear();
     }
 
     header* add_or_get_header(const qstring& name_, const qstring& value_) {

@@ -20,6 +20,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
     const bool via_router = router_info && router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
     SendInfo send_info;
+    ssize_t total_bytes_sent = 0;
     while (1) {
         ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out),
             &send_info);
@@ -55,13 +56,14 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
 
         qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
         DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
-        return sent;
+        //return sent;
+        total_bytes_sent+=sent;
     }
 
     double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
     conn_io->timer.repeat = t;
     ev_timer_again(loop, &conn_io->timer);
-    return 0;
+    return total_bytes_sent;
 }
 
 void qh3server::mint_token(const uint8_t* dcid, size_t dcid_len,
@@ -414,6 +416,16 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 }
             }
 
+            // pending
+            const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
+            if (conn_io->total_sent_bytes < (ssize_t)payload.buffer.length()) {
+                server->send_in_chunks(conn_io);
+                if (conn_io->total_sent_bytes==payload.buffer.length()) {
+                    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "FINISH Stream sending .... [%d] [%d]", conn_io->total_sent_bytes, payload.buffer.length());
+                }
+            }
+            //
+            
             while (1) {
                 int64_t s = quiche_h3_conn_poll(conn_io->http3,
                     conn_io->conn,
@@ -455,12 +467,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 case Event_type::Finished: {
                     EV_START_RECORD(parse_start_time);
                     conn_io->bridge->parse(conn_io);
-                    EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 500);
+                    EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 200);
 
                     EV_START_RECORD(send_start_time);
-                    const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
+//                    const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
                     if (payload.buffer.length() == 0) {
-                        DEBUG_PRINT_IMPORTANT2(const_logtag, "no-response. ignoring the request!!!");
+                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "no-response. ignoring the request!!!");
                         conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
                     }
                     const qstring& content_length_data = qstring::format_string("%d", (int)payload.buffer.length());
@@ -520,16 +532,34 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     }
                     quiche_h3_send_response(conn_io->http3, conn_io->conn,
                         s, headers, header_size + conn_io->http_response->headers.size(), false);
-                    ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
-                        (uint8_t*)payload.buffer.c_str(), payload.buffer.length(),
-                        true);
                     GX_DELETE_ARY(headers);
-                    EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 200);
-                    if (send_len != (ssize_t)payload.buffer.length()) {
-                        DEBUG_PRINT_ERROR(const_logtag, "HTTP response send failure");
-                        server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "error", "qh3server", "response_send_fail", port_id_cstr);
-                        break;
+                    
+                    // payload
+                    conn_io->total_sent_bytes = 0;  // reset the total bytes sent over network
+                    ssize_t bytes_to_send = payload.buffer.length();
+                    if (bytes_to_send < SEND_CHUNK_SIZE) {    // if small chunk then try issue in one go.
+                        ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, s,
+                            (uint8_t*)payload.buffer.c_str(), bytes_to_send,
+                            true);
+                        if (sent < 0) {
+                            break;
+                        }
+                        conn_io->total_sent_bytes+=sent;
+                        if (conn_io->total_sent_bytes != (ssize_t)payload.buffer.length()) {
+                            DEBUG_PRINT_ERROR(const_logtag, "HTTP response send failure %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
+                            server->get_stats_loggeer()->server_count("recv_cb", 1, "", conn_io->total_sent_bytes, (ssize_t)payload.buffer.length(), "error", "qh3server", "response_send_fail", port_id_cstr);
+                            break;
+                        }
+                    } else {
+                        conn_io->stream_id = s;
+                        server->send_in_chunks(conn_io);
+                        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "START Stream sending .... [%d] [%d]", conn_io->total_sent_bytes, payload.buffer.length());
+                        if (conn_io->total_sent_bytes < (ssize_t)payload.buffer.length()) {
+                            DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "(Partial) HTTP response send %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
+                        }
                     }
+                    
+                    EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 200);
                     DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
                 }
                     break;
@@ -571,6 +601,31 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             quiche_conn_free(conn_io->conn);
             GX_DELETE(conn_io);
         }
+    }
+}
+
+void qh3server::send_in_chunks(struct conn_io* conn_io) {
+    const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
+    size_t chunk_size = SEND_CHUNK_SIZE;
+    uint8_t* data = (uint8_t*)payload.buffer.c_str();
+    size_t start_index = conn_io->total_sent_bytes;
+    ssize_t total_payload_size = payload.buffer.length();
+    
+     // Send the data in chunks
+    for (size_t offset = start_index; offset < total_payload_size; offset += chunk_size) {
+        size_t remaining = total_payload_size - offset;
+        size_t chunk = remaining < chunk_size ? remaining : chunk_size;
+        // Send a chunk of the data
+        bool fin = offset + chunk >= total_payload_size;
+        ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, conn_io->stream_id, data + offset, chunk, fin);
+        if (sent < 0) {
+//            fprintf(stderr, "Error sending body: %zd\n", sent);
+            break;
+        }
+        if (fin) {
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "fin");
+        }
+        conn_io->total_sent_bytes+=sent;
     }
 }
 
@@ -735,11 +790,10 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             int flushed_on_exit = 0;
             struct conn_io* tmp, * conn_io = NULL;
             HASH_ITER(hh, conns->h, conn_io, tmp) {
-                //flush_egress(mainloop, conn_io);
                 ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
-                if (elapsed > 20.0f && conn_io->timer.repeat == 0) {    // 20 seconds after connection creation time.
-                    if (!quiche_conn_is_closed(conn_io->conn)) {
-                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
+                if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {    // DROP_CONNECTION_AFTER seconds after connection creation time.
+                    if (true || !quiche_conn_is_closed(conn_io->conn)) {    // flushing even if the connection is closed.
+//                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
                         ssize_t sent_bytes = flush_egress(mainloop, conn_io);
                         if (sent_bytes) {
                             DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
@@ -767,17 +821,14 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             }
             if (dangling_connections>0) {
                 if (dangling_connections<10) {
-                    DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
-                                dangling_connections, flushed_on_exit);
+                    DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "Force closed %d dangling connections, with response %d. flushed_on_exit(%d)",
+                                dangling_connections, dangling_with_response, flushed_on_exit);
                 } else if (dangling_connections>=10 && dangling_connections <20) {
-                    DEBUG_PRINT_IMPORTANT2(const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
-                                           dangling_connections, flushed_on_exit);
+                    DEBUG_PRINT_IMPORTANT2(const_logtag, "Force closed %d dangling connections, with response %d. flushed_on_exit(%d)",
+                                dangling_connections, dangling_with_response, flushed_on_exit);
                 } else if (dangling_connections>=20) {
-                    DEBUG_PRINT_WARN(const_logtag, "Force closed %d dangling connections. flushed_on_exit(%d)",
-                                     dangling_connections, flushed_on_exit);
-                }
-                if (dangling_with_response) {
-                    DEBUG_PRINT_ERROR(const_logtag, "Force closed %d dangling connections with response", dangling_with_response);
+                    DEBUG_PRINT_WARN(const_logtag, "Force closed %d dangling connections, with response %d. flushed_on_exit(%d)",
+                                dangling_connections, dangling_with_response, flushed_on_exit);
                 }
             }
         }, 3);

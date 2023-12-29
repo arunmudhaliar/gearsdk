@@ -293,11 +293,17 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
     qstring token_in_redis;
     hiredis->get_value(pid, token_in_redis);
     if (token_in_redis==token_header->value) {
-        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "Valid user");
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "Valid user");
     } else {
-        DEBUG_PRINT_ERROR(const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
     }
     qh3server::get_stats_loggeer()->server_count("parse", 1, token_in_redis, pid, "", token_header->value, "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.token_check");
+#if TEST_RESPONSE
+    if (test_response.length()==0) {
+        qtextfile::get_content("./128KB.json", test_response);
+    }
+    conn_io->http_response->set_payload(test_response);
+#endif
 }
 
 void http3_sample_server::test_mongo_db() {

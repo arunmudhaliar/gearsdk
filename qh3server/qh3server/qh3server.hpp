@@ -51,6 +51,9 @@
     sizeof(struct sockaddr_storage) + \
     MAX_CID_LEN
 
+#define SEND_CHUNK_SIZE 256
+#define DROP_CONNECTION_AFTER 45.0f     // in seconds
+
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
@@ -94,6 +97,8 @@ struct conn_io {
     conn_io_req_res* http_request = nullptr;
     conn_io_req_res* http_response = nullptr;
     ev_tstamp creation_time = 0;
+    ssize_t total_sent_bytes = 0;
+    int64_t stream_id = -1;
 };
 
 struct routerinfo {
@@ -144,6 +149,8 @@ private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
+    void send_in_chunks(struct conn_io* conn_io);
+    
     uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
     uint8_t buf[65535];
     routerinfo* router_info = nullptr;

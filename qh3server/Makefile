@@ -7,6 +7,7 @@ $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qstatslogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(COMMON_SRCDIR)/timer.cpp \

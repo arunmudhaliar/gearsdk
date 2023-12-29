@@ -95,6 +95,13 @@ public:
         clear();
         utstring_printf(ut_string, "%s", str);
     }
+    
+    void run_printf(const char* str, ssize_t len) {    // wont clear the data
+        if (str == nullptr) {
+            return;
+        }
+        utstring_printf(ut_string, "%.*s", len, str);
+    }
 
     void bin_copy(const uint8_t* buf, ssize_t len) {
         if (buf == nullptr) {

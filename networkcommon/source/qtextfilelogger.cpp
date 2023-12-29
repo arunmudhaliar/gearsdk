@@ -210,7 +210,7 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
 size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
     bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
     if (!locked) {
-        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
+        DEBUG_WARN(LOG_LEVEL_4, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
     } else {
         // move pending records if any
         for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {

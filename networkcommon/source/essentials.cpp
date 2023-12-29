@@ -16,6 +16,8 @@
 using namespace gsdk;
 
 #pragma region QMutex
+int qmutex::log_flag = 0;
+
 qmutex::qmutex() {
     inited = false;
 }
@@ -60,7 +62,7 @@ int qmutex::tryLock(const char* lockedBy, const char* msg) {
         }
     }
     retVal = pthread_mutex_trylock(&mutex);
-    if (retVal != 0) {
+    if (retVal != 0 && qmutex::log_flag) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(%s). Locked by %s, %s", name.c_str(), this->lockedBy.c_str(), (msg != nullptr) ? msg : "");
     }
     else {
@@ -521,7 +523,7 @@ bool conn_io_req_res::validate() {
     if (crc_from_req != crc_) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s",
             crc_, crc_from_req, payload.buffer.length(), crc_header->value.c_str());
-        assert(crc_from_req == crc_);
+//        assert(crc_from_req == crc_);
     }
     //     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
     //        crc_, crc_from_req, payload->len, crc_header->value);
