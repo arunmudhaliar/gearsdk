@@ -6,6 +6,7 @@ WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qh3server/ ./qh3server
+COPY qh3client/ ./qh3client
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
 COPY make_qh3server.sh ./
