@@ -301,7 +301,7 @@ void* qtextfilelogger::run_log_session(void* data) {
     qlog_config* config = (qlog_config*)data;
     qtextfilelogger* logger = config->logger;
 
-    pthread_setname_np("qtextfilelogger");
+    PTHREAD_NAME("qtextfilelogger");
     if (logger->log_session_mutex.tryLock(__FUNCTION__) != 0) {
         config->finished = true;
         config->pthread_returnValue = -1;

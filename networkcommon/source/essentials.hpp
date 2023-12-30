@@ -32,6 +32,14 @@ if (elapsed_since_##timestamp_ > warn_after_ms) \
     DEBUG_PRINT_WARN(tag, formatted_msg, elapsed_since_##timestamp_); \
 }
 
+#if PLATFORM == PLATFORM_LINUX
+#define PTHREAD_NAME(name) pthread_setname_np(pthread_self(), name)
+#elif PLATFORM == PLATFORM_MAC
+#define PTHREAD_NAME(name) pthread_setname_np(name)
+#else
+#define PTHREAD_NAME(name) pthread_setname_np(name)
+#endif
+
 class qmutex;
 class qmutexcondition {
 public:
