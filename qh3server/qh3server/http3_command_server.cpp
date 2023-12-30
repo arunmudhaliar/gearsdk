@@ -8,7 +8,7 @@
 #include "http3_command_server.hpp"
 #include "../../common/gxcrc32.h"
 
-http3_command_server::http3_command_server(const qstring& redis_ip, int redis_port, bridge_command_center* bridge_) : bridge(bridge_) {
+http3_command_server::http3_command_server(const qstring& redis_ip, int redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
     hiredis = DEBUG_NEW qhiredis();
     hiredis->connect_redis(redis_ip, redis_port);
 }
@@ -119,7 +119,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 
 void http3_command_server::send_shutdown_to_all() {
     conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
-    qh3client_helper::send_async_request(host_id.c_str(), "4004", req,
+    qh3client_helper::send_async_request(host_id, router_port, req,
         [this](conn_io_req_res* response) {
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
         });

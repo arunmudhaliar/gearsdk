@@ -152,7 +152,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config) {
-    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port);
+    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port, config.router_port);
     new_config->command_server = true;
     new_config->ref = this;
 
@@ -175,7 +175,7 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 
 route* qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
                                          const router_config& config) {
-    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port);
+    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port);
     if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
         GX_DELETE(new_config);
@@ -198,7 +198,7 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
     fs::path& rootDir = config->rootDir;
     if (config->command_server) {
         pthread_setname_np("http3_command_server");
-        http3_command_server* new_server = DEBUG_NEW http3_command_server(redis_ip.c_str(), redis_port, config->ref);
+        http3_command_server* new_server = DEBUG_NEW http3_command_server(redis_ip.c_str(), redis_port, config->ref, config->router_port);
         new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port);
         GX_DELETE(new_server);
     } else {

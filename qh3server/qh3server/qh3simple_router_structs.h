@@ -20,16 +20,17 @@ public:
 struct router_config {
     router_config(const qstring& host, const qstring& port,
                   const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-                  const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_) :
+                  const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_) :
                     host(host), port(port),
                     mongodb_uri(mongodb_uri), redis_ip(redis_ip), redis_port(redis_port_),
-                    rootDir(rootDir), router(router_), command_port(command_port_) {
+                    rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_) {
     }
     
     router_config(const router_config& config) :
                     host(config.host), port(config.port),
                     mongodb_uri(config.mongodb_uri), redis_ip(config.redis_ip), redis_port(config.redis_port),
-                    rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port) {
+                    rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port),
+                    command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port) {
     }
     qstring host = "localhost";
     qstring port = "4034";
@@ -43,6 +44,7 @@ struct router_config {
     uint16_t command_port = 4010;
     uint16_t command_feedback_port = 4011;  // this has to be re-assigned based on availabaility
     bridge_command_center* ref = nullptr;
+    qstring router_port;
 };
 
 struct route {
