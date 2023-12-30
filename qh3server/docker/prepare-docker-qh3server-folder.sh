@@ -7,6 +7,7 @@ mkdir ./docker-qh3server
 cp -r ./common ./docker-qh3server/common
 cp -r ./networkcommon/ ./docker-qh3server/networkcommon
 cp -r ./qh3server/ ./docker-qh3server/qh3server
+cp -r ./qh3client/ ./docker-qh3server/qh3client
 cp -r ./qhiredis/ ./docker-qh3server/qhiredis
 cp -r ./qstats-crawler/ ./docker-qh3server/qstats-crawler
 cp -r ./servercommon/ ./docker-qh3server/servercommon
