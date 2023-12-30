@@ -105,6 +105,13 @@ struct routerinfo {
     routerinfo(struct addrinfo* router_) {
         router_address = DEBUG_NEW qaddress(*router_->ai_addr);
         router_address->serialise(serialised_buffer);
+        router = (struct addrinfo *)malloc(sizeof(struct addrinfo));
+        memcpy(router, router_, sizeof(struct addrinfo));
+    }
+    ~routerinfo() {
+        free(router);
+        router = nullptr;
+        GX_DELETE(router_address);
     }
     struct addrinfo* router = nullptr;
     qaddress* router_address = nullptr;
@@ -153,7 +160,8 @@ private:
     
     uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
     uint8_t buf[65535];
-    routerinfo* router_info = nullptr;
+    routerinfo* relay_through_router_info = nullptr;    // only valid for servers else NULL
+
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
@@ -165,10 +173,11 @@ protected:
     qstring host_id;
     
 public:
+    virtual ~qh3server();
     qtextfilelogger* get_file_logger() { return logger; }
     qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port);
 };
 
 #endif /* qh3server_hpp */

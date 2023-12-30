@@ -36,6 +36,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3client"
 
+namespace client {
 class bridge_h3client_connection;
 struct conn_io {
     conn_io() {
@@ -62,6 +63,7 @@ struct conn_io {
     conn_io_req_res* response = nullptr;
     bool res_received = false;
     ev_tstamp creation_time = 0;
+    bool two_byte_port_check = true;
 };
 
 class bridge_h3client_connection {
@@ -76,7 +78,7 @@ public:
 class qh3client : public bridge_h3client_connection {
 public:
 
-    qh3client(const qstring& host, const qstring& port);
+    qh3client(const qstring& host, const qstring& port, bool two_byte_port_check = true);
     virtual ~qh3client();
 
     struct ev_loop* mainloop = nullptr;
@@ -104,8 +106,10 @@ public:
     const qstring port;
     const conn_io_req_res* http_request = nullptr;
     struct conn_io* conn_io = nullptr;
+    bool two_byte_port_check = true;
 
 private:
     int close_socket(int sock);
+};
 };
 #endif /* qh3client_hpp */

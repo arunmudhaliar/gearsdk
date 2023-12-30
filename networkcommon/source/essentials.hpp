@@ -208,7 +208,7 @@ public:
         data.buffer = payload_;
         return data;
     }
-    const payload& append_to_payload(const uint8_t* str, ssize_t len) {
+    const payload& append_to_payload(const uint8_t* str, int len) {
         data.buffer.run_printf((const char*)str, len);
         return data;
     }

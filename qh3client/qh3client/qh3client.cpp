@@ -10,6 +10,7 @@
 #include "../../common/gxcrc32.h"
 #include <zlib.h>
 
+using namespace client;
 void qh3client::debug_log(const uint8_t* line, void* argp) {
     UNUSED(argp);
     DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, (char*)line);
@@ -237,12 +238,14 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             return;
         }
         
-        EV_START_RECORD(server_port_deserialise_time);
-        read = read - PORT_FIELD_SZ;    // remove the size of port bytes from actual packet (quiche packet)
-        const uint8_t* port_number_info = &conn_io->buf[read];
-        uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
-        essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
-        EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
+        if (conn_io->two_byte_port_check) {
+            EV_START_RECORD(server_port_deserialise_time);
+            read = read - PORT_FIELD_SZ;    // remove the size of port bytes from actual packet (quiche packet)
+            const uint8_t* port_number_info = &conn_io->buf[read];
+            uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
+            essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
+            EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
+        }
         
         RecvInfo recv_info = {
             (struct sockaddr*)&peer_addr,
@@ -350,7 +353,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
                     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "received - %.*s", (int)len, conn_io->buf);
                     if (conn_io->response) {
-                        conn_io->response->append_to_payload(conn_io->buf, len);
+                        conn_io->response->append_to_payload(conn_io->buf, (int)len);
                     }
                 }
 
@@ -412,9 +415,10 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-qh3client::qh3client(const qstring& host, const qstring& port) :
+qh3client::qh3client(const qstring& host, const qstring& port, bool two_byte_port_check_) :
     host(host),
-    port(port) {
+    port(port),
+    two_byte_port_check(two_byte_port_check_) {
 }
 
 qh3client::~qh3client() {
@@ -539,6 +543,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
         return -1;
     }
 
+    conn_io->two_byte_port_check = two_byte_port_check;
     conn_io->sock = sock;
     conn_io->conn = conn;
     conn_io->host = host.c_str();

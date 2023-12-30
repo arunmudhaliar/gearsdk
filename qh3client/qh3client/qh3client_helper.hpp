@@ -29,12 +29,13 @@ public:
         const conn_io_req_res* data = nullptr;
         pthread_t run_thread_id;
         type_qh3client_helper_cb async_cb = nullptr;
+        bool two_byte_port_check = true;
     };
 
     static int send_request(const qstring host, const qstring port,
         const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
     static int send_async_request(const qstring host, const qstring port,
-        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
+        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, bool two_byte_port_check = true);
 
 private:
     static void* run_internal(void* data);

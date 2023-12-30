@@ -7,10 +7,8 @@
 
 #include "http3_command_server.hpp"
 #include "../../common/gxcrc32.h"
-#include "../../networkcommon/source/qbuffer.hpp"
-#include "../../common/crypto_helper.hpp"
 
-http3_command_server::http3_command_server(const qstring& redis_ip, int redis_port) {
+http3_command_server::http3_command_server(const qstring& redis_ip, int redis_port, bridge_command_center* bridge_) : bridge(bridge_) {
     hiredis = DEBUG_NEW qhiredis();
     hiredis->connect_redis(redis_ip, redis_port);
 }
@@ -61,12 +59,14 @@ void http3_command_server::parse(struct conn_io *conn_io) {
     // parse paths
     if (path_header->value.compare("/shutdown_test")==0) {
         parse_shutdown_test(path_header, conn_io);
+    } if (path_header->value.compare("/shutdown_cmd_center")==0) {
+        parse_shutdown_command_center(path_header, conn_io);
     } else if (path_header->value.compare("/whoami")==0) {
         parse_whoami(path_header, conn_io);
     }
 }
 
-void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -79,6 +79,22 @@ void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_hea
     }
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
     ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
+}
+    
+void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+    const char* const_logtag = logtag.c_str();
+    const char* port_id_cstr = port_id.c_str();
+    bool has_crc_header = conn_io->http_request->has_crc_header();
+    if (has_crc_header) {
+        bool validate = conn_io->http_request->validate();
+        assert(validate);
+    } else {
+        // may be called from a browser
+        DEBUG_PRINT_IMPORTANT2(const_logtag, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
+    }
+    qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+    send_shutdown_to_all();
+    conn_io->http_response->set_payload("{ shutdown-all }");
 }
 
 void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
@@ -99,4 +115,42 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
     conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
     qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), res_string);
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+}
+
+void http3_command_server::send_shutdown_to_all() {
+    conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
+    qh3client_helper::send_async_request(host_id.c_str(), "4004", req,
+        [this](conn_io_req_res* response) {
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
+        });
+}
+
+void http3_command_server::command_feedback_recv_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(revents);
+    route* route_client = (route*)w->data;
+    bridge_command_center* bridge = (bridge_command_center*)route_client->arg;
+    static uint8_t buf_r[65535];
+    while (1) {
+        struct sockaddr_storage peer_addr;
+        socklen_t peer_addr_len = sizeof(peer_addr);
+        memset(&peer_addr, 0, peer_addr_len);
+
+        ssize_t read = recvfrom(route_client->bridge_sock, buf_r, sizeof(buf_r), 0,
+            (struct sockaddr*)&peer_addr,
+            &peer_addr_len);
+
+        if (read < 0) {
+            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "recv would block");
+                break;
+            }
+
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to read");
+            return;
+        }
+        
+        qstring cmd(buf_r, read);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "RECEIVED cmd feedback from client - %s !!!", cmd.c_str());
+        bridge->cmd_feedback_from_client((struct sockaddr*)&peer_addr, cmd.c_str());
+    }
 }

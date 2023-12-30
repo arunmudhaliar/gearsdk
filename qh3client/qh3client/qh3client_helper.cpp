@@ -7,6 +7,8 @@
 
 #include "qh3client_helper.hpp"
 
+using namespace client;
+
 int qh3client_helper::send_request(const qstring host, const qstring port,
     const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb) {
     qh3_req_obj* req_obj = DEBUG_NEW qh3_req_obj(host, port, data_getorpost_);
@@ -20,8 +22,9 @@ int qh3client_helper::send_request(const qstring host, const qstring port,
 }
 
 int qh3client_helper::send_async_request(const qstring host, const qstring port,
-    const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb) {
+    const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, bool two_byte_port_check) {
     qh3_req_obj* req_obj = DEBUG_NEW qh3_req_obj(host, port, data_getorpost_);
+    req_obj->two_byte_port_check = two_byte_port_check;
     req_obj->async_cb = async_cb;
     if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal, (void*)req_obj) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
@@ -33,7 +36,7 @@ int qh3client_helper::send_async_request(const qstring host, const qstring port,
 
 void* qh3client_helper::run_internal(void* data) {
     qh3_req_obj* req_obj = (qh3_req_obj*)data;
-    qh3client* new_client = DEBUG_NEW qh3client(req_obj->host, req_obj->port);
+    qh3client* new_client = DEBUG_NEW qh3client(req_obj->host, req_obj->port, req_obj->two_byte_port_check);
     new_client->send_request(req_obj->data);
     if (req_obj->async_cb && new_client->conn_io && new_client->conn_io->response) {
         req_obj->async_cb(new_client->conn_io->response);

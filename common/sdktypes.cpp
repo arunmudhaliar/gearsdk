@@ -32,6 +32,11 @@ extern "C"
     }
 
     void print_common_info() {
+#if GSDK_ENDIAN == GSDK_LITTLEENDIAN
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Little endian machine !!!" );
+#else
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Big endian machine !!!" );
+#endif
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
         DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");

@@ -77,7 +77,7 @@ public:
         ev_timer_start(loop, &timer);
     }
     virtual ~qtimer() {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qtimer destructor");
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qtimer destructor");
     }
 
     ev_timer timer;

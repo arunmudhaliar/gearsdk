@@ -96,7 +96,7 @@ public:
         utstring_printf(ut_string, "%s", str);
     }
     
-    void run_printf(const char* str, ssize_t len) {    // wont clear the data
+    void run_printf(const char* str, int len) {    // wont clear the data
         if (str == nullptr) {
             return;
         }

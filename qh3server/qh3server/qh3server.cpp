@@ -7,7 +7,10 @@
 
 #include "qh3server.hpp"
 
-//void (*cb)(const uint8_t *line, void *argp), void *argp
+qh3server::~qh3server() {
+    DEBUG_PRINT_IMPORTANT2(logtag.c_str(), "qh3server destroyed !!!");
+}
+
 void qh3server::debug_log(const uint8_t* line, void* argp) {
     UNUSED(argp);
     qh3server* server = (qh3server*)argp;
@@ -18,7 +21,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 
 ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
-    const bool via_router = router_info && router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
     SendInfo send_info;
     ssize_t total_bytes_sent = 0;
     while (1) {
@@ -37,7 +40,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
 
         // if relay through router
         if (via_router) {
-            memcpy((void*)&out[written], (void*)router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+            memcpy((void*)&out[written], (void*)relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
             written+=PORT_FIELD_SZ;
         }
         //
@@ -211,7 +214,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     struct conn_io* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
     const char* port_id_cstr = server->port_id.c_str();
-    const bool via_router = server->router_info && server->router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
     while (1) {
         struct sockaddr_storage peer_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
@@ -240,7 +243,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         
         // if relay through router
-        if (server->router_info) {
+        if (server->relay_through_router_info) {
             memset(&peer_addr, 0, peer_addr_len);
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
@@ -298,7 +301,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
                     written+=PORT_FIELD_SZ;
                 }
                 //
@@ -345,7 +348,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
+                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
                     written+=PORT_FIELD_SZ;
                 }
                 //
@@ -660,7 +663,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router_) {
+int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router_, uint16_t command_center_feedback_port) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -669,9 +672,9 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 
     host_id = host;
     port_id = port;
+    GX_DELETE(relay_through_router_info);
     if (router_ != nullptr) {
-        GX_DELETE(router_info);
-        router_info = DEBUG_NEW struct routerinfo(router_);
+        relay_through_router_info = DEBUG_NEW struct routerinfo(router_);
     }
     logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
     const char* const_logtag = logtag.c_str();
@@ -712,7 +715,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     }
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
-        DEBUG_PRINT_ERROR(const_logtag, "failed to connect socket - port[%s]", port.c_str());
+        DEBUG_PRINT_ERROR(const_logtag, "failed to bind socket - port[%s]", port.c_str());
         close(sock);
         freeaddrinfo(local);
         return -1;
@@ -792,7 +795,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             HASH_ITER(hh, conns->h, conn_io, tmp) {
                 ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
                 if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {    // DROP_CONNECTION_AFTER seconds after connection creation time.
-                    if (true || !quiche_conn_is_closed(conn_io->conn)) {    // flushing even if the connection is closed.
+                    if ((true) || !quiche_conn_is_closed(conn_io->conn)) {    // flushing even if the connection is closed.
 //                        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
                         ssize_t sent_bytes = flush_egress(mainloop, conn_io);
                         if (sent_bytes) {
@@ -867,10 +870,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     //
 
     freeaddrinfo(local);
-    close(sock);
     
     quiche_h3_config_free(http3_config);
-
     quiche_config_free(config);
 
     get_stats_loggeer()->end_session();
@@ -880,7 +881,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     struct ev_loop* wait_loop = ev_loop_new();
     qtimer_sceduler wait_scheduler;
     wait_scheduler.set_ev_lopp(wait_loop);
-    wait_scheduler.schedule_repeat_timer([this, wait_loop, const_logtag](qtimer& timer) {
+    wait_scheduler.schedule_repeat_timer([this, wait_loop, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
         int service_shutdown_cnt = 0;
         if (get_stats_loggeer()->config.finished) {
             DEBUG_PRINT_IMPORTANT(const_logtag, "stats service finished !!!");
@@ -891,12 +892,34 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             service_shutdown_cnt++;
         }
         if (service_shutdown_cnt >= 2) {
+            const struct addrinfo hints = {
+                .ai_family = PF_UNSPEC,
+                .ai_socktype = SOCK_DGRAM,
+                .ai_protocol = IPPROTO_UDP
+            };
+            qstring command_center_feedback_port_str = qstring::format_string("%d", command_center_feedback_port);
+            struct addrinfo* cmd_center_feedback_address;
+            if (getaddrinfo(host.c_str(), command_center_feedback_port_str.c_str(), &hints, &cmd_center_feedback_address) != 0) {
+                DEBUG_PRINT_ERROR(const_logtag, "failed to resolve host - port[%s]", command_center_feedback_port_str.c_str());
+                return;
+            }
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Sending shutdown-ack to %s:%s", host.c_str(), command_center_feedback_port_str.c_str());
+            qstring shut_cmd = qstring::format_string("shut-ack-%s", port_id.c_str());
+            ssize_t sent = sendto(sock, shut_cmd.c_str(), shut_cmd.length(), 0,
+                                  cmd_center_feedback_address->ai_addr,
+                                  cmd_center_feedback_address->ai_addrlen);
+            if (sent != shut_cmd.length()) {
+                DEBUG_PRINT_ERROR(const_logtag, "ERROR sending shutdown event to command center !!!");
+            }
+            freeaddrinfo(cmd_center_feedback_address);
             ev_break(wait_loop, EVBREAK_ONE);
         }
-        }, 3);
+    }, 3);
+    
     ev_run(wait_loop, 0);
-
-    GX_DELETE(router_info);
+    
+    close(sock);
+    GX_DELETE(relay_through_router_info);
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
     return 0;
