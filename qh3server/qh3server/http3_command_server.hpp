@@ -13,7 +13,7 @@
 #include "qh3simple_router_structs.h"
 #include "../../networkcommon/source/qbuffer.hpp"
 #include "../../common/crypto_helper.hpp"
-#include "../../qh3client/qh3client/qh3client_helper.hpp"
+#include <qh3client_helper.hpp>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_command_server"

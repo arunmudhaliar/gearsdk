@@ -393,6 +393,7 @@
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -421,6 +422,7 @@
 					"\"$(SRCROOT)/../common/libbson-1.0\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
