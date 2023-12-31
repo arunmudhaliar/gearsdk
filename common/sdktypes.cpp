@@ -82,11 +82,11 @@ extern "C"
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #elif PLATFORM == PLATFORM_ANDROID
         __android_log_print(ANDROID_LOG_INFO, tag, buffer);
 #else
-        fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #endif
     }
 
