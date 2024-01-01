@@ -35,7 +35,7 @@ private:
     
     // qh3
     route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config);
-    route* spawn_qh3server(const qstring& host, const qstring& port, const router_config& config, pid_t& child_process_id);
+    int spawn_qh3server(const qstring& host, const qstring& port, const router_config& config, pid_t& child_process_id, bool& fork_result);
     static void* spawn_qh3server_internal(void* data);
     
     static int next_available_port(const qstring& host, port_range& range, int index);  // index starts with 0
@@ -44,7 +44,9 @@ private:
     route* command_feedback_route = nullptr;
     route* command_route = nullptr;
     std::vector<route*> routes;
+#if FORK_QH3_SERVER
     std::vector<pid_t> server_process_ids;
+#endif
     int server_counter = 0;
     port_range range;
     router_config config;   //default config
