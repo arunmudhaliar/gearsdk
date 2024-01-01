@@ -68,7 +68,7 @@ if [ $PREP_DOCKER = true ] ; then
          docker stop qh3server-container
          docker rm --force qh3server-container
 #         docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp
-		 docker run --publish 4004:4004/udp --publish 5100:5100/udp --publish 5101:5101/udp --publish 5102:5102/udp --publish 5103:5103/udp --publish 5104:5104/udp --name qh3server-container -d qh3server-exp
+		 docker run --publish 4004:4004/udp --publish 4010:4010/udp --publish 4011:4011/udp --publish 5100:5100/udp --publish 5101:5101/udp --publish 5102:5102/udp --publish 5103:5103/udp --publish 5104:5104/udp --name qh3server-container -d qh3server-exp
       fi
    fi
 fi

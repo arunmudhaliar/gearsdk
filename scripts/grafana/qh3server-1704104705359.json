@@ -534,7 +534,7 @@
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": 5000,
+            "insertNulls": 20000,
             "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
@@ -1975,7 +1975,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "30s",
+  "refresh": "10s",
   "schemaVersion": 38,
   "tags": [],
   "templating": {
@@ -1989,6 +1989,6 @@
   "timezone": "",
   "title": "qh3server",
   "uid": "f7add599-e08a-465f-b8a7-42bd1bec5dfb",
-  "version": 46,
+  "version": 47,
   "weekStart": ""
 }
