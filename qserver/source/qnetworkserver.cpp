@@ -179,7 +179,7 @@ qpeerconnection *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
                                              struct sockaddr_storage *peer_addr,
                                              socklen_t peer_addr_len)
 {
-    qpeerconnection *qconnection = new qpeerconnection(this, scid, scid_len, conns->sock);
+    qpeerconnection *qconnection = DEBUG_NEW qpeerconnection(this, scid, scid_len, conns->sock);
     if (qconnection == nullptr)
     {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate qconnection");
@@ -228,7 +228,7 @@ void qnetworkserver::on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection 
 {
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
-    uint8_t *copybuf = new uint8_t[recv_len + 1];
+    uint8_t *copybuf = DEBUG_NEW uint8_t[recv_len + 1];
     memcpy(copybuf, buf, recv_len);
     copybuf[recv_len] = '\0';
     if (getnameinfo((struct sockaddr *)&qconnection->peer_addr, qconnection->peer_addr_len, hbuf, sizeof(hbuf), sbuf,
@@ -284,7 +284,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
     double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t < 0.00001f ? 1.0f : t;
     ev_timer_again(loop, &qconnection->timer);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void qnetworkserver::destroy_connection(struct ev_loop *loop, qpeerconnection *qconnection)
@@ -304,7 +304,7 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer *w, int revents)
 {
     qpeerconnection *qconnection = (qpeerconnection *)w->data;
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout !!!");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout !!!");
     quiche_conn_on_timeout(qconnection->conn);
     qconnection->bridge->flush_egress(loop, qconnection);
 
@@ -494,7 +494,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
             StreamIter *readable = quiche_conn_readable(qconnection->conn);
             while (quiche_stream_iter_next(readable, &s))
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
                 bool fin = false;
                 ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s,
                                                            conns->buf, sizeof(conns->buf),
@@ -587,7 +587,7 @@ void *qnetworkserver::run_internal(void *data)
 
     qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
     thiz->logger.start_session(log_path, log_path.length());
-    quiche_enable_debug_logging(debug_log, nullptr);
+//    quiche_enable_debug_logging(debug_log, nullptr);
 
     struct addrinfo *local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0)

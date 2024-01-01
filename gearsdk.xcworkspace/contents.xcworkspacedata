@@ -2,19 +2,25 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:qstats-crawler/qstats-crawler.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:qh3client/qh3client.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:qh3server/qh3server.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:sandbox">
+      location = "group:qclient/qclient.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:qserver/qserver.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:qhiredis/qhiredis.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:qstats-crawler/qstats-crawler.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:servercommon/servercommon.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:qclient/../networkcommon/networkcommon.xcodeproj">
@@ -23,12 +29,6 @@
       location = "group:networkcommon/../common/common.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:qclient/qclient.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:qhiredis/qhiredis.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:servercommon/servercommon.xcodeproj">
+      location = "group:sandbox">
    </FileRef>
 </Workspace>

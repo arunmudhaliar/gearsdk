@@ -26,7 +26,7 @@ ssize_t room::try_add_connection(qpeerconnection* qconnection) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "room max cpacity reached !!!");
         return -4;
     }
-    player* player_ = new player(qconnection);
+    player* player_ = DEBUG_NEW player(qconnection);
     playermap[qconnection] = player_;
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_index);
     roominterface->onplayer_added(this, player_);

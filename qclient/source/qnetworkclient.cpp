@@ -215,7 +215,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection)
     double t = (double)timeout_in_nanos / 1e9f;
     qconnection->timer.repeat = t;
     ev_timer_again(loop, &qconnection->timer);
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void qnetworkclient::event_connect(qconnection* qconnection) {
@@ -271,7 +271,7 @@ int qnetworkclient::close() {
             int conActive = qclient_connection->ConnectionActive();
             if (conActive == 0) {
                 const uint8_t bye[] = "Bye\r\n";
-                qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)bye, sizeof(bye), true));
+                qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata((uint8_t*)bye, sizeof(bye), true));
             }
         }
     }
@@ -290,7 +290,7 @@ int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
     if (qclient_connection) {
-        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.length()));
+        qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata((uint8_t*)buffer.c_str(), buffer.length()));
     }
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
@@ -365,7 +365,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
         uint64_t s = 0;
         StreamIter* readable = quiche_conn_readable(qconnection_->conn);
         while (quiche_stream_iter_next(readable, &s)) {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is readable", s);
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 
             bool fin = false;
             ssize_t recv_len = quiche_conn_stream_recv(qconnection_->conn, s,
@@ -468,7 +468,7 @@ void qnetworkclient::onclose(qconnection* qconnection) {
 }
 
 void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) {
-    uint8_t* copybuf = new uint8_t[recv_len + 1];
+    uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
     memcpy(copybuf, buf, recv_len);
     copybuf[recv_len] = '\0';
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len:%d]", copybuf, recv_len);
@@ -543,7 +543,7 @@ void* qnetworkclient::run_internal(void* data) {
     thiz->close_mutex.block(__FUNCTION__);
     thiz->send_mutex.block(__FUNCTION__);
 
-    thiz->qclient_connection = new qconnection(thiz, config, runConfig->id);
+    thiz->qclient_connection = DEBUG_NEW qconnection(thiz, config, runConfig->id);
     if (thiz->qclient_connection == NULL) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create qconnection");
         runConfig->pthread_returnValue = -1;

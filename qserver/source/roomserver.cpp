@@ -10,16 +10,16 @@
 void roomserver::on_timer_check_zombie_rooms(qtimer& qtimer_) {
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "timer_check_zombie_rooms");
     if (waiting_rooms.size()) {
-        bool atleast_one_zombie = false;
+        int zobies = 0;
         for(auto it = waiting_rooms.cbegin();it!=waiting_rooms.cend();it++) {
             room* waiting_room = *it;
             if (waiting_room->since_creation() >= WAITING_ROOM_ZOMBIE_THRESHOLD) {
                 waiting_room->print_info();
-                atleast_one_zombie = true;
+                zobies++;
             }
         }
-        if (atleast_one_zombie) {
-            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "~~zombies~~");
+        if (zobies>0) {
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "[%d] ~~zombies~~", zobies);
         }
     }
 }
@@ -116,7 +116,7 @@ void roomserver::on_connection(qpeerconnection* qconnection) {
 }
 
 room* roomserver::create_waiting_room() {
-    room* room_ = new room(this, roomconfig(2, 4, false));
+    room* room_ = DEBUG_NEW room(this, roomconfig(2, 4, false));
     waiting_rooms.push_back(room_);
     return room_;
 }
