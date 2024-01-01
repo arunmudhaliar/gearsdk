@@ -15,7 +15,6 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
-$(QH3_CLIENT_SRCDIR)/http3_sample_client.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
 
