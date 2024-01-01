@@ -55,7 +55,7 @@ void networkclient_tester::delete_cb(EV_P_ ev_timer* w, int revents) {
     //    ev_break(loop, EVBREAK_ONE);
 }
 
-void networkclient_tester::run(const std::string& host, const std::string& port, float sendInterval, float closeTimeout) {
+void networkclient_tester::run(const qstring& host, const qstring& port, float sendInterval, float closeTimeout) {
     const int total_loop = 7;
     const int clients_per_loop = 5;
     const int wait_sec_after_loop = 6;

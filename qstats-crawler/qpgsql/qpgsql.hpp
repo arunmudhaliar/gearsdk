@@ -18,11 +18,13 @@ public:
     qpgsql();
     ~qpgsql();
 
-    int connect_db();
+    int connect_db(const qstring& host="127.0.0.1", const qstring& port="5432");
     void close_db();
     int execute_query(const qstring& query);
 
 private:
     PGconn* db_connection = nullptr;
+    qstring host = "127.0.0.1";
+    qstring port = "5432";
 };
 #endif /* qpgsql_hpp */

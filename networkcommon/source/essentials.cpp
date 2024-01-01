@@ -7,6 +7,7 @@
 
 #include "essentials.hpp"
 #include <cstring>
+#include <arpa/inet.h>
 #if PLATFORM == PLATFORM_LINUX
 #include <sys/types.h>
 #include <sys/sysinfo.h>
@@ -15,6 +16,8 @@
 using namespace gsdk;
 
 #pragma region QMutex
+int qmutex::log_flag = 0;
+
 qmutex::qmutex() {
     inited = false;
 }
@@ -27,7 +30,7 @@ int qmutex::init(const std::string& name) {
     else {
         inited = true;
         condition.init(name);
-        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "%s mutex init", name.c_str());
+        DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex init", name.c_str());
     }
     return ret_val;
 }
@@ -36,7 +39,7 @@ qmutex::~qmutex() {
     if (inited) {
         pthread_mutex_destroy(&mutex);
     }
-    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "%s mutex destroyed", name.c_str());
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex destroyed", name.c_str());
 }
 
 int qmutex::tryInitIfNot() {
@@ -59,7 +62,7 @@ int qmutex::tryLock(const char* lockedBy, const char* msg) {
         }
     }
     retVal = pthread_mutex_trylock(&mutex);
-    if (retVal != 0) {
+    if (retVal != 0 && qmutex::log_flag) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(%s). Locked by %s, %s", name.c_str(), this->lockedBy.c_str(), (msg != nullptr) ? msg : "");
     }
     else {
@@ -148,7 +151,7 @@ int qmutexcondition::init(const std::string& name) {
     }
     else {
         inited = true;
-        DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "%s condtion init", name.c_str());
+        DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condtion init", name.c_str());
     }
     return retVal;
 }
@@ -168,7 +171,7 @@ qmutexcondition::~qmutexcondition() {
     if (inited) {
         pthread_cond_destroy(&cond);
     }
-    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "%s condition destroyed", name.c_str());
+    DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condition destroyed", name.c_str());
 }
 
 int qmutexcondition::signal(const char* msg) {
@@ -218,9 +221,9 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 
 
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
-    const std::string& version_string_, unsigned version_code_,
-    std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir,
-    std::string& redis_ip, int& redis_port) {
+    const qstring& version_string_, unsigned version_code_,
+    qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
+    qstring& redis_ip, int& redis_port) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
         DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
@@ -438,6 +441,58 @@ long long essentials::get_used_mem() {
 #endif
 }
 
+int essentials::get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names) {
+    try {
+        for (const auto& entry : fs::directory_iterator(folder_path)) {
+            if (fs::is_directory(entry.path())) {
+                names.push_back(entry.path());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
+        return 1;
+    }
+    return 0;
+}
+
+int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port) {
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    if (inet_pton(AF_INET, ip, &(addr.sin_addr)) <= 0) {
+        perror("Invalid IP address");
+        return -1;
+    }
+    memset(&storage, 0, sizeof(storage));
+    memcpy(&storage, &addr, sizeof(addr));
+    return 0;
+}
+
+int essentials::update_port(struct sockaddr* sa, uint16_t newPort) {
+    if (sa->sa_family == AF_INET) {
+        // IPv4
+        struct sockaddr_in* sa_in = (struct sockaddr_in*)sa;
+        sa_in->sin_port = htons(newPort);
+        return 0;
+    } else if (sa->sa_family == AF_INET6) {
+        // IPv6
+        struct sockaddr_in6* sa_in6 = (struct sockaddr_in6*)sa;
+        sa_in6->sin6_port = htons(newPort);
+        return 0;
+    } else {
+        // Unknown address family or unsupported type
+        fprintf(stderr, "Unsupported address family\n");
+    }
+    return -1;
+}
+
+unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
+    unsigned long  crc_ = crc32(0L, Z_NULL, 0);
+    crc_ = crc32_z(crc_, (const unsigned char*)buffer, len);
+    return crc_;
+}
+
 bool conn_io_req_res::has_crc_header() {
     header* crc_header = get_header("crc");
     return crc_header != nullptr;
@@ -468,7 +523,7 @@ bool conn_io_req_res::validate() {
     if (crc_from_req != crc_) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s",
             crc_, crc_from_req, payload.buffer.length(), crc_header->value.c_str());
-        assert(crc_from_req == crc_);
+//        assert(crc_from_req == crc_);
     }
     //     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
     //        crc_, crc_from_req, payload->len, crc_header->value);

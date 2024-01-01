@@ -14,10 +14,12 @@ qpgsql::~qpgsql() {
     close_db();
 }
 
-int qpgsql::connect_db() {
+int qpgsql::connect_db(const qstring& host_, const qstring& port_) {
     if (db_connection) {
         return -1;
     }
+    host=host_;
+    port=port_;
     /*
      PGconn *PQsetdbLogin(const char *pghost,
                           const char *pgport,
@@ -27,10 +29,10 @@ int qpgsql::connect_db() {
                           const char *login,
                           const char *pwd);
      */
-    db_connection = PQsetdbLogin("192.168.0.230", "5432", nullptr, nullptr, "qtest-pgdb", "postgres", "enterin3132");
+    db_connection = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, "qtest-pgdb", "postgres", "enterin3132");
     /* Check to see that the backend connection was successfully made */
     if (PQstatus(db_connection) != CONNECTION_OK) {
-        fprintf(stderr, "%s", PQerrorMessage(db_connection));
+        fprintf(stderr, "\033[41m%s\x1b[0m", PQerrorMessage(db_connection));
         close_db();
         return -1;
     }
@@ -39,7 +41,7 @@ int qpgsql::connect_db() {
     PGresult* res = PQexec(db_connection,
         "SELECT pg_catalog.set_config('search_path', '', false)");
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        fprintf(stderr, "SET failed: %s", PQerrorMessage(db_connection));
+        fprintf(stderr, "\033[41mSET failed: %s\x1b[0m", PQerrorMessage(db_connection));
         PQclear(res);
         close_db();
         return -1;
@@ -62,7 +64,7 @@ int qpgsql::execute_query(const qstring& query) {
     /* Set always-secure search path, so malicious users can't take control. */
     PGresult* res = PQexec(db_connection, query.c_str());
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        fprintf(stderr, "CMD failed: %s", PQerrorMessage(db_connection));
+        fprintf(stderr, "\033[41mCMD failed: %s\x1b[0m", PQerrorMessage(db_connection));
         PQclear(res);
         close_db();
         return -1;

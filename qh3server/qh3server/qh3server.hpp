@@ -43,19 +43,23 @@
 #define __LOGTAG__ "qh3server"
 
 #define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define PORT_FIELD_SZ sizeof(uint16_t)
+#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
 
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
     sizeof(struct sockaddr_storage) + \
     MAX_CID_LEN
 
+#define SEND_CHUNK_SIZE 256
+#define DROP_CONNECTION_AFTER 45.0f     // in seconds
+
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
 class bridge_h3_connection {
 public:
-    virtual void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
+    virtual ssize_t flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
     virtual void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
     virtual void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) = 0;
@@ -68,8 +72,8 @@ struct connections {
     struct sockaddr* local_addr = nullptr;
     socklen_t local_addr_len;
     struct conn_io* h = nullptr;
-    std::string server_port;
-    std::string quic_alternate_protocol_str;
+    qstring server_port;
+    qstring quic_alternate_protocol_str;
 };
 
 struct conn_io {
@@ -93,6 +97,25 @@ struct conn_io {
     conn_io_req_res* http_request = nullptr;
     conn_io_req_res* http_response = nullptr;
     ev_tstamp creation_time = 0;
+    ssize_t total_sent_bytes = 0;
+    int64_t stream_id = -1;
+};
+
+struct routerinfo {
+    routerinfo(struct addrinfo* router_) {
+        router_address = DEBUG_NEW qaddress(*router_->ai_addr);
+        router_address->serialise(serialised_buffer);
+        router = (struct addrinfo *)malloc(sizeof(struct addrinfo));
+        memcpy(router, router_, sizeof(struct addrinfo));
+    }
+    ~routerinfo() {
+        free(router);
+        router = nullptr;
+        GX_DELETE(router_address);
+    }
+    struct addrinfo* router = nullptr;
+    qaddress* router_address = nullptr;
+    qstring serialised_buffer;
 };
 
 class qh3server : public bridge_h3_connection {
@@ -103,7 +126,7 @@ private:
     struct ev_loop* mainloop = nullptr;
 
     static void debug_log(const uint8_t* line, void* argp);
-    void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
+    ssize_t flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
     void destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) override final;
     inline virtual struct ev_loop* get_mainloop() override final {
         return mainloop;
@@ -133,18 +156,28 @@ private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
+    void send_in_chunks(struct conn_io* conn_io);
+    
+    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
+    uint8_t buf[65535];
+    routerinfo* relay_through_router_info = nullptr;    // only valid for servers else NULL
+
 protected:
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
     void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) override;
-    static qtextfilelogger* logger;
-    static qstatslogger* stats_logger;
-
+    qtextfilelogger* logger = nullptr;
+    qstatslogger* stats_logger = nullptr;
+    qstring logtag = __LOGTAG__;
+    qstring port_id;
+    qstring host_id;
+    
 public:
-    static qtextfilelogger* get_file_logger() { return logger; }
-    static qstatslogger* get_stats_loggeer() { return stats_logger; }
+    virtual ~qh3server();
+    qtextfilelogger* get_file_logger() { return logger; }
+    qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const std::string& host, const std::string& port, fs::path& rootDir);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port);
 };
 
 #endif /* qh3server_hpp */

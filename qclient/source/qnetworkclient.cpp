@@ -54,7 +54,7 @@ void qconnection::Release() {
     }
 }
 
-int qconnection::Connect(std::string host, std::string port) {
+int qconnection::Connect(qstring host, qstring port) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -130,8 +130,8 @@ int qconnection::ConnectionActive() {
     return 0;
 }
 
-ssize_t qconnection::SendMessage(const std::string& buffer, bool fin) {
-    return SendMessage(buffer.c_str(), buffer.size(), fin);
+ssize_t qconnection::SendMessage(const qstring& buffer, bool fin) {
+    return SendMessage(buffer.c_str(), buffer.length(), fin);
 }
 
 ssize_t qconnection::SendMessage(const char* buf, size_t buflen, bool fin) {
@@ -190,7 +190,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection)
             &send_info);
 
         if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
             break;
         }
 
@@ -208,7 +208,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, qconnection* qconnection)
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -281,7 +281,7 @@ int qnetworkclient::close() {
     return 0;
 }
 
-int qnetworkclient::sendMessage(const std::string& buffer, bool flush) {
+int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
     // lock
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     send_mutex.conditionalWait(__FUNCTION__);
@@ -290,7 +290,7 @@ int qnetworkclient::sendMessage(const std::string& buffer, bool flush) {
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
     if (qclient_connection) {
-        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.size()));
+        qclient_connection->sendBuffer.push_back(new qdata((uint8_t*)buffer.c_str(), buffer.length()));
     }
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
@@ -315,7 +315,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -338,10 +338,10 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
     }
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done reading");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done reading");
 
     if (quiche_conn_is_established(qconnection_->conn) && qconnection_->bridge->getstate() == CON_STATE::STATE_OPEN) {
         const uint8_t* app_proto;
@@ -436,7 +436,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
         return;
     }
 
-    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "timeout");
+    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
 
     quiche_conn_on_timeout(qconnection_->conn);
     qconnection_->bridge->flushegress(loop, qconnection_);
@@ -448,7 +448,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
         quiche_conn_stats(qconnection_->conn, &stats);
         quiche_conn_path_stats(qconnection_->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
             stats.recv, stats.sent, stats.lost, path_stats.rtt);
         qconnection_->bridge->event_close(qconnection_);
         ev_break(EV_A_ EVBREAK_ONE);
@@ -495,8 +495,8 @@ qnetworkclient::~qnetworkclient() {
 
 void* qnetworkclient::run_internal(void* data) {
     RunConfig* runConfig = (RunConfig*)data;
-    std::string host = runConfig->host;
-    std::string port = runConfig->port;
+    qstring host = runConfig->host;
+    qstring port = runConfig->port;
     qnetworkclient* thiz = runConfig->thiz;
 #if USE_PTHREAD
     if (thiz->run_mutex.tryLock(__FUNCTION__) != 0) {
@@ -603,7 +603,7 @@ bool qnetworkclient::is_runfinished() {
     return retVal;
 }
 
-int qnetworkclient::run(std::string host, std::string port) {
+int qnetworkclient::run(qstring host, qstring port) {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     runConfig.host = host;
     runConfig.port = port;

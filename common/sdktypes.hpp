@@ -24,6 +24,17 @@
 #define PLATFORM PLATFORM_UNIX
 #endif
 
+#include <filesystem>
+
+#if PLATFORM == PLATFORM_MAC
+namespace fs = std::__fs::filesystem;
+#elif PLATFORM == PLATFORM_LINUX
+#include <linux/limits.h>
+namespace fs = std::filesystem;
+#else
+namespace fs = std::__fs::filesystem;
+#endif
+
 #ifndef DEBUG_NEW
 #include "./nvwa/debug_new.pch"
 #endif
@@ -65,14 +76,17 @@
 #define LOG_LEVEL_2 2
 #define LOG_LEVEL_3 3
 #define LOG_LEVEL_4 4
+#define LOG_LEVEL_5 5
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_2
+#define LOG_LEVEL LOG_LEVEL_3
 #endif
 extern "C" DECLSPEC int init_gsdk();
 extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);

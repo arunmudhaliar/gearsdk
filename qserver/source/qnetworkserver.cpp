@@ -42,9 +42,9 @@ qpeerconnection::~qpeerconnection()
     }
 }
 
-void qpeerconnection::sendmessage(const std::string &buffer, bool flush)
+void qpeerconnection::sendmessage(const qstring &buffer, bool flush)
 {
-    sendmessage(buffer.c_str(), buffer.size(), flush);
+    sendmessage(buffer.c_str(), buffer.length(), flush);
 }
 
 void qpeerconnection::sendmessage(const char *buf, size_t buflen, bool flush)
@@ -243,9 +243,8 @@ void qnetworkserver::on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection 
     GX_DELETE_ARY(copybuf);
 
     // TODO : Comment this for development.
-    std::stringstream ss;
-    ss << "HELLO from server-" << qconnection->itrmsg++;
-    qconnection->sendmessage(ss.str(), true);
+    qstring ss = qstring::format_string("HELLO from server-%d", qconnection->itrmsg++);
+    qconnection->sendmessage(ss, true);
 }
 
 void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnection)
@@ -258,7 +257,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
 
         if (written == QUICHE_ERR_DONE)
         {
-            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "done writing");
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
             break;
         }
 
@@ -278,7 +277,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
             return;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
     }
 
     uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -317,7 +316,7 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer *w, int revents)
         quiche_conn_stats(qconnection->conn, &stats);
         quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n",
                     stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
         qconnection->bridge->destroy_connection(loop, qconnection);
@@ -350,7 +349,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN))
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv would block");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
                 break;
             }
 
@@ -388,7 +387,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         {
             if (!quiche_version_is_supported(version))
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "version negotiation");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "version negotiation");
 
                 ssize_t written = quiche_negotiate_version(scid, scid_len,
                                                            dcid, dcid_len,
@@ -410,13 +409,13 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
             if (token_len == 0)
             {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stateless retry");
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stateless retry");
 
                 mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
@@ -450,7 +449,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                     continue;
                 }
 
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "sent %zd bytes", sent);
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
                 continue;
             }
 
@@ -487,7 +486,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
             continue;
         }
 
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "recv %zd bytes", done);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
 
         if (quiche_conn_is_established(qconnection->conn))
         {
@@ -542,7 +541,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
     }
 }
 
-void qnetworkserver::broadcast_message(const std::string &buffer, bool flush)
+void qnetworkserver::broadcast_message(const qstring &buffer, bool flush)
 {
     qpeerconnection *qconnection = nullptr;
     qpeerconnection *tmp = nullptr;
@@ -570,8 +569,8 @@ void qnetworkserver::network_server_end() {
 void *qnetworkserver::run_internal(void *data)
 {
     runserverconfig *runConfig = (runserverconfig *)data;
-    std::string host = runConfig->host;
-    std::string port = runConfig->port;
+    qstring host = runConfig->host;
+    qstring port = runConfig->port;
     qnetworkserver *thiz = runConfig->thiz;
 
     if (thiz->run_mutex.tryLock(__FUNCTION__) != 0)
@@ -586,7 +585,8 @@ void *qnetworkserver::run_internal(void *data)
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP};
 
-    thiz->logger.start_session("q_logfile", sizeof("q_logfile"));
+    qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
+    thiz->logger.start_session(log_path, log_path.length());
     quiche_enable_debug_logging(debug_log, nullptr);
 
     struct addrinfo *local;
@@ -698,7 +698,7 @@ void *qnetworkserver::run_internal(void *data)
 
 int qnetworkserver::runID = 0;
 
-int qnetworkserver::run(std::string host, std::string port, fs::path rootDir)
+int qnetworkserver::run(qstring host, qstring port, fs::path rootDir)
 {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     run_server_config.host = host;

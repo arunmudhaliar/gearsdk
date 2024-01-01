@@ -9,18 +9,20 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qserver"
 
-static std::string version_string = "0.1";
+static qstring version_string = "0.1";
 static unsigned version_code = 1;
 
 int32_t main(int32_t argc, const char * argv[]) {
     init_gsdk();
-    std::string host = "localhost";
-    std::string port = "4000";
-    std::string mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
+    qstring host = "localhost";
+    qstring port = "4000";
+    qstring mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
+    qstring redis_ip = "127.0.0.1";
+    int redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
                           version_string, version_code,
-                          host, port, mongodb_uri, rootDir);
+                          host, port, mongodb_uri, rootDir, redis_ip, redis_port);
     if (result<0) {
         exit(0);
     }

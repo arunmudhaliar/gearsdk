@@ -15,17 +15,7 @@
 #include "../../common/timer.h"
 #include <map>
 
-#if PLATFORM == PLATFORM_MAC
-namespace fs = std::__fs::filesystem;
-#elif PLATFORM == PLATFORM_LINUX
-#include <linux/limits.h>
-namespace fs = std::filesystem;
-#else
-namespace fs = std::__fs::filesystem;
-#endif
-
 #include <netdb.h>
-#include <filesystem>
 #include <vector>
 //#include <quiche.h>
 #include <zlib.h>
@@ -41,6 +31,14 @@ if (elapsed_since_##timestamp_ > warn_after_ms) \
 { \
     DEBUG_PRINT_WARN(tag, formatted_msg, elapsed_since_##timestamp_); \
 }
+
+#if PLATFORM == PLATFORM_LINUX
+#define PTHREAD_NAME(name) pthread_setname_np(pthread_self(), name)
+#elif PLATFORM == PLATFORM_MAC
+#define PTHREAD_NAME(name) pthread_setname_np(name)
+#else
+#define PTHREAD_NAME(name) pthread_setname_np(name)
+#endif
 
 class qmutex;
 class qmutexcondition {
@@ -85,15 +83,16 @@ private:
     qmutexcondition condition;
     long blockCount = 0;
     int wanted = 0;
+    static int log_flag;
 };
 
 class essentials {
 public:
     int init_essentials();
     static int32_t resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
-                                  const std::string& version_string_, unsigned version_code_,
-                                         std::string& host, std::string& port, std::string& mongodb_uri, fs::path& rootDir,
-                                         std::string& redis_ip, int& redis_port);
+                                  const qstring& version_string_, unsigned version_code_,
+                                         qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
+                                         qstring& redis_ip, int& redis_port);
     
     static time_t get_time_local();
     static qstring get_time_local_tostring();
@@ -111,6 +110,14 @@ public:
     static long long get_total_ram();
     static long long get_used_mem();
     static int get_process_used_mem();
+    
+    // fs
+    static int get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names);
+    
+    static unsigned long get_crc(const uint8_t* buffer, ssize_t len);
+    
+    static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
+    static int update_port(struct sockaddr* sa, uint16_t newPort);
 };
 
 // h3 structs
@@ -209,9 +216,13 @@ public:
         data.buffer = payload_;
         return data;
     }
-    const payload& append_to_payload(const qstring& payload_) {
-        data.buffer += payload_;
+    const payload& append_to_payload(const uint8_t* str, int len) {
+        data.buffer.run_printf((const char*)str, len);
         return data;
+    }
+    
+    void clear_payload() {
+        data.buffer.clear();
     }
 
     header* add_or_get_header(const qstring& name_, const qstring& value_) {
@@ -241,4 +252,80 @@ public:
     std::map<unsigned long, header*> headers;
 };
 
+
+struct qaddress {
+    qaddress() {
+        port = 0;
+        ip.clear();
+    }
+    qaddress(const qstring& ip_, uint16_t port_) : ip(ip_), port(port_) {
+    }
+    qaddress(const qstring& ip_, const qstring& port_) {
+        set(ip_, port_);
+    }
+    qaddress(struct sockaddr& addr) {
+        set(addr);
+    }
+    int set(struct sockaddr& addr) {
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        if (getnameinfo(&addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV) !=0) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to parse sockaddr !!!");
+            return -1;
+        }
+        return set(name, port);
+    }
+    int set(const qstring& ip_, const qstring& port_) {
+        ip = ip_;
+        int tmp = 0;
+        if (gsdk::str2int(&tmp, port_.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to parse port !!! - %s", port_.c_str());
+            return -1;
+        }
+        port = (uint16_t)tmp;
+        return 0;
+    }
+    
+    int serialise(qstring& buf) {
+        uint8_t tmp[16];
+        uint32_t index = 0;
+        *((uint16_t*)(tmp + index)) = htons(port);
+        index+=sizeof(uint16_t);
+        std::vector<qstring> array;
+        ip.split(".", array);
+        for(auto n : array) {
+            int v = 0;
+            if (gsdk::str2int(&v, n.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+                DEBUG_PRINT_ERROR("qaddress", "Unable to serialise value !!! - %s", n.c_str());
+                return -1;
+            }
+            *((uint8_t*)(tmp + index)) = (uint8_t)v;
+            index+=sizeof(uint8_t);
+        }
+        buf.bin_copy(tmp, index);
+        return 0;
+    }
+    
+    int deserialise(const uint8_t* buf, ssize_t len) {
+        const uint8_t* tmp = buf;
+        if (len<6) {
+            DEBUG_PRINT_ERROR("qaddress", "Unable to de-serialise buffer !!! - length = %d", len);
+            return -1;
+        }
+        uint32_t index = 0;
+        port = ntohs(*((uint16_t*)(tmp + index)));
+        index+=sizeof(uint16_t);
+        ip.clear();
+        uint8_t v[4];
+        for (int x=0;x<4;x++) {
+            v[x] = *((uint8_t*)(tmp + index));
+            index+=sizeof(uint8_t);
+        }
+        ip.format("%d.%d.%d.%d", v[0], v[1], v[2], v[3]);
+        return 0;
+    }
+    
+    uint16_t port;
+    qstring ip;
+};
 #endif /* essentials_hpp */

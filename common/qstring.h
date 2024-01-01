@@ -95,7 +95,22 @@ public:
         clear();
         utstring_printf(ut_string, "%s", str);
     }
+    
+    void run_printf(const char* str, int len) {    // wont clear the data
+        if (str == nullptr) {
+            return;
+        }
+        utstring_printf(ut_string, "%.*s", len, str);
+    }
 
+    void bin_copy(const uint8_t* buf, ssize_t len) {
+        if (buf == nullptr) {
+            return;
+        }
+        clear();
+        utstring_bincpy(ut_string, buf, len);
+    }
+    
     void format(const char* fmt, ...) {
         clear();
         va_list ap;

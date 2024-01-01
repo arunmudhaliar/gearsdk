@@ -35,7 +35,7 @@ public:
     size_t log(log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length);
     size_t log_buffer(const char* buffer, size_t buffer_length);
     int flush(bool check_for_log_file_size);
-    qbuffer* create_new_record(size_t buffer_size);
+    qbuffer* create_new_record(size_t buffer_size, std::vector<qbuffer*>& list);
 
     static bool file_exists(const qstring& filename);
     static void get_all_log_files(fs::path& path, std::vector<fs::path>& files);
@@ -53,6 +53,7 @@ private:
     unsigned int next_major_version = 0;
     qstring current_logfile_path;
     std::vector<qbuffer*> records;
+    std::vector<qbuffer*> records_waiting;
     qbuffer_writer buffer_writer;
     qmutex log_mutex;
 };

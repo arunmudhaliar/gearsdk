@@ -32,11 +32,19 @@ extern "C"
     }
 
     void print_common_info() {
+#if GSDK_ENDIAN == GSDK_LITTLEENDIAN
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Little endian machine !!!" );
+#else
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Big endian machine !!!" );
+#endif
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
         DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
         DEBUG_PRINT(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
         DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
+        DEBUG_PRINT(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
+        DEBUG_PRINT(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
+        
 
         char cwd[PATH_MAX];
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -74,14 +82,37 @@ extern "C"
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #elif PLATFORM == PLATFORM_ANDROID
         __android_log_print(ANDROID_LOG_INFO, tag, buffer);
 #else
-        fprintf(stderr, "%s : [%s] - %s\n", strtok(ctime(&givemetime), "\n"), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #endif
     }
 
+    void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
+        if (logLevel > LOG_LEVEL) {
+            return;
+        }
+        char buffer[LOGBUFFER_SIZE + 1];
+        va_list v;
+        va_start(v, format);
+        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+        va_end(v);
+        DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+    }
+
+    void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
+        if (condition == false) {
+            return;
+        }
+        char buffer[LOGBUFFER_SIZE + 1];
+        va_list v;
+        va_start(v, format);
+        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+        va_end(v);
+        DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+    }
     void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
         va_list v;

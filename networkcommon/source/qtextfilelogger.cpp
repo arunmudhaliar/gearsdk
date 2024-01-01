@@ -16,13 +16,26 @@ qlogfile::qlogfile(const qstring& path, float flush_time, size_t max_size_of_fil
     logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file) {
     fs::path log_dir = fs::path(logfile_path.c_str()).parent_path();
     if (!fs::is_directory(log_dir)) {
-        fs::create_directory(log_dir);
+        fs::create_directories(log_dir);
     }
     create_new_logfile(false);
 }
 
 qlogfile::~qlogfile() {
-    flush(false);
+    // move pending records if any
+    // This may cause some ordering issue. Will fix later. For stats it wont be an issue since timestamp attached to each stat.
+    for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
+        records.push_back(*it);
+    }
+    int flush_result = flush(false);
+    if (flush_result<0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to flush records in qlogfile destructor - %s, flush_result %d", logfile_path.c_str(), flush_result);
+        // Cann not delete (Need to implement conditional wait for mutex here)
+//        for (std::vector<qbuffer*>::iterator it = records.begin(); it!=records.end(); it++) {
+//            GX_DELETE(*it);
+//        }
+//        records.clear();
+    }
     if (fp == nullptr) {
         return;
     }
@@ -42,6 +55,7 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
     fs::path current_logfile_path_;
     bool file_exist_ = false;
     unsigned int file_not_exist_counter = 0;
+    
     do {
         current_logfile_path_ = path;
         qstring file_version_string;
@@ -53,9 +67,9 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
             next_minor_counter_ = 0;
             if (next_major_version_ > MAJOR_VERSION_ALARM_AT) {
                 if (files.size() > 50) {
-                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", path.native().c_str());
+                    DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER ----- %s", path.native().c_str());
                 } else if (files.size() == 0) {
-                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND -----", path.native().c_str());
+                    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND ----- %s", path.native().c_str());
                 }
                 break;
             }
@@ -81,10 +95,10 @@ int qlogfile::finalise_logfile() {
 
     // Print the result
     if (!result) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file renamed successfully");
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file renamed to --> %s", finalized_path.c_str());
     }
     else {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Couldn't rename logfile");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Couldn't rename logfile '%s'", current_logfile_path.c_str());
     }
 
     if (fp) {
@@ -149,19 +163,32 @@ int qlogfile::create_new_logfile(bool finalize_prev_file) {
     return 0;
 }
 
-qbuffer* qlogfile::create_new_record(size_t buffer_size) {
+qbuffer* qlogfile::create_new_record(size_t buffer_size, std::vector<qbuffer*>& list) {
     if (fp == nullptr) {
         return nullptr;
     }
     qbuffer* record = DEBUG_NEW qbuffer();
     record->allocate(buffer_size);
-    records.push_back(record);
+    list.push_back(record);
     return record;
 }
 
 size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer, size_t buffer_length) {
-    log_mutex.tryLock(__FUNCTION__);
+    bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+    if (!locked) {
+        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "logging failed - '%s' !!!", buffer);
+    } else {
+        // move pending records if any
+        for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
+            records.push_back(*it);
+        }
+        DEBUG_WARN_COND(__LOGTAG__, records_waiting.size()>0, "pending logs pushed - '%d' !!!", records_waiting.size());
+        records_waiting.clear();
+    }
     if (fp == nullptr) {
+        if (locked) {
+            log_mutex.unLock();
+        }
         return -1;
     }
     time_t givemetime = time(NULL);
@@ -171,29 +198,50 @@ size_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer
     ssize_t tag_length = strlen(tag);
     ssize_t spaces = 10;    //9 space + 1 extra space added !
     size_t total_record_sz = ctime_str_len + spaces + tag_length + buffer_length;
-    qbuffer* record = create_new_record(ctime_str_len + spaces + tag_length + buffer_length);
+    qbuffer* record = create_new_record(ctime_str_len + spaces + tag_length + buffer_length, locked ? records : records_waiting);
     snprintf((char*)record->data, total_record_sz, "%s : [%s] - %s\n", ctime_str_mod, tag, buffer);
     record->index = total_record_sz;
-    log_mutex.unLock();
+    if (locked) {
+        log_mutex.unLock();
+    }
     return total_record_sz;
 }
 
 size_t qlogfile::log_buffer(const char* buffer, size_t buffer_length) {
-    log_mutex.tryLock(__FUNCTION__);
+    bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+    if (!locked) {
+        DEBUG_WARN(LOG_LEVEL_4, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
+    } else {
+        // move pending records if any
+        for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it!=records_waiting.end(); it++) {
+            records.push_back(*it);
+        }
+        DEBUG_WARN_COND(__LOGTAG__, records_waiting.size()>0, "pending logs(buffer) pushed - '%d' !!!", records_waiting.size());
+        records_waiting.clear();
+    }
     if (fp == nullptr) {
+        if (locked) {
+            log_mutex.unLock();
+        }
         return -1;
     }
     size_t total_record_sz = buffer_length + 2;   //+2 for \n
-    qbuffer* record = create_new_record(total_record_sz);   //+1 for \n
+    qbuffer* record = create_new_record(total_record_sz, locked ? records : records_waiting);   //+1 for \n
     snprintf((char*)record->data, total_record_sz, "%s\n", buffer);
     record->index = total_record_sz;
-    log_mutex.unLock();
+    if (locked) {
+        log_mutex.unLock();
+    }
     return total_record_sz;
 }
 
 int qlogfile::flush(bool check_for_log_file_size) {
-    log_mutex.tryLock(__FUNCTION__);
+    if (log_mutex.tryLock(__FUNCTION__) != 0) {
+        DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "flush failed - '%d' !!!", check_for_log_file_size);
+        return -2;
+    }
     if (fp == nullptr) {
+        log_mutex.unLock();
         return -1;
     }
 
@@ -253,6 +301,7 @@ void* qtextfilelogger::run_log_session(void* data) {
     qlog_config* config = (qlog_config*)data;
     qtextfilelogger* logger = config->logger;
 
+    PTHREAD_NAME("qtextfilelogger");
     if (logger->log_session_mutex.tryLock(__FUNCTION__) != 0) {
         config->finished = true;
         config->pthread_returnValue = -1;

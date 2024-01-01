@@ -11,6 +11,9 @@
 #include "qtextfilelogger.hpp"
 #include "../../common/qstring.h"
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qstatslogger"
+
 class qstatslogger : public qtextfilelogger {
 public:
     qstatslogger();

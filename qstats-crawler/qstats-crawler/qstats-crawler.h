@@ -15,7 +15,7 @@ public:
     qstats_crawler();
     ~qstats_crawler();
 
-    void try_crawl(const qstring& root_filename);
+    void try_crawl(const qstring& root_filename, const qstring& host, const qstring& port);
 
 private:
     int parse_file(fs::path file, int& parsed_lines);

@@ -11,8 +11,12 @@
 #include "qh3server.hpp"
 #include "../../servercommon/source/qmongo/qmongo.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
+#include "../../networkcommon/source/qtextfile.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
+
+#undef __LOGTAG__
+#define __LOGTAG__ "http3_sample_server"
 
 class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
@@ -40,5 +44,9 @@ private:
     void parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io);
     void parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io);
     void parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    
+#if TEST_RESPONSE
+    qstring test_response;
+#endif
 };
 #endif /* http3_sample_server_hpp */

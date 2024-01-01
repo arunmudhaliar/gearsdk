@@ -1,10 +1,14 @@
 FROM ubuntu:23.10
 LABEL key="qh3server"
 EXPOSE 4004/udp
+EXPOSE 4010/udp
+EXPOSE 4011/udp
+EXPOSE 5100-5116/udp
 WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qh3server/ ./qh3server
+COPY qh3client/ ./qh3client
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
 COPY make_qh3server.sh ./
@@ -19,7 +23,7 @@ RUN apt install libsnappy-dev -y
 RUN apt-get install libzstd-dev -y
 RUN apt install iproute2 -y
 RUN sh make_qh3server.sh
-# CMD [ "sh", "run_qh3server.sh" ]
+RUN chmod 755 ./run_qh3server.sh
 
 # ------- qstats-crawler -------
 # ------- qstats-crawler -------
@@ -37,9 +41,9 @@ RUN pwd
 RUN sh make_postgresql.sh
 RUN pwd
 RUN sh make_qstats-crawler.sh
-
-RUN chmod 755 ./run_qh3server.sh
 RUN chmod 755 ./run_qstats-crawler.sh
+
+# ------- supervisor -------
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get install -y supervisor
 RUN mkdir -p /var/log/supervisor

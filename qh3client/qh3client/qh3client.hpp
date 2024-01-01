@@ -30,11 +30,13 @@
 #include <map>
 
 #define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define PORT_FIELD_SZ sizeof(uint16_t)
+#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3client"
 
+namespace client {
 class bridge_h3client_connection;
 struct conn_io {
     conn_io() {
@@ -57,10 +59,11 @@ struct conn_io {
     bool req_sent = false;
     bool settings_received = false;
     uint8_t buf[65535];
-    uint8_t out[MAX_DATAGRAM_SIZE];
+    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
     conn_io_req_res* response = nullptr;
     bool res_received = false;
     ev_tstamp creation_time = 0;
+    bool two_byte_port_check = true;
 };
 
 class bridge_h3client_connection {
@@ -75,7 +78,7 @@ public:
 class qh3client : public bridge_h3client_connection {
 public:
 
-    qh3client(const qstring& host, const qstring& port);
+    qh3client(const qstring& host, const qstring& port, bool two_byte_port_check = true);
     virtual ~qh3client();
 
     struct ev_loop* mainloop = nullptr;
@@ -103,8 +106,10 @@ public:
     const qstring port;
     const conn_io_req_res* http_request = nullptr;
     struct conn_io* conn_io = nullptr;
+    bool two_byte_port_check = true;
 
 private:
     int close_socket(int sock);
+};
 };
 #endif /* qh3client_hpp */

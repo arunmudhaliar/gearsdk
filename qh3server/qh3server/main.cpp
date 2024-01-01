@@ -6,10 +6,11 @@
 //
 
 #include "http3_sample_server.hpp"
+#include "qh3simple_router.hpp"
 
 //#include "../../qhiredis/source/qhiredis.hpp"
 
-static std::string version_string = "0.1";
+static qstring version_string = "0.1";
 static unsigned version_code = 1;
 
 #undef __LOGTAG__
@@ -18,10 +19,11 @@ static unsigned version_code = 1;
 int main(int argc, const char* argv[]) {
     init_gsdk();
     // main http server
-    std::string host = "localhost";
-    std::string port = "4004";
-    std::string mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
-    std::string redis_ip = "127.0.0.1";
+    qstring host = "localhost";
+//    qstring host = "192.168.0.65";
+    qstring port = "4004";
+    qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
+    qstring redis_ip = "127.0.0.1";
     int redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
@@ -30,8 +32,13 @@ int main(int argc, const char* argv[]) {
     if (result < 0) {
         exit(0);
     }
-    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
-    server.run(host, port, rootDir);
+    
+//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
+//    server.run(host, port, rootDir, nullptr);
+    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port);
+    qh3simple_router router(config);
+    router.run();
+    
     //    server.test_mongo_db();
 
     // log file
