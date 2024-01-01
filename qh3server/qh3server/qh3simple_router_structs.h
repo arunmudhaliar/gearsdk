@@ -64,6 +64,7 @@ struct route {
     struct addrinfo* peer = nullptr;
     ev_io command_watcher;
     void* arg = nullptr;
+    pid_t child_process_id = -1;
 };
 struct port_range {
     const int min = 5100;

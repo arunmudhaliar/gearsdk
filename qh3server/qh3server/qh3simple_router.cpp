@@ -18,6 +18,7 @@ qh3simple_router::~qh3simple_router() {
 }
 
 int qh3simple_router::run() {
+    // router object needs to be inited first, since this info is needed by child qh3server child process
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -28,7 +29,43 @@ int qh3simple_router::run() {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
         return -1;
     }
-
+    //
+    
+    // spawn initial servers
+    int spawned_servers = 0;    // never decrement
+    int overflow = 0;
+    int index = 0;
+    pid_t child_process_id = 0;
+    while (spawned_servers<5) {
+        overflow++;
+        if (overflow>1000) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+            break;
+        }
+        int free_port = next_available_port(config.host, range, index++);
+        if (free_port<0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
+            break;
+        }
+        route* route = spawn_qh3server(config.host, qstring::format_string("%d", free_port), config, child_process_id);
+        if (route==nullptr && child_process_id == 0) {
+            break;      // no need for child process to continue the loop.
+        } else if (route==nullptr && child_process_id != 0) {
+            continue;   // parent process will contine and create child process.
+        }
+        
+        if (child_process_id>0) {
+            // cache child process ids for later use (shutdown events)
+            // recommended design is to handle shutdown events by these child process themselves.
+            server_process_ids.push_back(child_process_id);
+        }
+        spawned_servers++;
+    }
+    //
+    
+    if (child_process_id !=0) {
     if (sock!=-1) {
         close(sock);
     }
@@ -56,6 +93,8 @@ int qh3simple_router::run() {
         return -1;
     }
     
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Star router !!!");
+    
     ev_io watcher;
 
     mainloop = ev_default_loop(0);
@@ -64,6 +103,7 @@ int qh3simple_router::run() {
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
     
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Creating  command center !!!");
     // command server
     if (spawn_qh3server_command_server(config.host, config.command_port, config) == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create command server !!!");
@@ -74,30 +114,33 @@ int qh3simple_router::run() {
     }
     //
     
-    // spawn initial servers
-    int spawned_servers = 0;    // never decrement
-    int overflow = 0;
-    int index = 0;
-    while (spawned_servers<10) {
-        overflow++;
-        if (overflow>1000) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
-            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
-            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
-            break;
-        }
-        int free_port = next_available_port(config.host, range, index++);
-        if (free_port<0) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
-            break;
-        }
-        route* route = spawn_qh3server(config.host, qstring::format_string("%d", free_port), config);
-        if (route==nullptr) {
-            continue;
-        }
-        spawned_servers++;
-    }
-    //
+//    // spawn initial servers
+//    int spawned_servers = 0;    // never decrement
+//    int overflow = 0;
+//    int index = 0;
+//    pid_t child_process_id = 0;
+//    while (spawned_servers<5) {
+//        overflow++;
+//        if (overflow>1000) {
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+//            break;
+//        }
+//        int free_port = next_available_port(config.host, range, index++);
+//        if (free_port<0) {
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
+//            break;
+//        }
+//        route* route = spawn_qh3server(config.host, qstring::format_string("%d", free_port), config, child_process_id);
+//        if (route==nullptr && child_process_id == 0) {
+//            break;      // no need for child process to continue the loop.
+//        } else if (route==nullptr && child_process_id != 0) {
+//            continue;   // parent process will contine and create child process.
+//        }
+//        spawned_servers++;
+//    }
+//    //
     
     ev_loop(mainloop, 0);
     
@@ -107,8 +150,15 @@ int qh3simple_router::run() {
     freeaddrinfo(router);
     router = nullptr;
     close(sock);
-    
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Stop router !!!");
     return 0;
+    }
+    else {
+        freeaddrinfo(router);
+        router = nullptr;
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Child process exiting !!!");
+        return 0;
+    }
 }
 
 void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
@@ -174,7 +224,43 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 }
 
 route* qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
-                                         const router_config& config) {
+                                         const router_config& config, pid_t& child_process_id) {
+    
+#if FORK_WIP || 1
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
+        child_process_id = fork();
+        if (child_process_id < 0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "fork failed !!!");
+            return nullptr;
+        } if (child_process_id == 0) {
+            // Code executed by the child process
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
+            router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port);
+            if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
+                DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+                GX_DELETE(new_config);
+                return nullptr;
+            }
+            
+            // Wait for the thread to finish
+            if (pthread_join(new_config->run_thread_id, nullptr) != 0) {
+                DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not join thread: %s - %d", strerror(errno), errno);
+            }
+            
+            fflush(stdout);  // Flush output
+            return nullptr;
+        } else if (child_process_id>0){
+            // Code executed by the parent process
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
+            route* child = DEBUG_NEW route(host, port, server_counter++);
+            child->child_process_id = child_process_id;
+            routes.push_back(child);
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
+            child->create_bridge(mainloop, child, nullptr);
+            return child;
+        }
+#else
+    process_id = getpid();
     router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port);
     if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
@@ -186,6 +272,8 @@ route* qh3simple_router::spawn_qh3server(const qstring& host, const qstring& por
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
     child->create_bridge(mainloop, child, nullptr);
     return child;
+#endif
+    return nullptr;
 }
 
 void* qh3simple_router::spawn_qh3server_internal(void* data) {

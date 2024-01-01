@@ -94,7 +94,7 @@ void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_hea
     }
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
     send_shutdown_to_all();
-    conn_io->http_response->set_payload("{ shutdown-all }");
+    conn_io->http_response->set_payload(qstring::format_string("{ %d-shutdown-all }", getpid()));
 }
 
 void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
@@ -111,9 +111,9 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
         // may be called from a browser
         DEBUG_PRINT_IMPORTANT2(const_logtag, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
     }
-    const char* res_string = "{\"name\" : \"http3_command_server\"}";
-    conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
-    qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), res_string);
+    const qstring& payload = qstring::format_string("{\"name\" : \"%d-http3_command_server\"}", getpid());
+    conn_io->http_response->set_payload(payload);
+    qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
