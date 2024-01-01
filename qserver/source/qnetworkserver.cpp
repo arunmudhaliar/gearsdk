@@ -222,8 +222,6 @@ void qnetworkserver::on_connection(qpeerconnection *qconnection)
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
-#include <sstream>
-
 void qnetworkserver::on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection *qconnection)
 {
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
