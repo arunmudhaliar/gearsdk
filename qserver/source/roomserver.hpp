@@ -28,15 +28,16 @@ public:
 protected:
     void on_network_server_end() override final;
     void on_network_server_begin() override final;
-    void on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override;
-    void on_connection(qpeerconnection* qconnection) override;
-    void on_destroy_connection(qpeerconnection* qconnection) override;
+    void on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override final;
+    void on_connection(qpeerconnection* qconnection) override final;
+    void on_destroy_connection(qpeerconnection* qconnection) override final;
     
     void onroom_create(room*) override;
     void onroom_pre_start(room*) override final;
     void onroom_start(room*) override;
-    void onplayer_added(room*, player*) override;
-    void onplayer_removed(room*, player*) override;
+    void onroom_player_added(room*, player*) override;
+    virtual void onroom_message(room*, player*, const qstring& msg) = 0;
+    void onroom_player_removed(room*, player*) override;
     void onroom_end(room*) override;
     
     // timers

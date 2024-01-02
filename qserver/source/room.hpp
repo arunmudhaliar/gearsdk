@@ -31,8 +31,8 @@ public:
     virtual void onroom_create(room*)= 0;
     virtual void onroom_pre_start(room*) = 0;
     virtual void onroom_start(room*) = 0;
-    virtual void onplayer_added(room*, player*) = 0;
-    virtual void onplayer_removed(room*, player*) = 0;
+    virtual void onroom_player_added(room*, player*) = 0;
+    virtual void onroom_player_removed(room*, player*) = 0;
     virtual void onroom_end(room*) = 0;
     virtual struct ev_loop * get_netowrk_main_loop() = 0;
 };
@@ -70,10 +70,12 @@ public:
     
     ssize_t try_add_connection(qpeerconnection* qconnection);
     ssize_t remove_connection(qpeerconnection* qconnection);
+    player* get_player(qpeerconnection* qconnection);
     inline bool is_min_capacity_reached() { return playermap.size()>=room_config.min_players; }
     inline bool is_max_capacity_reached() { return playermap.size()>=room_config.max_players; }
     inline ssize_t get_playermap_count() { return playermap.size(); }
     states get_state() { return state; }
+    const qstring& get_state_string();
     bool is_state(states state) { return this->state==state; }
     void kick_all_except(qpeerconnection* qconnection);
     void print_info();
@@ -82,7 +84,7 @@ public:
     std::map<qpeerconnection*, player*> playermap;
     const int room_index = 0;
     const ev_tstamp creation_time;
-
+    
 private:
     void set_state(states state);
     void on_state_change(states prev_state);
@@ -91,6 +93,7 @@ private:
     states state = room_uninitialised;
     interfaceroom* roominterface;
     static int roomID;
+    qstring states_string[4] = {"uninitialised", "waiting", "start", "end" };
 };
 
 #endif /* room_hpp */

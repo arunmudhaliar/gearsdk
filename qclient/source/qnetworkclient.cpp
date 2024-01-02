@@ -353,7 +353,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
             (int)app_proto_len, app_proto);
         qconnection_->bridge->event_connect(qconnection_);
 
-        const static uint8_t hi[] = "Hi\r\n";
+        const static uint8_t hi[] = "Hi";
         if (quiche_conn_stream_send(qconnection_->conn, 4, hi, sizeof(hi), false) < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send Hi request");
             return;

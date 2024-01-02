@@ -9,9 +9,27 @@
 
 int room::roomID = 0;
 
+room::room(interfaceroom* interface, const roomconfig& room_config) :
+roominterface(interface),
+room_config(room_config),
+room_index(room::roomID++),
+creation_time(ev_now(interface->get_netowrk_main_loop()))
+{
+    set_state(room_waiting);
+}
+
+room::~room() {
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Room destructor - %d", room_index);
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player_to_rem = (*it).second;
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, room_index);
+        roominterface->onroom_player_removed(this, player_to_rem);
+    }
+}
+
 ssize_t room::try_add_connection(qpeerconnection* qconnection) {
     if (qconnection == nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection == null !!!");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "try_add_connection: qconnection == null !!!");
         return -1;
     }
     if (playermap.find(qconnection) != playermap.end()) {
@@ -29,27 +47,40 @@ ssize_t room::try_add_connection(qpeerconnection* qconnection) {
     player* player_ = DEBUG_NEW player(qconnection);
     playermap[qconnection] = player_;
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_index);
-    roominterface->onplayer_added(this, player_);
+    roominterface->onroom_player_added(this, player_);
     if(is_min_capacity_reached()) {
         set_state(room_start);
     }
     return playermap.size();
 }
 
+player* room::get_player(qpeerconnection* qconnection) {
+    if (qconnection == nullptr) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection == null !!!");
+        return nullptr;
+    }
+    std::map<qpeerconnection*, player*>::iterator it = playermap.find(qconnection);
+    if (it == playermap.end()) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection not in the playermap !!! %s", qconnection->cid);
+        return nullptr;
+    }
+    return (*it).second;
+}
+
 ssize_t room::remove_connection(qpeerconnection* qconnection) {
     if (qconnection == nullptr) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection == null !!!");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection == null !!!");
         return -1;
     }
     std::map<qpeerconnection*, player*>::iterator it = playermap.find(qconnection);
     if (it == playermap.end()) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection not in the playermap !!! %s", qconnection->cid);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection not in the playermap !!! %s", qconnection->cid);
         return -1;
     }
     player* removed_player = (*it).second;
     playermap.erase(it);
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_index);
-    roominterface->onplayer_removed(this, removed_player);
+    roominterface->onroom_player_removed(this, removed_player);
     GX_DELETE(removed_player);  // Better to cache this than delete. He may rejoin.
     
     // player leaving between gameplay and gone below min threshold
@@ -71,6 +102,7 @@ void room::kick_all_except(qpeerconnection* qconnection) {
             continue;
         }
         player_->qconnection->close();
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick player %0x", player_->qconnection->cid_hash_val);
     }
 }
 
@@ -108,30 +140,15 @@ void room::on_state_change(states prev_state) {
     }
 }
 
-
-room::room(interfaceroom* interface, const roomconfig& room_config) :
-roominterface(interface),
-room_config(room_config),
-room_index(room::roomID++),
-creation_time(ev_now(interface->get_netowrk_main_loop()))
-{
-    set_state(room_waiting);
-}
-
-room::~room() {
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Room destructor");
-    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
-        player* player_to_rem = (*it).second;
-        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, room_index);
-        roominterface->onplayer_removed(this, player_to_rem);
-    }
-}
-
 void room::print_info() {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room %d, state : %d, t:%4.2fs, p:%d",
-                           room_index, state, since_creation(), playermap.size());
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d",
+                           room_index, get_state_string().c_str(), since_creation(), playermap.size());
 }
 
 ev_tstamp room::since_creation() {
     return ev_now(roominterface->get_netowrk_main_loop()) - creation_time;
+}
+
+const qstring& room::get_state_string() {
+    return states_string[state];
 }
