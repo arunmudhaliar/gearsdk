@@ -35,7 +35,7 @@ int32_t main(int32_t argc, const char * argv[]) {
     qtimer_sceduler scheduler;
     scheduler.set_ev_lopp(loop);
     scheduler.schedule_repeat_timer([loop, creation_time](qtimer& timer){
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
+        // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
     }, 60);
     
     ev_run(loop, 0);

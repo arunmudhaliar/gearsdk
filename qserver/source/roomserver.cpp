@@ -8,18 +8,22 @@
 #include "roomserver.hpp"
 
 void roomserver::on_timer_check_zombie_rooms(qtimer& qtimer_) {
-    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "timer_check_zombie_rooms");
     if (waiting_rooms.size()) {
-        int zobies = 0;
+        std::vector<room*> zombies;
         for(auto it = waiting_rooms.cbegin();it!=waiting_rooms.cend();it++) {
             room* waiting_room = *it;
             if (waiting_room->since_creation() >= WAITING_ROOM_ZOMBIE_THRESHOLD) {
-                waiting_room->print_info();
-                zobies++;
+                zombies.push_back(waiting_room);
             }
         }
-        if (zobies>0) {
-            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "[%d] ~~zombies~~", zobies);
+        if (zombie_rooms!=zombies.size()) {
+            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "[%d] - zombies", zombies.size());
+            for(auto it = zombies.cbegin();it!=zombies.cend();it++) {
+                room* zombie = *it;
+                zombie->print_info();
+            }
+            
+            zombie_rooms = zombies.size();
         }
     }
 }

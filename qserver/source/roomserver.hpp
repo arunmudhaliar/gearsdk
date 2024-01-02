@@ -49,6 +49,7 @@ protected:
     std::vector<room*> waiting_rooms;
     std::vector<room*> rooms;
     std::map<unsigned, room*> connection_map;
+    ssize_t zombie_rooms = 0;
 };
 
 #endif /* roomserver_hpp */
