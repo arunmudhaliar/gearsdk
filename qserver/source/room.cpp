@@ -53,9 +53,11 @@ ssize_t room::try_add_connection(qpeerconnection* qconnection) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection already in the playermap !!!");
         return -2;
     }
-    if (state!=room_waiting) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state !!!");
-        return -3;
+    if (state>room_waiting) {
+        if (!room_config.allow_join_after_start) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state !!!");
+            return -3;
+        }
     }
     if (playermap.size()>=room_config.max_players) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "room max cpacity reached !!!");
