@@ -212,17 +212,17 @@ qpeerconnection *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
 
     HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, qconnection);
 
-    qconnection->bridge->on_connection(qconnection);
+    qconnection->bridge->onconnection_connect(qconnection);
 
     return qconnection;
 }
 
-void qnetworkserver::on_connection(qpeerconnection *qconnection)
+void qnetworkserver::onconnection_connect(qpeerconnection *qconnection)
 {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
-void qnetworkserver::on_message(ssize_t recv_len, uint8_t *buf, qpeerconnection *qconnection)
+void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, qpeerconnection *qconnection)
 {
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
@@ -287,13 +287,13 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
 
 void qnetworkserver::destroy_connection(struct ev_loop *loop, qpeerconnection *qconnection)
 {
-    on_destroy_connection(qconnection);
+    onconnection_destroy(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
     GX_DELETE(qconnection);
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
 
-void qnetworkserver::on_destroy_connection(qpeerconnection *qconnection)
+void qnetworkserver::onconnection_destroy(qpeerconnection *qconnection)
 {
     //    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
 }
@@ -513,7 +513,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                     }
                 }
                 //                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
-                qconnection->bridge->on_message(recv_len, conns->buf, qconnection);
+                qconnection->bridge->onconnection_message(recv_len, conns->buf, qconnection);
             }
             quiche_stream_iter_free(readable);
         }
