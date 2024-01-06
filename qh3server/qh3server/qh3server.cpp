@@ -680,9 +680,12 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     const char* const_logtag = logtag.c_str();
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
+    GX_DELETE(qzk);
     logger = DEBUG_NEW qtextfilelogger();
     stats_logger = DEBUG_NEW qstatslogger();
-
+    qzk = DEBUG_NEW qzookeeper();
+    qzk->init_test("192.168.0.230:2181");
+    
     qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
     qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
     
@@ -920,6 +923,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     
     close(sock);
     GX_DELETE(relay_through_router_info);
+    GX_DELETE(qzk);
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
     return 0;

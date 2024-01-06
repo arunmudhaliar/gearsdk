@@ -30,7 +30,7 @@
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
-
+#include "../../qzookeeper/source/qzookeeper.hpp"
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
 //#elif PLATFORM == PLATFORM_LINUX
@@ -171,6 +171,7 @@ protected:
     qstring logtag = __LOGTAG__;
     qstring port_id;
     qstring host_id;
+    qzookeeper* qzk = nullptr;
     
 public:
     virtual ~qh3server();
