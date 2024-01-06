@@ -23,6 +23,10 @@
 		5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
 		5594E2322B3FC9EB00E47984 /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22F2B3FC9EB00E47984 /* qh3client_helper.cpp */; };
 		5594E2372B3FCD4200E47984 /* qh3simple_router_structs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */; };
+		5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */; };
+		5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E26F2B489BEF00E47984 /* qzookeeper.cpp */; };
+		5594E2722B494ADC00E47984 /* libzookeeper_mt.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */; };
+		5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
 		55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC12AEF838200BC4CED /* libev.a */; };
@@ -33,6 +37,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5594E2742B494B0500E47984 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55A4AD9D2AEF825800BC4CED /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -71,6 +86,9 @@
 		5594E22F2B3FC9EB00E47984 /* qh3client_helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = qh3client_helper.cpp; path = ../qh3client/qh3client/qh3client_helper.cpp; sourceTree = "<group>"; };
 		5594E2352B3FCCC200E47984 /* qh3simple_router_structs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = qh3simple_router_structs.h; sourceTree = "<group>"; };
 		5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router_structs.cpp; sourceTree = "<group>"; };
+		5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzookeeper_mt.a; path = ../qzookeeper/libs/macos/libzookeeper_mt.a; sourceTree = "<group>"; };
+		5594E26F2B489BEF00E47984 /* qzookeeper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qzookeeper.cpp; path = ../qzookeeper/source/qzookeeper.cpp; sourceTree = "<group>"; };
+		5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libzookeeper_mt.2.dylib; path = ../qzookeeper/libs/macos/libzookeeper_mt.2.dylib; sourceTree = "<group>"; };
 		55A4AD9F2AEF825800BC4CED /* qh3server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3server; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A4ADA22AEF825800BC4CED /* main_h3_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_server.cpp; sourceTree = "<group>"; };
 		55A4ADBD2AEF836400BC4CED /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,6 +107,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5594E2722B494ADC00E47984 /* libzookeeper_mt.2.dylib in Frameworks */,
+				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
 				556AB6BC2AF50E3B00D688DB /* libservercommon.a in Frameworks */,
@@ -128,6 +148,7 @@
 		55A4AD962AEF825700BC4CED = {
 			isa = PBXGroup;
 			children = (
+				5594E26F2B489BEF00E47984 /* qzookeeper.cpp */,
 				5594E2342B3FCA0100E47984 /* shared_client_files */,
 				5574F20E2B1F727B007C93AA /* debug_new.cpp */,
 				556AB5C72AF01D0500D688DB /* certs */,
@@ -167,6 +188,8 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */,
+				5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */,
 				556ABAC32B0A78FA00D688DB /* libpgport.a */,
 				556ABAC12B0A784A00D688DB /* libpgcommon.a */,
 				556ABABB2B0A318800D688DB /* libpq.a */,
@@ -198,6 +221,7 @@
 				55A4AD9B2AEF825800BC4CED /* Sources */,
 				55A4AD9C2AEF825800BC4CED /* Frameworks */,
 				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
+				5594E2742B494B0500E47984 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -251,6 +275,7 @@
 				5594E2372B3FCD4200E47984 /* qh3simple_router_structs.cpp in Sources */,
 				5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */,
 				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
+				5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */,
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */,
@@ -391,12 +416,14 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../servercommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -423,12 +450,14 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../servercommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-lresolv";
