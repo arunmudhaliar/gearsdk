@@ -10,6 +10,8 @@
 		5594E2572B4748F400E47984 /* qzookeeper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2552B4748F400E47984 /* qzookeeper.cpp */; };
 		5594E2582B4748F400E47984 /* qzookeeper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5594E2562B4748F400E47984 /* qzookeeper.hpp */; };
 		5594E25B2B47498100E47984 /* libzookeeper_mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E25A2B47498100E47984 /* libzookeeper_mt.a */; };
+		5594E2762B49B4E800E47984 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E2752B49B4E700E47984 /* libcommon.a */; };
+		5594E2782B49BCB100E47984 /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E2772B49BCB100E47984 /* libnetworkcommon.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +19,8 @@
 		5594E2552B4748F400E47984 /* qzookeeper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qzookeeper.cpp; sourceTree = "<group>"; };
 		5594E2562B4748F400E47984 /* qzookeeper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qzookeeper.hpp; sourceTree = "<group>"; };
 		5594E25A2B47498100E47984 /* libzookeeper_mt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzookeeper_mt.a; path = libs/macos/libzookeeper_mt.a; sourceTree = "<group>"; };
+		5594E2752B49B4E700E47984 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5594E2772B49BCB100E47984 /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -24,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5594E2782B49BCB100E47984 /* libnetworkcommon.a in Frameworks */,
+				5594E2762B49B4E800E47984 /* libcommon.a in Frameworks */,
 				5594E25B2B47498100E47984 /* libzookeeper_mt.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -60,6 +66,8 @@
 		5594E2592B47498100E47984 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5594E2772B49BCB100E47984 /* libnetworkcommon.a */,
+				5594E2752B49B4E700E47984 /* libcommon.a */,
 				5594E25A2B47498100E47984 /* libzookeeper_mt.a */,
 			);
 			name = Frameworks;
@@ -260,7 +268,10 @@
 					"$(inherited)",
 					THREADED,
 				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zookeeper\"";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/zookeeper\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs/macos",
@@ -277,7 +288,10 @@
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = THREADED;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/zookeeper\"";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/zookeeper\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs/macos",

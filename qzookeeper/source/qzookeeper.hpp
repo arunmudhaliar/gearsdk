@@ -24,56 +24,47 @@
 #include <assert.h>
 
 #include "../../common/qstring.h"
+#include "../../common/sdktypes.hpp"
+#include "../../networkcommon/source/essentials.hpp"
+#include "../../networkcommon/source/qtimer.hpp"
+
+#undef __LOGTAG__
+#define __LOGTAG__ "qzookeeper"
 
 class qzookeeper {
 public:
-    int init(int argc, char **argv);
+    qzookeeper(){}
+    ~qzookeeper();
+
+    int connect(const qstring& url);
+    void shutdown(const int state);
     
-    int init_test(const qstring& url);
+    int get_data(const qstring& zk_path, qstring& result, const qstring& default_value="{}");
+    int set_data(const qstring& zk_path, const qstring& data);
+    int delete_path(const qstring& zk_path);
     
 private:
-    void processline(const char *line);
-    int handleBatchMode(const char* arg, const char** buf);
-    static void watcher(zhandle_t *zzh, int type, int state, const char *path,
-                 void* context);
-    
-    static void my_string_completion(int rc, const char *name, const void *data);
-    static void my_string_completion_free_data(int rc, const char *name, const void *data);
-    static void my_string_stat_completion(int rc, const char *name, const struct Stat *stat,
-            const void *data);
-    static void my_string_stat_completion_free_data(int rc, const char *name,
-            const struct Stat *stat, const void *data);
-    static void my_data_completion(int rc, const char *value, int value_len,
-            const struct Stat *stat, const void *data);
-    static void my_silent_data_completion(int rc, const char *value, int value_len,
-            const struct Stat *stat, const void *data);
-    static void my_strings_completion(int rc, const struct String_vector *strings,
-            const void *data);
-    static void my_strings_stat_completion(int rc, const struct String_vector *strings,
-            const struct Stat *stat, const void *data);
-    static void my_void_completion(int rc, const void *data);
+    static const char* state2String(int state);
+    static const char* type2String(int state);
+    static void watcher(zhandle_t *zzh, int type, int state, const char *path, void* context);
     static void my_stat_completion(int rc, const struct Stat *stat, const void *data);
-    static void my_silent_stat_completion(int rc, const struct Stat *stat,
-            const void *data);
-    static void sendRequest(const char* data);
-    static void od_completion(int rc, const struct Stat *stat, const void *data);
+    static void my_data_completion(int rc, const char *value, int value_len, const struct Stat *stat, const void *data);
+    static void my_void_completion(int rc, const void *data);
+    static void dumpStat(const struct Stat *stat);
+    static void millisleep(int ms);
     
-    static int startsWith(const char *line, const char *prefix);
-    int verbose = 0;
-    char *hostPort = nullptr;
-    static zhandle_t *zh;
+    static void* connect_internal(void* data);
+    
+    zhandle_t* zh = nullptr;
     clientid_t myid;
-    const char *clientIdFile = nullptr;
-    static timeval startTime;
+    const char* clientIdFile = nullptr;
     
-    const char *cmd = nullptr;
-    const char *cert = nullptr;
-    static int batchMode;
-    
-    static int to_send;
-    static int sent;
-    static int recvd;
-    
-    static int shutdownThisThing;
+    pthread_t zk_thread_id;
+    qstring connection_url;
+    std::atomic<bool> connection_in_progress = false;
+    struct ev_loop* mainloop = nullptr;
+    std::atomic<bool> op_in_progress = false;
+    std::atomic<int> op_result = 0;
+    qstring get_result;
 };
 #endif /* qzookeeper_hpp */

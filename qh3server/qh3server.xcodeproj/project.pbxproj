@@ -25,7 +25,6 @@
 		5594E2372B3FCD4200E47984 /* qh3simple_router_structs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */; };
 		5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */; };
 		5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E26F2B489BEF00E47984 /* qzookeeper.cpp */; };
-		5594E2722B494ADC00E47984 /* libzookeeper_mt.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */; };
 		5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
@@ -39,7 +38,7 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		5594E2742B494B0500E47984 /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
@@ -107,7 +106,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5594E2722B494ADC00E47984 /* libzookeeper_mt.2.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
@@ -406,6 +404,7 @@
 					"DEBUG=1",
 					"LOG_LEVEL=3",
 					"FORK_QH3_SERVER=1",
+					THREADED,
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
@@ -440,6 +439,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"LOG_LEVEL=3",
 					"FORK_QH3_SERVER=1",
+					THREADED,
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
