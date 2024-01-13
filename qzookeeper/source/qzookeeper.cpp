@@ -202,7 +202,7 @@ void qzookeeper::my_data_completion(int rc, const char *value, int value_len,
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
     if (value) {
-        DEBUG_RAW(LOG_LEVEL_0, "value = %.*s", value_len, value);
+        DEBUG_RAW(LOG_LEVEL_0, "\tvalue = %.*s", value_len, value);
         thiz->get_result.clear();
         thiz->get_result.run_printf(value, value_len);
     }
@@ -223,23 +223,28 @@ void qzookeeper::dumpStat(const struct Stat *stat) {
     tctime = stat->ctime/1000;
     tmtime = stat->mtime/1000;
 
+    memset(tctimes, 0, sizeof(tctimes));
+    memset(tmtimes, 0, sizeof(tmtimes));
+    tctimes[sizeof(tctimes)-1] = '\0';
+    tmtimes[sizeof(tmtimes)-1] = '\0';
     ctime_r(&tmtime, tmtimes);
     ctime_r(&tctime, tctimes);
 
-    DEBUG_RAW(LOG_LEVEL_0, "\tctime = %s\tczxid=%llx\n"
-    "\tmtime=%s\tmzxid=%llx\n"
-    "\tversion=%x\taversion=%x\n"
-    "\tephemeralOwner = %llx",
+    DEBUG_RAW(LOG_LEVEL_0, "\tctime = %s\t\tczxid=%llx\n"
+    "\t\tmtime=%s\t\tmzxid=%llx\n"
+    "\t\tversion=%x\taversion=%x\n"
+    "\t\tephemeralOwner = %llx",
      tctimes, _LL_CAST_ stat->czxid, tmtimes,
     _LL_CAST_ stat->mzxid,
     (unsigned int)stat->version, (unsigned int)stat->aversion,
     _LL_CAST_ stat->ephemeralOwner);
+    fflush(stderr);
 }
 
 void qzookeeper::my_stat_completion(int rc, const struct Stat *stat, const void *data) {
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
-    DEBUG_RAW(LOG_LEVEL_0, "rc = %d Stat:", rc);
+    DEBUG_RAW(LOG_LEVEL_0, "\trc = %d Stat:", rc);
     dumpStat(stat);
     thiz->op_result = rc;
     thiz->op_in_progress = false;
@@ -248,7 +253,7 @@ void qzookeeper::my_stat_completion(int rc, const struct Stat *stat, const void 
 void qzookeeper::my_void_completion(int rc, const void *data) {
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
-    DEBUG_RAW(LOG_LEVEL_0, "rc = %d delete:", rc);
+    DEBUG_RAW(LOG_LEVEL_0, "\trc = %d delete:", rc);
     thiz->op_result = rc;
     thiz->op_in_progress = false;
 }

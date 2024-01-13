@@ -92,11 +92,11 @@ extern "C"
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s\n", buffer);
+        fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #elif PLATFORM == PLATFORM_ANDROID
         __android_log_print(ANDROID_LOG_INFO, "", buffer);
 #else
-        fprintf(stderr, "%s\n", buffer);
+        fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #endif
     }
 
