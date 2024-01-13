@@ -84,6 +84,7 @@ namespace fs = std::__fs::filesystem;
 extern "C" DECLSPEC int init_gsdk();
 extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
+extern "C" DECLSPEC void DEBUG_RAW(int logLevel, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);

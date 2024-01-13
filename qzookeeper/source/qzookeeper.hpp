@@ -31,19 +31,22 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
 
-class qzookeeper {
+class qzookeeper : public qtimer_sceduler{
 public:
-    qzookeeper(){}
+    qzookeeper();
     ~qzookeeper();
 
     int connect(const qstring& url);
-    void shutdown(const int state);
-    
+    void shutdown();
+    bool is_running() { return running; }
     int get_data(const qstring& zk_path, qstring& result, const qstring& default_value="{}");
     int set_data(const qstring& zk_path, const qstring& data);
     int delete_path(const qstring& zk_path);
     
 private:
+    int retry_connection();
+    void close_zk(const int state);
+    
     static const char* state2String(int state);
     static const char* type2String(int state);
     static void watcher(zhandle_t *zzh, int type, int state, const char *path, void* context);
@@ -62,9 +65,13 @@ private:
     pthread_t zk_thread_id;
     qstring connection_url;
     std::atomic<bool> connection_in_progress = false;
+    std::atomic<bool> running = false;
     struct ev_loop* mainloop = nullptr;
     std::atomic<bool> op_in_progress = false;
     std::atomic<int> op_result = 0;
     qstring get_result;
+    int connection_state = -1;
+    int retry_count = 0;
+    qtimer* connection_check_timer = nullptr;
 };
 #endif /* qzookeeper_hpp */

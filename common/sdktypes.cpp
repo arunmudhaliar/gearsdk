@@ -33,10 +33,21 @@ extern "C"
 
     void print_common_info() {
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Little endian machine !!!" );
+        const char* endian_str = "Little endian machine";
 #else
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Big endian machine !!!" );
+        const char* endian_str = "Big endian machine";
 #endif
+
+#ifdef __aarch64__
+        const char* arch_str = "ARM64 arch";
+#elif __x86_64__
+    #define ARCH "Intel 64-bit"
+        const char* arch_str = "Intel x86_64 arch";
+#else
+        const char* arch_str = "Unknown architecture";
+#endif
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "%s [%s], sz(int):%d", endian_str, arch_str, sizeof(int));
+        
         DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
         DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
         DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
@@ -69,6 +80,24 @@ extern "C"
             n /= 10;
         }
         return len;
+    }
+
+    void DEBUG_RAW(int logLevel, const char* format, ...) {
+        if (logLevel > LOG_LEVEL) {
+            return;
+        }
+        char buffer[LOGBUFFER_SIZE + 1];
+        va_list v;
+        va_start(v, format);
+        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+        va_end(v);
+#if PLATFORM == PLATFORM_MAC
+        fprintf(stderr, "%s\n", buffer);
+#elif PLATFORM == PLATFORM_ANDROID
+        __android_log_print(ANDROID_LOG_INFO, "", buffer);
+#else
+        fprintf(stderr, "%s\n", buffer);
+#endif
     }
 
     void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
