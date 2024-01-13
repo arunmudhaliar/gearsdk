@@ -777,7 +777,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     logger = DEBUG_NEW qtextfilelogger();
     stats_logger = DEBUG_NEW qstatslogger();
     qzk = DEBUG_NEW qzookeeper();
-    int zk_result = qzk->connect(qstring::format_string("%s:%s", host.c_str(), "2181"));
+//    int zk_result = qzk->connect(qstring::format_string("%s:%s", host.c_str(), "2181"));
+    int zk_result = qzk->connect("192.168.0.230:2181");
     if (zk_result!=0) {
         DEBUG_PRINT_ERROR(const_logtag, "zk failed to connect !!!, Exiting.");
         GX_DELETE(qzk);
