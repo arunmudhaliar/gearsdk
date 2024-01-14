@@ -22,6 +22,7 @@ http3_sample_server::~http3_sample_server() {
 }
 
 bool http3_sample_server::on_server_pre_init() {
+#if ENABLE_ZK
     GX_DELETE(qzk);
     qzk = DEBUG_NEW qzookeeper();
     int zk_result = qzk->connect(zk_uri);
@@ -33,6 +34,7 @@ bool http3_sample_server::on_server_pre_init() {
     qstring zk_test_res;
     qzk->get_data("/qh3server/roomconfig", zk_test_res);
     qzk->set_data("/qh3server/test", "hello");
+#endif
     return true;
 }
 
@@ -41,6 +43,7 @@ void http3_sample_server::on_run_started() {
 }
 
 void http3_sample_server::on_run_end() {
+#if ENABLE_ZK
     qzk->shutdown();
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
     struct ev_loop* wait_loop = ev_loop_new();
@@ -54,6 +57,7 @@ void http3_sample_server::on_run_end() {
     }, 3);
     ev_run(wait_loop, 0);
     GX_DELETE(qzk);
+#endif
 }
 
 bool http3_sample_server::is_log_quiche() {
