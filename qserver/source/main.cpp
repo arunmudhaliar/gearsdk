@@ -18,11 +18,12 @@ int32_t main(int32_t argc, const char * argv[]) {
     qstring port = "4000";
     qstring mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
     qstring redis_ip = "127.0.0.1";
+    qstring zk_uri = "127.0.0.1:2181";
     int redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
                           version_string, version_code,
-                          host, port, mongodb_uri, rootDir, redis_ip, redis_port);
+                          host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
     if (result<0) {
         exit(0);
     }

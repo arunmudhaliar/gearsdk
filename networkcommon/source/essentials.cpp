@@ -223,7 +223,7 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
     const qstring& version_string_, unsigned version_code_,
     qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
-    qstring& redis_ip, int& redis_port) {
+    qstring& redis_ip, int& redis_port, qstring& zk_uri) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
         DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
@@ -235,7 +235,7 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 
     if (argc % 2 == 0) {
         DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
         return -1;
     }
 
@@ -272,6 +272,9 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
                 DEBUG_PRINT_ERROR(tag, "Unable to parse redis port, defaulting to %d !!!", redis_port);
             }
         }
+        else if (strcmp(lf, "--zk") == 0) {
+            zk_uri = rg;
+        }
     }
 
     // check host and port
@@ -283,14 +286,15 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
     struct addrinfo* peer = nullptr;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
         DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
-        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
+        DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
         return -1;
     }
     if (peer) {
         freeaddrinfo(peer);
         peer = nullptr;
     }
-    DEBUG_PRINT_IMPORTANT(tag, "server %s:%s, mongodb_uri %s, redis %s:%d", host.c_str(), port.c_str(), mongodb_uri.c_str(), redis_ip.c_str(), redis_port);
+    DEBUG_PRINT_IMPORTANT(tag, "server %s:%s, mongodb_uri %s, redis %s:%d, zk_uri %s",
+                          host.c_str(), port.c_str(), mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri.c_str());
     //
 
     DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());

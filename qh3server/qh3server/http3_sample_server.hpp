@@ -12,6 +12,7 @@
 #include "../../servercommon/source/qmongo/qmongo.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../networkcommon/source/qtextfile.hpp"
+#include "../../qzookeeper/source/qzookeeper.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
@@ -24,6 +25,7 @@ protected:
     void parse(struct conn_io *conn_io) override;
     inline bool is_log_quiche() override;
     
+    bool on_server_pre_init() override;
     void on_run_started() override;
     void on_run_end() override;
     
@@ -33,8 +35,9 @@ protected:
     
     qmongo* mongo = nullptr;
     qhiredis* hiredis = nullptr;
+    qzookeeper* qzk = nullptr;
 public:
-    http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, int redis_port);
+    http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, int redis_port, const qstring& zk_uri);
     ~http3_sample_server();
     
     void test_mongo_db();
@@ -44,6 +47,8 @@ private:
     void parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io);
     void parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io);
     void parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    
+    qstring zk_uri;
     
 #if TEST_RESPONSE
     qstring test_response;

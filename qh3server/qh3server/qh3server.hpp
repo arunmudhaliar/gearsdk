@@ -30,7 +30,6 @@
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
-#include "../../qzookeeper/source/qzookeeper.hpp"
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
 //#elif PLATFORM == PLATFORM_LINUX
@@ -163,6 +162,7 @@ private:
     routerinfo* relay_through_router_info = nullptr;    // only valid for servers else NULL
 
 protected:
+    virtual bool on_server_pre_init() = 0;
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
     void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) override;
@@ -171,7 +171,6 @@ protected:
     qstring logtag = __LOGTAG__;
     qstring port_id;
     qstring host_id;
-    qzookeeper* qzk = nullptr;
     
 public:
     virtual ~qh3server();

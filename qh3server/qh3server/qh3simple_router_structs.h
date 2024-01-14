@@ -23,22 +23,23 @@ public:
 struct router_config {
     router_config(const qstring& host, const qstring& port,
         const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-        const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_) :
+        const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_, const qstring& zk_uri) :
         host(host), port(port),
         mongodb_uri(mongodb_uri), redis_ip(redis_ip), redis_port(redis_port_),
-        rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_) {
+        rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_), zk_uri(zk_uri) {
     }
 
     router_config(const router_config& config) :
         host(config.host), port(config.port),
         mongodb_uri(config.mongodb_uri), redis_ip(config.redis_ip), redis_port(config.redis_port),
         rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port),
-        command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port) {
+        command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port), zk_uri(config.zk_uri) {
     }
     qstring host = "localhost";
     qstring port = "4034";
     qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
     qstring redis_ip = "127.0.0.1";
+    qstring zk_uri = "127.0.0.1:2181";
     int redis_port = 6379;
     fs::path rootDir = ".";
     pthread_t run_thread_id = 0;

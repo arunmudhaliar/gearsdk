@@ -24,6 +24,7 @@ protected:
     void parse(struct conn_io *conn_io) override;
     inline bool is_log_quiche() override;
     
+    bool on_server_pre_init() override;
     void on_run_started() override;
     void on_run_end() override;
     

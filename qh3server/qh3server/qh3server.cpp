@@ -773,25 +773,17 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     //
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
-    GX_DELETE(qzk);
     logger = DEBUG_NEW qtextfilelogger();
     stats_logger = DEBUG_NEW qstatslogger();
-    qzk = DEBUG_NEW qzookeeper();
-//    int zk_result = qzk->connect(qstring::format_string("%s:%s", host.c_str(), "2181"));
-    int zk_result = qzk->connect("192.168.0.230:2181");
-    if (zk_result!=0) {
-        DEBUG_PRINT_ERROR(const_logtag, "zk failed to connect !!!, Exiting.");
-        GX_DELETE(qzk);
+    
+    if (!on_server_pre_init()) {
+        DEBUG_PRINT_ERROR(const_logtag, "on_server_pre_init failed !!!, Exiting.");
         GX_DELETE(stats_logger);
         GX_DELETE(logger);
         close(sock);
         freeaddrinfo(local);
         return -1;
     }
-    qstring zk_test_res;
-    qzk->get_data("/qh3server/roomconfig", zk_test_res);
-    qzk->set_data("/qh3server/test", "hello");
-    
     qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
     qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
     
@@ -855,7 +847,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     
     on_run_started();
     ev_loop(mainloop, 0);
-    on_run_end();
 
     // destroy connections
     struct conn_io* tmp, * conn_io = NULL;
@@ -885,12 +876,13 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     }
     //
 
+    on_run_end();
+    
     freeaddrinfo(local);
     
     quiche_h3_config_free(http3_config);
     quiche_config_free(config);
 
-    qzk->shutdown();
     get_stats_loggeer()->end_session();
     get_file_logger()->end_session();
     
@@ -908,11 +900,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             DEBUG_PRINT_IMPORTANT(const_logtag, "logger service finished !!!");
             service_shutdown_cnt++;
         }
-        if (!qzk->is_running()) {
-            DEBUG_PRINT_IMPORTANT(const_logtag, "qzk service finished !!!");
-            service_shutdown_cnt++;
-        }
-        if (service_shutdown_cnt >= 3) {
+        if (service_shutdown_cnt >= 2) {
             const struct addrinfo hints = {
                 .ai_family = PF_UNSPEC,
                 .ai_socktype = SOCK_DGRAM,
@@ -941,7 +929,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     
     close(sock);
     GX_DELETE(relay_through_router_info);
-    GX_DELETE(qzk);
     GX_DELETE(logger);
     GX_DELETE(stats_logger);
     return 0;
