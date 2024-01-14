@@ -236,11 +236,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "", port_id_cstr);
         
-//        char name[INET6_ADDRSTRLEN];
-//        char port[10];
-//        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//        DEBUG_PRINT_ERROR(const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
-
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
+#endif
         
         // if relay through router
         if (server->relay_through_router_info) {
@@ -248,13 +249,14 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             read = read - peer_addr_len;    // remove the client info
             struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
-            
-//            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "in server crc = 0x%x", essentials::get_crc(&server->buf[read], peer_addr_len));
-//
-//            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//            DEBUG_PRINT_ERROR(const_logtag, "first %s:%s", name, port);
-//            getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//            DEBUG_PRINT_ERROR(const_logtag, "second %s:%s", name, port);
+
+#if LOG_LEVEL >= LOG_LEVEL_4
+            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of peer addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "first %s:%s", name, port);
+            getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(const_logtag, "second %s:%s", name, port);
+#endif
         }
         //
         
