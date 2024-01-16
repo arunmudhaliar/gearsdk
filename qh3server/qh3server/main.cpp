@@ -34,11 +34,11 @@ int main(int argc, const char* argv[]) {
         exit(0);
     }
     
-//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-//    server.run(host, port, rootDir, nullptr, 4010);
-    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri);
-    qh3simple_router router(config);
-    router.run();
+    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
+    server.run(host, port, rootDir, nullptr, 4010);
+//    router_config config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri);
+//    qh3simple_router router(config);
+//    router.run();
     
     //    server.test_mongo_db();
 

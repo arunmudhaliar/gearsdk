@@ -253,9 +253,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 #if LOG_LEVEL >= LOG_LEVEL_4
             DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of peer addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
             getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT_ERROR(const_logtag, "first %s:%s", name, port);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "first %s:%s", name, port);
             getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT_ERROR(const_logtag, "second %s:%s", name, port);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "second %s:%s", name, port);
 #endif
         }
         //
