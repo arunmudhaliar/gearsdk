@@ -52,7 +52,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
         getnameinfo((struct sockaddr*)&conn_io->peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s read:%d", name, port, read);
 #endif
         if (sent != written) {
             char name[INET6_ADDRSTRLEN];
@@ -246,7 +246,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
+        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
 #endif
         
         // if relay through router
@@ -321,7 +321,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 char name[INET6_ADDRSTRLEN];
                 char port[10];
                 getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+                DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s read:%d", name, port, read);
 #endif
                 if (sent != written) {
                     char name[INET6_ADDRSTRLEN];
@@ -375,7 +375,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 char name[INET6_ADDRSTRLEN];
                 char port[10];
                 getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+                DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s read:%d", name, port, read);
 #endif
 
                 if (sent != written) {
