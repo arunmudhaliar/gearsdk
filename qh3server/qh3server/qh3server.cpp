@@ -48,6 +48,12 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
         ssize_t sent = sendto(conn_io->sock, out, written, 0,
             (struct sockaddr*)&conn_io->peer_addr,
             conn_io->peer_addr_len);
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&conn_io->peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+#endif
         if (sent != written) {
             char name[INET6_ADDRSTRLEN];
             char port[10];
@@ -310,6 +316,13 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
+                
+#if LOG_LEVEL >= LOG_LEVEL_4
+                char name[INET6_ADDRSTRLEN];
+                char port[10];
+                getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+#endif
                 if (sent != written) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
@@ -357,6 +370,14 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
+                
+#if LOG_LEVEL >= LOG_LEVEL_4
+                char name[INET6_ADDRSTRLEN];
+                char port[10];
+                getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "send to %s:%s read:%d", name, port, read);
+#endif
+
                 if (sent != written) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];

@@ -93,6 +93,7 @@ extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, 
 extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len);
 
 namespace gsdk {
     class device {

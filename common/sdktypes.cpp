@@ -186,6 +186,18 @@ extern "C"
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1b[96m****", "[%s] : %s\x1b[0m", tag, buffer);
     }
+
+    void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len) {
+        if (logLevel > LOG_LEVEL) {
+            return;
+        }
+        fprintf(stderr, "[%d] SCID: ", getpid());
+        for (size_t i = 0; i < scid_len; ++i) {
+            fprintf(stderr, "%02x", scid[i]);
+        }
+        fprintf(stderr, "\n");
+    }
+
 namespace gsdk {
     str2int_errno str2int(int *out, const char *s, int base) {
         if (out == nullptr || s == nullptr) {
