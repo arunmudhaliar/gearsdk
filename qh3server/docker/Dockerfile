@@ -44,6 +44,8 @@ RUN chmod 755 ./run_qh3server.sh
 # RUN sh make_qstats-crawler.sh
 # RUN chmod 755 ./run_qstats-crawler.sh
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tshark
+
 # ------- supervisor -------
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN apt-get install -y supervisor
