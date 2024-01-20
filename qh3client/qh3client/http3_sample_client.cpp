@@ -103,7 +103,7 @@ void http3_sample_client::create_connections() {
 
                 session_token = token_header->value;
                 this->on_login_complete(token_header->value, token_header->value.length() > 0);
-            });
+            }, false);
         live_connections++;
         total_connections_issued++;
     }

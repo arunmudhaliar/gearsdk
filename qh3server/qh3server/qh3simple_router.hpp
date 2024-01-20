@@ -30,8 +30,10 @@ public:
     
 private:
     static void recv_cb(EV_P_ ev_io* w, int revents);
+    static void recv_return_cb(EV_P_ ev_io* w, int revents);
     struct ev_loop* mainloop = nullptr;
     int sock = -1;
+    int sock_return = -1;
     
     // qh3
     route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config);
@@ -51,6 +53,7 @@ private:
     port_range range;
     router_config config;   //default config
     struct addrinfo* router = nullptr;
+    struct addrinfo* router_return = nullptr;
 };
 
 class http3_sample_router : public qh3simple_router {

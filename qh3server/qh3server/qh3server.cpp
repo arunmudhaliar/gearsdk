@@ -21,7 +21,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 
 ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
-    const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
     SendInfo send_info;
     ssize_t total_bytes_sent = 0;
     while (1) {
@@ -40,8 +40,14 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
 
         // if relay through router
         if (via_router) {
-            memcpy((void*)&out[written], (void*)relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-            written+=PORT_FIELD_SZ;
+//            memcpy((void*)&out[written], (void*)relay_through_router_info->serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+//            written+=ORIGINAL_CLIENT_ADDR_SZ;
+            
+//            qaddress original_client_address((struct sockaddr*)&peer_original_client_addr);
+//            qstring original_client_serialised_buffer;
+//            original_client_address.serialise(original_client_serialised_buffer);
+            memcpy((void*)&out[written], (void*)conn_io->original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+            written+=ORIGINAL_CLIENT_ADDR_SZ;
         }
         //
         
@@ -135,7 +141,8 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     struct sockaddr* local_addr,
     socklen_t local_addr_len,
     struct sockaddr_storage* peer_addr,
-    socklen_t peer_addr_len) {
+    socklen_t peer_addr_len,
+    struct sockaddr_storage* peer_original_client_addr) {
     const char* const_logtag = logtag.c_str();
     //struct conn_io *conn_io = (struct conn_io *)calloc(1, sizeof(*conn_io));
     struct conn_io* new_conn_io = DEBUG_NEW struct conn_io();
@@ -155,7 +162,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
         odcid, odcid_len,
         local_addr,
         local_addr_len,
-        (struct sockaddr*)peer_addr,
+        (struct sockaddr*)peer_original_client_addr,
         peer_addr_len,
         config);
 
@@ -171,6 +178,14 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
     new_conn_io->peer_addr_len = peer_addr_len;
 
+    // save the original client info
+    struct sockaddr* client_info = (struct sockaddr*)peer_original_client_addr;
+    qaddress original_client_address(client_info);
+    qstring original_client_serialised_buffer;
+    new_conn_io->original_client_serialised_buffer.clear();
+    original_client_address.serialise(new_conn_io->original_client_serialised_buffer);
+    //
+    
     ev_init(&new_conn_io->timer, timeout_cb);
     new_conn_io->timer.data = new_conn_io;
 
@@ -220,9 +235,10 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     struct conn_io* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
     const char* port_id_cstr = server->port_id.c_str();
-    const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
     while (1) {
         struct sockaddr_storage peer_addr;
+        struct sockaddr_storage peer_original_client_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
 
@@ -246,23 +262,27 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
+        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "peer addr %s:%s read:%d", name, port, read);
 #endif
         
         // if relay through router
         if (server->relay_through_router_info) {
-            memset(&peer_addr, 0, peer_addr_len);
+            memset(&peer_original_client_addr, 0, peer_addr_len);
             read = read - peer_addr_len;    // remove the client info
-            struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
+            struct sockaddr* client_info = (struct sockaddr*)&peer_original_client_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
 
+            // update the peer adress port (return port)
+            essentials::update_port((struct sockaddr*)&peer_addr, 4005); // (TODO) remove hard coading
 #if LOG_LEVEL >= LOG_LEVEL_4
-            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of peer addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
+            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of orinal-client addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
+            getnameinfo((struct sockaddr*)&peer_original_client_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "orinal-client-address %s:%s", name, port);
             getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT_IMPORTANT2(const_logtag, "first %s:%s", name, port);
-            getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-            DEBUG_PRINT_IMPORTANT2(const_logtag, "second %s:%s", name, port);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "modified-peer address %s:%s", name, port);
 #endif
+        } else {
+            memcpy(&peer_original_client_addr, &peer_addr, peer_addr_len);
         }
         //
         
@@ -309,8 +329,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-                    written+=PORT_FIELD_SZ;
+//                    struct sockaddr* client_info = (struct sockaddr*)&peer_original_client_addr;
+                    qaddress original_client_address((struct sockaddr*)&peer_original_client_addr);
+                    qstring original_client_serialised_buffer;
+                    original_client_address.serialise(original_client_serialised_buffer);
+                    memcpy((void*)&server->out[written], (void*)original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+                    written+=ORIGINAL_CLIENT_ADDR_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -340,7 +364,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             if (token_len == 0) {
                 DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "stateless retry");
 
-                server->mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
+                server->mint_token(dcid, dcid_len, &peer_original_client_addr, peer_addr_len,
                     token, &token_len);
 
                 uint8_t new_cid[LOCAL_CONN_ID_LEN];
@@ -363,8 +387,13 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-                    written+=PORT_FIELD_SZ;
+//                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+//                    written+=ORIGINAL_CLIENT_ADDR_SZ;
+                    qaddress original_client_address((struct sockaddr*)&peer_original_client_addr);
+                    qstring original_client_serialised_buffer;
+                    original_client_address.serialise(original_client_serialised_buffer);
+                    memcpy((void*)&server->out[written], (void*)original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+                    written+=ORIGINAL_CLIENT_ADDR_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
@@ -394,7 +423,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             }
 
 
-            if (!server->validate_token(token, token_len, &peer_addr, peer_addr_len,
+            if (!server->validate_token(token, token_len, &peer_original_client_addr, peer_addr_len,
                 odcid, &odcid_len)) {
                 DEBUG_PRINT_WARN(const_logtag, "invalid address validation token");
                 continue;
@@ -402,7 +431,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
             conn_io = server->create_conn(dcid, dcid_len, odcid, odcid_len,
                 conns->local_addr, conns->local_addr_len,
-                &peer_addr, peer_addr_len);
+                &peer_addr, peer_addr_len, &peer_original_client_addr);
 
             if (conn_io == NULL) {
                 continue;

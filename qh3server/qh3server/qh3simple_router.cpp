@@ -29,6 +29,14 @@ int qh3simple_router::run() {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
         return -1;
     }
+    // return
+    freeaddrinfo(router_return);
+    if (getaddrinfo(config.host.c_str(), config.port_return.c_str(), &hints, &router_return) != 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host (port_return)");
+        freeaddrinfo(router);
+        router = nullptr;
+        return -1;
+    }
     //
     
     // spawn initial servers
@@ -70,6 +78,7 @@ int qh3simple_router::run() {
             }
         }
 #else
+        UNUSED(parent_process_id);
         if (result!=0) {
             continue;
         }
@@ -86,6 +95,8 @@ int qh3simple_router::run() {
         if (sock < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
             freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
             router = nullptr;
             return -1;
         }
@@ -93,6 +104,8 @@ int qh3simple_router::run() {
         if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
             freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
             router = nullptr;
             close(sock);
             return -1;
@@ -101,27 +114,74 @@ int qh3simple_router::run() {
         if (bind(sock, router->ai_addr, router->ai_addrlen) < 0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
             freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
             router = nullptr;
             close(sock);
             return -1;
         }
         
-        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Star router !!!");
-        
-        ev_io watcher;
+        // return socket
+        if (sock_return!=-1) {
+            close(sock_return);
+        }
+        sock_return = socket(router_return->ai_family, SOCK_DGRAM, 0);
+        if (sock_return < 0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create sock_return");
+            freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
+            router = nullptr;
+            close(sock);
+            return -1;
+        }
 
+        if (fcntl(sock_return, F_SETFL, O_NONBLOCK) != 0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make sock_return non-blocking");
+            freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
+            router = nullptr;
+            close(sock_return);
+            close(sock);
+            return -1;
+        }
+
+        if (bind(sock_return, router_return->ai_addr, router_return->ai_addrlen) < 0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect sock_return");
+            freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
+            router = nullptr;
+            close(sock_return);
+            close(sock);
+            return -1;
+        }
+        //
+        
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Star router !!!");
+    
         mainloop = ev_default_loop(0);
 
+        ev_io watcher;
         ev_io_init(&watcher, recv_cb, sock, EV_READ);
         ev_io_start(mainloop, &watcher);
         watcher.data = this;
+        
+        ev_io watcher_return;
+        ev_io_init(&watcher_return, recv_return_cb, sock_return, EV_READ);
+        ev_io_start(mainloop, &watcher_return);
+        watcher_return.data = this;
         
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Creating  command center !!!");
         // command server
         if (spawn_qh3server_command_server(config.host, config.command_port, config) == nullptr) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create command server !!!");
             freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
             router = nullptr;
+            close(sock_return);
             close(sock);
             return -1;
         }
@@ -129,11 +189,15 @@ int qh3simple_router::run() {
         
         ev_loop(mainloop, 0);
         
+        ev_io_stop(mainloop, &watcher_return);
         ev_io_stop(mainloop, &watcher);
         ev_loop_destroy(mainloop);
         
         freeaddrinfo(router);
         router = nullptr;
+        freeaddrinfo(router_return);
+        router_return = nullptr;
+        close(sock_return);
         close(sock);
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Stop router !!!");
         return 0;
@@ -141,6 +205,8 @@ int qh3simple_router::run() {
     else {
         freeaddrinfo(router);
         router = nullptr;
+        freeaddrinfo(router_return);
+        router_return = nullptr;
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Child process exiting !!!");
         return 0;
     }
@@ -191,6 +257,70 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         int index = crc_%(int)router->routes.size();
         route* route = router->routes[index];
         route->relay(buf, read+peer_addr_len);
+    }
+}
+
+void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(revents);
+    qh3simple_router* router = (qh3simple_router*)w->data;
+    static uint8_t buf_return[65535];
+
+    while (1) {
+        struct sockaddr_storage peer_addr;
+        socklen_t peer_addr_len = sizeof(peer_addr);
+        memset(&peer_addr, 0, peer_addr_len);
+
+        ssize_t read = recvfrom(router->sock_return, buf_return, sizeof(buf_return), 0,
+            (struct sockaddr*)&peer_addr,
+            &peer_addr_len);
+
+        if (read < 0) {
+            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv_return would block");
+                break;
+            }
+
+            DEBUG_PRINT_ERROR(__LOGTAG__, "recv_return - failed to read");
+            return;
+        }
+
+        if (router->routes.size() == 0) {
+//            DEBUG_PRINT_ERROR(__LOGTAG__, "zero routes !!!");
+            return;
+        }
+        
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_return - from server %s:%s read:%d", name, port, read);
+#endif
+        
+        EV_START_RECORD(router_server_port_deserialise_time);
+        read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
+        const uint8_t* port_number_info = &buf_return[read];
+        uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
+        essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
+        struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
+        client_info->sa_data[2] = buf_return[read+2];
+        client_info->sa_data[3] = buf_return[read+3];
+        client_info->sa_data[4] = buf_return[read+4];
+        client_info->sa_data[5] = buf_return[read+5];
+        EV_STOP_RECORD(router_server_port_deserialise_time, __LOGTAG__, "router_server_port_deserialise_time t:%lu ms", 10);
+        
+        
+        ssize_t sent = sendto(router->sock, buf_return, read, 0,
+                              client_info, peer_addr_len);
+#if LOG_LEVEL >= LOG_LEVEL_4
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_return - send to %s:%s read:%d", name, port, read);
+#endif
+
+        if (sent != read) {
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "ERROR recv_return - sending to %s:%s", name, port);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "recv_return - failed to send %d<>%d", sent, read);
+        }
     }
 }
 

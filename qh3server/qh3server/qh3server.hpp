@@ -42,8 +42,8 @@
 #define __LOGTAG__ "qh3server"
 
 #define LOCAL_CONN_ID_LEN 16
-#define PORT_FIELD_SZ sizeof(uint16_t)
-#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
+#define ORIGINAL_CLIENT_ADDR_SZ (3*sizeof(uint16_t))
+#define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ   // last 6 bytes is reserved for original client adress verification
 
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
@@ -98,6 +98,7 @@ struct conn_io {
     ev_tstamp creation_time = 0;
     ssize_t total_sent_bytes = 0;
     int64_t stream_id = -1;
+    qstring original_client_serialised_buffer;
 };
 
 struct routerinfo {
@@ -148,7 +149,8 @@ private:
         struct sockaddr* local_addr,
         socklen_t local_addr_len,
         struct sockaddr_storage* peer_addr,
-        socklen_t peer_addr_len);
+        socklen_t peer_addr_len,
+        struct sockaddr_storage* peer_original_client_addr);
     static int for_each_header(const uint8_t* name, size_t name_len,
         const uint8_t* value, size_t value_len,
         void* argp);
@@ -157,7 +159,7 @@ private:
 
     void send_in_chunks(struct conn_io* conn_io);
     
-    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
+    uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
     uint8_t buf[65535];
     routerinfo* relay_through_router_info = nullptr;    // only valid for servers else NULL
 

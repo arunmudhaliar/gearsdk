@@ -266,6 +266,9 @@ struct qaddress {
     qaddress(struct sockaddr& addr) {
         set(addr);
     }
+    qaddress(struct sockaddr* addr) {
+        set(*addr);
+    }
     int set(struct sockaddr& addr) {
         char name[INET6_ADDRSTRLEN];
         char port[10];
