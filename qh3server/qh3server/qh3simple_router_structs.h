@@ -36,7 +36,7 @@ struct router_config {
         command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port), zk_uri(config.zk_uri) {
     }
     qstring host = "localhost";
-    qstring port = "4034";
+    qstring port = "4004";
     qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
     qstring redis_ip = "127.0.0.1";
     qstring zk_uri = "127.0.0.1:2181";

@@ -407,7 +407,7 @@
 					"$(inherited)",
 					"DEBUG=1",
 					"LOG_LEVEL=5",
-					"FORK_QH3_SERVER=1",
+					"FORK_QH3_SERVER=0",
 					THREADED,
 				);
 				HEADER_SEARCH_PATHS = (
