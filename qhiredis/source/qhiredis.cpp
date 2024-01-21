@@ -14,7 +14,7 @@ qhiredis::~qhiredis() {
     disconnect_redis();
 }
 
-int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket) {
+int qhiredis::connect_redis(const qstring& hostname, uint16_t port, bool unix_socket) {
     if (context) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!!");
         return 2;
@@ -24,7 +24,7 @@ int qhiredis::connect_redis(const qstring& hostname, int port, bool unix_socket)
         context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
     }
     else {
-        context = redisConnectWithTimeout(hostname.c_str(), port, timeout);
+        context = redisConnectWithTimeout(hostname.c_str(), (int)port, timeout);
     }
     if (context == nullptr || context->err) {
         if (context) {

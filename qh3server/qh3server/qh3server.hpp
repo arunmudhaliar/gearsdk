@@ -102,7 +102,7 @@ struct conn_io {
 };
 
 struct routerinfo {
-    routerinfo(struct addrinfo* router_) {
+    routerinfo(struct addrinfo* router_, uint16_t port_return) : port_return (port_return) {
         router_address = DEBUG_NEW qaddress(*router_->ai_addr);
         router_address->serialise(serialised_buffer);
         router = (struct addrinfo *)malloc(sizeof(struct addrinfo));
@@ -116,6 +116,7 @@ struct routerinfo {
     struct addrinfo* router = nullptr;
     qaddress* router_address = nullptr;
     qstring serialised_buffer;
+    uint16_t port_return = 4005;
 };
 
 class qh3server : public bridge_h3_connection {
@@ -179,7 +180,7 @@ public:
     qtextfilelogger* get_file_logger() { return logger; }
     qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
 };
 
 #endif /* qh3server_hpp */

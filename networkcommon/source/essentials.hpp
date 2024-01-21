@@ -92,7 +92,7 @@ public:
     static int32_t resolve_cmd_line_args(const char *tag, int32_t argc, const char * argv[],
                                   const qstring& version_string_, unsigned version_code_,
                                          qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
-                                         qstring& redis_ip, int& redis_port, qstring& zk_uri);
+                                         qstring& redis_ip, uint16_t& redis_port, qstring& zk_uri);
     
     static time_t get_time_local();
     static qstring get_time_local_tostring();

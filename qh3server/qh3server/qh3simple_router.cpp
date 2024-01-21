@@ -7,7 +7,7 @@
 
 #include "qh3simple_router.hpp"
 
-qh3simple_router::qh3simple_router(const router_config& config) : config(config){
+qh3simple_router::qh3simple_router(const server_config_in& config) : config(config){
 }
 qh3simple_router::~qh3simple_router() {
     for(auto r : routes) {
@@ -31,7 +31,7 @@ int qh3simple_router::run() {
     }
     // return
     freeaddrinfo(router_return);
-    if (getaddrinfo(config.host.c_str(), config.port_return.c_str(), &hints, &router_return) != 0) {
+    if (getaddrinfo(config.host.c_str(), qstring::format_string("%d", config.router_port_return).c_str(), &hints, &router_return) != 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host (port_return)");
         freeaddrinfo(router);
         router = nullptr;
@@ -299,21 +299,22 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
         EV_START_RECORD(router_server_port_deserialise_time);
         read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
         const uint8_t* port_number_info = &buf_return[read];
-        uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
+        uint16_t port_from_packet = 0;
+        memcpy(&port_from_packet, port_number_info, sizeof(uint16_t));
+        port_from_packet = ntohs(port_from_packet);
+        
+        // update the ip adress to re-transmit to original client
         essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
         struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
-        client_info->sa_data[2] = buf_return[read+2];
-        client_info->sa_data[3] = buf_return[read+3];
-        client_info->sa_data[4] = buf_return[read+4];
-        client_info->sa_data[5] = buf_return[read+5];
+        memcpy(&client_info->sa_data[2], &buf_return[read+2], 4);   // 0.0.0.0 = 4 bytes
         EV_STOP_RECORD(router_server_port_deserialise_time, __LOGTAG__, "router_server_port_deserialise_time t:%lu ms", 10);
-        
+        //
         
         ssize_t sent = sendto(router->sock, buf_return, read, 0,
                               client_info, peer_addr_len);
 #if LOG_LEVEL >= LOG_LEVEL_4
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_return - send to %s:%s read:%d", name, port, read);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_return - send to %s:%s bytes:%d", name, port, sent);
 #endif
 
         if (sent != read) {
@@ -324,8 +325,8 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
     }
 }
 
-route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const router_config& config) {
-    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port, config.router_port, config.zk_uri);
+route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config) {
+    server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
     new_config->command_server = true;
     new_config->ref = this;
 
@@ -347,7 +348,7 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 }
 
 int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
-                                         const router_config& config, pid_t& child_process_id, bool& fork_result) {
+                                         const server_config_in& config, pid_t& child_process_id, bool& fork_result) {
     
 #if FORK_QH3_SERVER
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
@@ -361,7 +362,7 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
             fork_result = true;
             // Code executed by the child process
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
-            router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri);
+            server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri, config.port_return);
             if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
                 GX_DELETE(new_config);
@@ -388,7 +389,7 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
         }
 #else
     fork_result = false;
-    router_config* new_config = DEBUG_NEW router_config(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri);
+    server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
     if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal, (void*)new_config) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
         GX_DELETE(new_config);
@@ -404,23 +405,23 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port,
 }
 
 void* qh3simple_router::spawn_qh3server_internal(void* data) {
-    router_config* config = (router_config*)data;
+    server_config_in* config = (server_config_in*)data;
     qstring& host = config->host;
     qstring& port = config->port;
     qstring& mongodb_uri = config->mongodb_uri;
     qstring& redis_ip = config->redis_ip;
-    int redis_port = config->redis_port;
+    uint16_t redis_port = config->redis_port;
     fs::path& rootDir = config->rootDir;
     qstring& zk_uri = config->zk_uri;
     if (config->command_server) {
         PTHREAD_NAME("http3_command_server");
         http3_command_server* new_server = DEBUG_NEW http3_command_server(redis_ip.c_str(), redis_port, config->ref, config->router_port);
-        new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port);
+        new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
         GX_DELETE(new_server);
     } else {
         PTHREAD_NAME("http3_sample_server");
         http3_sample_server* new_server = DEBUG_NEW http3_sample_server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-        new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port);
+        new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
         GX_DELETE(new_server);
     }
     GX_DELETE(config);

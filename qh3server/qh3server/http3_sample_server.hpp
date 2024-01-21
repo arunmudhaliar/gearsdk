@@ -37,7 +37,7 @@ protected:
     qhiredis* hiredis = nullptr;
     qzookeeper* qzk = nullptr;
 public:
-    http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, int redis_port, const qstring& zk_uri);
+    http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
     ~http3_sample_server();
     
     void test_mongo_db();

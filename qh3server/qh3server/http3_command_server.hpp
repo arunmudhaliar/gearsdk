@@ -30,7 +30,7 @@ protected:
     
     qhiredis* hiredis = nullptr;
 public:
-    http3_command_server(const qstring& redis_url, int redis_port, bridge_command_center* bridge, qstring router_port);
+    http3_command_server(const qstring& redis_url, uint16_t redis_port, bridge_command_center* bridge, qstring router_port);
     ~http3_command_server();
     static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
     

@@ -223,7 +223,7 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
     const qstring& version_string_, unsigned version_code_,
     qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
-    qstring& redis_ip, int& redis_port, qstring& zk_uri) {
+    qstring& redis_ip, uint16_t& redis_port, qstring& zk_uri) {
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
         DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
@@ -268,9 +268,11 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
             redis_ip = rg;
         }
         else if (strcmp(lf, "--rp") == 0) {
-            if (gsdk::str2int(&redis_port, rg, 10) != gsdk::STR2INT_SUCCESS) {
-                DEBUG_PRINT_ERROR(tag, "Unable to parse redis port, defaulting to %d !!!", redis_port);
+            int tmp = 0;
+            if (gsdk::str2int(&tmp, rg, 10) != gsdk::STR2INT_SUCCESS) {
+                DEBUG_PRINT_ERROR(tag, "Unable to parse redis port, defaulting to %d !!!", tmp);
             }
+            redis_port = tmp;
         }
         else if (strcmp(lf, "--zk") == 0) {
             zk_uri = rg;

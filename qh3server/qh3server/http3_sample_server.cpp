@@ -10,7 +10,7 @@
 #include "../../networkcommon/source/qbuffer.hpp"
 #include "../../common/crypto_helper.hpp"
 
-http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, int redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
+http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
     mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
     hiredis = DEBUG_NEW qhiredis();
     hiredis->connect_redis(redis_ip, redis_port);

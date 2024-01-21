@@ -32,7 +32,7 @@ public:
     int hiredis_main(int argc, char** argv);
 #endif
 
-    int connect_redis(const qstring& hostname = "127.0.0.1", int port = 6379, bool unix_socket = false);
+    int connect_redis(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
     void disconnect_redis();
 
     int set_value(const qstring& key, const qstring& value);

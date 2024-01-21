@@ -95,7 +95,8 @@ void qbuffer_writer::write(qbuffer& buffer, uint8_t value) const {
 void qbuffer_writer::write(qbuffer& buffer, unsigned long value) const {
     uint32_t sizeOfType = sizeof(unsigned long);
     buffer.do_resize_if_required(sizeOfType);
-    *((unsigned long*)(buffer.data + buffer.index)) = value;
+//    *((unsigned long*)(buffer.data + buffer.index)) = value;
+    memcpy(buffer.data + buffer.index, &value, sizeof(unsigned long));
     buffer.index += sizeOfType;
 }
 
