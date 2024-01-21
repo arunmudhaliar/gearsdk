@@ -318,6 +318,8 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 #endif
 
         if (sent != read) {
+            char name[INET6_ADDRSTRLEN];
+            char port[10];
             getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
             DEBUG_PRINT_ERROR(__LOGTAG__, "ERROR recv_return - sending to %s:%s", name, port);
             DEBUG_PRINT_ERROR(__LOGTAG__, "recv_return - failed to send %d<>%d", sent, read);
