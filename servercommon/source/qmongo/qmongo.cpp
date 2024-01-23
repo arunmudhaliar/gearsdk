@@ -10,8 +10,7 @@
 #include <zlib.h>
 
 qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) :
-    interface(interfce_) {
-    connect(app_name, db_name, uri_string);
+    interface(interfce_), app_name(app_name), db_name(db_name), uri_string(uri_string) {
 }
 
 qmongo::~qmongo() {
@@ -39,6 +38,10 @@ void qmongo::cleanup() {
         client = nullptr;
     }
     mongoc_cleanup();
+}
+
+int qmongo::connect() {
+    return connect(app_name, db_name, uri_string);
 }
 
 int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string) {
