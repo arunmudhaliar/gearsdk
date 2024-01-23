@@ -18,11 +18,12 @@ int32_t main(int32_t argc, const char * argv[]) {
     qstring port = "4000";
     qstring mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
     qstring redis_ip = "127.0.0.1";
-    int redis_port = 6379;
+    qstring zk_uri = "127.0.0.1:2181";
+    uint16_t redis_port = 6379;
     fs::path rootDir;
     int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv,
                           version_string, version_code,
-                          host, port, mongodb_uri, rootDir, redis_ip, redis_port);
+                          host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
     if (result<0) {
         exit(0);
     }
@@ -35,7 +36,7 @@ int32_t main(int32_t argc, const char * argv[]) {
     qtimer_sceduler scheduler;
     scheduler.set_ev_lopp(loop);
     scheduler.schedule_repeat_timer([loop, creation_time](qtimer& timer){
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
+        // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
     }, 60);
     
     ev_run(loop, 0);

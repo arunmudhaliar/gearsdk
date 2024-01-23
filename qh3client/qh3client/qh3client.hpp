@@ -30,8 +30,9 @@
 #include <map>
 
 #define LOCAL_CONN_ID_LEN 16
-#define PORT_FIELD_SZ sizeof(uint16_t)
-#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
+
+#define ORIGINAL_CLIENT_ADDR_SZ (3*sizeof(uint16_t))
+#define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ   // last 6 bytes is reserved for original client adress verification
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3client"
@@ -59,7 +60,7 @@ struct conn_io {
     bool req_sent = false;
     bool settings_received = false;
     uint8_t buf[65535];
-    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
+    uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
     conn_io_req_res* response = nullptr;
     bool res_received = false;
     ev_tstamp creation_time = 0;

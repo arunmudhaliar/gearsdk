@@ -10,8 +10,12 @@
 
 #include "roomserver.hpp"
 
+#undef __LOGTAG__
+#define __LOGTAG__ "gameserver"
+
 class gameserver : public roomserver {
-    
+protected:
+    room* create_room() override;
 };
 
 #endif /* gameserver_hpp */

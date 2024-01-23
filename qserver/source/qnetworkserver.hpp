@@ -49,9 +49,9 @@ class bridge_qpeerconnection {
 public:
     virtual void flush_egress(struct ev_loop* loop, qpeerconnection* qconnection) = 0;
     virtual void destroy_connection(struct ev_loop* loop, qpeerconnection* qconnection) = 0;
-    virtual void on_connection(qpeerconnection* qconnection) = 0;
-    virtual void on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) = 0;
-    virtual void on_destroy_connection(qpeerconnection* qconnection) = 0;
+    virtual void onconnection_connect(qpeerconnection* qconnection) = 0;
+    virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) = 0;
+    virtual void onconnection_destroy(qpeerconnection* qconnection) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
 };
 
@@ -102,9 +102,9 @@ protected:
     virtual void on_network_server_end() = 0;
     void flush_egress(struct ev_loop* loop, qpeerconnection* qconnection) override final;
     void destroy_connection(struct ev_loop* loop, qpeerconnection* qconnection) override final;
-    void on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override;
-    void on_connection(qpeerconnection* qconnection) override;
-    void on_destroy_connection(qpeerconnection* qconnection) override;
+    void onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override;
+    void onconnection_connect(qpeerconnection* qconnection) override;
+    void onconnection_destroy(qpeerconnection* qconnection) override;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
     }

@@ -20,32 +20,34 @@ public:
     virtual void cmd_feedback_from_client(struct sockaddr* client_addr, const qstring& cmd) = 0;
 };
 
-struct router_config {
-    router_config(const qstring& host, const qstring& port,
-        const qstring& mongodb_uri, const qstring& redis_ip, int redis_port_,
-        const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_) :
+struct server_config_in {
+    server_config_in(const qstring& host, const qstring& port,
+        const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_,
+        const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_, const qstring& zk_uri, uint16_t router_port_return) :
         host(host), port(port),
         mongodb_uri(mongodb_uri), redis_ip(redis_ip), redis_port(redis_port_),
-        rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_) {
+        rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_), zk_uri(zk_uri), router_port_return(router_port_return) {
     }
 
-    router_config(const router_config& config) :
+    server_config_in(const server_config_in& config) :
         host(config.host), port(config.port),
         mongodb_uri(config.mongodb_uri), redis_ip(config.redis_ip), redis_port(config.redis_port),
         rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port),
-        command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port) {
+        command_feedback_port(config.command_feedback_port), router_port_return(config.router_port_return), ref(config.ref), router_port(config.router_port), zk_uri(config.zk_uri) {
     }
     qstring host = "localhost";
-    qstring port = "4034";
+    qstring port = "4004";
     qstring mongodb_uri = "mongodb://localhost:27017";      //"mongodb://192.168.0.230:6006"
     qstring redis_ip = "127.0.0.1";
-    int redis_port = 6379;
+    qstring zk_uri = "127.0.0.1:2181";
+    uint16_t redis_port = 6379;
     fs::path rootDir = ".";
     pthread_t run_thread_id = 0;
     struct addrinfo* router = nullptr;  //only for slaves
     bool command_server = false;
     uint16_t command_port = 4010;
     uint16_t command_feedback_port = 4011;  // this has to be re-assigned based on availabaility
+    uint16_t router_port_return = 4005;
     bridge_command_center* ref = nullptr;
     qstring router_port;
 };

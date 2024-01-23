@@ -238,13 +238,25 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             return;
         }
         
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server unmodified %s:%s read:%d", name, port, read);
+#endif
+        
         if (conn_io->two_byte_port_check) {
             EV_START_RECORD(server_port_deserialise_time);
-            read = read - PORT_FIELD_SZ;    // remove the size of port bytes from actual packet (quiche packet)
+            read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
             const uint8_t* port_number_info = &conn_io->buf[read];
             uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
             essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
             EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
+            
+#if LOG_LEVEL >= LOG_LEVEL_4
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server modified %s:%s read:%d", name, port, read);
+#endif
         }
         
         RecvInfo recv_info = {
@@ -530,7 +542,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
         close_socket(sock);
         return -1;
     };
-
+    
     Connection* conn = quiche_connect(host.c_str(), (const uint8_t*)scid, sizeof(scid),
         (struct sockaddr*)&conn_io->local_addr,
         conn_io->local_addr_len,
@@ -543,6 +555,14 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
         return -1;
     }
 
+#if LOG_LEVEL >= LOG_LEVEL_4
+    char name[INET6_ADDRSTRLEN];
+    char port[10];
+    getnameinfo((struct sockaddr*)&conn_io->local_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "local client address %s:%s", name, port);
+    DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*)scid, sizeof(scid));
+#endif
+    
     conn_io->two_byte_port_check = two_byte_port_check;
     conn_io->sock = sock;
     conn_io->conn = conn;

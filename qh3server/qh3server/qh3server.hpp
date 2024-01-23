@@ -30,7 +30,6 @@
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
-
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
 //#elif PLATFORM == PLATFORM_LINUX
@@ -43,8 +42,8 @@
 #define __LOGTAG__ "qh3server"
 
 #define LOCAL_CONN_ID_LEN 16
-#define PORT_FIELD_SZ sizeof(uint16_t)
-#define MAX_DATAGRAM_SIZE 1350 - PORT_FIELD_SZ   // last 2 bytes is reserved for port number verification
+#define ORIGINAL_CLIENT_ADDR_SZ (3*sizeof(uint16_t))
+#define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ   // last 6 bytes is reserved for original client adress verification
 
 #define MAX_TOKEN_LEN \
     sizeof("quiche") - 1 + \
@@ -99,10 +98,11 @@ struct conn_io {
     ev_tstamp creation_time = 0;
     ssize_t total_sent_bytes = 0;
     int64_t stream_id = -1;
+    qstring original_client_serialised_buffer;
 };
 
 struct routerinfo {
-    routerinfo(struct addrinfo* router_) {
+    routerinfo(struct addrinfo* router_, uint16_t port_return) : port_return (port_return) {
         router_address = DEBUG_NEW qaddress(*router_->ai_addr);
         router_address->serialise(serialised_buffer);
         router = (struct addrinfo *)malloc(sizeof(struct addrinfo));
@@ -116,6 +116,7 @@ struct routerinfo {
     struct addrinfo* router = nullptr;
     qaddress* router_address = nullptr;
     qstring serialised_buffer;
+    uint16_t port_return = 4005;
 };
 
 class qh3server : public bridge_h3_connection {
@@ -149,7 +150,8 @@ private:
         struct sockaddr* local_addr,
         socklen_t local_addr_len,
         struct sockaddr_storage* peer_addr,
-        socklen_t peer_addr_len);
+        socklen_t peer_addr_len,
+        struct sockaddr_storage* peer_original_client_addr);
     static int for_each_header(const uint8_t* name, size_t name_len,
         const uint8_t* value, size_t value_len,
         void* argp);
@@ -158,11 +160,12 @@ private:
 
     void send_in_chunks(struct conn_io* conn_io);
     
-    uint8_t out[MAX_DATAGRAM_SIZE + PORT_FIELD_SZ];
+    uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
     uint8_t buf[65535];
     routerinfo* relay_through_router_info = nullptr;    // only valid for servers else NULL
 
 protected:
+    virtual bool on_server_pre_init() = 0;
     virtual void on_run_started() = 0;
     virtual void on_run_end() = 0;
     void parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) override;
@@ -177,7 +180,7 @@ public:
     qtextfilelogger* get_file_logger() { return logger; }
     qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port);
+    int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
 };
 
 #endif /* qh3server_hpp */

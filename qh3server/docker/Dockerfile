@@ -11,6 +11,7 @@ COPY qh3server/ ./qh3server
 COPY qh3client/ ./qh3client
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
+COPY qzookeeper/ ./qzookeeper
 COPY make_qh3server.sh ./
 COPY run_qh3server.sh ./
 COPY qh3server/certs/cert.crt ./qh3server/
@@ -42,6 +43,8 @@ RUN sh make_postgresql.sh
 RUN pwd
 RUN sh make_qstats-crawler.sh
 RUN chmod 755 ./run_qstats-crawler.sh
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tshark
 
 # ------- supervisor -------
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

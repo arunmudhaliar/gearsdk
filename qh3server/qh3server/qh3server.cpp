@@ -21,7 +21,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 
 ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
-    const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
     SendInfo send_info;
     ssize_t total_bytes_sent = 0;
     while (1) {
@@ -40,14 +40,20 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
 
         // if relay through router
         if (via_router) {
-            memcpy((void*)&out[written], (void*)relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-            written+=PORT_FIELD_SZ;
+            memcpy((void*)&out[written], (void*)conn_io->original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+            written+=ORIGINAL_CLIENT_ADDR_SZ;
         }
         //
         
         ssize_t sent = sendto(conn_io->sock, out, written, 0,
             (struct sockaddr*)&conn_io->peer_addr,
             conn_io->peer_addr_len);
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&conn_io->peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s bytes:%d", name, port, sent);
+#endif
         if (sent != written) {
             char name[INET6_ADDRSTRLEN];
             char port[10];
@@ -129,9 +135,9 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     struct sockaddr* local_addr,
     socklen_t local_addr_len,
     struct sockaddr_storage* peer_addr,
-    socklen_t peer_addr_len) {
+    socklen_t peer_addr_len,
+    struct sockaddr_storage* peer_original_client_addr) {
     const char* const_logtag = logtag.c_str();
-    //struct conn_io *conn_io = (struct conn_io *)calloc(1, sizeof(*conn_io));
     struct conn_io* new_conn_io = DEBUG_NEW struct conn_io();
     if (new_conn_io == NULL) {
         DEBUG_PRINT_ERROR(const_logtag, "failed to allocate connection IO");
@@ -149,7 +155,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
         odcid, odcid_len,
         local_addr,
         local_addr_len,
-        (struct sockaddr*)peer_addr,
+        (struct sockaddr*)peer_original_client_addr,
         peer_addr_len,
         config);
 
@@ -164,7 +170,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
 
     memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
     new_conn_io->peer_addr_len = peer_addr_len;
-
+    
     ev_init(&new_conn_io->timer, timeout_cb);
     new_conn_io->timer.data = new_conn_io;
 
@@ -175,13 +181,6 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     return new_conn_io;
 }
 
-/*
- int (*cb)(const uint8_t *name,
-   size_t name_len,
-   const uint8_t *value,
-   size_t value_len,
-   void *argp)
- */
 void qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) {
     const char* const_logtag = logtag.c_str();
     if (name.compare(":path") == 0) {
@@ -214,12 +213,14 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     struct conn_io* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
     const char* port_id_cstr = server->port_id.c_str();
-    const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=PORT_FIELD_SZ;
+    const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
     while (1) {
         struct sockaddr_storage peer_addr;
+        struct sockaddr_storage peer_original_client_addr;
         socklen_t peer_addr_len = sizeof(peer_addr);
         memset(&peer_addr, 0, peer_addr_len);
-
+        qstring original_client_serialised_buffer;
+        
         ssize_t read = recvfrom(conns->sock, server->buf, sizeof(buf), 0,
             (struct sockaddr*)&peer_addr,
             &peer_addr_len);
@@ -236,25 +237,35 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
         server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "", port_id_cstr);
         
-//        char name[INET6_ADDRSTRLEN];
-//        char port[10];
-//        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//        DEBUG_PRINT_ERROR(const_logtag, "unmodified - first %s:%s read:%d", name, port, read);
-
+#if LOG_LEVEL >= LOG_LEVEL_4
+        char name[INET6_ADDRSTRLEN];
+        char port[10];
+        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+        DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "peer addr %s:%s read:%d", name, port, read);
+#endif
         
         // if relay through router
         if (server->relay_through_router_info) {
-            memset(&peer_addr, 0, peer_addr_len);
+            memset(&peer_original_client_addr, 0, peer_addr_len);
             read = read - peer_addr_len;    // remove the client info
-            struct sockaddr* client_info = (struct sockaddr*)&peer_addr;
+            struct sockaddr* client_info = (struct sockaddr*)&peer_original_client_addr;
             memcpy((void*)client_info, (void*)&server->buf[read], peer_addr_len);
+
+            // serialize the original client address for later use
+            qaddress original_client_address((struct sockaddr*)&peer_original_client_addr);
+            original_client_address.serialise(original_client_serialised_buffer);
             
-//            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "in server crc = 0x%x", essentials::get_crc(&server->buf[read], peer_addr_len));
-//
-//            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//            DEBUG_PRINT_ERROR(const_logtag, "first %s:%s", name, port);
-//            getnameinfo((struct sockaddr*)client_info, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-//            DEBUG_PRINT_ERROR(const_logtag, "second %s:%s", name, port);
+            // update the peer address port (return port)
+            essentials::update_port((struct sockaddr*)&peer_addr, server->relay_through_router_info->port_return);
+#if LOG_LEVEL >= LOG_LEVEL_4
+            DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of orinal-client addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
+            getnameinfo((struct sockaddr*)&peer_original_client_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "original-client-address %s:%s", name, port);
+            getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+            DEBUG_PRINT_IMPORTANT2(const_logtag, "modified-peer address %s:%s", name, port);
+#endif
+        } else {
+            memcpy(&peer_original_client_addr, &peer_addr, peer_addr_len);
         }
         //
         
@@ -301,13 +312,20 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-                    written+=PORT_FIELD_SZ;
+                    memcpy((void*)&server->out[written], (void*)original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+                    written+=ORIGINAL_CLIENT_ADDR_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
+                
+#if LOG_LEVEL >= LOG_LEVEL_4
+                char name[INET6_ADDRSTRLEN];
+                char port[10];
+                getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s bytes:%d", name, port, sent);
+#endif
                 if (sent != written) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
@@ -325,7 +343,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             if (token_len == 0) {
                 DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "stateless retry");
 
-                server->mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
+                server->mint_token(dcid, dcid_len, &peer_original_client_addr, peer_addr_len,
                     token, &token_len);
 
                 uint8_t new_cid[LOCAL_CONN_ID_LEN];
@@ -348,13 +366,21 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
                 // if relay through router
                 if (via_router) {
-                    memcpy((void*)&server->out[written], (void*)server->relay_through_router_info->serialised_buffer.c_str(), PORT_FIELD_SZ);
-                    written+=PORT_FIELD_SZ;
+                    memcpy((void*)&server->out[written], (void*)original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+                    written+=ORIGINAL_CLIENT_ADDR_SZ;
                 }
                 //
                 ssize_t sent = sendto(conns->sock, server->out, written, 0,
                     (struct sockaddr*)&peer_addr,
                     peer_addr_len);
+                
+#if LOG_LEVEL >= LOG_LEVEL_4
+                char name[INET6_ADDRSTRLEN];
+                char port[10];
+                getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+                DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s bytes:%d", name, port, sent);
+#endif
+
                 if (sent != written) {
                     char name[INET6_ADDRSTRLEN];
                     char port[10];
@@ -371,7 +397,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             }
 
 
-            if (!server->validate_token(token, token_len, &peer_addr, peer_addr_len,
+            if (!server->validate_token(token, token_len, &peer_original_client_addr, peer_addr_len,
                 odcid, &odcid_len)) {
                 DEBUG_PRINT_WARN(const_logtag, "invalid address validation token");
                 continue;
@@ -379,11 +405,14 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
             conn_io = server->create_conn(dcid, dcid_len, odcid, odcid_len,
                 conns->local_addr, conns->local_addr_len,
-                &peer_addr, peer_addr_len);
+                &peer_addr, peer_addr_len, &peer_original_client_addr);
 
             if (conn_io == NULL) {
                 continue;
             }
+            // cache the original client adress for later use. (flush_engress)
+            conn_io->original_client_serialised_buffer.bin_copy((const uint8_t*)original_client_serialised_buffer.c_str(), original_client_serialised_buffer.length());
+            
             server->get_stats_loggeer()->set_total_ram((int)(essentials::get_process_used_mem()));
             server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io", port_id_cstr);
         }
@@ -473,7 +502,6 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                     EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 200);
 
                     EV_START_RECORD(send_start_time);
-//                    const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
                     if (payload.buffer.length() == 0) {
                         DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "no-response. ignoring the request!!!");
                         conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
@@ -663,7 +691,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router_, uint16_t command_center_feedback_port) {
+int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router_, uint16_t command_center_feedback_port, uint16_t router_port_return) {
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -674,21 +702,10 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     port_id = port;
     GX_DELETE(relay_through_router_info);
     if (router_ != nullptr) {
-        relay_through_router_info = DEBUG_NEW struct routerinfo(router_);
+        relay_through_router_info = DEBUG_NEW struct routerinfo(router_, router_port_return);
     }
     logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
     const char* const_logtag = logtag.c_str();
-    GX_DELETE(logger);
-    GX_DELETE(stats_logger);
-    logger = DEBUG_NEW qtextfilelogger();
-    stats_logger = DEBUG_NEW qstatslogger();
-
-    qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
-    qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
-    
-    qh3server::get_file_logger()->start_session(log_path, log_path.length());
-    qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
-    qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
 //    quiche_enable_debug_logging(debug_log, this);
 
     if (is_log_quiche()) {
@@ -776,14 +793,33 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     conns = &c;
 
     ev_io watcher;
-
-//    mainloop = ev_default_loop(0);
     mainloop = ev_loop_new();
-
     ev_io_init(&watcher, recv_cb, sock, EV_READ);
     ev_io_start(mainloop, &watcher);
     watcher.data = this;
 
+    //
+    GX_DELETE(logger);
+    GX_DELETE(stats_logger);
+    logger = DEBUG_NEW qtextfilelogger();
+    stats_logger = DEBUG_NEW qstatslogger();
+    
+    if (!on_server_pre_init()) {
+        DEBUG_PRINT_ERROR(const_logtag, "on_server_pre_init failed !!!, Exiting.");
+        GX_DELETE(stats_logger);
+        GX_DELETE(logger);
+        close(sock);
+        freeaddrinfo(local);
+        return -1;
+    }
+    qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
+    qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
+    
+    qh3server::get_file_logger()->start_session(log_path, log_path.length());
+    qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
+    qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
+    //
+    
     //
     qtimer_sceduler close_dangling_connections_scheduler;
     close_dangling_connections_scheduler.set_ev_lopp(mainloop);
@@ -839,7 +875,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     
     on_run_started();
     ev_loop(mainloop, 0);
-    on_run_end();
 
     // destroy connections
     struct conn_io* tmp, * conn_io = NULL;
@@ -869,6 +904,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     }
     //
 
+    on_run_end();
+    
     freeaddrinfo(local);
     
     quiche_h3_config_free(http3_config);
@@ -876,7 +913,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 
     get_stats_loggeer()->end_session();
     get_file_logger()->end_session();
-
+    
     DEBUG_PRINT_IMPORTANT(const_logtag, "waiting for services to finish !!!");
     struct ev_loop* wait_loop = ev_loop_new();
     qtimer_sceduler wait_scheduler;

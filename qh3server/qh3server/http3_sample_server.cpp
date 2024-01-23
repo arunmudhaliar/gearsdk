@@ -10,7 +10,7 @@
 #include "../../networkcommon/source/qbuffer.hpp"
 #include "../../common/crypto_helper.hpp"
 
-http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, int redis_port) {
+http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
     mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
     hiredis = DEBUG_NEW qhiredis();
     hiredis->connect_redis(redis_ip, redis_port);
@@ -21,12 +21,43 @@ http3_sample_server::~http3_sample_server() {
     GX_DELETE(mongo);
 }
 
+bool http3_sample_server::on_server_pre_init() {
+#if ENABLE_ZK
+    GX_DELETE(qzk);
+    qzk = DEBUG_NEW qzookeeper();
+    int zk_result = qzk->connect(zk_uri);
+    if (zk_result!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "zk failed to connect !!!, Exiting.");
+        GX_DELETE(qzk);
+        return false;
+    }
+    qstring zk_test_res;
+    qzk->get_data("/qh3server/roomconfig", zk_test_res);
+    qzk->set_data("/qh3server/test", "hello");
+#endif
+    return true;
+}
+
 void http3_sample_server::on_run_started() {
     
 }
 
 void http3_sample_server::on_run_end() {
-    
+#if ENABLE_ZK
+    qzk->shutdown();
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
+    struct ev_loop* wait_loop = ev_loop_new();
+    qtimer_sceduler wait_scheduler;
+    wait_scheduler.set_ev_lopp(wait_loop);
+    wait_scheduler.schedule_repeat_timer([this, wait_loop](qtimer& timer) {
+        if (!qzk->is_running()) {
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qzk service finished !!!");
+            ev_break(wait_loop, EVBREAK_ONE);
+        }
+    }, 3);
+    ev_run(wait_loop, 0);
+    GX_DELETE(qzk);
+#endif
 }
 
 bool http3_sample_server::is_log_quiche() {

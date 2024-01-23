@@ -12,5 +12,6 @@ COPY qserver/certs/cert.key ./qserver/
 RUN apt-get update && apt-get install make
 RUN apt-get install build-essential -y
 RUN apt install iproute2 -y
+RUN apt-get install zlib1g-dev -y
 RUN sh make_qserver.sh
 CMD [ "sh", "run_qserver.sh" ]

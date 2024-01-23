@@ -6,3 +6,7 @@
 //
 
 #include "gameserver.hpp"
+
+room* gameserver::create_room() {
+    return DEBUG_NEW room(this, roomconfig(2, 4, false));
+}

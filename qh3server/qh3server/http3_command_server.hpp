@@ -24,12 +24,13 @@ protected:
     void parse(struct conn_io *conn_io) override;
     inline bool is_log_quiche() override;
     
+    bool on_server_pre_init() override;
     void on_run_started() override;
     void on_run_end() override;
     
     qhiredis* hiredis = nullptr;
 public:
-    http3_command_server(const qstring& redis_url, int redis_port, bridge_command_center* bridge, qstring router_port);
+    http3_command_server(const qstring& redis_url, uint16_t redis_port, bridge_command_center* bridge, qstring router_port);
     ~http3_command_server();
     static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
     

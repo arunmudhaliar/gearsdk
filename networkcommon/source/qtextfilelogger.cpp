@@ -154,7 +154,7 @@ int qlogfile::create_new_logfile(bool finalize_prev_file) {
         return -1;
     }
     else {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file opend for append - %s", current_logfile_path.c_str());
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file opened for append - %s", current_logfile_path.c_str());
     }
 
     struct stat st;
@@ -279,6 +279,10 @@ qtextfilelogger::qtextfilelogger() :
 }
 
 qtextfilelogger::~qtextfilelogger() {
+    if (log_loop) {
+        ev_loop_destroy(log_loop);
+        log_loop = nullptr;
+    }
 }
 
 int qtextfilelogger::start_session(const qstring& path, float flush_time, size_t max_size_of_file) {

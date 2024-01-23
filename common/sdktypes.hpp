@@ -84,6 +84,7 @@ namespace fs = std::__fs::filesystem;
 extern "C" DECLSPEC int init_gsdk();
 extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
+extern "C" DECLSPEC void DEBUG_RAW(int logLevel, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);
@@ -92,6 +93,7 @@ extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, 
 extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len);
 
 namespace gsdk {
     class device {

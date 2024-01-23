@@ -20,7 +20,7 @@
 #define WAITING_ROOM_ZOMBIE_CHECK_TIMER 30.0
 #define WAITING_ROOM_ZOMBIE_THRESHOLD 10.0
 
-class roomserver : public qnetworkserver, public interfaceroom {
+class roomserver : public qnetworkserver, public roomserver_interface {
 public:
     inline struct ev_loop * get_netowrk_main_loop() override final {
         return get_mainloop();
@@ -28,16 +28,12 @@ public:
 protected:
     void on_network_server_end() override final;
     void on_network_server_begin() override final;
-    void on_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override;
-    void on_connection(qpeerconnection* qconnection) override;
-    void on_destroy_connection(qpeerconnection* qconnection) override;
+    void onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override final;
+    void onconnection_connect(qpeerconnection* qconnection) override final;
+    void onconnection_destroy(qpeerconnection* qconnection) override final;
     
-    void onroom_create(room*) override;
     void onroom_pre_start(room*) override final;
-    void onroom_start(room*) override;
-    void onplayer_added(room*, player*) override;
-    void onplayer_removed(room*, player*) override;
-    void onroom_end(room*) override;
+    virtual room* create_room() = 0;
     
     // timers
     void on_timer_check_zombie_rooms(qtimer& qtimer_);
@@ -48,6 +44,7 @@ protected:
     std::vector<room*> waiting_rooms;
     std::vector<room*> rooms;
     std::map<unsigned, room*> connection_map;
+    ssize_t zombie_rooms = 0;
 };
 
 #endif /* roomserver_hpp */
