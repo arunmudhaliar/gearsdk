@@ -24,7 +24,7 @@
 
 class qhiredis {
 public:
-    qhiredis();
+    qhiredis(const qstring& redis_ip, uint16_t redis_port);
     ~qhiredis();
 
 #if 0
@@ -32,14 +32,18 @@ public:
     int hiredis_main(int argc, char** argv);
 #endif
 
-    int connect_redis(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
+    int connect_redis(bool unix_socket = false);
     void disconnect_redis();
 
     int set_value(const qstring& key, const qstring& value);
     int set_value(const qstring& key, const qstring& value, int expiry_in_sec);
     int get_value(const qstring& key, qstring& value);
+    
 private:
+    int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
     redisContext* context = nullptr;
+    qstring redis_ip = "127.0.0.1";
+    uint16_t redis_port;
 };
 
 #endif /* qhiredis_hpp */

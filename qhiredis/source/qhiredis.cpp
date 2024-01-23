@@ -7,14 +7,20 @@
 
 #include "qhiredis.hpp"
 
-qhiredis::qhiredis() {
+qhiredis::qhiredis(const qstring& redis_ip, uint16_t redis_port) :
+    redis_ip(redis_ip), redis_port(redis_port) {
     context = nullptr;
 }
+
 qhiredis::~qhiredis() {
     disconnect_redis();
 }
 
-int qhiredis::connect_redis(const qstring& hostname, uint16_t port, bool unix_socket) {
+int qhiredis::connect_redis(bool unix_socket) {
+    return connect_redis_internal(redis_ip, redis_port, unix_socket);
+}
+
+int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, bool unix_socket) {
     if (context) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!!");
         return 2;

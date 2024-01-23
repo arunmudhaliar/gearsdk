@@ -12,8 +12,7 @@
 
 http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
     mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
-    hiredis = DEBUG_NEW qhiredis();
-    hiredis->connect_redis(redis_ip, redis_port);
+    hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
 }
 
 http3_sample_server::~http3_sample_server() {
@@ -22,6 +21,14 @@ http3_sample_server::~http3_sample_server() {
 }
 
 bool http3_sample_server::on_server_pre_init() {
+    if (mongo->connect()!=0) {
+        return false;
+    }
+    
+    if (hiredis->connect_redis()!=0) {
+        return false;
+    }
+    
 #if ENABLE_ZK
     GX_DELETE(qzk);
     qzk = DEBUG_NEW qzookeeper();

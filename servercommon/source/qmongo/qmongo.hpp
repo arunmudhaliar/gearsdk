@@ -32,7 +32,8 @@ public:
     int update(const qstring& collection_name, bson_t& query, bson_t& update);
     mongoc_cursor_t* find(const qstring& collection_name, bson_t& query);
     mongoc_collection_t* get_collection(const qstring& collection_name);
-
+    int connect();
+    
 private:
     qmongo() {}
     int connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string);
@@ -43,6 +44,10 @@ private:
     mongoc_database_t* database = nullptr;
     std::map<unsigned long, mongoc_collection_t*> collections;
     interface_qmongo_connection* interface = nullptr;
+    
+    qstring app_name;
+    qstring db_name;
+    qstring uri_string;
 };
 
 #endif /* qmongo_hpp */
