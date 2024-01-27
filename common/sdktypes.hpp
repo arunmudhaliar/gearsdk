@@ -25,6 +25,7 @@
 #endif
 
 #include <filesystem>
+#include <assert.h>             // assert
 
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;

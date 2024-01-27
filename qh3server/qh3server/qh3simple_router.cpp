@@ -252,8 +252,8 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
         memcpy((void*)&buf[read], (void*)peer_addr_to_pass, peer_addr_len);
         
         unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-//        crc_ = crc32_z(crc_, (const unsigned char*)dcid, dcid_len);
-        crc_ = crc32_z(crc_, (const unsigned char*)&buf[read], peer_addr_len);
+//        crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*)dcid, dcid_len);
+        crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*)&buf[read], peer_addr_len);
         int index = crc_%(int)router->routes.size();
         route* route = router->routes[index];
         route->relay(buf, read+peer_addr_len);

@@ -493,9 +493,17 @@ int essentials::update_port(struct sockaddr* sa, uint16_t newPort) {
     return -1;
 }
 
+uLong essentials::mod_crc32_z(uLong adler, const Bytef *buf, z_size_t len) {
+#if PLATFORM == PLATFORM_ANDROID
+    return crc32(adler, buf, (unsigned int)len);
+#else
+    return crc32_z(adler, buf, len);
+#endif
+}
+
 unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-    crc_ = crc32_z(crc_, (const unsigned char*)buffer, len);
+    crc_ = mod_crc32_z(crc_, (const unsigned char*)buffer, len);
     return crc_;
 }
 

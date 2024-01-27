@@ -459,19 +459,19 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 
     struct addrinfo* peer;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-        perror("failed to resolve host");
+        fprintf(stderr, "failed to resolve host");
         return -1;
     }
 
     int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
-        perror("failed to create socket");
+        fprintf(stderr, "failed to create socket");
         freeaddrinfo(peer);
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        perror("failed to make socket non-blocking");
+        fprintf(stderr, "failed to make socket non-blocking");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -509,7 +509,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     uint8_t scid[LOCAL_CONN_ID_LEN];
     int rng = open("/dev/urandom", O_RDONLY);
     if (rng < 0) {
-        perror("failed to open /dev/urandom");
+        fprintf(stderr, "failed to open /dev/urandom");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -518,7 +518,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     ssize_t rand_len = read(rng, &scid, sizeof(scid));
     if (rand_len < 0) {
         close(rng);
-        perror("failed to create connection ID");
+        fprintf(stderr, "failed to create connection ID");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -537,7 +537,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     conn_io->local_addr_len = sizeof(conn_io->local_addr);
     if (getsockname(sock, (struct sockaddr*)&conn_io->local_addr,
         &conn_io->local_addr_len) != 0) {
-        perror("failed to get local address of socket");
+        fprintf(stderr, "failed to get local address of socket - %s", strerror(errno));
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;

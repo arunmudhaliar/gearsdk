@@ -90,14 +90,14 @@ extern "C"
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
 #if PLATFORM == PLATFORM_MAC
         fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #elif PLATFORM == PLATFORM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "", buffer);
+        __android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
 #else
         fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #endif
+        va_end(v);
     }
 
     void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
@@ -109,14 +109,14 @@ extern "C"
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
 #if PLATFORM == PLATFORM_MAC
         fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #elif PLATFORM == PLATFORM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, tag, buffer);
+        __android_log_print(ANDROID_LOG_INFO, tag, "%s", buffer);
 #else
         fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #endif
+        va_end(v);
     }
 
     void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
