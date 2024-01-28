@@ -1,6 +1,6 @@
 package com.gearsdk.qunityplugin;
 
-public class qh3client {
+public class qh3client_android {
     public interface request_cb_interface {
         void callback_method(String message);
     }

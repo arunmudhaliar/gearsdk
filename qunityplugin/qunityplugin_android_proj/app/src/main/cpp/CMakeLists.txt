@@ -55,6 +55,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         native-qh3client.cpp
         ../../../../../../qh3client/qh3client/qh3client_helper.cpp
         ../../../../../../qh3client/qh3client/qh3client.cpp
+        ../../../../../../qh3client/qh3client/qh3client-android.cpp
         ../../../../../../networkcommon/source/essentials.cpp
         ../../../../../../common/sdktypes.cpp
         ../../../../../../common/gxcrc32.cpp

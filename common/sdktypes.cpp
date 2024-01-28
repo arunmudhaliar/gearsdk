@@ -22,7 +22,13 @@ struct utsname device::device_details;
 
 extern "C"
 {
+#if PLATFORM == PLATFORM_ANDROID
+JavaVM* device::g_JavaVM = nullptr;
+    int init_gsdk(JavaVM* JavaVM) {
+        device::g_JavaVM = JavaVM;
+#else
     int init_gsdk() {
+#endif
         errno = 0;
         if (uname(&device::device_details) != 0) {
             perror("uname doesn't return 0, so there is an error");

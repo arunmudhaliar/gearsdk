@@ -67,8 +67,8 @@ void http3_sample_client::create_connections() {
     bson_destroy(&parent);
 
     for (int x = 0;x < 200;x++) {
-        qh3client_helper::send_async_request(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data, length)),
-            [this, x](conn_io_req_res* response) {
+        qh3client_helper::send_async_request<client::qh3client>(host, port, conn_io_req_res::create("/user_get", qstring(json_string_data, length)),
+            [this, x](conn_io_req_res* response, void* client_specific_data) {
                 bool validate = response->validate();
 //                assert(validate);
                 if (!validate) {
@@ -99,11 +99,11 @@ void http3_sample_client::create_connections() {
                 bson_destroy(&bson);
 
                 total_connections_returned_success++;
-                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
 
                 session_token = token_header->value;
                 this->on_login_complete(token_header->value, token_header->value.length() > 0);
-            }, false);
+            });
         live_connections++;
         total_connections_issued++;
     }
@@ -140,8 +140,8 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 
     conn_io_req_res* req = conn_io_req_res::create("/user_details", qstring(json_string_data, length));
     req->add_or_get_header("token", session_token);
-    qh3client_helper::send_async_request(host, port, req,
-        [this](conn_io_req_res* response) {
+    qh3client_helper::send_async_request<client::qh3client>(host, port, req,
+        [this](conn_io_req_res* response, void* client_specific_data) {
             live_connections--;
             total_connections_returned_success++;
             total_connections_returned++;

@@ -6,9 +6,9 @@
 #define __LOGTAG__ "qplugin-app"
 
 extern "C" {
-JNIEXPORT void JNICALL
-Java_com_gearsdk_qunityplugin_MainActivity_init_1gsdk(JNIEnv *env, jobject /* this */) {
-    init_gsdk();
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    init_gsdk(vm);
+    return JNI_VERSION_1_6;
 }
 
 JNIEXPORT jstring JNICALL

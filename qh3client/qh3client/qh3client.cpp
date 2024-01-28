@@ -245,6 +245,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server unmodified %s:%s read:%d", name, port, read);
 #endif
         
+#if 0
         if (conn_io->two_byte_port_check) {
             EV_START_RECORD(server_port_deserialise_time);
             read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
@@ -258,6 +259,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server modified %s:%s read:%d", name, port, read);
 #endif
         }
+#endif
         
         RecvInfo recv_info = {
             (struct sockaddr*)&peer_addr,
@@ -427,13 +429,13 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-qh3client::qh3client(const qstring& host, const qstring& port, bool two_byte_port_check_) :
+qh3client::qh3client(const qstring& host, const qstring& port) :
     host(host),
-    port(port),
-    two_byte_port_check(two_byte_port_check_) {
+    port(port) {
 }
 
 qh3client::~qh3client() {
+    on_destroy();
     GX_DELETE(conn_io);
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qh3client destroyed");
 }
@@ -446,7 +448,15 @@ int qh3client::close_socket(int sock) {
     return result;
 }
 
+void qh3client::on_prepare_client_send() {
+}
+void qh3client::on_destroy() {
+}
+void* qh3client::get_client_specific_data() {
+    return this;
+}
 int qh3client::send_request(const conn_io_req_res* data_get_) {
+    this->on_prepare_client_send();
     this->http_request = data_get_;
 
     const struct addrinfo hints = {
@@ -563,7 +573,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*)scid, sizeof(scid));
 #endif
     
-    conn_io->two_byte_port_check = two_byte_port_check;
+//    conn_io->two_byte_port_check = two_byte_port_check;
     conn_io->sock = sock;
     conn_io->conn = conn;
     conn_io->host = host.c_str();

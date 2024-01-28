@@ -3,7 +3,7 @@
 //
 #include <jni.h>
 #include <string>
-#include "../../../../../../qh3client/qh3client/qh3client.hpp"
+#include "../../../../../../qh3client/qh3client/qh3client-android.h"
 #include "../../../../../../qh3client/qh3client/qh3client_helper.hpp"
 
 #undef __LOGTAG__
@@ -11,7 +11,7 @@
 
 extern "C" {
 JNIEXPORT jboolean JNICALL
-        Java_com_gearsdk_qunityplugin_qh3client_send_1async_1request(JNIEnv *env, jobject thiz,
+Java_com_gearsdk_qunityplugin_qh3client_1android_send_1async_1request(JNIEnv *env, jobject thiz,
 jstring j_host, jstring j_port,
 jstring j_path, jstring j_payload, jobject request_cb_interface) {
     const char* native_str_host = (env)->GetStringUTFChars(j_host, 0);
@@ -29,12 +29,10 @@ jstring j_path, jstring j_payload, jobject request_cb_interface) {
     (env)->ReleaseStringUTFChars(j_path, native_str_path);
     (env)->ReleaseStringUTFChars(j_payload, native_str_payload);
 
-    jclass callbackClass = env->GetObjectClass(request_cb_interface);
-    jmethodID callbackMethod = env->GetMethodID(callbackClass, "callback_method", "(Ljava/lang/String;)V");
+    jobject g_request_cb_interface = env->NewGlobalRef(request_cb_interface);
 
-
-    qh3client_helper::send_async_request(host, port, conn_io_req_res::create(path, payload),
-    [env, request_cb_interface, callbackClass, callbackMethod](conn_io_req_res *response) {
+    qh3client_helper::send_async_request<client::qh3client_android>(host, port, conn_io_req_res::create(path, payload),
+    [g_request_cb_interface](conn_io_req_res *response, void* client_specific_data) {
         bool validate = response->validate();
         //                assert(validate);
         if (!validate) {
@@ -51,24 +49,26 @@ jstring j_path, jstring j_payload, jobject request_cb_interface) {
         "async returned %s !!!",
         payload.buffer.c_str());
 
+        JNIEnv* env1 = (JNIEnv*)client_specific_data;
 
         // Find the interface class and its method
-//        jclass callbackClass = env->GetObjectClass(request_cb_interface);
-//        jmethodID callbackMethod = env->GetMethodID(callbackClass, "callback_method", "(Ljava/lang/String;)V");
+        jclass callbackClass = env1->GetObjectClass(g_request_cb_interface);
+        if (callbackClass == nullptr) {
+            return; // Class not found, handle error appropriately
+        }
+        jmethodID callbackMethod = env1->GetMethodID(callbackClass, "callback_method", "(Ljava/lang/String;)V");
         if (callbackMethod == nullptr) {
             return; // Method not found, handle error appropriately
         }
-
         // Create a string to pass to the callback
-        jstring message = env->NewStringUTF("Hello from JNI");
-
+        jstring message = env1->NewStringUTF(payload.buffer.c_str());
         // Call the callback method
-        env->CallVoidMethod(request_cb_interface, callbackMethod, message);
-
+        env1->CallVoidMethod(g_request_cb_interface, callbackMethod, message);
         // Clean up local references
-        env->DeleteLocalRef(message);
-        env->DeleteLocalRef(callbackClass);
-    }, false);
+        env1->DeleteLocalRef(message);
+        env1->DeleteLocalRef(callbackClass);
+        env1->DeleteGlobalRef(g_request_cb_interface);
+    });
     return true;
 }
 };

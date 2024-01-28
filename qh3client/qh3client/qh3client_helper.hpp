@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <functional>
 
-typedef std::function<void(conn_io_req_res* response)> type_qh3client_helper_cb;
+typedef std::function<void(conn_io_req_res* response, void* client_specific_data)> type_qh3client_helper_cb;
 
 class qh3client_helper {
 public:
@@ -29,15 +29,14 @@ public:
         const conn_io_req_res* data = nullptr;
         pthread_t run_thread_id;
         type_qh3client_helper_cb async_cb = nullptr;
-        bool two_byte_port_check = true;
     };
 
-    static int send_request(const qstring host, const qstring port,
+    template<typename T> static int send_request(const qstring host, const qstring port,
         const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
-    static int send_async_request(const qstring host, const qstring port,
-        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, bool two_byte_port_check = true);
+    template<typename T> static int send_async_request(const qstring host, const qstring port,
+        const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb);
 
 private:
-    static void* run_internal(void* data);
+    template<typename T> static void* run_internal(void* data);
 };
 #endif /* qh3client_helper_hpp */

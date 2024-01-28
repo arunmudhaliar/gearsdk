@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.TextView;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.gearsdk.qunityplugin.databinding.ActivityMainBinding;
 
@@ -21,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        init_gsdk();
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -30,8 +30,17 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = binding.sampleText;
         tv.setText(stringFromJNI());
 
-        qh3client client = new qh3client();
-        qh3client.request_cb_interface callback = message -> System.out.println("qplugin-app - Callback received: " + message);
+        qh3client_android client = new qh3client_android();
+        qh3client_android.request_cb_interface callback = message -> {
+            System.out.println("qplugin-app - Callback received: " + message);
+            Handler mainHandler = new Handler(Looper.getMainLooper());
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv.setText(message);
+                }
+            });
+        };
         client.send_async_request("192.168.0.230", "4004", "/whoami", "{}", callback);
     }
 
@@ -40,5 +49,4 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
-    public native void init_gsdk();
 }
