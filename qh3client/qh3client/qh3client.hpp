@@ -102,7 +102,7 @@ public:
     int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) override final;
     virtual void on_prepare_client_send();
     int send_request(const conn_io_req_res* data_getorpost_);
-    virtual void on_destroy();
+    virtual void on_post_send_cleanup();
     virtual void* get_client_specific_data();
     const qstring host;
     const qstring port;

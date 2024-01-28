@@ -20,7 +20,7 @@ void qh3client_android::on_prepare_client_send() {
     }
 }
 
-void qh3client_android::on_destroy() {
+void qh3client_android::on_post_send_cleanup() {
     if (attachStatus == JNI_OK) {
         // Detach the thread when done with JNI operations
         (gsdk::device::g_JavaVM)->DetachCurrentThread();

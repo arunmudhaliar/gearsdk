@@ -51,6 +51,7 @@ template<typename T> void* qh3client_helper::run_internal(void* data) {
     if (req_obj->async_cb && new_client->conn_io && new_client->conn_io->response) {
         req_obj->async_cb(new_client->conn_io->response, new_client->get_client_specific_data());
     }
+    new_client->on_post_send_cleanup();
     GX_DELETE(new_client);
     GX_DELETE(req_obj);
     pthread_exit(0);

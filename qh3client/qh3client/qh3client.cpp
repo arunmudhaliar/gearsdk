@@ -435,7 +435,6 @@ qh3client::qh3client(const qstring& host, const qstring& port) :
 }
 
 qh3client::~qh3client() {
-    on_destroy();
     GX_DELETE(conn_io);
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qh3client destroyed");
 }
@@ -450,7 +449,7 @@ int qh3client::close_socket(int sock) {
 
 void qh3client::on_prepare_client_send() {
 }
-void qh3client::on_destroy() {
+void qh3client::on_post_send_cleanup() {
 }
 void* qh3client::get_client_specific_data() {
     return this;

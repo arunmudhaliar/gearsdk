@@ -17,7 +17,7 @@ namespace client {
         virtual ~qh3client_android();
 
         void on_prepare_client_send() override;
-        void on_destroy() override;
+        void on_post_send_cleanup() override;
         void* get_client_specific_data() override;
         
     private:

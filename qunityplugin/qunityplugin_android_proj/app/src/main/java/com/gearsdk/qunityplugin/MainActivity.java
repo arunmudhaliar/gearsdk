@@ -41,7 +41,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         };
-        client.send_async_request("192.168.0.230", "4004", "/whoami", "{}", callback);
+        for (int x=0;x<100;x++) {
+            client.send_async_request("192.168.0.230", "4004", "/whoami", "{}", callback);
+        }
     }
 
     /**
