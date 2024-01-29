@@ -14,6 +14,9 @@ JNIEXPORT jboolean JNICALL
 Java_com_gearsdk_qunityplugin_qh3client_1android_send_1async_1request(JNIEnv *env, jobject thiz,
 jstring j_host, jstring j_port,
 jstring j_path, jstring j_payload, jobject arg, jobject request_cb_interface) {
+    if (j_payload == nullptr || request_cb_interface == nullptr) {
+        return false;
+    }
     const char* native_str_host = (env)->GetStringUTFChars(j_host, 0);
     const char* native_str_port = (env)->GetStringUTFChars(j_port, 0);
     const char* native_str_path = (env)->GetStringUTFChars(j_path, 0);
@@ -74,7 +77,9 @@ jstring j_path, jstring j_payload, jobject arg, jobject request_cb_interface) {
         env1->DeleteLocalRef(j_payload);
         env1->DeleteLocalRef(callbackClass);
         env1->DeleteGlobalRef(g_request_cb_interface);
-        env1->DeleteGlobalRef((jobject)arg);
+        if (arg != nullptr) {
+            env1->DeleteGlobalRef((jobject) arg);
+        }
     });
     return true;
 }
