@@ -13,7 +13,7 @@ extern "C" {
 JNIEXPORT jboolean JNICALL
 Java_com_gearsdk_qunityplugin_qh3client_1android_send_1async_1request(JNIEnv *env, jobject thiz,
 jstring j_host, jstring j_port,
-jstring j_path, jstring j_payload, jobject request_cb_interface) {
+jstring j_path, jstring j_payload, jobject arg, jobject request_cb_interface) {
     const char* native_str_host = (env)->GetStringUTFChars(j_host, 0);
     const char* native_str_port = (env)->GetStringUTFChars(j_port, 0);
     const char* native_str_path = (env)->GetStringUTFChars(j_path, 0);
@@ -30,9 +30,12 @@ jstring j_path, jstring j_payload, jobject request_cb_interface) {
     (env)->ReleaseStringUTFChars(j_payload, native_str_payload);
 
     jobject g_request_cb_interface = env->NewGlobalRef(request_cb_interface);
+    jobject g_arg = env->NewGlobalRef(arg);
 
-    qh3client_helper::send_async_request<client::qh3client_android>(host, port, conn_io_req_res::create(path, payload),
-    [g_request_cb_interface](conn_io_req_res *response, void* client_specific_data) {
+    qh3client_helper::send_async_request<client::qh3client_android>(host, port,
+                                                                    conn_io_req_res::create(path, payload),
+                                                                    g_arg,
+    [g_request_cb_interface](conn_io_req_res *response, void* client_specific_data, void* arg) {
         bool validate = response->validate();
         //                assert(validate);
         if (!validate) {
@@ -56,18 +59,22 @@ jstring j_path, jstring j_payload, jobject request_cb_interface) {
         if (callbackClass == nullptr) {
             return; // Class not found, handle error appropriately
         }
-        jmethodID callbackMethod = env1->GetMethodID(callbackClass, "callback_method", "(Ljava/lang/String;)V");
+        jmethodID callbackMethod = env1->GetMethodID(callbackClass,
+                                                     "callback_method",
+                                                     "(Ljava/lang/String;Ljava/lang/Object;I)V");
+
         if (callbackMethod == nullptr) {
             return; // Method not found, handle error appropriately
         }
         // Create a string to pass to the callback
-        jstring message = env1->NewStringUTF(payload.buffer.c_str());
+        jstring j_payload = env1->NewStringUTF(payload.buffer.c_str());
         // Call the callback method
-        env1->CallVoidMethod(g_request_cb_interface, callbackMethod, message);
+        env1->CallVoidMethod(g_request_cb_interface, callbackMethod, j_payload, arg, 0);
         // Clean up local references
-        env1->DeleteLocalRef(message);
+        env1->DeleteLocalRef(j_payload);
         env1->DeleteLocalRef(callbackClass);
         env1->DeleteGlobalRef(g_request_cb_interface);
+        env1->DeleteGlobalRef((jobject)arg);
     });
     return true;
 }

@@ -31,18 +31,18 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(stringFromJNI());
 
         qh3client_android client = new qh3client_android();
-        qh3client_android.request_cb_interface callback = message -> {
-            System.out.println("qplugin-app - Callback received: " + message);
+        qh3client_android.request_cb_interface callback = (payload, arg, result) -> {
+            System.out.println("qplugin-app - Callback received: " + payload +", arg "+arg +", result "+result);
             Handler mainHandler = new Handler(Looper.getMainLooper());
             mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    tv.setText(message);
+                    tv.setText(payload+", arg "+arg +", result "+result);
                 }
             });
         };
-        for (int x=0;x<100;x++) {
-            client.send_async_request("192.168.0.230", "4004", "/whoami", "{}", callback);
+        for (int x=0;x<10;x++) {
+            client.send_async_request("192.168.0.230", "4004", "/whoami", "{}", x, callback);
         }
     }
 

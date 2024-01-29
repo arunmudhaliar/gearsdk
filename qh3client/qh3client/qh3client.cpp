@@ -429,9 +429,10 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-qh3client::qh3client(const qstring& host, const qstring& port) :
+qh3client::qh3client(const qstring& host, const qstring& port, void* arg) :
     host(host),
-    port(port) {
+    port(port),
+    arg(arg) {
 }
 
 qh3client::~qh3client() {

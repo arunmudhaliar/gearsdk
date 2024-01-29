@@ -5,8 +5,8 @@
 #include "qh3client_helper.hpp"
 using namespace client;
 
-qh3client_android::qh3client_android(const qstring &host, const qstring &port) :
-                                     qh3client(host, port) {
+qh3client_android::qh3client_android(const qstring &host, const qstring &port, void* arg) :
+                                     qh3client(host, port, arg) {
 }
 
 qh3client_android::~qh3client_android() {

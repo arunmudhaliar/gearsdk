@@ -13,7 +13,7 @@
 namespace client {
     class qh3client_android : public qh3client {
     public:
-        qh3client_android(const qstring &host, const qstring &port);
+        qh3client_android(const qstring &host, const qstring &port, void* arg);
         virtual ~qh3client_android();
 
         void on_prepare_client_send() override;

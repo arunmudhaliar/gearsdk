@@ -78,12 +78,12 @@ public:
 class qh3client : public bridge_h3client_connection {
 public:
 
-    qh3client(const qstring& host, const qstring& port);
+    qh3client(const qstring& host, const qstring& port, void* arg);
     virtual ~qh3client();
 
     struct ev_loop* mainloop = nullptr;
 
-    static void debug_log(const uint8_t* line, void* argp);
+    static void debug_log(const uint8_t* line, void* arg);
     void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
@@ -108,6 +108,7 @@ public:
     const qstring port;
     const conn_io_req_res* http_request = nullptr;
     struct conn_io* conn_io = nullptr;
+    void* arg = nullptr;
 
 private:
     int close_socket(int sock);
