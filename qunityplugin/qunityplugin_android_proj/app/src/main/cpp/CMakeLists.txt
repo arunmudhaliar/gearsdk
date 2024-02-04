@@ -12,12 +12,12 @@ cmake_minimum_required(VERSION 3.22.1)
 project("qunityplugin")
 
 # Add the directory to the include path
-#include_directories("../../../../../source")
 include_directories("../../../../../../networkcommon/source/ev"
         "../../../../../../networkcommon/source/quiche"
         )
 #message("debug msg"${CMAKE_CURRENT_SOURCE_DIR})
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR} "/../../../../../source/" EXCLUDE_FROM_ALL)
+
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -27,14 +27,10 @@ include_directories("../../../../../../networkcommon/source/ev"
 # the target library name; in the sub-module's CMakeLists.txt, ${PROJECT_NAME}
 # is preferred for the same purpose.
 
-# Assuming libmylibrary.so is in the ../lib directory
-#target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ../../../../../../networkcommon/libs/android)
-#find_library(QUICHE NAMES quiche PATHS ../../../../../../networkcommon/libs/android)
 message("ABI--> " ${ANDROID_ABI})
 add_library(quiche STATIC IMPORTED)
 set_target_properties(quiche PROPERTIES IMPORTED_LOCATION
         ${CMAKE_SOURCE_DIR}/../../../../../../networkcommon/libs/android/${ANDROID_ABI}/libquiche.a)
-
 
 add_library(ev SHARED IMPORTED)
 set_target_properties(ev PROPERTIES IMPORTED_LOCATION
@@ -53,6 +49,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         native-lib.cpp
         native-qh3client.cpp
+        ../../../../../../qunityplugin/source/qunitysdk.cpp
         ../../../../../../qh3client/qh3client/qh3client_helper.cpp
         ../../../../../../qh3client/qh3client/qh3client.cpp
         ../../../../../../qh3client/qh3client/qh3client-android.cpp
@@ -62,13 +59,9 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         ../../../../../../common/timer.cpp
         )
 
-## Import the static library
-#add_library(libev STATIC IMPORTED)
-#set_target_properties(libev PROPERTIES IMPORTED_LOCATION
-#        ${CMAKE_SOURCE_DIR}/../../../../../../networkcommon/libs/android/${ANDROID_ABI}/libev.a)
+# Set the output directory for the shared library
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI})
 
-
-#add_library(${CMAKE_PROJECT_NAME} SHARED
 #        # List C/C++ source files with relative paths to this CMakeLists.txt.
 #        native-lib.cpp)
 # Specifies libraries CMake should link to your target library. You

@@ -7,27 +7,43 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55A847B42B6178E800001308 /* qunityplugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A847B22B6178E800001308 /* qunityplugin.cpp */; };
-		55A847B52B6178E800001308 /* qunityplugin.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55A847B32B6178E800001308 /* qunityplugin.hpp */; };
-		55A847B82B617A6600001308 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A847B72B617A6600001308 /* libquiche.a */; };
-		55A847BA2B617ACF00001308 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A847B92B617ACF00001308 /* libev.a */; };
+		55A9CD332B68266C006CAD14 /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD252B682140006CAD14 /* debug_new.cpp */; };
+		55A9CD342B68266F006CAD14 /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD232B682114006CAD14 /* essentials.cpp */; };
+		55A9CD352B682672006CAD14 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD212B6820EF006CAD14 /* sdktypes.cpp */; };
+		55A9CD362B682675006CAD14 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD1F2B6820D9006CAD14 /* qh3client.cpp */; };
+		55A9CD372B682678006CAD14 /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD1D2B6820BC006CAD14 /* qh3client_helper.cpp */; };
+		55A9CD382B68267D006CAD14 /* qunitysdk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A847B22B6178E800001308 /* qunitysdk.cpp */; };
+		55A9CD3A2B6827AD006CAD14 /* libev.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD392B6827AD006CAD14 /* libev.dylib */; };
+		55A9CD3B2B6827B7006CAD14 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A847B72B617A6600001308 /* libquiche.a */; };
+		55A9CD3C2B6827CA006CAD14 /* libz.1.1.3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD272B6821B7006CAD14 /* libz.1.1.3.tbd */; };
+		55A9CD3D2B6827D0006CAD14 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD292B6821FB006CAD14 /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		55A847AA2B61787600001308 /* libqunityplugin.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqunityplugin.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		55A847B22B6178E800001308 /* qunityplugin.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qunityplugin.cpp; sourceTree = "<group>"; };
-		55A847B32B6178E800001308 /* qunityplugin.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qunityplugin.hpp; sourceTree = "<group>"; };
+		55A847B22B6178E800001308 /* qunitysdk.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qunitysdk.cpp; sourceTree = "<group>"; };
+		55A847B32B6178E800001308 /* qunitysdk.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qunitysdk.hpp; sourceTree = "<group>"; };
 		55A847B72B617A6600001308 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
 		55A847B92B617ACF00001308 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
+		55A9CD1D2B6820BC006CAD14 /* qh3client_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qh3client_helper.cpp; path = ../qh3client/qh3client/qh3client_helper.cpp; sourceTree = "<group>"; };
+		55A9CD1F2B6820D9006CAD14 /* qh3client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qh3client.cpp; path = ../qh3client/qh3client/qh3client.cpp; sourceTree = "<group>"; };
+		55A9CD212B6820EF006CAD14 /* sdktypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sdktypes.cpp; path = ../common/sdktypes.cpp; sourceTree = "<group>"; };
+		55A9CD232B682114006CAD14 /* essentials.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = essentials.cpp; path = ../networkcommon/source/essentials.cpp; sourceTree = "<group>"; };
+		55A9CD252B682140006CAD14 /* debug_new.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		55A9CD272B6821B7006CAD14 /* libz.1.1.3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.1.3.tbd; path = usr/lib/libz.1.1.3.tbd; sourceTree = SDKROOT; };
+		55A9CD292B6821FB006CAD14 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		55A9CD2F2B68263E006CAD14 /* libqunityplugin.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libqunityplugin.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		55A9CD392B6827AD006CAD14 /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos/libev.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		55A847A82B61787600001308 /* Frameworks */ = {
+		55A9CD2D2B68263E006CAD14 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A847B82B617A6600001308 /* libquiche.a in Frameworks */,
-				55A847BA2B617ACF00001308 /* libev.a in Frameworks */,
+				55A9CD3D2B6827D0006CAD14 /* Security.framework in Frameworks */,
+				55A9CD3C2B6827CA006CAD14 /* libz.1.1.3.tbd in Frameworks */,
+				55A9CD3A2B6827AD006CAD14 /* libev.dylib in Frameworks */,
+				55A9CD3B2B6827B7006CAD14 /* libquiche.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +53,11 @@
 		55A847A12B61787600001308 = {
 			isa = PBXGroup;
 			children = (
+				55A9CD252B682140006CAD14 /* debug_new.cpp */,
+				55A9CD232B682114006CAD14 /* essentials.cpp */,
+				55A9CD212B6820EF006CAD14 /* sdktypes.cpp */,
+				55A9CD1F2B6820D9006CAD14 /* qh3client.cpp */,
+				55A9CD1D2B6820BC006CAD14 /* qh3client_helper.cpp */,
 				55A847B12B6178B000001308 /* source */,
 				55A847AB2B61787600001308 /* Products */,
 				55A847B62B617A6600001308 /* Frameworks */,
@@ -46,7 +67,7 @@
 		55A847AB2B61787600001308 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				55A847AA2B61787600001308 /* libqunityplugin.a */,
+				55A9CD2F2B68263E006CAD14 /* libqunityplugin.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -54,8 +75,8 @@
 		55A847B12B6178B000001308 /* source */ = {
 			isa = PBXGroup;
 			children = (
-				55A847B22B6178E800001308 /* qunityplugin.cpp */,
-				55A847B32B6178E800001308 /* qunityplugin.hpp */,
+				55A847B22B6178E800001308 /* qunitysdk.cpp */,
+				55A847B32B6178E800001308 /* qunitysdk.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -63,6 +84,9 @@
 		55A847B62B617A6600001308 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55A9CD392B6827AD006CAD14 /* libev.dylib */,
+				55A9CD292B6821FB006CAD14 /* Security.framework */,
+				55A9CD272B6821B7006CAD14 /* libz.1.1.3.tbd */,
 				55A847B92B617ACF00001308 /* libev.a */,
 				55A847B72B617A6600001308 /* libquiche.a */,
 			);
@@ -72,24 +96,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		55A847A62B61787600001308 /* Headers */ = {
+		55A9CD2B2B68263E006CAD14 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A847B52B6178E800001308 /* qunityplugin.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		55A847A92B61787600001308 /* qunityplugin */ = {
+		55A9CD2E2B68263E006CAD14 /* qunityplugin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 55A847AE2B61787600001308 /* Build configuration list for PBXNativeTarget "qunityplugin" */;
+			buildConfigurationList = 55A9CD302B68263E006CAD14 /* Build configuration list for PBXNativeTarget "qunityplugin" */;
 			buildPhases = (
-				55A847A62B61787600001308 /* Headers */,
-				55A847A72B61787600001308 /* Sources */,
-				55A847A82B61787600001308 /* Frameworks */,
+				55A9CD2B2B68263E006CAD14 /* Headers */,
+				55A9CD2C2B68263E006CAD14 /* Sources */,
+				55A9CD2D2B68263E006CAD14 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -97,8 +120,8 @@
 			);
 			name = qunityplugin;
 			productName = qunityplugin;
-			productReference = 55A847AA2B61787600001308 /* libqunityplugin.a */;
-			productType = "com.apple.product-type.library.static";
+			productReference = 55A9CD2F2B68263E006CAD14 /* libqunityplugin.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
 
@@ -109,7 +132,7 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 1340;
 				TargetAttributes = {
-					55A847A92B61787600001308 = {
+					55A9CD2E2B68263E006CAD14 = {
 						CreatedOnToolsVersion = 13.4;
 					};
 				};
@@ -127,17 +150,22 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				55A847A92B61787600001308 /* qunityplugin */,
+				55A9CD2E2B68263E006CAD14 /* qunityplugin */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		55A847A72B61787600001308 /* Sources */ = {
+		55A9CD2C2B68263E006CAD14 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A847B42B6178E800001308 /* qunityplugin.cpp in Sources */,
+				55A9CD352B682672006CAD14 /* sdktypes.cpp in Sources */,
+				55A9CD362B682675006CAD14 /* qh3client.cpp in Sources */,
+				55A9CD372B682678006CAD14 /* qh3client_helper.cpp in Sources */,
+				55A9CD342B68266F006CAD14 /* essentials.cpp in Sources */,
+				55A9CD382B68267D006CAD14 /* qunitysdk.cpp in Sources */,
+				55A9CD332B68266C006CAD14 /* debug_new.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,23 +281,37 @@
 			};
 			name = Release;
 		};
-		55A847AF2B61787600001308 /* Debug */ = {
+		55A9CD312B68263E006CAD14 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
-		55A847B02B61787600001308 /* Release */ = {
+		55A9CD322B68263E006CAD14 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+				);
+				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -287,11 +329,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		55A847AE2B61787600001308 /* Build configuration list for PBXNativeTarget "qunityplugin" */ = {
+		55A9CD302B68263E006CAD14 /* Build configuration list for PBXNativeTarget "qunityplugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				55A847AF2B61787600001308 /* Debug */,
-				55A847B02B61787600001308 /* Release */,
+				55A9CD312B68263E006CAD14 /* Debug */,
+				55A9CD322B68263E006CAD14 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
