@@ -16,6 +16,7 @@
 #include <map>
 
 #include <netdb.h>
+#include <netinet/in.h>
 #include <vector>
 //#include <quiche.h>
 #include <zlib.h>
@@ -118,6 +119,7 @@ public:
     
     static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
     static int update_port(struct sockaddr* sa, uint16_t newPort);
+    static uLong mod_crc32_z(uLong adler, const Bytef *buf, z_size_t len);
 };
 
 // h3 structs
@@ -158,7 +160,7 @@ struct conn_io_req_res {
         
         unsigned long get_crc_value() const {
             unsigned long  crc_ = crc32(0L, Z_NULL, 0);
-            crc_ = crc32_z(crc_, (const unsigned char*)buffer.c_str(), buffer.length());
+            crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*)buffer.c_str(), buffer.length());
             return crc_;
         }
         qstring buffer;
@@ -227,7 +229,7 @@ public:
 
     header* add_or_get_header(const qstring& name_, const qstring& value_) {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
-        crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
+        crc = essentials::mod_crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         
         std::map<unsigned long, header*>::iterator it = headers.find(crc);
         if (it==headers.end()) {
@@ -240,7 +242,7 @@ public:
     
     header* get_header(const qstring& name_) const {
         unsigned long  crc = crc32(0L, Z_NULL, 0);
-        crc = crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
+        crc = essentials::mod_crc32_z(crc, (const unsigned char*)name_.c_str(), name_.length());
         std::map<unsigned long, header*>::const_iterator it = headers.find(crc);
         return it!=headers.end() ? it->second : nullptr;
     }

@@ -54,6 +54,7 @@
 		5574E6C22ADBB1CD00FAFE08 /* gameserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameserver.hpp; sourceTree = "<group>"; };
 		5574F2172B20EB53007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		5574F2192B20EBC9007C93AA /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55A9CD3E2B701314006CAD14 /* qserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qserver.entitlements; sourceTree = "<group>"; };
 		55B372B82AC2ABCD00F0095E /* qserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qserver; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372BB2AC2ABCD00F0095E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55D1C6CC2AD2A48D00470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/libev.a; sourceTree = "<group>"; };
@@ -104,6 +105,7 @@
 		55B372AF2AC2ABCD00F0095E = {
 			isa = PBXGroup;
 			children = (
+				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,
 				55D1C6DB2AD32E8800470E01 /* certs */,
 				55B372BA2AC2ABCD00F0095E /* source */,
@@ -328,6 +330,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CODE_SIGN_ENTITLEMENTS = qserver.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
@@ -354,6 +357,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CODE_SIGN_ENTITLEMENTS = qserver.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;

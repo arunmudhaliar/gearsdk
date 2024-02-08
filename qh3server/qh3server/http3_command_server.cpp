@@ -122,8 +122,8 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 
 void http3_command_server::send_shutdown_to_all() {
     conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
-    qh3client_helper::send_async_request(host_id, router_port, req,
-        [this](conn_io_req_res* response) {
+    qh3client_helper::send_async_request<client::qh3client>(host_id, router_port, req, nullptr,
+        [this](conn_io_req_res* response, void* client_specific_data, void* arg) {
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
         });
 }

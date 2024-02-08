@@ -45,6 +45,7 @@
 		5574E6C82ADC3A2F00FAFE08 /* gameclient.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameclient.hpp; sourceTree = "<group>"; };
 		5574F21B2B20EC1F007C93AA /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		5574F21D2B20EC4B007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		55A9CD3F2B701385006CAD14 /* qclient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qclient.entitlements; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* qclient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qclient; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372A62AC2AB4A00F0095E /* networkclient_tester.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = networkclient_tester.cpp; sourceTree = "<group>"; };
 		55D1C6D32AD3269800470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/libquiche.a; sourceTree = "<group>"; };
@@ -91,6 +92,7 @@
 		55B3729A2AC2AB4A00F0095E = {
 			isa = PBXGroup;
 			children = (
+				55A9CD3F2B701385006CAD14 /* qclient.entitlements */,
 				5574F21D2B20EC4B007C93AA /* debug_new.cpp */,
 				55B372A52AC2AB4A00F0095E /* source */,
 				55B372A42AC2AB4A00F0095E /* Products */,
@@ -301,6 +303,7 @@
 		55B372AB2AC2AB4A00F0095E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qclient.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
@@ -334,6 +337,7 @@
 		55B372AC2AC2AB4A00F0095E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qclient.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;

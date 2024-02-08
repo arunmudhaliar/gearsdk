@@ -409,6 +409,7 @@
 					"LOG_LEVEL=5",
 					"FORK_QH3_SERVER=0",
 					THREADED,
+					"ENABLE_ZK=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",

@@ -54,6 +54,8 @@
 		55A4ADDB2AEFBED800BC4CED /* qh3client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3client.cpp; sourceTree = "<group>"; };
 		55A4ADDC2AEFBED800BC4CED /* qh3client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3client.hpp; sourceTree = "<group>"; };
 		55A4ADDE2AEFC0A200BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		55A72F532B752CFC00064250 /* qh3client.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3client.entitlements; sourceTree = "<group>"; };
+		55A9CD172B66A89C006CAD14 /* qh3client-android.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "qh3client-android.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,9 +98,11 @@
 		55A4ADB42AEF82AA00BC4CED /* qh3client */ = {
 			isa = PBXGroup;
 			children = (
+				55A72F532B752CFC00064250 /* qh3client.entitlements */,
 				55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */,
 				55A4ADDB2AEFBED800BC4CED /* qh3client.cpp */,
 				55A4ADDC2AEFBED800BC4CED /* qh3client.hpp */,
+				55A9CD172B66A89C006CAD14 /* qh3client-android.h */,
 				55A4ADDE2AEFC0A200BC4CED /* main.cpp */,
 				556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */,
 				556AB6C02AF5703D00D688DB /* http3_sample_client.hpp */,
@@ -304,6 +308,7 @@
 		55A4ADBA2AEF82AB00BC4CED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -331,6 +336,7 @@
 		55A4ADBB2AEF82AB00BC4CED /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;

@@ -25,6 +25,7 @@
 #endif
 
 #include <filesystem>
+#include <assert.h>             // assert
 
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
@@ -67,6 +68,8 @@ namespace fs = std::__fs::filesystem;
 #include <linux/limits.h>
 #include <stdarg.h>
 #include <bits/stdc++.h>
+#elif PLATFORM == PLATFORM_ANDROID
+#include <jni.h>
 #endif
 
 #include <sys/utsname.h>
@@ -81,7 +84,12 @@ namespace fs = std::__fs::filesystem;
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_3
 #endif
+
+#if PLATFORM == PLATFORM_ANDROID
+extern "C" DECLSPEC int init_gsdk(JavaVM* JavaVM);
+#else
 extern "C" DECLSPEC int init_gsdk();
+#endif
 extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
 extern "C" DECLSPEC void DEBUG_RAW(int logLevel, const char* format, ...);
@@ -99,6 +107,9 @@ namespace gsdk {
     class device {
     public:
         static struct utsname device_details;
+#if PLATFORM == PLATFORM_ANDROID
+        static JavaVM* g_JavaVM;
+#endif
     };
 
     //https://stackoverflow.com/questions/7021725/how-to-convert-a-string-to-integer-in-c

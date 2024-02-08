@@ -6,7 +6,7 @@
 //
 
 #include "qmongo.hpp"
-#include "../../../common/gxcrc32.h"
+#include "../../networkcommon/source/essentials.hpp"
 #include <zlib.h>
 
 qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) :
@@ -190,7 +190,7 @@ mongoc_collection_t* qmongo::get_collection(const qstring& collection_name) {
         return nullptr;
     }
     unsigned long  crc = crc32(0L, Z_NULL, 0);
-    crc = crc32_z(crc, (const unsigned char*)collection_name.c_str(), collection_name.length());
+    crc = essentials::mod_crc32_z(crc, (const unsigned char*)collection_name.c_str(), collection_name.length());
 
     std::map<unsigned long, mongoc_collection_t*>::iterator it = collections.find(crc);
     if (it != collections.end()) {

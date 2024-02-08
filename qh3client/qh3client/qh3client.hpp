@@ -64,7 +64,6 @@ struct conn_io {
     conn_io_req_res* response = nullptr;
     bool res_received = false;
     ev_tstamp creation_time = 0;
-    bool two_byte_port_check = true;
 };
 
 class bridge_h3client_connection {
@@ -79,12 +78,12 @@ public:
 class qh3client : public bridge_h3client_connection {
 public:
 
-    qh3client(const qstring& host, const qstring& port, bool two_byte_port_check = true);
+    qh3client(const qstring& host, const qstring& port, void* arg);
     virtual ~qh3client();
 
     struct ev_loop* mainloop = nullptr;
 
-    static void debug_log(const uint8_t* line, void* argp);
+    static void debug_log(const uint8_t* line, void* arg);
     void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
@@ -101,13 +100,15 @@ public:
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
     int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) override final;
     int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) override final;
+    virtual void on_prepare_client_send();
     int send_request(const conn_io_req_res* data_getorpost_);
-
+    virtual void on_post_send_cleanup();
+    virtual void* get_client_specific_data();
     const qstring host;
     const qstring port;
     const conn_io_req_res* http_request = nullptr;
     struct conn_io* conn_io = nullptr;
-    bool two_byte_port_check = true;
+    void* arg = nullptr;
 
 private:
     int close_socket(int sock);

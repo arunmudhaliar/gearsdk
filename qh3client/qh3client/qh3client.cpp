@@ -245,6 +245,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server unmodified %s:%s read:%d", name, port, read);
 #endif
         
+#if 0
         if (conn_io->two_byte_port_check) {
             EV_START_RECORD(server_port_deserialise_time);
             read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
@@ -258,6 +259,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server modified %s:%s read:%d", name, port, read);
 #endif
         }
+#endif
         
         RecvInfo recv_info = {
             (struct sockaddr*)&peer_addr,
@@ -427,10 +429,10 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
     }
 }
 
-qh3client::qh3client(const qstring& host, const qstring& port, bool two_byte_port_check_) :
+qh3client::qh3client(const qstring& host, const qstring& port, void* arg) :
     host(host),
     port(port),
-    two_byte_port_check(two_byte_port_check_) {
+    arg(arg) {
 }
 
 qh3client::~qh3client() {
@@ -446,7 +448,15 @@ int qh3client::close_socket(int sock) {
     return result;
 }
 
+void qh3client::on_prepare_client_send() {
+}
+void qh3client::on_post_send_cleanup() {
+}
+void* qh3client::get_client_specific_data() {
+    return this;
+}
 int qh3client::send_request(const conn_io_req_res* data_get_) {
+    this->on_prepare_client_send();
     this->http_request = data_get_;
 
     const struct addrinfo hints = {
@@ -459,19 +469,19 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 
     struct addrinfo* peer;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-        perror("failed to resolve host");
+        fprintf(stderr, "failed to resolve host");
         return -1;
     }
 
     int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
-        perror("failed to create socket");
+        fprintf(stderr, "failed to create socket");
         freeaddrinfo(peer);
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        perror("failed to make socket non-blocking");
+        fprintf(stderr, "failed to make socket non-blocking");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -509,7 +519,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     uint8_t scid[LOCAL_CONN_ID_LEN];
     int rng = open("/dev/urandom", O_RDONLY);
     if (rng < 0) {
-        perror("failed to open /dev/urandom");
+        fprintf(stderr, "failed to open /dev/urandom");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -518,7 +528,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     ssize_t rand_len = read(rng, &scid, sizeof(scid));
     if (rand_len < 0) {
         close(rng);
-        perror("failed to create connection ID");
+        fprintf(stderr, "failed to create connection ID");
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -537,7 +547,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     conn_io->local_addr_len = sizeof(conn_io->local_addr);
     if (getsockname(sock, (struct sockaddr*)&conn_io->local_addr,
         &conn_io->local_addr_len) != 0) {
-        perror("failed to get local address of socket");
+        fprintf(stderr, "failed to get local address of socket - %s", strerror(errno));
         freeaddrinfo(peer);
         close_socket(sock);
         return -1;
@@ -563,7 +573,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*)scid, sizeof(scid));
 #endif
     
-    conn_io->two_byte_port_check = two_byte_port_check;
+//    conn_io->two_byte_port_check = two_byte_port_check;
     conn_io->sock = sock;
     conn_io->conn = conn;
     conn_io->host = host.c_str();
