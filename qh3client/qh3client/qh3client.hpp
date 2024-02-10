@@ -39,11 +39,11 @@
 
 namespace client {
 class bridge_h3client_connection;
-struct conn_io {
-    conn_io() {
+struct conn_io_qh3_client {
+    conn_io_qh3_client() {
         response = conn_io_req_res::create();
     }
-    ~conn_io() {
+    ~conn_io_qh3_client() {
         GX_DELETE(response);
     }
     ev_timer timer;
@@ -68,11 +68,11 @@ struct conn_io {
 
 class bridge_h3client_connection {
 public:
-    virtual void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) = 0;
+    virtual void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
     inline virtual const struct conn_io_req_res* get_getorpost_http_request() = 0;
-    virtual int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) = 0;
-    virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) = 0;
+    virtual int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
+    virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
 };
 
 class qh3client : public bridge_h3client_connection {
@@ -84,7 +84,7 @@ public:
     struct ev_loop* mainloop = nullptr;
 
     static void debug_log(const uint8_t* line, void* arg);
-    void flush_egress(struct ev_loop* loop, struct conn_io* conn_io) override final;
+    void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) override final;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
     }
@@ -98,8 +98,8 @@ public:
         void* argp);
     static void recv_cb(EV_P_ ev_io* w, int revents);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
-    int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) override final;
-    int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) override final;
+    int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) override final;
+    int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) override final;
     virtual void on_prepare_client_send();
     int send_request(const conn_io_req_res* data_getorpost_);
     virtual void on_post_send_cleanup();
@@ -107,7 +107,7 @@ public:
     const qstring host;
     const qstring port;
     const conn_io_req_res* http_request = nullptr;
-    struct conn_io* conn_io = nullptr;
+    struct conn_io_qh3_client* conn_io = nullptr;
     void* arg = nullptr;
 
 private:

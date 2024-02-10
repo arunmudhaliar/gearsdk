@@ -19,7 +19,7 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
     }
 }
 
-ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
+ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) {
     const char* const_logtag = logtag.c_str();
     const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
     SendInfo send_info;
@@ -130,7 +130,7 @@ uint8_t* qh3server::gen_cid(uint8_t* cid, size_t cid_len) {
     return cid;
 }
 
-struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
+struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     uint8_t* odcid, size_t odcid_len,
     struct sockaddr* local_addr,
     socklen_t local_addr_len,
@@ -138,7 +138,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     socklen_t peer_addr_len,
     struct sockaddr_storage* peer_original_client_addr) {
     const char* const_logtag = logtag.c_str();
-    struct conn_io* new_conn_io = DEBUG_NEW struct conn_io();
+    struct conn_io_qh3* new_conn_io = DEBUG_NEW struct conn_io_qh3();
     if (new_conn_io == NULL) {
         DEBUG_PRINT_ERROR(const_logtag, "failed to allocate connection IO");
         return NULL;
@@ -181,7 +181,7 @@ struct conn_io* qh3server::create_conn(uint8_t* scid, size_t scid_len,
     return new_conn_io;
 }
 
-void qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io* conn_io) {
+void qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
     const char* const_logtag = logtag.c_str();
     if (name.compare(":path") == 0) {
         DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "got HTTP header: %s=%s",
@@ -194,14 +194,14 @@ void qh3server::parse_header(const qstring& name, const qstring& value, struct c
     conn_io->http_request->add_or_get_header(name, value);
 }
 
-void qh3server::parse(struct conn_io* conn_io) {
+void qh3server::parse(struct conn_io_qh3* conn_io) {
     UNUSED(conn_io);
 }
 
 int qh3server::for_each_header(const uint8_t* name, size_t name_len,
     const uint8_t* value, size_t value_len,
     void* argp) {
-    struct conn_io* conn_io = (struct conn_io*)argp;
+    struct conn_io_qh3* conn_io = (struct conn_io_qh3*)argp;
     conn_io->bridge->parse_header(qstring(name, name_len), qstring(value, value_len), conn_io);
     return 0;
 }
@@ -210,7 +210,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     UNUSED(revents);
     qh3server* server = (qh3server*)w->data;
     struct connections* conns = server->conns;
-    struct conn_io* tmp, * conn_io = NULL;
+    struct conn_io_qh3* tmp, * conn_io = NULL;
     const char* const_logtag = server->logtag.c_str();
     const char* port_id_cstr = server->port_id.c_str();
     const bool via_router = server->relay_through_router_info && server->relay_through_router_info->serialised_buffer.length()>=ORIGINAL_CLIENT_ADDR_SZ;
@@ -635,7 +635,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
     }
 }
 
-void qh3server::send_in_chunks(struct conn_io* conn_io) {
+void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
     const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
     size_t chunk_size = SEND_CHUNK_SIZE;
     uint8_t* data = (uint8_t*)payload.buffer.c_str();
@@ -660,7 +660,7 @@ void qh3server::send_in_chunks(struct conn_io* conn_io) {
     }
 }
 
-void qh3server::destroy_connection(struct ev_loop* loop, struct conn_io* conn_io) {
+void qh3server::destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) {
     HASH_DELETE(hh, conns->h, conn_io);
     ev_timer_stop(loop, &conn_io->timer);
     quiche_conn_free(conn_io->conn);
@@ -669,7 +669,7 @@ void qh3server::destroy_connection(struct ev_loop* loop, struct conn_io* conn_io
 
 void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
     UNUSED(revents);
-    struct conn_io* conn_io = (struct conn_io*)w->data;
+    struct conn_io_qh3* conn_io = (struct conn_io_qh3*)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
@@ -827,7 +827,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             int dangling_connections = 0;
             int dangling_with_response = 0;
             int flushed_on_exit = 0;
-            struct conn_io* tmp, * conn_io = NULL;
+            struct conn_io_qh3* tmp, * conn_io = NULL;
             HASH_ITER(hh, conns->h, conn_io, tmp) {
                 ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
                 if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {    // DROP_CONNECTION_AFTER seconds after connection creation time.
@@ -877,7 +877,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     ev_loop(mainloop, 0);
 
     // destroy connections
-    struct conn_io* tmp, * conn_io = NULL;
+    struct conn_io_qh3* tmp, * conn_io = NULL;
     int pending_connections = 0;
     HASH_ITER(hh, conns->h, conn_io, tmp) {
         ssize_t sent_bytes = flush_egress(mainloop, conn_io);

@@ -44,7 +44,7 @@ void room::onroom_end() {
 void room::pass_message_to_room(player* p, const qstring& msg) {
     onroom_message(p, msg);
 }
-ssize_t room::try_add_connection(qpeerconnection* qconnection) {
+ssize_t room::try_add_connection(conn_io* qconnection) {
     if (qconnection == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "try_add_connection: qconnection == null !!!");
         return -1;
@@ -73,12 +73,12 @@ ssize_t room::try_add_connection(qpeerconnection* qconnection) {
     return playermap.size();
 }
 
-player* room::get_player(qpeerconnection* qconnection) {
+player* room::get_player(conn_io* qconnection) {
     if (qconnection == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection == null !!!");
         return nullptr;
     }
-    std::map<qpeerconnection*, player*>::iterator it = playermap.find(qconnection);
+    std::map<conn_io*, player*>::iterator it = playermap.find(qconnection);
     if (it == playermap.end()) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection not in the playermap !!! %s", qconnection->cid);
         return nullptr;
@@ -86,12 +86,12 @@ player* room::get_player(qpeerconnection* qconnection) {
     return (*it).second;
 }
 
-ssize_t room::remove_connection(qpeerconnection* qconnection) {
+ssize_t room::remove_connection(conn_io* qconnection) {
     if (qconnection == nullptr) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection == null !!!");
         return -1;
     }
-    std::map<qpeerconnection*, player*>::iterator it = playermap.find(qconnection);
+    std::map<conn_io*, player*>::iterator it = playermap.find(qconnection);
     if (it == playermap.end()) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection not in the playermap !!! %s", qconnection->cid);
         return -1;
@@ -113,7 +113,7 @@ ssize_t room::remove_connection(qpeerconnection* qconnection) {
     return playermap.size();
 }
 
-void room::kick_all_except(qpeerconnection* qconnection) {
+void room::kick_all_except(conn_io* qconnection) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick all");
     for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
         player* player_ = it->second;

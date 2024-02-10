@@ -16,7 +16,7 @@ void qh3client::debug_log(const uint8_t* line, void* argp) {
     DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, (char*)line);
 }
 
-void qh3client::flush_egress(struct ev_loop* loop, struct conn_io* conn_io) {
+void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) {
     SendInfo send_info;
 
     while (1) {
@@ -72,7 +72,7 @@ int qh3client::for_each_header(const uint8_t* name, size_t name_len,
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP header: %.*s=%.*s",
         (int)name_len, name, (int)value_len, value);
 
-    struct conn_io* conn_io = (struct conn_io*)argp;
+    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)argp;
     if (conn_io->response == nullptr) {
         return 0;
     }
@@ -80,7 +80,7 @@ int qh3client::for_each_header(const uint8_t* name, size_t name_len,
     return 0;
 }
 
-int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) {
+int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) {
     const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
     int header_size = 5;
     Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
@@ -141,7 +141,7 @@ int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_,
     return stream_id;
 }
 
-int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io* conn_io) {
+int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) {
     const qstring& content_length_data = qstring::format_string("%d", (int)data_getorpost_->data.buffer.length());
     const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
@@ -217,7 +217,7 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
 
 void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
     UNUSED(revents);
-    struct conn_io* conn_io = (struct conn_io*)w->data;
+    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)w->data;
 
     while (1) {
         struct sockaddr_storage peer_addr;
@@ -407,7 +407,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
     UNUSED(revents);
-    struct conn_io* conn_io = (struct conn_io*)w->data;
+    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)w->data;
     quiche_conn_on_timeout(conn_io->conn);
 
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
@@ -536,7 +536,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
     close(rng);
 
     GX_DELETE(conn_io);
-    conn_io = DEBUG_NEW struct conn_io();
+    conn_io = DEBUG_NEW struct conn_io_qh3_client();
     if (conn_io == NULL) {
         fprintf(stderr, "failed to allocate connection IO\n");
         freeaddrinfo(peer);

@@ -8,6 +8,8 @@
 #include "http3_command_server.hpp"
 #include "../../common/gxcrc32.h"
 
+using namespace client;
+
 http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
     hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
 }
@@ -39,11 +41,11 @@ bool http3_command_server::is_log_quiche() {
     return false;
 }
 
-void http3_command_server::parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) {
+void http3_command_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3 *conn_io) {
     qh3server::parse_header(name, value, conn_io);
 }
 
-void http3_command_server::parse(struct conn_io *conn_io) {
+void http3_command_server::parse(struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
@@ -69,7 +71,7 @@ void http3_command_server::parse(struct conn_io *conn_io) {
     }
 }
 
-void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -84,7 +86,7 @@ void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header
     ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
 }
     
-void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -100,7 +102,7 @@ void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_hea
     conn_io->http_response->set_payload(qstring::format_string("{ %d-shutdown-all }", getpid()));
 }
 
-void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();

@@ -78,11 +78,11 @@ bool http3_sample_server::is_log_quiche() {
     return false;
 }
 
-void http3_sample_server::parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) {
+void http3_sample_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3 *conn_io) {
     qh3server::parse_header(name, value, conn_io);
 }
 
-void http3_sample_server::parse(struct conn_io *conn_io) {
+void http3_sample_server::parse(struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
@@ -110,7 +110,7 @@ void http3_sample_server::parse(struct conn_io *conn_io) {
     }
 }
 
-void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -125,7 +125,7 @@ void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_head
     ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
 }
 
-void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -145,7 +145,7 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, str
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
-void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
@@ -280,7 +280,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str(), port_id_cstr);
 }
 
-void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io) {
+void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();

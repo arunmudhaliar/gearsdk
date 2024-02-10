@@ -17,12 +17,12 @@
 #define __LOGTAG__ "room"
 
 struct player {
-    player(qpeerconnection* qcon) : qconnection(qcon) {
+    player(conn_io* qcon) : qconnection(qcon) {
     }
     ~player() {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "player destructor");
     }
-    qpeerconnection* qconnection;
+    conn_io* qconnection;
 };
 
 class room;
@@ -72,20 +72,20 @@ public:
     room(roomserver_interface*, const roomconfig& room_config);
     virtual ~room();
     
-    ssize_t try_add_connection(qpeerconnection* qconnection);
-    ssize_t remove_connection(qpeerconnection* qconnection);
-    player* get_player(qpeerconnection* qconnection);
+    ssize_t try_add_connection(conn_io* qconnection);
+    ssize_t remove_connection(conn_io* qconnection);
+    player* get_player(conn_io* qconnection);
     inline bool is_min_capacity_reached() { return playermap.size()>=room_config.min_players; }
     inline bool is_max_capacity_reached() { return playermap.size()>=room_config.max_players; }
     inline ssize_t get_playermap_count() { return playermap.size(); }
     states get_state() { return state; }
     const qstring& get_state_string();
     bool is_state(states state) { return this->state==state; }
-    void kick_all_except(qpeerconnection* qconnection);
+    void kick_all_except(conn_io* qconnection);
     void print_info();
     ev_tstamp since_creation();
     
-    std::map<qpeerconnection*, player*> playermap;
+    std::map<conn_io*, player*> playermap;
     const int room_id = 0;
     const ev_tstamp creation_time;
     

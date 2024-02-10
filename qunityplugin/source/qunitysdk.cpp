@@ -8,6 +8,7 @@
 #include "qunitysdk.hpp"
 
 using namespace qunitysdk;
+using namespace client;
 
 extern "C" {
 int send_async_request(const char* host, const char* port,

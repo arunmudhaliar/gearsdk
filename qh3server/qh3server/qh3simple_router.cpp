@@ -7,6 +7,7 @@
 
 #include "qh3simple_router.hpp"
 
+using namespace client;
 qh3simple_router::qh3simple_router(const server_config_in& config) : config(config){
 }
 qh3simple_router::~qh3simple_router() {

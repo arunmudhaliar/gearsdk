@@ -9,6 +9,8 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qplugin-native-qh3client"
 
+using namespace client;
+
 extern "C" {
 JNIEXPORT jboolean JNICALL
 Java_com_gearsdk_qunityplugin_qh3client_1android_send_1async_1request(JNIEnv *env, jobject thiz,

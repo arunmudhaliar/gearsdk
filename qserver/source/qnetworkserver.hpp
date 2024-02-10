@@ -35,30 +35,30 @@ extern "C"
         sizeof(struct sockaddr_storage) + \
         MAX_CID_LEN
 
-class qpeerconnection;
+class conn_io;
 struct connections {
     int sock;
     struct sockaddr* local_addr = nullptr;
     socklen_t local_addr_len;
-    qpeerconnection* h = nullptr;
+    conn_io* h = nullptr;
     uint8_t buf[65535];
     uint8_t out[MAX_DATAGRAM_SIZE];
 };
 
 class bridge_qpeerconnection {
 public:
-    virtual void flush_egress(struct ev_loop* loop, qpeerconnection* qconnection) = 0;
-    virtual void destroy_connection(struct ev_loop* loop, qpeerconnection* qconnection) = 0;
-    virtual void onconnection_connect(qpeerconnection* qconnection) = 0;
-    virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) = 0;
-    virtual void onconnection_destroy(qpeerconnection* qconnection) = 0;
+    virtual void flush_egress(struct ev_loop* loop, conn_io* qconnection) = 0;
+    virtual void destroy_connection(struct ev_loop* loop, conn_io* qconnection) = 0;
+    virtual void onconnection_connect(conn_io* qconnection) = 0;
+    virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) = 0;
+    virtual void onconnection_destroy(conn_io* qconnection) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
 };
 
-class qpeerconnection {
+class conn_io {
 public:
-    qpeerconnection(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_len, int sock);
-    ~qpeerconnection();
+    conn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_len, int sock);
+    ~conn_io();
 
     void sendmessage(const char* buf, size_t buflen, bool flush);
     void sendmessage(const qstring& buffer, bool flush);
@@ -100,11 +100,11 @@ public:
 protected:
     virtual void on_network_server_begin() = 0;
     virtual void on_network_server_end() = 0;
-    void flush_egress(struct ev_loop* loop, qpeerconnection* qconnection) override final;
-    void destroy_connection(struct ev_loop* loop, qpeerconnection* qconnection) override final;
-    void onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) override;
-    void onconnection_connect(qpeerconnection* qconnection) override;
-    void onconnection_destroy(qpeerconnection* qconnection) override;
+    void flush_egress(struct ev_loop* loop, conn_io* qconnection) override final;
+    void destroy_connection(struct ev_loop* loop, conn_io* qconnection) override final;
+    void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override;
+    void onconnection_connect(conn_io* qconnection) override;
+    void onconnection_destroy(conn_io* qconnection) override;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
     }
@@ -120,7 +120,7 @@ private:
         struct sockaddr_storage* addr, socklen_t addr_len,
         uint8_t* odcid, size_t* odcid_len);
     uint8_t* gen_cid(uint8_t* cid, size_t cid_len);
-    qpeerconnection* create_conn(uint8_t* scid, size_t scid_len,
+    conn_io* create_conn(uint8_t* scid, size_t scid_len,
         uint8_t* odcid, size_t odcid_len,
         struct sockaddr* local_addr,
         socklen_t local_addr_len,

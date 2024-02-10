@@ -20,8 +20,8 @@
 
 class http3_command_server : public qh3server {
 protected:
-    void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
-    void parse(struct conn_io *conn_io) override;
+    void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3 *conn_io) override;
+    void parse(struct conn_io_qh3 *conn_io) override;
     inline bool is_log_quiche() override;
     
     bool on_server_pre_init() override;
@@ -35,9 +35,9 @@ public:
     static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
     
 private:
-    void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io);
-    void parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io *conn_io);
-    void parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    void parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     
     // commands
     void send_shutdown_to_all();
