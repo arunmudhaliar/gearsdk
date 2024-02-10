@@ -501,10 +501,12 @@ qnetworkclient::qnetworkclient() {
     DEBUG_ASSERT(__LOGTAG__, (close_mutex.init("close") == 0), "qnetworkclient Constructor - CHECK !!!");
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.init("runConfig") == 0), "qnetworkclient Constructor - CHECK !!!");
 #endif
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qnetworkclient created !!!");
 }
 
 qnetworkclient::~qnetworkclient() {
     release_connection(mainloop, qclient_connection);
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qnetworkclient destroyed !!!");
 }
 
 void* qnetworkclient::run_internal(void* data) {

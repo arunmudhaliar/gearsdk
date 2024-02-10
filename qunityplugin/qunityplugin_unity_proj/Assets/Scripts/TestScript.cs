@@ -105,4 +105,24 @@ public class TestScript : MonoBehaviour
         }
         scrollRect.content.DetachChildren();
     }
+
+    // qsocket
+    qunitysdk.qsocket qsocket1 = new qunitysdk.qsocket();
+    qunitysdk.qsocket qsocket2 = new qunitysdk.qsocket();
+
+    public void On_C1_QSocketConnect() {
+        qsocket1.connect("192.168.0.230", "4000", IntPtr.Zero);
+    }
+
+    public void On_C1_QSocketSend() {
+        qsocket1.sendMessage("Hello world !!!", true);
+    }
+
+    public void On_C2_QSocketConnect() {
+        qsocket2.connect("192.168.0.230", "4000", IntPtr.Zero);
+    }
+
+    public void On_C2_QSocketSend() {
+        qsocket2.sendMessage("Hello world !!!", true);
+    }
 }
