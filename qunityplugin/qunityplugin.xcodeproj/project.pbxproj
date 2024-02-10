@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55A72F5C2B779A1000064250 /* qnetworkclient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F5B2B779A1000064250 /* qnetworkclient.cpp */; };
 		55A9CD332B68266C006CAD14 /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD252B682140006CAD14 /* debug_new.cpp */; };
 		55A9CD342B68266F006CAD14 /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD232B682114006CAD14 /* essentials.cpp */; };
 		55A9CD352B682672006CAD14 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD212B6820EF006CAD14 /* sdktypes.cpp */; };
@@ -20,6 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		55A72F5B2B779A1000064250 /* qnetworkclient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = qnetworkclient.cpp; path = ../qclient/source/qnetworkclient.cpp; sourceTree = "<group>"; };
 		55A847B22B6178E800001308 /* qunitysdk.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qunitysdk.cpp; sourceTree = "<group>"; };
 		55A847B32B6178E800001308 /* qunitysdk.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qunitysdk.hpp; sourceTree = "<group>"; };
 		55A847B72B617A6600001308 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 		55A847A12B61787600001308 = {
 			isa = PBXGroup;
 			children = (
+				55A72F5B2B779A1000064250 /* qnetworkclient.cpp */,
 				55A9CD252B682140006CAD14 /* debug_new.cpp */,
 				55A9CD232B682114006CAD14 /* essentials.cpp */,
 				55A9CD212B6820EF006CAD14 /* sdktypes.cpp */,
@@ -160,6 +163,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55A72F5C2B779A1000064250 /* qnetworkclient.cpp in Sources */,
 				55A9CD352B682672006CAD14 /* sdktypes.cpp in Sources */,
 				55A9CD362B682675006CAD14 /* qh3client.cpp in Sources */,
 				55A9CD372B682678006CAD14 /* qh3client_helper.cpp in Sources */,
@@ -289,9 +293,15 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"USE_PTHREAD=1",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -307,9 +317,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = "USE_PTHREAD=1";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../common/uthash\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";

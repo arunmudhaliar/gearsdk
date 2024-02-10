@@ -108,10 +108,12 @@ public:
     virtual int close() = 0;
     virtual CON_STATE getstate() = 0;
 
+#if USE_PTHREAD
     virtual qmutex* get_run_mutex() = 0;
     virtual qmutex* het_close_mutex() = 0;
     virtual qmutex* get_send_mutex() = 0;
     virtual qmutex* get_sendloop_mutex() = 0;
+#endif
 };
 
 class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
@@ -163,6 +165,7 @@ protected:
     void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override final;
     void event_close(conn_io_client* qconnection) override final;
 
+#if USE_PTHREAD
     qmutex* get_run_mutex() override final {
         return &run_mutex;
     }
@@ -176,6 +179,7 @@ protected:
     qmutex* get_send_mutex() override final {
         return &send_mutex;
     }
+#endif
     conn_io_client* qclient_connection = nullptr;
 
 public:
@@ -187,7 +191,9 @@ public:
     bool is_runfinished();
     int run(qstring host, qstring port);
     void forcerelease();
+#if USE_PTHREAD
     inline qmutex& get_runconfigmutex() { return runconfig_mutex; }
+#endif
 };
 };
 #endif /* qnetworkclient_hpp */

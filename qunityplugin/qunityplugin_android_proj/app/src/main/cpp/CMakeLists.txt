@@ -14,6 +14,7 @@ project("qunityplugin")
 # Add the directory to the include path
 include_directories("../../../../../../networkcommon/source/ev"
         "../../../../../../networkcommon/source/quiche"
+        "../../../../../../common/uthash"
         )
 #message("debug msg"${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -41,6 +42,9 @@ if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
 
+# Add a definition globally
+add_definitions(-DUSE_PTHREAD=1 -DLOG_LEVEL=2)
+
 # In order to load a library into your app from Java/Kotlin, you must call
 # System.loadLibrary() and pass the name of the library defined here;
 # for GameActivity/NativeActivity derived applications, the same library name must be
@@ -52,6 +56,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         ../../../../../../qunityplugin/source/qunitysdk.cpp
         ../../../../../../qh3client/qh3client/qh3client_helper.cpp
         ../../../../../../qh3client/qh3client/qh3client.cpp
+        ../../../../../../qclient/source/qnetworkclient.cpp
         ../../../../../../qh3client/qh3client/qh3client-android.cpp
         ../../../../../../networkcommon/source/essentials.cpp
         ../../../../../../common/sdktypes.cpp

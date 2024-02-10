@@ -260,6 +260,7 @@ int qnetworkclient::release_connection(struct ev_loop* loop, conn_io_client* qco
 }
 
 int qnetworkclient::close() {
+#if USE_PTHREAD
     // lock
     DEBUG_ASSERT(__LOGTAG__, (close_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     close_mutex.conditionalWait(__FUNCTION__);
@@ -267,7 +268,8 @@ int qnetworkclient::close() {
     // block close
     send_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
-
+#endif
+    
     if (state == CON_STATE::STATE_CONNECT) {
         if (qclient_connection) {
             int conActive = qclient_connection->ConnectionActive();
@@ -277,13 +279,15 @@ int qnetworkclient::close() {
             }
         }
     }
+#if USE_PTHREAD
     sendloop_mutex.unBlock(__FUNCTION__);
     send_mutex.unBlock(__FUNCTION__);
-
+#endif
     return 0;
 }
 
 int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
+#if USE_PTHREAD
     // lock
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     send_mutex.conditionalWait(__FUNCTION__);
@@ -291,12 +295,16 @@ int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
     // block
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
+#endif
+    
     if (qclient_connection) {
         qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata((uint8_t*)buffer.c_str(), buffer.length()));
     }
+    
+#if USE_PTHREAD
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
-
+#endif
     return 0;
 }
 
@@ -395,6 +403,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
     conn_io_client* qconnection_ = (conn_io_client*)w->data;
+#if USE_PTHREAD
     // lock
     DEBUG_ASSERT(__LOGTAG__, (qconnection_->bridge->get_sendloop_mutex()->tryLock(__FUNCTION__) == 0), __FUNCTION__);
     qconnection_->bridge->get_sendloop_mutex()->conditionalWait(__FUNCTION__);
@@ -402,7 +411,8 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
     // block
     qconnection_->bridge->het_close_mutex()->block(__FUNCTION__);
     qconnection_->bridge->get_send_mutex()->block(__FUNCTION__);
-
+#endif
+    
     if (qconnection_->bridge->getstate() == CON_STATE::STATE_CONNECT) {
         std::vector<qdata*> successfullySent;
         for (auto it = qconnection_->sendBuffer.cbegin(); it != qconnection_->sendBuffer.cend(); it++) {
@@ -427,8 +437,10 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
         }
     }
 
+#if USE_PTHREAD
     qconnection_->bridge->get_send_mutex()->unBlock(__FUNCTION__);
     qconnection_->bridge->het_close_mutex()->unBlock(__FUNCTION__);
+#endif
 }
 
 void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
@@ -541,9 +553,11 @@ void* qnetworkclient::run_internal(void* data) {
         quiche_config_log_keys(config);
     }
 
+#if USE_PTHREAD
     thiz->sendloop_mutex.block(__FUNCTION__);
     thiz->close_mutex.block(__FUNCTION__);
     thiz->send_mutex.block(__FUNCTION__);
+#endif
 
     thiz->qclient_connection = DEBUG_NEW conn_io_client(thiz, config, runConfig->id);
     if (thiz->qclient_connection == NULL) {
@@ -576,44 +590,53 @@ void* qnetworkclient::run_internal(void* data) {
 
     thiz->flushegress(thiz->mainloop, thiz->qclient_connection);
 
+#if USE_PTHREAD
     thiz->send_mutex.unBlock(__FUNCTION__);
     thiz->close_mutex.unBlock(__FUNCTION__);
     thiz->sendloop_mutex.unBlock(__FUNCTION__);
-
+#endif
     ev_loop(thiz->mainloop, 0);
 
     thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
 
     quiche_config_free(config);
 
+#if USE_PTHREAD
     DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfigmutex().tryLock(__FUNCTION__) == 0), __FUNCTION__);
     runConfig->pthread_returnValue = 0;
     runConfig->finished = true;
     DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfigmutex().unLock() == 0), __FUNCTION__);
-#if USE_PTHREAD
     DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
     pthread_exit(0);
 #else
+    runConfig->pthread_returnValue = 0;
+    runConfig->finished = true;
     return nullptr;
 #endif
 }
 
 bool qnetworkclient::is_runfinished() {
+#if USE_PTHREAD
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     bool retVal = runConfig.finished;
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
+#else
+    bool retVal = runConfig.finished;
+#endif
     return retVal;
 }
 
 int qnetworkclient::run(qstring host, qstring port) {
+#if USE_PTHREAD
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
+#endif
     runConfig.host = host;
     runConfig.port = port;
     runConfig.thiz = this;
     runConfig.finished = false;
     runConfig.id = qnetworkclient::connectionID++;
-    DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
 #if USE_PTHREAD
+    DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
     if (pthread_create(&run_thread_id, nullptr, qnetworkclient::run_internal, (void*)&runConfig) < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
         return -1;

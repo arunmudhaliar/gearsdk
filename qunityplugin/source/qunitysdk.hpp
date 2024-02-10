@@ -10,6 +10,7 @@
 
 #include "../../qh3client/qh3client/qh3client.hpp"
 #include "../../qh3client/qh3client/qh3client_helper.hpp"
+#include "../../qclient/source/qnetworkclient.hpp"
 
 namespace qunitysdk {
 extern "C" {
