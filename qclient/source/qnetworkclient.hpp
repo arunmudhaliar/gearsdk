@@ -30,8 +30,8 @@ extern "C"
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
 
-#define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define Q_LOCAL_CONN_ID_LEN 16
+#define Q_MAX_DATAGRAM_SIZE 1350
 
 namespace client {
 struct qdata {
@@ -76,7 +76,7 @@ public:
     void Release();
 
     uint8_t recv_buf[65535];
-    uint8_t egress_out[MAX_DATAGRAM_SIZE];
+    uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 
     std::vector<qdata*> sendBuffer;
 };

@@ -82,7 +82,7 @@ int conn_io_client::Connect(qstring host, qstring port) {
         return -1;
     }
 
-    uint8_t scid[LOCAL_CONN_ID_LEN];
+    uint8_t scid[Q_LOCAL_CONN_ID_LEN];
     int rng = open("/dev/urandom", O_RDONLY);
     if (rng < 0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open /dev/urandom");
@@ -527,8 +527,8 @@ void* qnetworkclient::run_internal(void* data) {
         (uint8_t*)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
     quiche_config_set_max_idle_timeout(config, 30000);
-    quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_recv_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_send_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(config, 10000000);
     quiche_config_set_initial_max_stream_data_bidi_local(config, 1000000);
     quiche_config_set_initial_max_stream_data_uni(config, 1000000);

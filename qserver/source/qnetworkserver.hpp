@@ -28,8 +28,8 @@ extern "C"
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkserver"
 
-#define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define Q_LOCAL_CONN_ID_LEN 16
+#define Q_MAX_DATAGRAM_SIZE 1350
 #define MAX_TOKEN_LEN                     \
     sizeof("quiche") - 1 +                \
         sizeof(struct sockaddr_storage) + \
@@ -42,7 +42,7 @@ struct connections {
     socklen_t local_addr_len;
     conn_io* h = nullptr;
     uint8_t buf[65535];
-    uint8_t out[MAX_DATAGRAM_SIZE];
+    uint8_t out[Q_MAX_DATAGRAM_SIZE];
 };
 
 class bridge_qpeerconnection {
@@ -65,7 +65,7 @@ public:
     void close();
 
     bridge_qpeerconnection* bridge = nullptr;
-    uint8_t cid[LOCAL_CONN_ID_LEN];
+    uint8_t cid[Q_LOCAL_CONN_ID_LEN];
     unsigned cid_hash_val = 0;
     ev_timer timer;
     int sock;
@@ -75,7 +75,7 @@ public:
     UT_hash_handle hh;
     int itrmsg = 0;
 
-    uint8_t egress_out[MAX_DATAGRAM_SIZE];
+    uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 };
 
 class qnetworkserver : protected bridge_qpeerconnection {

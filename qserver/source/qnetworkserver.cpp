@@ -25,12 +25,12 @@
 conn_io::conn_io(bridge_qpeerconnection *bridge, uint8_t *scid, size_t scid_len, int sock) : bridge(bridge),
                                                                                                              sock(sock)
 {
-    if (scid_len != LOCAL_CONN_ID_LEN)
+    if (scid_len != Q_LOCAL_CONN_ID_LEN)
     {
         DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
     }
-    memcpy(cid, scid, LOCAL_CONN_ID_LEN);
-    HASH_VALUE(cid, LOCAL_CONN_ID_LEN, cid_hash_val);
+    memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
+    HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 }
 
 conn_io::~conn_io()
@@ -187,7 +187,7 @@ conn_io *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
         return nullptr;
     }
 
-    Connection *conn = quiche_accept(qconnection->cid, LOCAL_CONN_ID_LEN,
+    Connection *conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN,
                                      odcid, odcid_len,
                                      local_addr,
                                      local_addr_len,
@@ -210,7 +210,7 @@ conn_io *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
     ev_init(&qconnection->timer, timeout_cb);
     qconnection->timer.data = qconnection;
 
-    HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, qconnection);
+    HASH_ADD(hh, conns->h, cid, Q_LOCAL_CONN_ID_LEN, qconnection);
 
     qconnection->bridge->onconnection_connect(qconnection);
 
@@ -370,7 +370,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         uint8_t token[MAX_TOKEN_LEN];
         size_t token_len = sizeof(token);
 
-        int rc = quiche_header_info(conns->buf, read, LOCAL_CONN_ID_LEN, &version,
+        int rc = quiche_header_info(conns->buf, read, Q_LOCAL_CONN_ID_LEN, &version,
                                     &type, scid, &scid_len, dcid, &dcid_len,
                                     token, &token_len);
         if (rc < 0)
@@ -418,16 +418,16 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                 mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
 
-                uint8_t new_cid[LOCAL_CONN_ID_LEN];
+                uint8_t new_cid[Q_LOCAL_CONN_ID_LEN];
 
-                if (gen_cid(new_cid, LOCAL_CONN_ID_LEN) == nullptr)
+                if (gen_cid(new_cid, Q_LOCAL_CONN_ID_LEN) == nullptr)
                 {
                     continue;
                 }
 
                 ssize_t written = quiche_retry(scid, scid_len,
                                                dcid, dcid_len,
-                                               new_cid, LOCAL_CONN_ID_LEN,
+                                               new_cid, Q_LOCAL_CONN_ID_LEN,
                                                token, token_len,
                                                version, conns->out, sizeof(conns->out));
 
@@ -655,8 +655,8 @@ void *qnetworkserver::run_internal(void *data)
                                          (uint8_t *)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
     quiche_config_set_max_idle_timeout(thiz->config, 30000);
-    quiche_config_set_max_recv_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_max_send_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_recv_udp_payload_size(thiz->config, Q_MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_send_udp_payload_size(thiz->config, Q_MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(thiz->config, 10000000);
     quiche_config_set_initial_max_stream_data_bidi_local(thiz->config, 1000000);
     quiche_config_set_initial_max_stream_data_bidi_remote(thiz->config, 1000000);
