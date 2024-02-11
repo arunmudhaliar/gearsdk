@@ -30,21 +30,63 @@ bool qsocket::connect(const char* host, const char* port, void* arg,
 }
 
 void qsocket::onconnect(conn_io_client* qconnection) {
-    cb_connect();
+    if (cb_connect == nullptr) {
+        return;
+    }
+    cb_connect(guid_crc);
 }
 void qsocket::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "native onmessage %.*s", recv_len, buf);
-    cb_message(recv_len, buf);
+    if (cb_message == nullptr) {
+        return;
+    }
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "native onmessage %.*s : sz(%d)", recv_len, buf, recv_len);
+    cb_message(guid_crc, recv_len, buf);
 }
 void qsocket::onreleaseconnection(conn_io_client* qconnection) {
-    cb_release_connection();
-    cb_destroy_qsocket(this);
+    if (cb_release_connection) {
+        cb_release_connection(guid_crc);
+    }
+    if (cb_destroy_qsocket) {
+        cb_destroy_qsocket(this);
+    }
 }
 void qsocket::onclose(conn_io_client* qconnection) {
-    cb_close();
+    if (cb_close == nullptr) {
+        return;
+    }
+    cb_close(guid_crc);
 }
 
+void qsocket::clear_callbacks() {
+    cb_connect = nullptr;
+    cb_message = nullptr;
+    cb_release_connection = nullptr;
+    cb_close = nullptr;
+}
+
+//void qsocket::global_onconnect(unsigned long guid_crc, conn_io_client* qconnection) {
+//
+//}
+//void qsocket::global_onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+//
+//}
+//void qsocket::global_onreleaseconnection(conn_io_client* qconnection) {
+//
+//}
+//void qsocket::global_onclose(conn_io_client* qconnection) {
+//
+//}
+
 extern "C" {
+void pre_init_sdk() {
+    // To prevent exceptions on editor. bcz when we stop a game in editor the managed instances will get destroyed, but not the native objects.
+    for (auto q : qsockets) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qsocket - clearing all callbacks for %x state:%d !!!", q.first, q.second->getstate());
+        q.second->clear_callbacks();
+    }
+    qsockets.clear();
+}
+
 int send_async_request(const char* host, const char* port,
                                      const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "host %s, port %s, path %s, payload %s", host, port, path, payload);
@@ -57,10 +99,12 @@ int send_async_request(const char* host, const char* port,
 }
 
 void destroy_qsocket(qsocket* qs) {
-    std::map<unsigned long, qsocket*>::iterator it_qsocket;
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qsocket destroy_qsocket called.");
+    std::map<unsigned long, qsocket*>::iterator it_qsocket = qsockets.end();
     for(std::map<unsigned long, qsocket*>::iterator it = qsockets.begin(); it!=qsockets.end(); it++) {
         if (it->second == qs) {
             it_qsocket = it;
+            break;
         }
     }
     
@@ -85,13 +129,20 @@ int qsocket_sendMessage(const char* guid, int guid_len, const char* buffer, unsi
         DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qsocket_sendMessage failed - guid not exist %.*s", guid_len, guid);
         return -1;
     }
-    return it->second->sendMessage("qstring(buffer, size)", flush);   // TODO (amudaliar) - have to optimise. qstring will do a copy
+    return it->second->sendMessage((uint8_t*)buffer,  size, flush);
+}
+
+unsigned long get_crc32(const char* guid, int guid_len) {
+    if (guid == nullptr) {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "get_crc32 failed - guid is null");
+        return false;
+    }
+    return essentials::get_crc((const uint8_t*)guid, guid_len);
 }
 
 bool qsocket_connect(const char* guid, int guid_len, const char* host, const char* port, void* arg,
                      qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
                      qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close) {
-    DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qsocket_connect guid - %s", guid);
     if (guid == nullptr) {
         DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qsocket_connect failed - guid is null");
         return false;
@@ -101,10 +152,13 @@ bool qsocket_connect(const char* guid, int guid_len, const char* host, const cha
         DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qsocket_connect failed - guid already exist %.*s", guid_len, guid);
         return false;
     }
-    qsocket* newsocket = DEBUG_NEW qsocket(destroy_qsocket);
+    qsocket* newsocket = DEBUG_NEW qsocket(qunitysdk::destroy_qsocket);
+    newsocket->set_guid_crc(crc);
     if (!newsocket->connect(host, port, arg, cb_connect, cb_message, cb_release_connection, cb_close)) {
         GX_DELETE(newsocket);
     }
+    
+    DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qsocket_connect guid - %s, guid_crc %x", guid, crc);
     qsockets[crc] = newsocket;
     return true;
 }
@@ -142,6 +196,12 @@ void destroy_finished_qsockets() {
                 GX_DELETE(it_qsocket->second);
             }
         }
+    }
+}
+
+void qsocket_print_info() {
+    for (auto q : qsockets) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "qsocket - guid_crc %x state:%d !!!", q.first, q.second->getstate());
     }
 }
 

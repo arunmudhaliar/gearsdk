@@ -35,7 +35,7 @@ extern "C"
 
 namespace client {
 struct qdata {
-    qdata(uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
+    qdata(const uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
         this->data = new uint8_t[sz];
         memcpy(this->data, _data, sz);
     }
@@ -105,6 +105,7 @@ public:
     virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) = 0;
     virtual void event_close(conn_io_client* qconnection) = 0;
     virtual int sendMessage(const qstring& buffer, bool flush) = 0;
+    virtual int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) = 0;
     virtual int close() = 0;
     virtual CON_STATE getstate() = 0;
 
@@ -146,9 +147,6 @@ private:
     static void* run_internal(void* data);
 
     void setstate(CON_STATE state);
-    inline CON_STATE getstate() override final { return state; }
-    inline bool isopen() { return state == STATE_OPEN; }
-    inline bool isclosed() { return state == STATE_CLOSE; }
     CON_STATE state = STATE_OPEN;
 
 protected:
@@ -186,7 +184,12 @@ public:
     qnetworkclient();
     ~qnetworkclient();
 
+    inline CON_STATE getstate() override final { return state; }
+    inline bool isopen() { return state == STATE_OPEN; }
+    inline bool isclosed() { return state == STATE_CLOSE; }
+    
     int sendMessage(const qstring& buffer, bool flush) override final;
+    int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) override final;
     int close() override final;
     bool is_runfinished();
     int run(qstring host, qstring port);

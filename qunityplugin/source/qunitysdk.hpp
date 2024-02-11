@@ -25,14 +25,17 @@ public:
     qsocket(type_qsocket_destroy_qsocket cb);
     virtual ~qsocket();
     
-    typedef void (*type_qsocket_onconnect)();
-    typedef void (*type_qsocket_onmessage)(unsigned long recv_len, uint8_t* buf);
-    typedef void (*type_qsocket_onreleaseconnection)();
-    typedef void (*type_qsocket_onclose)();
+    typedef void (*type_qsocket_onconnect)(unsigned long guid_crc);
+    typedef void (*type_qsocket_onmessage)(unsigned long guid_crc, unsigned long recv_len, uint8_t* buf);
+    typedef void (*type_qsocket_onreleaseconnection)(unsigned long guid_crc);
+    typedef void (*type_qsocket_onclose)(unsigned long guid_crc);
     bool connect(const char* host, const char* port, void* arg,
                  type_qsocket_onconnect cb_connect, type_qsocket_onmessage cb_message,
                  type_qsocket_onreleaseconnection cb_release_connection, type_qsocket_onclose cb_close);
-    
+    void clear_callbacks();
+    void set_guid_crc(unsigned long guid_crc)   {
+        this->guid_crc = guid_crc;
+    }
 protected:
     void onconnect(conn_io_client* qconnection) override;
     void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override;
@@ -45,24 +48,28 @@ private:
     type_qsocket_onreleaseconnection cb_release_connection = nullptr;
     type_qsocket_onclose cb_close = nullptr;
     type_qsocket_destroy_qsocket cb_destroy_qsocket = nullptr;
+    unsigned long guid_crc = 0;
 };
 
 std::map<unsigned long, qsocket*> qsockets;
 
 extern "C" {
+    static void pre_init_sdk();
+
     typedef void (*type_qh3client_plugin_helper_cb)(const char* payload, void* arg, int result);
     static int send_async_request(const char* host, const char* port,
                                   const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback);
-
-    bool qsocket_connect(const char* guid, int guid_len, const char* host, const char* port, void* arg,
+    void destroy_qsocket(qsocket* qs);
+    static bool qsocket_connect(const char* guid, int guid_len, const char* host, const char* port, void* arg,
                          qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
                          qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close);
-    bool qsocket_is_run_finished(const char* guid, int guid_len);
-    int qsocket_sendMessage(const char* guid, int guid_len, const char* buffer, unsigned long size, bool flush);
+    static bool qsocket_is_run_finished(const char* guid, int guid_len);
+    static int qsocket_sendMessage(const char* guid, int guid_len, const char* buffer, unsigned long size, bool flush);
 
-    void destroy_finished_qsockets();
-    void destroy_qsocket(qsocket* qs);
+    static void destroy_finished_qsockets();
 
+    static void qsocket_print_info();
+    static unsigned long get_crc32(const char* guid, int guid_len);
 }
 };
 

@@ -91,6 +91,10 @@ public:
     
     void pass_message_to_room(player* p, const qstring& msg);
     
+    void broadcast(const qstring& msg);
+    void broadcast_except(player* p, const qstring& msg);
+    void sendto(player* p, const qstring& msg);
+    
 protected:
     void onroom_create() override;
     void onroom_start() override;

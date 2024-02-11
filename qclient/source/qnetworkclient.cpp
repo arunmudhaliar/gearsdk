@@ -286,7 +286,7 @@ int qnetworkclient::close() {
     return 0;
 }
 
-int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
+int qnetworkclient::sendMessage(const uint8_t* buffer, ssize_t size, bool flush) {
 #if USE_PTHREAD
     // lock
     DEBUG_ASSERT(__LOGTAG__, (send_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
@@ -298,7 +298,7 @@ int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
 #endif
     
     if (qclient_connection) {
-        qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata((uint8_t*)buffer.c_str(), buffer.length()));
+        qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata(buffer, size));
     }
     
 #if USE_PTHREAD
@@ -306,6 +306,10 @@ int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
     close_mutex.unBlock(__FUNCTION__);
 #endif
     return 0;
+}
+
+int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
+    return sendMessage((uint8_t*)buffer.c_str(), buffer.length(), flush);
 }
 
 void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
@@ -599,8 +603,10 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
     ev_loop(thiz->mainloop, 0);
 
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal about to exit !!!");
     thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
-
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal exit - 0");
+    
     quiche_config_free(config);
 
 #if USE_PTHREAD
@@ -609,6 +615,7 @@ void* qnetworkclient::run_internal(void* data) {
     runConfig->finished = true;
     DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfigmutex().unLock() == 0), __FUNCTION__);
     DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal exit - 1");
     pthread_exit(0);
 #else
     runConfig->pthread_returnValue = 0;

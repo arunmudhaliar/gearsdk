@@ -171,3 +171,36 @@ ev_tstamp room::since_creation() {
 const qstring& room::get_state_string() {
     return states_string[state];
 }
+
+void room::broadcast(const qstring& msg) {
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room %d: broadcast %s", room_id, msg.c_str());
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player_ = it->second;
+        player_->qconnection->sendmessage(msg, true);
+    }
+}
+
+void room::broadcast_except(player* p, const qstring& msg) {
+    std::map<conn_io*, player*>::iterator it_except = playermap.find(p->qconnection);
+    if (it_except==playermap.end()) {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "broadcast_except - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+        return;
+    }
+    
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player_ = it->second;
+        if (it_except==it) {
+            continue;
+        }
+        player_->qconnection->sendmessage(msg, true);
+    }
+}
+
+void room::sendto(player* p, const qstring& msg) {
+    std::map<conn_io*, player*>::iterator it = playermap.find(p->qconnection);
+    if (it==playermap.end()) {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "sendto - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+        return;
+    }
+    p->qconnection->sendmessage(msg, true);
+}
