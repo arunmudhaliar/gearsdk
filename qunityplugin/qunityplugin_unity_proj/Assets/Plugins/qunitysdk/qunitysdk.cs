@@ -28,7 +28,6 @@ public class qunitysdk : MonoBehaviour
     }
     public class qsocket : mqsocket {
         public Guid guid { get; private set; }
-        private string guid_str;
         public ulong guid_crc = 0;
 
         public Action<qsocket> OnConnect;
@@ -38,7 +37,7 @@ public class qunitysdk : MonoBehaviour
 
         public qsocket() {
             guid = Guid.NewGuid();
-            guid_str = guid.ToString();
+            string guid_str = guid.ToString();
             guid_crc = get_crc32(guid_str, guid_str.Length);
             Debug.Log("qsocket guid_crc - " + guid_crc);
         }
@@ -59,6 +58,7 @@ public class qunitysdk : MonoBehaviour
             OnClose(this);
         }
 
+        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onconnect))]
         private static void global_onconnect( ulong guid_crc ) {
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
@@ -67,6 +67,7 @@ public class qunitysdk : MonoBehaviour
                 qunitysdk.sockets[guid_crc].onconnect();
             });
         }
+        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onmessage))]
         private static void global_onmessage( ulong guid_crc, ulong recv_len, IntPtr buf ) {
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
@@ -75,6 +76,7 @@ public class qunitysdk : MonoBehaviour
                 qunitysdk.sockets[guid_crc].onmessage(recv_len, buf);
             });
         }
+        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onreleaseconnection))]
         private static void global_onreleaseconnection( ulong guid_crc ) {
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
@@ -85,6 +87,7 @@ public class qunitysdk : MonoBehaviour
                 Debug.Log("removing qsocket " + guid_crc + ", socket count " + qunitysdk.sockets.Count);
             });
         }
+        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onclose))]
         private static void global_onclose( ulong guid_crc ) {
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
@@ -100,17 +103,21 @@ public class qunitysdk : MonoBehaviour
                 return false;
             }
             sockets.Add(guid_crc, this);
-            return qsocket_connect(guid_str, guid_str.Length, host, port, arg,
+            return qsocket_connect(guid_crc, host, port, arg,
                 global_onconnect, global_onmessage, global_onreleaseconnection, global_onclose);
         }
 
         public bool is_finished() {
-            return qsocket_is_run_finished(guid_str, guid_str.Length);
+            return qsocket_is_run_finished(guid_crc);
         }
 
         public int sendMessage(string buffer, bool flush) {
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(buffer);
-            return qsocket_sendMessage(guid_str, guid_str.Length, bytes, (ulong)bytes.Length, flush);
+            return qsocket_sendMessage(guid_crc, bytes, (ulong)bytes.Length, flush);
+        }
+
+        public int close() {
+            return qsocket_close(guid_crc);
         }
     }
 
@@ -130,19 +137,21 @@ public class qunitysdk : MonoBehaviour
 
     // qsocket
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool qsocket_connect( string guid, int guid_len, string host, string port, IntPtr arg,
+    public static extern bool qsocket_connect( ulong guid_crc, string host, string port, IntPtr arg,
                          type_qsocket_onconnect cb_connect, type_qsocket_onmessage cb_message,
                          type_qsocket_onreleaseconnection cb_release_connection, type_qsocket_onclose cb_close);
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool qsocket_is_run_finished(string guid, int guid_len );
+    public static extern bool qsocket_is_run_finished( ulong guid_crc );
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
     public static extern void destroy_finished_qsockets();
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int qsocket_sendMessage(string guid, int guid_len, byte[] buffer, ulong size, bool flush);
+    public static extern int qsocket_sendMessage( ulong guid_crc, byte[] buffer, ulong size, bool flush);
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
     public static extern void qsocket_print_info();
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
     public static extern ulong get_crc32(string guid, int guid_len);
+    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int qsocket_close( ulong guid_crc );
 
     private static qunitysdk instance;
     private static Dictionary<ulong, qsocket> sockets = new Dictionary<ulong, qsocket>();

@@ -603,10 +603,9 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
     ev_loop(thiz->mainloop, 0);
 
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal about to exit !!!");
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal loop released !!!");
     thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal exit - 0");
-    
+
     quiche_config_free(config);
 
 #if USE_PTHREAD
@@ -615,7 +614,6 @@ void* qnetworkclient::run_internal(void* data) {
     runConfig->finished = true;
     DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfigmutex().unLock() == 0), __FUNCTION__);
     DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal exit - 1");
     pthread_exit(0);
 #else
     runConfig->pthread_returnValue = 0;

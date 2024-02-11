@@ -5,6 +5,7 @@ using UnityEngine;
 using AOT;
 using System.Runtime.InteropServices;
 using System.Text;
+using UnityEngine.UI;
 
 public class TestScript : MonoBehaviour
 {
@@ -16,6 +17,12 @@ public class TestScript : MonoBehaviour
 
     public TMPro.TextMeshProUGUI qsocket1_response_text;
     public TMPro.TextMeshProUGUI qsocket2_response_text;
+
+    public Button qsocket1_send_btn;
+    public Button qsocket2_send_btn;
+
+    public Button qsocket1_close_btn;
+    public Button qsocket2_close_btn;
 
     public int total_requests = 0;
     public int total_request_response_came = 0;
@@ -117,7 +124,7 @@ public class TestScript : MonoBehaviour
     qunitysdk.qsocket qsocket2 = null;
 
     public void On_C1_QSocketConnect() {
-        qsocket1.connect("localhost", "4000", IntPtr.Zero);
+        qsocket1.connect("192.168.0.230", "4000", IntPtr.Zero);
         qsocket1.OnConnect = onconnect;
         qsocket1.OnMessage = onmessage;
         qsocket1.OnReleaseConnection = onreleaseconnection;
@@ -129,7 +136,7 @@ public class TestScript : MonoBehaviour
     }
 
     public void On_C2_QSocketConnect() {
-        qsocket2.connect("localhost", "4000", IntPtr.Zero);
+        qsocket2.connect("192.168.0.230", "4000", IntPtr.Zero);
         qsocket2.OnConnect = onconnect;
         qsocket2.OnMessage = onmessage;
         qsocket2.OnReleaseConnection = onreleaseconnection;
@@ -140,6 +147,12 @@ public class TestScript : MonoBehaviour
         qsocket2.sendMessage("Hello c1 !!!", true);
     }
 
+    public void On_C1_SocketClose() {
+        qsocket1.close();
+    }
+    public void On_C2_SocketClose() {
+        qsocket2.close();
+    }
     public void On_PrintQsocketsInfo() {
         qunitysdk.qsocket_print_info();
     }
@@ -148,6 +161,13 @@ public class TestScript : MonoBehaviour
     ///
     protected void onconnect(qunitysdk.qsocket qs) {
         Debug.Log("qsocket connected " + qs.guid_crc);
+        if (qsocket1 == qs) {
+            qsocket1_send_btn.interactable = true;
+            qsocket1_close_btn.interactable = true;
+        } else {
+            qsocket2_send_btn.interactable = true;
+            qsocket2_close_btn.interactable = true;
+        }
     }
 
     protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, IntPtr buf ) {
@@ -173,6 +193,13 @@ public class TestScript : MonoBehaviour
 
     protected void onclose( qunitysdk.qsocket qs ) {
         Debug.Log("qsocket close connection " + qs.guid_crc);
+        if (qsocket1 == qs) {
+            qsocket1_send_btn.interactable = false;
+            qsocket1_close_btn.interactable = false;
+        } else {
+            qsocket2_send_btn.interactable = false;
+            qsocket2_close_btn.interactable = false;
+        }
     }
 
 

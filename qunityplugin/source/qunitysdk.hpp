@@ -54,22 +54,23 @@ private:
 std::map<unsigned long, qsocket*> qsockets;
 
 extern "C" {
-    static void pre_init_sdk();
+    __attribute__((unused)) static void pre_init_sdk();
 
     typedef void (*type_qh3client_plugin_helper_cb)(const char* payload, void* arg, int result);
-    static int send_async_request(const char* host, const char* port,
+    __attribute__((unused)) static int send_async_request(const char* host, const char* port,
                                   const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback);
     void destroy_qsocket(qsocket* qs);
-    static bool qsocket_connect(const char* guid, int guid_len, const char* host, const char* port, void* arg,
-                         qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
-                         qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close);
-    static bool qsocket_is_run_finished(const char* guid, int guid_len);
-    static int qsocket_sendMessage(const char* guid, int guid_len, const char* buffer, unsigned long size, bool flush);
+    __attribute__((unused)) static bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg,
+                             qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
+                             qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close);
+    __attribute__((unused)) static bool qsocket_is_run_finished(unsigned long guid_crc);
+    __attribute__((unused)) static int qsocket_sendMessage(unsigned long guid_crc, const char* buffer, unsigned long size, bool flush);
+    __attribute__((unused)) static int qsocket_close(unsigned long guid_crc);
 
-    static void destroy_finished_qsockets();
+    __attribute__((unused)) static void destroy_finished_qsockets();
 
-    static void qsocket_print_info();
-    static unsigned long get_crc32(const char* guid, int guid_len);
+    __attribute__((unused)) static void qsocket_print_info();
+    __attribute__((unused)) static unsigned long get_crc32(const char* guid, int guid_len);
 }
 };
 
