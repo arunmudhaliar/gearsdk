@@ -39,6 +39,15 @@ public:
     int set_value(const qstring& key, const qstring& value, int expiry_in_sec);
     int get_value(const qstring& key, qstring& value);
     
+    int set_hash_value(const qstring& hashkey, const qstring& field, const qstring& value);
+    int get_hash_value(const qstring& hashkey, const qstring& field, qstring& value);
+    
+    int incr(const qstring& key, long long &value);
+    int decr(const qstring& key, long long &value);
+    
+    int incr_by(const qstring& key, const int delta, long long &value);
+    int decr_by(const qstring& key, const int delta, long long &value);
+    
 private:
     int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
     redisContext* context = nullptr;

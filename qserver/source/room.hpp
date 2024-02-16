@@ -85,7 +85,7 @@ public:
     void print_info();
     ev_tstamp since_creation();
     
-    std::map<conn_io*, player*> playermap;
+    std::map<unsigned, player*> playermap;
     const int room_id = 0;
     const ev_tstamp creation_time;
     

@@ -140,5 +140,10 @@ namespace gsdk {
      * @return Indicates if the operation succeeded, or why it failed.
      */
 extern "C" DECLSPEC str2int_errno str2int(int *out, const char *s, int base);
+
+typedef void (*type_debug_warn_or_err_cb)(const char*);
+extern "C" DECLSPEC void set_warn_callback(type_debug_warn_or_err_cb cb);
+extern "C" DECLSPEC void set_error_callback(type_debug_warn_or_err_cb cb);
+
 };
 #endif /* sdktypes_hpp */
