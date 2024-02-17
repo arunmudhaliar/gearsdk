@@ -78,3 +78,5 @@ qstats-crawler-app
 docker-qh3client
 qh3client-app
 qunityplugin/qunityplugin_android_proj/app/release
+qh3server/logs
+qh3server/stats

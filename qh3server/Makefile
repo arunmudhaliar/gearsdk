@@ -44,18 +44,20 @@ CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	LIBS = $(ZK_SRCDIR)/libs/linux/libzookeeper_mt.a ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../servercommon/libs/linux/libmongoc-static-1.0.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libbson-static-1.0.a ../common/libs/linux/libz.a -lssl -lcrypto -lsasl2 -pthread -lrt -lzookeeper_mt -Wl,--no-as-needed -ldl -lsnappy -lzstd -ldpp -lresolv
-	LDFLAGS = -L$(ZK_SRCDIR)/libs/linux/ -L$(SERVER_COMMON_SRCDIR)/../libs/linux/
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/linux -L$(SERVER_COMMON_SRCDIR)/../libs/linux
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux
 endif
 ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../servercommon/libs/macos/libmongoc-static-1.0.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libbson-static-1.0.a ../common/libs/macos/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -ldpp -lresolv -lsasl2
-	LDFLAGS = -L$(ZK_SRCDIR)/libs/macos/ -L$(SERVER_COMMON_SRCDIR)/../libs/macos/
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/macos -L$(SERVER_COMMON_SRCDIR)/../libs/macos
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/macos
 endif
 
 EXE = qh3server-app
 CXX ?= clang
 
-DEBUG_LDFLAGS = -W -Wall -g -O0 -DDEBUG $(LDFLAGS)
-RELEASE_LDFLAGS = -W -Wall $(LDFLAGS)
+DEBUG_LDFLAGS = -W -Wall -g -O0 -DDEBUG $(LDFLAGS) $(RPATH_FLAGS)
+RELEASE_LDFLAGS = -W -Wall $(LDFLAGS) $(RPATH_FLAGS)
 
 #.cpp.o:
 #	$(CXX) $(CXXFLAGS) -c -o $@ $<
