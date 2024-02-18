@@ -19,10 +19,10 @@ static unsigned version_code = 1;
 #define __LOGTAG__ "qh3server-main"
 
 void warn_callback(const char* msg) {
-    discord_util::send(qstring::format_string("WARN : %s", msg).c_str());
+    discord_util::send(qstring::format_string("[%s] - WARN : %s", gsdk::device::device_details.nodename, msg).c_str());
 }
 void error_callback(const char* msg) {
-    discord_util::send(qstring::format_string("ERROR : %s", msg).c_str());
+    discord_util::send(qstring::format_string("[%s] - ERROR : %s", gsdk::device::device_details.nodename, msg).c_str());
 }
 
 int main(int argc, const char* argv[]) {
