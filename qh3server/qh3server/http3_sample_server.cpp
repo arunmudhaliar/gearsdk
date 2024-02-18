@@ -46,7 +46,7 @@ bool http3_sample_server::on_server_pre_init() {
 }
 
 void http3_sample_server::on_run_started() {
-    hiredis->set_hash_value("servers", qstring::format_string("server-%s",port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
+    hiredis->set_hash_value(qstring::format_string("servers:%s", host_id.c_str()), qstring::format_string("server-%s",port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
 void http3_sample_server::on_run_end() {
