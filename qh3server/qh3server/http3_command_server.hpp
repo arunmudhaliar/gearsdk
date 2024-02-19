@@ -39,6 +39,9 @@ private:
     void parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     
+    // response
+    void construct_response_whoami(qstring& response_string);
+    
     // commands
     void send_shutdown_to_all();
     

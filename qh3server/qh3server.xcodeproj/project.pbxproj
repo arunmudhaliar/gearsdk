@@ -429,6 +429,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -466,6 +467,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

@@ -138,6 +138,39 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
     return 0;
 }
 
+void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
+    if (!context) {
+        printf("Error. Context is null.\n");
+        return;
+    }
+    iterate_hash(context, key.c_str(), arg, callback);
+}
+
+void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
+    unsigned long cursor = 0;
+    redisReply *reply;
+    do {
+        // Execute HSCAN command
+        reply = (redisReply*)redisCommand(context, "HSCAN %s %lu", hash_key, cursor);
+
+        if (reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
+            // The first element of the reply is the new cursor to use in the next call.
+            cursor = strtoul(reply->element[0]->str, nullptr, 10);
+
+            // The second element of the reply is an array of key-value pairs.
+            redisReply *data = reply->element[1];
+            for (size_t i = 0; i < data->elements; i += 2) {
+//                printf("Field: %s, Value: %s\n", data->element[i]->str, data->element[i + 1]->str);
+                callback(data->element[i]->str, data->element[i + 1]->str, arg);
+            }
+        } else {
+            printf("Error: %s\n", reply->str);
+            break;
+        }
+        freeReplyObject(reply);
+    } while (cursor != 0);
+}
+
 int qhiredis::incr(const qstring& key, long long &value) {
     if (!context) {
         return 2;

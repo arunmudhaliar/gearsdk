@@ -8,6 +8,12 @@
 #include "http3_command_server.hpp"
 #include "../../common/gxcrc32.h"
 
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+using namespace rapidjson;
 using namespace client;
 
 http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
@@ -116,10 +122,51 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
         // may be called from a browser
         DEBUG_PRINT_IMPORTANT2(const_logtag, "May be '%s' requested from browser. So crc validation not possible !!!", path_header->value.c_str());
     }
-    const qstring& payload = qstring::format_string("{\"name\" : \"%d-http3_command_server\"}", getpid());
+    qstring payload;// = qstring::format_string("{\"name\" : \"%d-http3_command_server\"}", getpid());
+    construct_response_whoami(payload);
     conn_io->http_response->set_payload(payload);
     qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+}
+
+void http3_command_server::construct_response_whoami(qstring& response_string) {
+    response_string.clear();
+    Document doc;
+    doc.SetObject();
+
+    // Create a JSON object to hold the data
+    Document::AllocatorType& allocator = doc.GetAllocator();
+    // Add "name" key-value
+    const qstring& server_id = qstring::format_string("%d-http3_command_server", getpid());
+    doc.AddMember("name", Value().SetString(server_id.c_str(), allocator), allocator);
+    Value servers(kArrayType);
+    
+    hiredis->iterate_hash(qstring::format_string("servers:%s", host_id.c_str()), &doc, [&allocator, &servers](const char* field, const char* value, void* arg){
+        Value serverObj(kObjectType);
+        // Convert the key and value to `Value` type
+        Value f(field, allocator);
+        Value v(value, allocator);
+        serverObj.AddMember(f, v, allocator);
+        servers.PushBack(serverObj, allocator);
+    });
+    doc.AddMember("servers", servers, allocator);
+    
+    Value gservers(kArrayType);
+    hiredis->iterate_hash(qstring::format_string("gservers:%s", host_id.c_str()), &doc, [&allocator, &gservers](const char* field, const char* value, void* arg){
+        Value gserverObj(kObjectType);
+        // Convert the key and value to `Value` type
+        Value f(field, allocator);
+        Value v(value, allocator);
+        gserverObj.AddMember(f, v, allocator);
+        gservers.PushBack(gserverObj, allocator);
+    });
+    doc.AddMember("gservers", gservers, allocator);
+
+    // Convert JSON document to string
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    response_string = buffer.GetString();
 }
 
 void http3_command_server::send_shutdown_to_all() {
