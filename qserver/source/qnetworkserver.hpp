@@ -19,6 +19,7 @@
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
+#include "../../qhiredis/source/qhiredis.hpp"
 
 extern "C"
 {
@@ -88,11 +89,13 @@ private:
         bool finished = false;
         int id = -1;
         fs::path rootDir;
+        qstring redis_ip;
+        uint16_t redis_port;
     };
     static int runID;
 
 public:
-    int run(qstring host, qstring port, fs::path executablePath);
+    int run(qstring host, qstring port, fs::path executablePath, const qstring& redis_ip, const uint16_t redis_port);
     void broadcast_message(const qstring& buffer, bool flush);
     void network_server_begin();
     void network_server_end();
@@ -139,6 +142,7 @@ private:
     qmutex run_mutex;
     qmutex runconfig_mutex;
     pthread_t run_thread_id;
+    qhiredis* hiredis = nullptr;
 };
 
 #endif /* qnetworkserver_hpp */

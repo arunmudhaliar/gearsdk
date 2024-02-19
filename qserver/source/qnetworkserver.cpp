@@ -577,7 +577,17 @@ void *qnetworkserver::run_internal(void *data)
         runConfig->pthread_returnValue = -1;
         pthread_exit(&runConfig->pthread_returnValue);
     }
-
+    
+    GX_DELETE(thiz->hiredis);
+    thiz->hiredis = DEBUG_NEW qhiredis(runConfig->redis_ip, runConfig->redis_port);
+    if (thiz->hiredis->connect_redis()!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
+        runConfig->finished = true;
+        runConfig->pthread_returnValue = -1;
+        pthread_exit(&runConfig->pthread_returnValue);
+    }
+    thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", host.c_str()), "gameserver", qstring::format_string("%s:%s", host.c_str(), port.c_str()));
+    
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -686,6 +696,8 @@ void *qnetworkserver::run_internal(void *data)
     
     thiz->network_server_end();
     
+    GX_DELETE(thiz->hiredis);
+    
     freeaddrinfo(local);
 
     quiche_config_free(thiz->config);
@@ -696,11 +708,13 @@ void *qnetworkserver::run_internal(void *data)
 
 int qnetworkserver::runID = 0;
 
-int qnetworkserver::run(qstring host, qstring port, fs::path rootDir)
+int qnetworkserver::run(qstring host, qstring port, fs::path rootDir, const qstring& redis_ip, const uint16_t redis_port)
 {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     run_server_config.host = host;
     run_server_config.port = port;
+    run_server_config.redis_ip = redis_ip;
+    run_server_config.redis_port = redis_port;
     run_server_config.thiz = this;
     run_server_config.finished = false;
     run_server_config.rootDir = rootDir;
