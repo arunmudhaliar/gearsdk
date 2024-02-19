@@ -11,6 +11,7 @@
 #include "http3_sample_server.hpp"
 #include "http3_command_server.hpp"
 #include "qh3simple_router_structs.h"
+#include "../../qhiredis/source/qhiredis.hpp"
 
 #define MAX_ROUTES 16
 
@@ -54,6 +55,7 @@ private:
     server_config_in config;   //default config
     struct addrinfo* router = nullptr;
     struct addrinfo* router_return = nullptr;
+    qhiredis* hiredis = nullptr;
 };
 
 class http3_sample_router : public qh3simple_router {

@@ -10,6 +10,8 @@
 
 #include "qnetworkclient.hpp"
 
+using namespace client;
+
 class gameclient : public qnetworkclient {
 
 };

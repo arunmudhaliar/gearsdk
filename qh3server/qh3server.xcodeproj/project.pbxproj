@@ -33,6 +33,9 @@
 		55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */; };
 		55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC72AEFA40F00BC4CED /* Security.framework */; };
 		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
+		55A72F642B7F227F00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
+		55A72F652B7F22DC00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
+		55A72F662B7F22DC00064250 /* libdpp.10.0.30.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,6 +46,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */,
+				55A72F662B7F22DC00064250 /* libdpp.10.0.30.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,6 +104,7 @@
 		55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3server.cpp; sourceTree = "<group>"; };
 		55A4ADD72AEFBA6300BC4CED /* qh3server.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3server.hpp; sourceTree = "<group>"; };
 		55A4ADD92AEFBD2600BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../servercommon/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,10 +112,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55A72F642B7F227F00064250 /* libdpp.10.0.30.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
 				556AB6BC2AF50E3B00D688DB /* libservercommon.a in Frameworks */,
+				55A72F652B7F22DC00064250 /* libdpp.10.0.30.dylib in Frameworks */,
 				556AB6102AF50A8900D688DB /* libmongoc-static-1.0.a in Frameworks */,
 				556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */,
 				556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */,
@@ -188,6 +195,7 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */,
 				5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */,
 				5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */,
 				556ABAC32B0A78FA00D688DB /* libpgport.a */,
@@ -421,6 +429,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -458,6 +467,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

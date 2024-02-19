@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using AOT;
 using System.Runtime.InteropServices;
+using System.Text;
+using UnityEngine.UI;
 
 public class TestScript : MonoBehaviour
 {
@@ -12,6 +14,15 @@ public class TestScript : MonoBehaviour
     public TMPro.TextMeshProUGUI titleText;
     public TMPro.TMP_InputField no_of_requests;
     public UnityEngine.UI.Scrollbar progress;
+
+    public TMPro.TextMeshProUGUI qsocket1_response_text;
+    public TMPro.TextMeshProUGUI qsocket2_response_text;
+
+    public Button qsocket1_send_btn;
+    public Button qsocket2_send_btn;
+
+    public Button qsocket1_close_btn;
+    public Button qsocket2_close_btn;
 
     public int total_requests = 0;
     public int total_request_response_came = 0;
@@ -24,6 +35,8 @@ public class TestScript : MonoBehaviour
     void Start()
     {
         Debug.Log("TestScript - Start");
+        qsocket1 = new qunitysdk.qsocket();
+        qsocket2 = new qunitysdk.qsocket();
     }
 
     private static qReqArg FromIntPtr( IntPtr ptr ) {
@@ -105,4 +118,89 @@ public class TestScript : MonoBehaviour
         }
         scrollRect.content.DetachChildren();
     }
+
+    // qsocket
+    qunitysdk.qsocket qsocket1 = null;
+    qunitysdk.qsocket qsocket2 = null;
+
+    public void On_C1_QSocketConnect() {
+        qsocket1.connect("192.168.0.230", "4000", IntPtr.Zero);
+        qsocket1.OnConnect = onconnect;
+        qsocket1.OnMessage = onmessage;
+        qsocket1.OnReleaseConnection = onreleaseconnection;
+        qsocket1.OnClose = onclose;
+    }
+
+    public void On_C1_QSocketSend() {
+        qsocket1.sendMessage("Hello c2 !!!", true);
+    }
+
+    public void On_C2_QSocketConnect() {
+        qsocket2.connect("192.168.0.230", "4000", IntPtr.Zero);
+        qsocket2.OnConnect = onconnect;
+        qsocket2.OnMessage = onmessage;
+        qsocket2.OnReleaseConnection = onreleaseconnection;
+        qsocket2.OnClose = onclose;
+    }
+
+    public void On_C2_QSocketSend() {
+        qsocket2.sendMessage("Hello c1 !!!", true);
+    }
+
+    public void On_C1_SocketClose() {
+        qsocket1.close();
+    }
+    public void On_C2_SocketClose() {
+        qsocket2.close();
+    }
+    public void On_PrintQsocketsInfo() {
+        qunitysdk.qsocket_print_info();
+    }
+
+
+    ///
+    protected void onconnect(qunitysdk.qsocket qs) {
+        Debug.Log("qsocket connected " + qs.guid_crc);
+        if (qsocket1 == qs) {
+            qsocket1_send_btn.interactable = true;
+            qsocket1_close_btn.interactable = true;
+        } else {
+            qsocket2_send_btn.interactable = true;
+            qsocket2_close_btn.interactable = true;
+        }
+    }
+
+    protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, IntPtr buf ) {
+        Debug.Log("qsocket message received " + qs.guid_crc);
+        // Create a byte array to hold the UTF-8 bytes
+        byte[] array = new byte[recv_len];
+
+        // Copy the bytes from the unmanaged memory to the byte array
+        Marshal.Copy(buf, array, 0, (int)recv_len);
+
+        if (qsocket1 == qs) {
+            qsocket2_response_text.text = Encoding.UTF8.GetString(array);
+            qsocket2_response_text.gameObject.SetActive(true);
+        } else {
+            qsocket1_response_text.text = Encoding.UTF8.GetString(array);
+            qsocket1_response_text.gameObject.SetActive(true);
+        }
+    }
+
+    protected void onreleaseconnection( qunitysdk.qsocket qs ) {
+        Debug.Log("qsocket release connection " + qs.guid_crc);
+    }
+
+    protected void onclose( qunitysdk.qsocket qs ) {
+        Debug.Log("qsocket close connection " + qs.guid_crc);
+        if (qsocket1 == qs) {
+            qsocket1_send_btn.interactable = false;
+            qsocket1_close_btn.interactable = false;
+        } else {
+            qsocket2_send_btn.interactable = false;
+            qsocket2_close_btn.interactable = false;
+        }
+    }
+
+
 }

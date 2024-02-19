@@ -10,6 +10,7 @@
 #include "../../common/crypto_helper.hpp"
 #include <zlib.h>
 
+using namespace client;
 //std::atomic<int> http3_sample_client::live_connections = 0;
 //std::atomic<int> http3_sample_client::total_connections_returned = 0;
 

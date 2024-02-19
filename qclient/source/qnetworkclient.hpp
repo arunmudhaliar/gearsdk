@@ -30,11 +30,12 @@ extern "C"
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
 
-#define LOCAL_CONN_ID_LEN 16
-#define MAX_DATAGRAM_SIZE 1350
+#define Q_LOCAL_CONN_ID_LEN 16
+#define Q_MAX_DATAGRAM_SIZE 1350
 
+namespace client {
 struct qdata {
-    qdata(uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
+    qdata(const uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
         this->data = new uint8_t[sz];
         memcpy(this->data, _data, sz);
     }
@@ -47,14 +48,14 @@ struct qdata {
 };
 
 class bridge_qcommand;
-class qconnection {
+class conn_io_client {
 private:
-    qconnection() {};
+    conn_io_client() {};
 
 public:
-    qconnection(bridge_qcommand* bridge, int id);
-    qconnection(bridge_qcommand* bridge, Config* config, int id);
-    ~qconnection();
+    conn_io_client(bridge_qcommand* bridge, int id);
+    conn_io_client(bridge_qcommand* bridge, Config* config, int id);
+    ~conn_io_client();
 
     void SetConfig(Config* config) { this->config = config; }
     int id = -1;
@@ -75,17 +76,17 @@ public:
     void Release();
 
     uint8_t recv_buf[65535];
-    uint8_t egress_out[MAX_DATAGRAM_SIZE];
+    uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 
     std::vector<qdata*> sendBuffer;
 };
 
 class bridge_qconnection {
 public:
-    virtual void onconnect(qconnection* qconnection) = 0;
-    virtual void onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) = 0;
-    virtual void onreleaseconnection(qconnection* qconnection) = 0;
-    virtual void onclose(qconnection* qconnection) = 0;
+    virtual void onconnect(conn_io_client* qconnection) = 0;
+    virtual void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) = 0;
+    virtual void onreleaseconnection(conn_io_client* qconnection) = 0;
+    virtual void onclose(conn_io_client* qconnection) = 0;
 };
 
 enum CON_STATE {
@@ -96,21 +97,24 @@ enum CON_STATE {
 
 class bridge_qcommand {
 public:
-    virtual void flushegress(struct ev_loop* loop, qconnection* qconnection) = 0;
-    virtual int release_connection(struct ev_loop* loop, qconnection* qconnection) = 0;
+    virtual void flushegress(struct ev_loop* loop, conn_io_client* qconnection) = 0;
+    virtual int release_connection(struct ev_loop* loop, conn_io_client* qconnection) = 0;
     inline virtual struct ev_loop* getmainloop() = 0;
 
-    virtual void event_connect(qconnection* qconnection) = 0;
-    virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) = 0;
-    virtual void event_close(qconnection* qconnection) = 0;
+    virtual void event_connect(conn_io_client* qconnection) = 0;
+    virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) = 0;
+    virtual void event_close(conn_io_client* qconnection) = 0;
     virtual int sendMessage(const qstring& buffer, bool flush) = 0;
+    virtual int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) = 0;
     virtual int close() = 0;
     virtual CON_STATE getstate() = 0;
 
+#if USE_PTHREAD
     virtual qmutex* get_run_mutex() = 0;
     virtual qmutex* het_close_mutex() = 0;
     virtual qmutex* get_send_mutex() = 0;
     virtual qmutex* get_sendloop_mutex() = 0;
+#endif
 };
 
 class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
@@ -143,25 +147,23 @@ private:
     static void* run_internal(void* data);
 
     void setstate(CON_STATE state);
-    inline CON_STATE getstate() override final { return state; }
-    inline bool isopen() { return state == STATE_OPEN; }
-    inline bool isclosed() { return state == STATE_CLOSE; }
     CON_STATE state = STATE_OPEN;
 
 protected:
-    void flushegress(struct ev_loop* loop, qconnection* qconnection) override final;
-    int release_connection(struct ev_loop* loop, qconnection* qconnection) override final;
-    void onconnect(qconnection* qconnection) override;
-    void onmessage(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) override;
-    void onreleaseconnection(qconnection* qconnection) override;
-    void onclose(qconnection* qconnection) override;
+    void flushegress(struct ev_loop* loop, conn_io_client* qconnection) override final;
+    int release_connection(struct ev_loop* loop, conn_io_client* qconnection) override final;
+    void onconnect(conn_io_client* qconnection) override;
+    void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override;
+    void onreleaseconnection(conn_io_client* qconnection) override;
+    void onclose(conn_io_client* qconnection) override;
     inline struct ev_loop* getmainloop() override final {
         return mainloop;
     }
-    void event_connect(qconnection* qconnection) override final;
-    void event_msg_received(ssize_t recv_len, uint8_t* buf, qconnection* qconnection) override final;
-    void event_close(qconnection* qconnection) override final;
+    void event_connect(conn_io_client* qconnection) override final;
+    void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override final;
+    void event_close(conn_io_client* qconnection) override final;
 
+#if USE_PTHREAD
     qmutex* get_run_mutex() override final {
         return &run_mutex;
     }
@@ -175,17 +177,26 @@ protected:
     qmutex* get_send_mutex() override final {
         return &send_mutex;
     }
-    qconnection* qclient_connection = nullptr;
+#endif
+    conn_io_client* qclient_connection = nullptr;
 
 public:
     qnetworkclient();
     ~qnetworkclient();
 
+    inline CON_STATE getstate() override final { return state; }
+    inline bool isopen() { return state == STATE_OPEN; }
+    inline bool isclosed() { return state == STATE_CLOSE; }
+    
     int sendMessage(const qstring& buffer, bool flush) override final;
+    int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) override final;
     int close() override final;
     bool is_runfinished();
     int run(qstring host, qstring port);
     void forcerelease();
+#if USE_PTHREAD
     inline qmutex& get_runconfigmutex() { return runconfig_mutex; }
+#endif
+};
 };
 #endif /* qnetworkclient_hpp */

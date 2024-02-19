@@ -7,6 +7,7 @@
 
 #include "qh3simple_router.hpp"
 
+using namespace client;
 qh3simple_router::qh3simple_router(const server_config_in& config) : config(config){
 }
 qh3simple_router::~qh3simple_router() {
@@ -15,6 +16,7 @@ qh3simple_router::~qh3simple_router() {
     }
     GX_DELETE(command_feedback_route);
     GX_DELETE(command_route);
+    GX_DELETE(hiredis);
 }
 
 int qh3simple_router::run() {
@@ -161,6 +163,23 @@ int qh3simple_router::run() {
         
         DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Star router !!!");
     
+        GX_DELETE(hiredis);
+        hiredis = DEBUG_NEW qhiredis(config.redis_ip, config.redis_port);
+        if (hiredis->connect_redis()!=0) {
+            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create redis connection !!!");
+            freeaddrinfo(router);
+            freeaddrinfo(router_return);
+            router_return = nullptr;
+            router = nullptr;
+            close(sock_return);
+            close(sock);
+            GX_DELETE(hiredis);
+            return -1;
+        }
+        
+        hiredis->set_hash_value(qstring::format_string("servers:%s", config.host.c_str()), "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
+        hiredis->set_hash_value(qstring::format_string("servers:%s", config.host.c_str()), "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
+        
         mainloop = ev_default_loop(0);
 
         ev_io watcher;
@@ -183,6 +202,7 @@ int qh3simple_router::run() {
             router = nullptr;
             close(sock_return);
             close(sock);
+            GX_DELETE(hiredis);
             return -1;
         }
         //

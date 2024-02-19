@@ -5,4 +5,6 @@ cd ./qserver
 ip=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}')
 port=4000
 db_uri=mongodb://192.168.0.230:6006
-./qserver-app --h $ip --p $port --db $db_uri
+redis_ip=192.168.0.230
+redis_port=6379
+./qserver-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port

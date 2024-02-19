@@ -21,8 +21,8 @@
 
 class http3_sample_server : public qh3server, interface_qmongo_connection {
 protected:
-    void parse_header(const qstring& name, const qstring& value, struct conn_io *conn_io) override;
-    void parse(struct conn_io *conn_io) override;
+    void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3 *conn_io) override;
+    void parse(struct conn_io_qh3 *conn_io) override;
     inline bool is_log_quiche() override;
     
     bool on_server_pre_init() override;
@@ -43,10 +43,10 @@ public:
     void test_mongo_db();
     
 private:
-    void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io *conn_io);
-    void parse_whoami(conn_io_req_res::header* path_header, struct conn_io *conn_io);
-    void parse_user_get(conn_io_req_res::header* path_header, struct conn_io *conn_io);
-    void parse_user_details(conn_io_req_res::header* path_header, struct conn_io *conn_io);
+    void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    void parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    void parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     
     qstring zk_uri;
     

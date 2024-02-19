@@ -4,6 +4,7 @@ EXPOSE 4000/udp
 WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
+COPY qhiredis/ ./qhiredis
 COPY qserver/ ./qserver
 COPY make_qserver.sh ./
 COPY run_qserver.sh ./

@@ -7,6 +7,8 @@
 
 #include "http3_sample_server.hpp"
 #include "qh3simple_router.hpp"
+#include "../../servercommon/source/discord_util.hpp"
+#include "../../common/sdktypes.hpp"
 
 //#include "../../qhiredis/source/qhiredis.hpp"
 
@@ -16,8 +18,17 @@ static unsigned version_code = 1;
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3server-main"
 
+void warn_callback(const char* msg) {
+    discord_util::send(qstring::format_string("[%s] - WARN : %s", gsdk::device::device_details.nodename, msg).c_str());
+}
+void error_callback(const char* msg) {
+    discord_util::send(qstring::format_string("[%s] - ERROR : %s", gsdk::device::device_details.nodename, msg).c_str());
+}
+
 int main(int argc, const char* argv[]) {
     init_gsdk();
+    gsdk::set_warn_callback(warn_callback);
+    gsdk::set_error_callback(error_callback);
     // main http server
     qstring host = "127.0.0.1";
 //    qstring host = "192.168.0.65";

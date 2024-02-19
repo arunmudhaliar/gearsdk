@@ -56,7 +56,7 @@ void roomserver::onroom_pre_start(room* r) {
     }
 }
 
-void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconnection* qconnection) {
+void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) {
     // check if he was part of any active room.
     room* room_ = nullptr;
     std::map<unsigned, room*>::iterator iterator =  connection_map.find(qconnection->cid_hash_val);
@@ -76,7 +76,7 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qpeerconne
     room_->pass_message_to_room(player_, qstring(buf, recv_len));
 }
 
-void roomserver::onconnection_connect(qpeerconnection* qconnection) {
+void roomserver::onconnection_connect(conn_io* qconnection) {
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: incoming connection %0x", qconnection->cid_hash_val);
     // check if he was part of any active room.
     room* room_ = nullptr;
@@ -145,7 +145,7 @@ room* roomserver::create_waiting_room() {
     return room_;
 }
 
-void roomserver::onconnection_destroy(qpeerconnection* qconnection) {
+void roomserver::onconnection_destroy(conn_io* qconnection) {
     room* room_ = nullptr;
     std::map<unsigned, room*>::iterator iterator =  connection_map.find(qconnection->cid_hash_val);
     if (iterator!=connection_map.end()) {

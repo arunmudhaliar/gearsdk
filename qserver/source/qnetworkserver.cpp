@@ -22,18 +22,18 @@
 #include <uthash.h>
 #include <quiche.h>
 
-qpeerconnection::qpeerconnection(bridge_qpeerconnection *bridge, uint8_t *scid, size_t scid_len, int sock) : bridge(bridge),
+conn_io::conn_io(bridge_qpeerconnection *bridge, uint8_t *scid, size_t scid_len, int sock) : bridge(bridge),
                                                                                                              sock(sock)
 {
-    if (scid_len != LOCAL_CONN_ID_LEN)
+    if (scid_len != Q_LOCAL_CONN_ID_LEN)
     {
         DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
     }
-    memcpy(cid, scid, LOCAL_CONN_ID_LEN);
-    HASH_VALUE(cid, LOCAL_CONN_ID_LEN, cid_hash_val);
+    memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
+    HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 }
 
-qpeerconnection::~qpeerconnection()
+conn_io::~conn_io()
 {
     ev_timer_stop(bridge->get_mainloop(), &timer);
     if (conn)
@@ -42,12 +42,12 @@ qpeerconnection::~qpeerconnection()
     }
 }
 
-void qpeerconnection::sendmessage(const qstring &buffer, bool flush)
+void conn_io::sendmessage(const qstring &buffer, bool flush)
 {
     sendmessage(buffer.c_str(), buffer.length(), flush);
 }
 
-void qpeerconnection::sendmessage(const char *buf, size_t buflen, bool flush)
+void conn_io::sendmessage(const char *buf, size_t buflen, bool flush)
 {
     if (!quiche_conn_is_established(conn))
     {
@@ -76,7 +76,7 @@ void qpeerconnection::sendmessage(const char *buf, size_t buflen, bool flush)
     }
 }
 
-void qpeerconnection::close()
+void conn_io::close()
 {
     if (!quiche_conn_is_established(conn))
     {
@@ -172,14 +172,14 @@ uint8_t *qnetworkserver::gen_cid(uint8_t *cid, size_t cid_len)
     return cid;
 }
 
-qpeerconnection *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
+conn_io *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
                                              uint8_t *odcid, size_t odcid_len,
                                              struct sockaddr *local_addr,
                                              socklen_t local_addr_len,
                                              struct sockaddr_storage *peer_addr,
                                              socklen_t peer_addr_len)
 {
-    qpeerconnection *qconnection = DEBUG_NEW qpeerconnection(this, scid, scid_len, conns->sock);
+    conn_io *qconnection = DEBUG_NEW conn_io(this, scid, scid_len, conns->sock);
     if (qconnection == nullptr)
     {
         DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate qconnection");
@@ -187,7 +187,7 @@ qpeerconnection *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
         return nullptr;
     }
 
-    Connection *conn = quiche_accept(qconnection->cid, LOCAL_CONN_ID_LEN,
+    Connection *conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN,
                                      odcid, odcid_len,
                                      local_addr,
                                      local_addr_len,
@@ -210,19 +210,19 @@ qpeerconnection *qnetworkserver::create_conn(uint8_t *scid, size_t scid_len,
     ev_init(&qconnection->timer, timeout_cb);
     qconnection->timer.data = qconnection;
 
-    HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, qconnection);
+    HASH_ADD(hh, conns->h, cid, Q_LOCAL_CONN_ID_LEN, qconnection);
 
     qconnection->bridge->onconnection_connect(qconnection);
 
     return qconnection;
 }
 
-void qnetworkserver::onconnection_connect(qpeerconnection *qconnection)
+void qnetworkserver::onconnection_connect(conn_io *qconnection)
 {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
 
-void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, qpeerconnection *qconnection)
+void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, conn_io *qconnection)
 {
     char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 
@@ -245,7 +245,7 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, qpeerc
     qconnection->sendmessage(ss, true);
 }
 
-void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnection)
+void qnetworkserver::flush_egress(struct ev_loop *loop, conn_io *qconnection)
 {
     SendInfo send_info;
     while (true)
@@ -285,7 +285,7 @@ void qnetworkserver::flush_egress(struct ev_loop *loop, qpeerconnection *qconnec
     DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
-void qnetworkserver::destroy_connection(struct ev_loop *loop, qpeerconnection *qconnection)
+void qnetworkserver::destroy_connection(struct ev_loop *loop, conn_io *qconnection)
 {
     onconnection_destroy(qconnection);
     HASH_DELETE(hh, conns->h, qconnection);
@@ -293,14 +293,14 @@ void qnetworkserver::destroy_connection(struct ev_loop *loop, qpeerconnection *q
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
 
-void qnetworkserver::onconnection_destroy(qpeerconnection *qconnection)
+void qnetworkserver::onconnection_destroy(conn_io *qconnection)
 {
     //    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
 }
 
 void qnetworkserver::timeout_cb(EV_P_ ev_timer *w, int revents)
 {
-    qpeerconnection *qconnection = (qpeerconnection *)w->data;
+    conn_io *qconnection = (conn_io *)w->data;
 
     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout !!!");
     quiche_conn_on_timeout(qconnection->conn);
@@ -330,8 +330,8 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer *w, int revents)
 
 void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
 {
-    qpeerconnection *qconnection = nullptr;
-    qpeerconnection *tmp = nullptr;
+    conn_io *qconnection = nullptr;
+    conn_io *tmp = nullptr;
 
     while (true)
     {
@@ -370,7 +370,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
         uint8_t token[MAX_TOKEN_LEN];
         size_t token_len = sizeof(token);
 
-        int rc = quiche_header_info(conns->buf, read, LOCAL_CONN_ID_LEN, &version,
+        int rc = quiche_header_info(conns->buf, read, Q_LOCAL_CONN_ID_LEN, &version,
                                     &type, scid, &scid_len, dcid, &dcid_len,
                                     token, &token_len);
         if (rc < 0)
@@ -418,16 +418,16 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
                 mint_token(dcid, dcid_len, &peer_addr, peer_addr_len,
                            token, &token_len);
 
-                uint8_t new_cid[LOCAL_CONN_ID_LEN];
+                uint8_t new_cid[Q_LOCAL_CONN_ID_LEN];
 
-                if (gen_cid(new_cid, LOCAL_CONN_ID_LEN) == nullptr)
+                if (gen_cid(new_cid, Q_LOCAL_CONN_ID_LEN) == nullptr)
                 {
                     continue;
                 }
 
                 ssize_t written = quiche_retry(scid, scid_len,
                                                dcid, dcid_len,
-                                               new_cid, LOCAL_CONN_ID_LEN,
+                                               new_cid, Q_LOCAL_CONN_ID_LEN,
                                                token, token_len,
                                                version, conns->out, sizeof(conns->out));
 
@@ -541,8 +541,8 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
 
 void qnetworkserver::broadcast_message(const qstring &buffer, bool flush)
 {
-    qpeerconnection *qconnection = nullptr;
-    qpeerconnection *tmp = nullptr;
+    conn_io *qconnection = nullptr;
+    conn_io *tmp = nullptr;
     HASH_ITER(hh, conns->h, qconnection, tmp)
     {
         if (quiche_conn_is_established(qconnection->conn))
@@ -577,7 +577,17 @@ void *qnetworkserver::run_internal(void *data)
         runConfig->pthread_returnValue = -1;
         pthread_exit(&runConfig->pthread_returnValue);
     }
-
+    
+    GX_DELETE(thiz->hiredis);
+    thiz->hiredis = DEBUG_NEW qhiredis(runConfig->redis_ip, runConfig->redis_port);
+    if (thiz->hiredis->connect_redis()!=0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
+        runConfig->finished = true;
+        runConfig->pthread_returnValue = -1;
+        pthread_exit(&runConfig->pthread_returnValue);
+    }
+    thiz->hiredis->set_hash_value("gservers", "gameserver", qstring::format_string("%s:%s", host.c_str(), port.c_str()));
+    
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
         .ai_socktype = SOCK_DGRAM,
@@ -655,8 +665,8 @@ void *qnetworkserver::run_internal(void *data)
                                          (uint8_t *)"\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
     quiche_config_set_max_idle_timeout(thiz->config, 30000);
-    quiche_config_set_max_recv_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_max_send_udp_payload_size(thiz->config, MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_recv_udp_payload_size(thiz->config, Q_MAX_DATAGRAM_SIZE);
+    quiche_config_set_max_send_udp_payload_size(thiz->config, Q_MAX_DATAGRAM_SIZE);
     quiche_config_set_initial_max_data(thiz->config, 10000000);
     quiche_config_set_initial_max_stream_data_bidi_local(thiz->config, 1000000);
     quiche_config_set_initial_max_stream_data_bidi_remote(thiz->config, 1000000);
@@ -686,6 +696,8 @@ void *qnetworkserver::run_internal(void *data)
     
     thiz->network_server_end();
     
+    GX_DELETE(thiz->hiredis);
+    
     freeaddrinfo(local);
 
     quiche_config_free(thiz->config);
@@ -696,11 +708,13 @@ void *qnetworkserver::run_internal(void *data)
 
 int qnetworkserver::runID = 0;
 
-int qnetworkserver::run(qstring host, qstring port, fs::path rootDir)
+int qnetworkserver::run(qstring host, qstring port, fs::path rootDir, const qstring& redis_ip, const uint16_t redis_port)
 {
     DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
     run_server_config.host = host;
     run_server_config.port = port;
+    run_server_config.redis_ip = redis_ip;
+    run_server_config.redis_port = redis_port;
     run_server_config.thiz = this;
     run_server_config.finished = false;
     run_server_config.rootDir = rootDir;

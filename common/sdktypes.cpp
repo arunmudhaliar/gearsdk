@@ -125,6 +125,16 @@ JavaVM* device::g_JavaVM = nullptr;
         va_end(v);
     }
 
+    type_debug_warn_or_err_cb global_warn_cb = nullptr;
+    type_debug_warn_or_err_cb global_err_cb = nullptr;
+        
+    void set_warn_callback(type_debug_warn_or_err_cb cb) {
+        global_warn_cb = cb;
+    }
+    void set_error_callback(type_debug_warn_or_err_cb cb) {
+        global_err_cb = cb;
+    }
+
     void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
         if (logLevel > LOG_LEVEL) {
             return;
@@ -135,6 +145,9 @@ JavaVM* device::g_JavaVM = nullptr;
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        if (global_warn_cb) {
+            global_warn_cb(buffer);
+        }
     }
 
     void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
@@ -147,6 +160,9 @@ JavaVM* device::g_JavaVM = nullptr;
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        if (global_warn_cb) {
+            global_warn_cb(buffer);
+        }
     }
     void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -155,6 +171,9 @@ JavaVM* device::g_JavaVM = nullptr;
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        if (global_warn_cb) {
+            global_warn_cb(buffer);
+        }
     }
     void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -163,6 +182,9 @@ JavaVM* device::g_JavaVM = nullptr;
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        if (global_err_cb) {
+            global_err_cb(buffer);
+        }
     }
     void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
         if (condition) {
@@ -174,6 +196,9 @@ JavaVM* device::g_JavaVM = nullptr;
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
         DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : %s\x1b[0m", tag, buffer);
+        if (global_err_cb) {
+            global_err_cb(buffer);
+        }
         assert(condition);
     }
     void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
