@@ -19,7 +19,6 @@ http3_command_server::~http3_command_server() {
 }
 
 void http3_command_server::on_run_started() {
-//    hiredis->set_value("command_center", qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
     hiredis->set_hash_value(qstring::format_string("servers:%s", host_id.c_str()), "command_center", qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
