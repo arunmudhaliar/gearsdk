@@ -10,7 +10,7 @@ $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 
-INCLUDES = -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"  -I "$(QHIREDIS_SRCDIR)" -I "../qhiredis/hiredis"
+INCLUDES = -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "../qhiredis/hiredis"
 SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/room.cpp \
