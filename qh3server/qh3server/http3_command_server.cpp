@@ -152,7 +152,7 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
     doc.AddMember("servers", servers, allocator);
     
     Value gservers(kArrayType);
-    hiredis->iterate_hash(qstring::format_string("gservers:%s", host_id.c_str()), &doc, [&allocator, &gservers](const char* field, const char* value, void* arg){
+    hiredis->iterate_hash("gservers", &doc, [&allocator, &gservers](const char* field, const char* value, void* arg){
         Value gserverObj(kObjectType);
         // Convert the key and value to `Value` type
         Value f(field, allocator);

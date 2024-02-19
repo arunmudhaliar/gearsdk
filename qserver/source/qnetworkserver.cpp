@@ -586,7 +586,7 @@ void *qnetworkserver::run_internal(void *data)
         runConfig->pthread_returnValue = -1;
         pthread_exit(&runConfig->pthread_returnValue);
     }
-    thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", host.c_str()), "gameserver", qstring::format_string("%s:%s", host.c_str(), port.c_str()));
+    thiz->hiredis->set_hash_value("gservers", "gameserver", qstring::format_string("%s:%s", host.c_str(), port.c_str()));
     
     const struct addrinfo hints = {
         .ai_family = PF_UNSPEC,
