@@ -6,6 +6,8 @@ using AOT;
 using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine.UI;
+using System.Net;
+using System.Net.Sockets;
 
 public class TestScript : MonoBehaviour
 {
@@ -23,6 +25,8 @@ public class TestScript : MonoBehaviour
 
     public Button qsocket1_close_btn;
     public Button qsocket2_close_btn;
+    public TMPro.TMP_InputField server_ip;
+    private string previous_valid_ip = "192.168.0.230";
 
     public int total_requests = 0;
     public int total_request_response_came = 0;
@@ -37,6 +41,14 @@ public class TestScript : MonoBehaviour
         Debug.Log("TestScript - Start");
         qsocket1 = new qunitysdk.qsocket();
         qsocket2 = new qunitysdk.qsocket();
+        server_ip.text = previous_valid_ip;
+    }
+
+    public static bool IsValidIPv4( string ipString ) {
+        if (IPAddress.TryParse(ipString, out IPAddress ip)) {
+            return ip.AddressFamily == AddressFamily.InterNetwork;
+        }
+        return false;
     }
 
     private static qReqArg FromIntPtr( IntPtr ptr ) {
@@ -50,7 +62,7 @@ public class TestScript : MonoBehaviour
     }
 
     [MonoPInvokeCallback(typeof(qunitysdk.type_qh3client_helper_cb))]
-    private static void test_callback( string payload, IntPtr arg, int result ) {
+    private static void test_callback( string payload, IntPtr arg, bool success ) {
         MainThreadDispatcher.RunOnMainThread(() => {
             //Debug.Log(payload + ", arg " + arg + ", result " + result);
             qReqArg reqArg = FromIntPtr(arg);
@@ -59,7 +71,7 @@ public class TestScript : MonoBehaviour
                 Transform text_game_object = thiz.scrollRect.content.GetChild((int)reqArg.arg);
                 TMPro.TextMeshProUGUI result_text = text_game_object.GetComponent<TMPro.TextMeshProUGUI>();
                 result_text.color = Color.green;
-                result_text.text = payload + ", result " + result;
+                result_text.text = payload + ", result " + success;
             }
             thiz.total_request_response_came++;
             thiz.UpateProgress();
@@ -83,6 +95,8 @@ public class TestScript : MonoBehaviour
         //    });
         //};
 
+        OnIpAddressEntered();
+
         int batch_req_count = 10;
         if (!int.TryParse(no_of_requests.text, out batch_req_count)) {
             Debug.LogWarning("TestScript - invalid input !!!");
@@ -99,7 +113,7 @@ public class TestScript : MonoBehaviour
             newArg.instance = this;
             newArg.arg = (IntPtr)(child_count+x);
             IntPtr instancePtr = (IntPtr)GCHandle.Alloc(newArg, GCHandleType.Normal);
-            qunitysdk.send_async_request("192.168.0.230", "4004", "/whoami", "{}", instancePtr, test_callback);
+            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
             total_requests++;
         }
         UpateProgress();
@@ -124,7 +138,9 @@ public class TestScript : MonoBehaviour
     qunitysdk.qsocket qsocket2 = null;
 
     public void On_C1_QSocketConnect() {
-        qsocket1.connect("192.168.0.230", "4000", IntPtr.Zero);
+        OnIpAddressEntered();
+
+        qsocket1.connect(server_ip.text.Trim(), "4000", IntPtr.Zero);
         qsocket1.OnConnect = onconnect;
         qsocket1.OnMessage = onmessage;
         qsocket1.OnReleaseConnection = onreleaseconnection;
@@ -136,7 +152,9 @@ public class TestScript : MonoBehaviour
     }
 
     public void On_C2_QSocketConnect() {
-        qsocket2.connect("192.168.0.230", "4000", IntPtr.Zero);
+        OnIpAddressEntered();
+
+        qsocket2.connect(server_ip.text.Trim(), "4000", IntPtr.Zero);
         qsocket2.OnConnect = onconnect;
         qsocket2.OnMessage = onmessage;
         qsocket2.OnReleaseConnection = onreleaseconnection;
@@ -202,5 +220,12 @@ public class TestScript : MonoBehaviour
         }
     }
 
-
+    public void OnIpAddressEntered() {
+        if (!TestScript.IsValidIPv4(server_ip.text)) {
+            Debug.LogError("Invalid ip address, resetting to previous valid value !!!");
+            server_ip.text = previous_valid_ip;
+            return;
+        }
+        previous_valid_ip = server_ip.text.Trim();
+    }
 }

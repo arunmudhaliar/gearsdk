@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class qunitysdk : MonoBehaviour
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, int result);
+    public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, bool success);
 
     // qsocket
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -133,7 +133,7 @@ public class qunitysdk : MonoBehaviour
     public static extern void pre_init_sdk();
 
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb);
+    public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb, int retry);
 
     // qsocket
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]

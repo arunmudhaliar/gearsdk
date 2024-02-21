@@ -531,9 +531,9 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
                 if (routes.size()==0) {
                     conn_io_req_res* req = conn_io_req_res::create("/shutdown_cmd_center", "");
                     qh3client_helper::send_async_request<client::qh3client>(command_route->host, command_route->port, req, nullptr,
-                        [this](conn_io_req_res* response, void* client_specific_data, void* arg) {
+                        [this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
                             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
-                        });
+                        }, 1);
                 }
             }
         }

@@ -172,9 +172,9 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
 void http3_command_server::send_shutdown_to_all() {
     conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
     qh3client_helper::send_async_request<client::qh3client>(host_id, router_port, req, nullptr,
-        [this](conn_io_req_res* response, void* client_specific_data, void* arg) {
+        [this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
-        });
+        }, 1);
 }
 
 void http3_command_server::command_feedback_recv_cb(EV_P_ ev_io* w, int revents) {
