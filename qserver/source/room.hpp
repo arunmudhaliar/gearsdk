@@ -107,6 +107,9 @@ private:
     void set_state(states state);
     void on_state_change(states prev_state);
     
+    void send_event_player_add_or_remove(player* p, bool add);
+    void send_event_room_start_or_end(bool room_start);
+    
     const roomconfig room_config;
     states state = room_uninitialised;
     roomserver_interface* roomserverinterface;

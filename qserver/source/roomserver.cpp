@@ -78,6 +78,10 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 
 void roomserver::onconnection_connect(conn_io* qconnection) {
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: incoming connection %0x", qconnection->cid_hash_val);
+}
+
+void roomserver::onconnection_connected(conn_io* qconnection) {
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "onconnection_connected: connected %0x", qconnection->cid_hash_val);
     // check if he was part of any active room.
     room* room_ = nullptr;
     std::map<unsigned, room*>::iterator iterator =  connection_map.find(qconnection->cid_hash_val);

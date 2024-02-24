@@ -51,7 +51,7 @@ void conn_io::sendmessage(const char *buf, size_t buflen, bool flush)
 {
     if (!quiche_conn_is_established(conn))
     {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char *)buf);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - %s", (char *)buf);
         return;
     }
     uint64_t s = 0;
@@ -80,7 +80,7 @@ void conn_io::close()
 {
     if (!quiche_conn_is_established(conn))
     {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant close !!!, connection not established - ");
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant close !!!, connection not established.");
         return;
     }
     uint64_t s = 0;
@@ -221,6 +221,10 @@ void qnetworkserver::onconnection_connect(conn_io *qconnection)
 {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
 }
+void qnetworkserver::onconnection_connected(conn_io* qconnection)
+{
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< connection established");
+}
 
 void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, conn_io *qconnection)
 {
@@ -241,8 +245,10 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t *buf, conn_i
     GX_DELETE_ARY(copybuf);
 
     // TODO : Comment this for development.
+    /*
     qstring ss = qstring::format_string("HELLO from server-%d", qconnection->itrmsg++);
     qconnection->sendmessage(ss, true);
+    */
 }
 
 void qnetworkserver::flush_egress(struct ev_loop *loop, conn_io *qconnection)
@@ -488,6 +494,10 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io *w, int revents)
 
         if (quiche_conn_is_established(qconnection->conn))
         {
+            if (!qconnection->connection_established) {
+                qconnection->connection_established = true;
+                qconnection->bridge->onconnection_connected(qconnection);
+            }
             uint64_t s = 0;
             StreamIter *readable = quiche_conn_readable(qconnection->conn);
             while (quiche_stream_iter_next(readable, &s))

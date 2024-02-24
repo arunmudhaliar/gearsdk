@@ -30,6 +30,7 @@ protected:
     void on_network_server_begin() override final;
     void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override final;
     void onconnection_connect(conn_io* qconnection) override final;
+    void onconnection_connected(conn_io* qconnection) override final;
     void onconnection_destroy(conn_io* qconnection) override final;
     
     void onroom_pre_start(room*) override final;

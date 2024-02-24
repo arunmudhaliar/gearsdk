@@ -51,6 +51,7 @@ public:
     virtual void flush_egress(struct ev_loop* loop, conn_io* qconnection) = 0;
     virtual void destroy_connection(struct ev_loop* loop, conn_io* qconnection) = 0;
     virtual void onconnection_connect(conn_io* qconnection) = 0;
+    virtual void onconnection_connected(conn_io* qconnection) = 0;
     virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) = 0;
     virtual void onconnection_destroy(conn_io* qconnection) = 0;
     inline virtual struct ev_loop* get_mainloop() = 0;
@@ -75,7 +76,7 @@ public:
     socklen_t peer_addr_len;
     UT_hash_handle hh;
     int itrmsg = 0;
-
+    bool connection_established = false;
     uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 };
 
@@ -107,6 +108,7 @@ protected:
     void destroy_connection(struct ev_loop* loop, conn_io* qconnection) override final;
     void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override;
     void onconnection_connect(conn_io* qconnection) override;
+    void onconnection_connected(conn_io* qconnection) override;
     void onconnection_destroy(conn_io* qconnection) override;
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;

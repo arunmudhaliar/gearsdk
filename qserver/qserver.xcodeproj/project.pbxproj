@@ -353,6 +353,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -379,6 +380,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

@@ -7,6 +7,13 @@
 
 #include "room.hpp"
 
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+using namespace rapidjson;
+
 int room::room_id_counter = 0;
 
 room::room(roomserver_interface* interface, const roomconfig& room_config) :
@@ -31,6 +38,77 @@ void room::onroom_create() {
 }
 void room::onroom_start() {
 }
+
+void room::send_event_player_add_or_remove(player* p, bool add) {
+    Document doc;
+    doc.SetObject();
+
+    // Create a JSON object to hold the data
+    Document::AllocatorType& allocator = doc.GetAllocator();
+    doc.AddMember("event", Value().SetString(add ? "player-add" : "player-remove" , allocator), allocator);
+    Value players_json_obj(kArrayType);
+    
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player = (*it).second;
+//        if (p==player) {
+//            continue;
+//        }
+        Value player_json_obj(kObjectType);
+        // Convert the key and value to `Value` type
+        Value f("hash", allocator);
+        Value v(Value().SetUint(player->qconnection->cid_hash_val), allocator);
+        player_json_obj.AddMember(f, v, allocator);
+        
+        Value f2("flag", allocator);
+        Value v2(Value().SetBool(p==player), allocator);
+        player_json_obj.AddMember(f2, v2, allocator);
+        
+        players_json_obj.PushBack(player_json_obj, allocator);
+    }
+    doc.AddMember("players", players_json_obj, allocator);
+    
+
+    
+    // send event
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player = (*it).second;
+        doc.AddMember("self", Value().SetUint(player->qconnection->cid_hash_val), allocator);
+        
+        // Convert JSON document to string
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
+        doc.Accept(writer);
+        
+        player->qconnection->sendmessage(buffer.GetString(), buffer.GetSize(), true);
+        
+        Value::MemberIterator itr = doc.FindMember("self");
+        if (itr != doc.MemberEnd()) {
+            // Remove the member from the document/object
+            doc.RemoveMember(itr);
+        }
+    }
+}
+
+void room::send_event_room_start_or_end(bool room_start) {
+    Document doc;
+    doc.SetObject();
+
+    // Create a JSON object to hold the data
+    Document::AllocatorType& allocator = doc.GetAllocator();
+    doc.AddMember("event", Value().SetString(room_start ? "room_start" : "room_end" , allocator), allocator);
+    
+    // Convert JSON document to string
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    
+    // send event
+    for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
+        player* player = (*it).second;
+        player->qconnection->sendmessage(buffer.GetString(), buffer.GetSize(), true);
+    }
+}
+
 void room::onroom_player_added(player* p) {
 }
 void room::onroom_message(player* p, const qstring& msg) {
@@ -66,6 +144,7 @@ ssize_t room::try_add_connection(conn_io* qconnection) {
     player* player_ = DEBUG_NEW player(qconnection);
     playermap[qconnection->cid_hash_val] = player_;
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_id);
+    send_event_player_add_or_remove(player_, true);
     onroom_player_added(player_);
     if(is_min_capacity_reached()) {
         set_state(room_start);
@@ -97,6 +176,7 @@ ssize_t room::remove_connection(conn_io* qconnection) {
         return -1;
     }
     player* removed_player = (*it).second;
+    send_event_player_add_or_remove(removed_player, false);
     playermap.erase(it);
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_id);
     onroom_player_removed(removed_player);
@@ -148,11 +228,13 @@ void room::on_state_change(states prev_state) {
         case room_start: {
             roomserverinterface->onroom_pre_start(this);
             DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room_id);
+            send_event_room_start_or_end(true);
             onroom_start();
             break;
         }
         case room_end: {
             DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room_id);
+            send_event_room_start_or_end(false);
             onroom_end();
             break;
         }

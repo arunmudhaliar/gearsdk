@@ -144,12 +144,12 @@ ssize_t conn_io_client::SendMessage(const char* buf, size_t buflen, bool fin) {
     }
 
     if (!quiche_conn_is_established(conn)) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - ", (char*)buf);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - %s", (char*)buf);
         return -2;
     }
 
     if (quiche_conn_is_closed(conn)) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection closed - ", (char*)buf);
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection closed - %s", (char*)buf);
         return -3;
     }
 

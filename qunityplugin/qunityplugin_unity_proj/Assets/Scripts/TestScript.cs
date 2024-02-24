@@ -41,6 +41,7 @@ public class TestScript : MonoBehaviour
         Debug.Log("TestScript - Start");
         qsocket1 = new qunitysdk.qsocket();
         qsocket2 = new qunitysdk.qsocket();
+        previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
         server_ip.text = previous_valid_ip;
     }
 
@@ -188,21 +189,16 @@ public class TestScript : MonoBehaviour
         }
     }
 
-    protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, IntPtr buf ) {
+    protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, string msg ) {
         Debug.Log("qsocket message received " + qs.guid_crc);
-        // Create a byte array to hold the UTF-8 bytes
-        byte[] array = new byte[recv_len];
-
-        // Copy the bytes from the unmanaged memory to the byte array
-        Marshal.Copy(buf, array, 0, (int)recv_len);
-
         if (qsocket1 == qs) {
-            qsocket2_response_text.text = Encoding.UTF8.GetString(array);
+            qsocket2_response_text.text = msg;
             qsocket2_response_text.gameObject.SetActive(true);
         } else {
-            qsocket1_response_text.text = Encoding.UTF8.GetString(array);
+            qsocket1_response_text.text = msg;
             qsocket1_response_text.gameObject.SetActive(true);
         }
+        Debug.Log("msg : len " + recv_len +" - "+ msg);
     }
 
     protected void onreleaseconnection( qunitysdk.qsocket qs ) {
@@ -227,5 +223,6 @@ public class TestScript : MonoBehaviour
             return;
         }
         previous_valid_ip = server_ip.text.Trim();
+        PlayerPrefs.SetString("server_ip", previous_valid_ip);
     }
 }
