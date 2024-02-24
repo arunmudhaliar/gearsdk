@@ -51,6 +51,9 @@ template<typename T> void* qh3client_helper::run_internal(void* data) {
     qh3_req_obj* req_obj = (qh3_req_obj*)data;
     bool response_received = false;
     for (int x=0; x<req_obj->retry+1; x++) {
+        if (x>0) {
+            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal : retrying - %d", x);
+        }
         T* new_client = DEBUG_NEW T(req_obj->host, req_obj->port, req_obj->arg);
         new_client->send_request(req_obj->data);
         response_received = new_client->conn_io->res_received;
@@ -61,11 +64,11 @@ template<typename T> void* qh3client_helper::run_internal(void* data) {
         }
         new_client->on_post_send_cleanup();
         GX_DELETE(new_client);
-        GX_DELETE(req_obj);
         if (response_received) {
             break;
         }
     }
+    GX_DELETE(req_obj);
     pthread_exit(0);
 }
 

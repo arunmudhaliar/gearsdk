@@ -15,6 +15,9 @@
 #include <map>
 #include <algorithm>
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qunitysdk"
+
 namespace qunitysdk {
 using namespace client;
 

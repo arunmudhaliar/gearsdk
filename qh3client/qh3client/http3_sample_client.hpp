@@ -13,6 +13,9 @@
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
+#undef __LOGTAG__
+#define __LOGTAG__ "http3_sample_client"
+
 class http3_sample_client : public qtimer_sceduler {
 public:
     http3_sample_client(const qstring& host, const qstring& port);
