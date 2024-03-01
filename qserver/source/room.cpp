@@ -46,6 +46,7 @@ void room::send_event_player_add_or_remove(player* p, bool add) {
     // Create a JSON object to hold the data
     Document::AllocatorType& allocator = doc.GetAllocator();
     doc.AddMember("event", Value().SetString(add ? "player-add" : "player-remove" , allocator), allocator);
+    doc.AddMember("room_id", Value().SetInt(room_id), allocator);
     Value players_json_obj(kArrayType);
     
     for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
@@ -66,8 +67,6 @@ void room::send_event_player_add_or_remove(player* p, bool add) {
         players_json_obj.PushBack(player_json_obj, allocator);
     }
     doc.AddMember("players", players_json_obj, allocator);
-    
-
     
     // send event
     for(auto it = playermap.cbegin();it!=playermap.cend();it++) {
@@ -96,7 +95,7 @@ void room::send_event_room_start_or_end(bool room_start) {
     // Create a JSON object to hold the data
     Document::AllocatorType& allocator = doc.GetAllocator();
     doc.AddMember("event", Value().SetString(room_start ? "room_start" : "room_end" , allocator), allocator);
-    
+    doc.AddMember("room_id", Value().SetInt(room_id), allocator);
     // Convert JSON document to string
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
@@ -184,12 +183,13 @@ ssize_t room::remove_connection(conn_io* qconnection) {
     
     // player leaving between gameplay and gone below min threshold
     if (playermap.size()<room_config.min_players && state>=room_start) {
+        set_state(room_end);
         kick_all_except(nullptr);
     }
     
-    if (playermap.size()==0 && state>=room_start) {
-        set_state(room_end);
-    }
+//    if (playermap.size()==0 && state>=room_start) {
+//        set_state(room_end);
+//    }
     return playermap.size();
 }
 

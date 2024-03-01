@@ -78,6 +78,7 @@ public:
     int itrmsg = 0;
     bool connection_established = false;
     uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
+    uint64_t last_stream_s = 0;
 };
 
 class qnetworkserver : protected bridge_qpeerconnection {

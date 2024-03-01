@@ -54,10 +54,14 @@ void conn_io::sendmessage(const char *buf, size_t buflen, bool flush)
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - %s", (char *)buf);
         return;
     }
+    bool success = false;
     uint64_t s = 0;
     StreamIter *writable = quiche_conn_writable(conn);
     while (quiche_stream_iter_next(writable, &s))
     {
+        if (last_stream_s == s) {
+            continue;
+        }
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
         ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t *)buf,
                                                    buflen, false);
@@ -66,8 +70,28 @@ void conn_io::sendmessage(const char *buf, size_t buflen, bool flush)
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
+        success = true;
+        last_stream_s = s;
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char *)buf);
         break;
+    }
+    
+    const uint64_t MAX_SEND_STREAM_TO_TRY = 200;
+    uint64_t next_s = last_stream_s;
+    while (!success && next_s<MAX_SEND_STREAM_TO_TRY)
+    {
+        next_s = (next_s+1)+(next_s%2);
+        ssize_t sent_len = quiche_conn_stream_send(conn, next_s, (uint8_t *)buf,
+                                                   buflen, false);
+        if (sent_len == buflen) {
+            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char *)buf);
+            last_stream_s = next_s;
+            success = true;
+        }
+    }
+    
+    if (!success && next_s>=MAX_SEND_STREAM_TO_TRY) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Send %s FAILED even after %d tries. Streams not available to send !!!", (char *)buf, next_s);
     }
     quiche_stream_iter_free(writable);
     if (flush)
