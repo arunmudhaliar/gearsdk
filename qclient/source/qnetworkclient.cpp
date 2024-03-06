@@ -25,7 +25,7 @@ using namespace client;
 
 int qnetworkclient::connectionID = 0;
 
-#pragma region QConnection
+// MARK: - QConnection
 conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : bridge(bridge),
 id(id) {
 }
@@ -54,6 +54,12 @@ void conn_io_client::Release() {
         quiche_conn_free(conn);
         conn = nullptr;
     }
+    
+    for (auto it = sendBuffer.cbegin(); it != sendBuffer.cend(); it++) {
+        qdata* sd = *it;
+        GX_DELETE(sd);
+    }
+    sendBuffer.clear();
 }
 
 int conn_io_client::Connect(qstring host, qstring port) {
@@ -172,7 +178,6 @@ ssize_t conn_io_client::SendMessage(const char* buf, size_t buflen, bool fin) {
 
     return result;
 }
-#pragma endregion QConnection
 
 void qnetworkclient::setstate(CON_STATE state) {
     if (this->state >= state) {
@@ -473,7 +478,9 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
         return;
     }
     else {
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection not closed");
+        if (quiche_conn_is_established(qconnection_->conn)) {
+            DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection not closed");
+        }
     }
 }
 
@@ -606,6 +613,8 @@ void* qnetworkclient::run_internal(void* data) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal loop released !!!");
     thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
 
+    ev_loop_destroy(thiz->mainloop);
+    
     quiche_config_free(config);
 
 #if USE_PTHREAD

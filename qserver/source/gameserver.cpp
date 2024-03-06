@@ -7,6 +7,7 @@
 
 #include "gameserver.hpp"
 
+// MARK: - game_room
 game_room::game_room(roomserver_interface* interface, const roomconfig& room_config) : room(interface, room_config) {
     
 }
@@ -31,9 +32,17 @@ void game_room::onroom_player_removed(player* p) {
 void game_room::onroom_end() {
 }
 
+// MARK: - gameserver
 //----------------------------------------------------------------------------
 //---------------------------------gameserver---------------------------------
 //----------------------------------------------------------------------------
-room* gameserver::create_room() {
-    return DEBUG_NEW game_room(this, roomconfig(2, 4, false));
+void gameserver::on_network_server_init() {
+    roomserver::on_network_server_init();
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "gameserver::init");
+    message_parser.register_message_type<msg_room_config>();
+    message_parser.register_message_type<msg_room_server_shutdown>();
+}
+
+room* gameserver::create_room(const msg_room_config* room_config_msg) {
+    return DEBUG_NEW game_room(this, roomconfig(room_config_msg));
 }

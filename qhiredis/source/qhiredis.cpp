@@ -42,6 +42,15 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
         }
         return 1;
     }
+    
+    // Setting the notify-keyspace-events to Ex
+    redisReply *reply = (redisReply*)redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
+    if (reply->type == REDIS_REPLY_ERROR) {
+        printf("Error setting hiredis CONFIG: %s\n", reply->str);
+    } else {
+        printf("hiredis CONFIG set successfully\n");
+    }
+    
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
     return 0;
 }
@@ -231,6 +240,36 @@ int qhiredis::decr_by(const qstring& key, const int delta, long long &value) {
     return 0;
 }
 
+int qhiredis::expire_key(const qstring& key, int expiry_in_sec) {
+    if (!context) {
+        return 2;
+    }
+    redisReply *reply = (redisReply*)redisCommand(context, "EXPIRE %b %d", key.c_str(), key.length(), expiry_in_sec);
+    if (reply != nullptr) {
+        if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1) {
+            printf("'%s' expiration time set successfully.\n", key.c_str());
+        } else {
+            printf("Failed to set expiration time for '%s'.\n", key.c_str());
+        }
+    } else {
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
+
+int qhiredis::delete_key(const qstring& key) {
+    if (!context) {
+        return 2;
+    }
+    redisReply *reply = (redisReply*)redisCommand(context, "DEL %b", key.c_str(), key.length());
+    if (reply == nullptr) {
+        printf("hiredis DEL execution failed for key %s\n", key.c_str());
+        return 1;
+    }
+    freeReplyObject(reply);
+    return 0;
+}
 
 #if 0
 void qhiredis::example_argv_command(redisContext* c, int n) {

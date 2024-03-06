@@ -51,7 +51,9 @@ public:
     int incr_by(const qstring& key, const int delta, long long &value);
     int decr_by(const qstring& key, const int delta, long long &value);
     
+    int expire_key(const qstring& key, int expiry_in_sec);
     void iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback);
+    int delete_key(const qstring& key);
     
 private:
     int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);

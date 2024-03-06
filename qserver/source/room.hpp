@@ -9,6 +9,8 @@
 #define room_hpp
 
 #include "qnetworkserver.hpp"
+#include "../../networkcommon/source/roommessage.hpp"
+#include "../../common/typex.h"
 
 #include <map>
 #include <vector>
@@ -16,6 +18,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "room"
 
+// MARK: -
 struct player {
     player(conn_io* qcon) : qconnection(qcon) {
     }
@@ -25,6 +28,7 @@ struct player {
     conn_io* qconnection;
 };
 
+// MARK: -
 class room;
 class roomserver_interface {
 public:
@@ -43,23 +47,35 @@ class room_interface {
 
 struct roomconfig {
     roomconfig(const roomconfig& room_config) :
-    min_players(room_config.min_players),
-    max_players(room_config.max_players),
-    allow_join_after_start(room_config.allow_join_after_start) {
+        min_players(room_config.min_players),
+        max_players(room_config.max_players),
+        bet_amountx(room_config.bet_amountx),
+        reward_multiplierx(room_config.reward_multiplierx),
+        allow_join_after_start(room_config.allow_join_after_start) {
     }
-    roomconfig(int min_players, int max_players, bool allow_join_after_start) :
+    roomconfig(int min_players, int max_players, intx bet_amountx, intx reward_multiplierx, bool allow_join_after_start) :
         min_players(min_players),
         max_players(max_players),
+        bet_amountx(bet_amountx),
+        reward_multiplierx(reward_multiplierx),
         allow_join_after_start(allow_join_after_start) {
+    }
+    roomconfig(const msg_room_config* room_config_msg) :
+        min_players(room_config_msg->min),
+        max_players(room_config_msg->max),
+        allow_join_after_start(room_config_msg->allow_after_start) {
     }
     const int min_players = 1;
     const int max_players = 1;
+    const intx bet_amountx = 0;                 // Note: bet_amountx & reward_multiplierx are in fixed point values
+    const intx reward_multiplierx = FX_TWO;
     const bool allow_join_after_start = false;
 };
 
+// MARK: -
 class room : public room_interface {
 private:
-    room() : room_config(roomconfig(1, 1, false)), creation_time(0) {
+    room() : room_config(roomconfig(1, 1, 0, FX_TWO, false)), creation_time(0) {
     }
     
 public:
@@ -94,6 +110,9 @@ public:
     void broadcast(const qstring& msg);
     void broadcast_except(player* p, const qstring& msg);
     void sendto(player* p, const qstring& msg);
+    inline const roomconfig& get_room_config() { return room_config; }
+    
+    qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
     
 protected:
     void onroom_create() override;

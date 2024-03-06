@@ -55,8 +55,8 @@ int qh3simple_router::run() {
             DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
             break;
         }
-        int free_port = next_available_port(config.host, range, index++);
-        if (free_port<0) {
+        int free_port = next_available_port(config.host, range, index);
+        if (free_port==0) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
             break;
         }
@@ -450,10 +450,12 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
     pthread_exit(0);
 }
 
-int qh3simple_router::next_available_port(const qstring& host, port_range& range, int index) {
+int qh3simple_router::next_available_port(const qstring& host, port_range& range, int& index) {
     int min = range.min;
     int max = range.max;
-    for (int port = min+index; port<max; port++) {
+    int start_index=index;
+    for (int port = min+start_index; port<max; port++) {
+        index++;
         if (is_port_available(host, port)==port) {
             return port;
         }
@@ -470,26 +472,26 @@ int qh3simple_router::is_port_available(const qstring& host, int port_number) {
     };
     struct addrinfo* local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host. port:%d",port_number);
         return -1;
     }
 
     int sock = socket(local->ai_family, SOCK_DGRAM, 0);
     if (sock < 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket. port:%d",port_number);
         freeaddrinfo(local);
         return -1;
     }
 
     if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking. port:%d",port_number);
         freeaddrinfo(local);
         close(sock);
         return -1;
     }
 
     if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket. port:%d",port_number);
         freeaddrinfo(local);
         close(sock);
         return -1;

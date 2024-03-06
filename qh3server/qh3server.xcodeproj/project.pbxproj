@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
 		556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C82AF01D0500D688DB /* cert.key */; };
 		556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C92AF01D0500D688DB /* cert.crt */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
@@ -65,6 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		55384BAA2B97ADB800BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556AB5C82AF01D0500D688DB /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		556AB5C92AF01D0500D688DB /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
 		556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_server.cpp; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				55A72F642B7F227F00064250 /* libdpp.10.0.30.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
+				55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
 				556AB6BC2AF50E3B00D688DB /* libservercommon.a in Frameworks */,
 				55A72F652B7F22DC00064250 /* libdpp.10.0.30.dylib in Frameworks */,
@@ -195,6 +198,7 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55384BAA2B97ADB800BE7723 /* libqutils.a */,
 				55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */,
 				5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */,
 				5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */,
@@ -430,6 +434,7 @@
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -468,6 +473,7 @@
 					"\"$(SRCROOT)/../qh3client/qh3client\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

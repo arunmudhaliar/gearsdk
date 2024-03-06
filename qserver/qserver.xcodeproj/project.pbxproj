@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAC2B97B03D00BE7723 /* libqutils.a */; };
+		55384BAF2B97B09D00BE7723 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */; };
+		55384BB02B97B09D00BE7723 /* libdpp.10.0.30.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
@@ -27,6 +30,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		55384BB12B97B09D00BE7723 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				55384BB02B97B09D00BE7723 /* libdpp.10.0.30.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372B62AC2ABCD00F0095E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -41,6 +55,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		55384BAC2B97B03D00BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../qutils/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
 		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAEB2B0AB4A600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		557487472AEA47E100C0F6CA /* roomserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roomserver.cpp; sourceTree = "<group>"; };
@@ -76,8 +92,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */,
+				55384BAF2B97B09D00BE7723 /* libdpp.10.0.30.dylib in Frameworks */,
 				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
 				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
+				55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
@@ -93,6 +111,8 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */,
+				55384BAC2B97B03D00BE7723 /* libqutils.a */,
 				55A72F692B83723D00064250 /* libhiredis.a */,
 				55A72F672B8370CC00064250 /* libqhiredis.a */,
 				5574F2192B20EBC9007C93AA /* libnetworkcommon.a */,
@@ -165,6 +185,7 @@
 				55B372B42AC2ABCD00F0095E /* Sources */,
 				55B372B52AC2ABCD00F0095E /* Frameworks */,
 				55B372B62AC2ABCD00F0095E /* CopyFiles */,
+				55384BB12B97B09D00BE7723 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -358,6 +379,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";
@@ -385,6 +407,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_LDFLAGS = "";

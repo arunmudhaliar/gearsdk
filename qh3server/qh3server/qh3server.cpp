@@ -823,7 +823,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     //
     qtimer_sceduler close_dangling_connections_scheduler;
     close_dangling_connections_scheduler.set_ev_lopp(mainloop);
-    close_dangling_connections_scheduler.schedule_repeat_timer([this, const_logtag](qtimer& timer) {
+    qtimer* dangling_connections_check_timer =  close_dangling_connections_scheduler.schedule_repeat_timer([this, const_logtag](qtimer& timer) {
             int dangling_connections = 0;
             int dangling_with_response = 0;
             int flushed_on_exit = 0;
@@ -906,6 +906,10 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 
     on_run_end();
     
+    close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
+    
+    ev_loop_destroy(mainloop);
+    
     freeaddrinfo(local);
     
     quiche_h3_config_free(http3_config);
@@ -918,7 +922,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     struct ev_loop* wait_loop = ev_loop_new();
     qtimer_sceduler wait_scheduler;
     wait_scheduler.set_ev_lopp(wait_loop);
-    wait_scheduler.schedule_repeat_timer([this, wait_loop, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
+    qtimer* wait_timer = wait_scheduler.schedule_repeat_timer([this, wait_loop, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
         int service_shutdown_cnt = 0;
         if (get_stats_loggeer()->config.finished) {
             DEBUG_PRINT_IMPORTANT(const_logtag, "stats service finished !!!");
@@ -954,6 +958,8 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     }, 3);
     
     ev_run(wait_loop, 0);
+    wait_scheduler.cancel_and_destroy_timer(wait_timer);
+    ev_loop_destroy(wait_loop);
     
     close(sock);
     GX_DELETE(relay_through_router_info);

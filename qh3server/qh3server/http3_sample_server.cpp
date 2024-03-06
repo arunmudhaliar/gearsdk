@@ -56,13 +56,15 @@ void http3_sample_server::on_run_end() {
     struct ev_loop* wait_loop = ev_loop_new();
     qtimer_sceduler wait_scheduler;
     wait_scheduler.set_ev_lopp(wait_loop);
-    wait_scheduler.schedule_repeat_timer([this, wait_loop](qtimer& timer) {
+    qtimer* wait_timer = wait_scheduler.schedule_repeat_timer([this, wait_loop](qtimer& timer) {
         if (!qzk->is_running()) {
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qzk service finished !!!");
             ev_break(wait_loop, EVBREAK_ONE);
         }
     }, 3);
     ev_run(wait_loop, 0);
+    wait_scheduler.cancel_and_destroy_timer(wait_timer);
+    ev_loop_destroy(wait_loop);
     GX_DELETE(qzk);
 #endif
 }

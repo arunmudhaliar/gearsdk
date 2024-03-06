@@ -7,7 +7,7 @@
 
 #include "http3_sample_server.hpp"
 #include "qh3simple_router.hpp"
-#include "../../servercommon/source/discord_util.hpp"
+#include "../../qutils/discord_util.hpp"
 #include "../../common/sdktypes.hpp"
 
 //#include "../../qhiredis/source/qhiredis.hpp"
@@ -24,11 +24,15 @@ void warn_callback(const char* msg) {
 void error_callback(const char* msg) {
     discord_util::send(qstring::format_string("[%s] - ERROR : %s", gsdk::device::device_details.nodename, msg).c_str());
 }
+void assert_callback(const char* msg) {
+    discord_util::send(qstring::format_string("[%s] - ASSERT : %s", gsdk::device::device_details.nodename, msg).c_str());
+}
 
 int main(int argc, const char* argv[]) {
     init_gsdk();
     gsdk::set_warn_callback(warn_callback);
     gsdk::set_error_callback(error_callback);
+    gsdk::set_assert_callback(assert_callback);
     // main http server
     qstring host = "127.0.0.1";
 //    qstring host = "192.168.0.65";
@@ -47,6 +51,7 @@ int main(int argc, const char* argv[]) {
     
 //    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
 //    server.run(host, port, rootDir, nullptr, 4010, 0);  // port return not used, so passing 0
+    
     server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005);
     qh3simple_router router(config);
     router.run();
@@ -66,12 +71,22 @@ int main(int argc, const char* argv[]) {
     //
     //    ev_run(loop, 0);
 
-    // redis
-    //    qhiredis hiredis;
-    //    hiredis.hiredis_main(1, nullptr);
-
+//     redis
+//    qhiredis hiredis(redis_ip, redis_port);
+//    hiredis.connect_redis();
+//    hiredis.set_hash_value("test_hash", "f1", "test1");
+//    hiredis.set_hash_value("test_hash", "f2", "test2");
+    
+    
+//    long long testValue;
+//    hiredis.incr("test_add", testValue);
+//    hiredis.decr("test_add", testValue);
+//    hiredis.decr_by("test_add", 100, testValue);
     // mongo
     //    server.test_mongo_db();
 
     return 0;
 }
+
+
+

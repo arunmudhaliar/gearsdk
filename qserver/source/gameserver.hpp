@@ -13,6 +13,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "gameserver"
 
+// MARK: -
 class game_room : public room {
 public:
     game_room(roomserver_interface*, const roomconfig& room_config);
@@ -27,9 +28,11 @@ protected:
     void onroom_end() override;
 };
 
+// MARK: -
 class gameserver : public roomserver {
 protected:
-    room* create_room() override;
+    void on_network_server_init() override;
+    room* create_room(const msg_room_config* room_config_msg) override;
 };
 
 #endif /* gameserver_hpp */

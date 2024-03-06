@@ -24,6 +24,7 @@ int32_t main(int32_t argc, const char* argv[]) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "version %s(%d)", version_string.c_str(), version_code);
     print_common_info();
     qstring host = "localhost";
+//    qstring host = "192.168.0.230";
     qstring port = "4000";
     if (argc == 3) {
         host = argv[1];
@@ -50,7 +51,7 @@ int32_t main(int32_t argc, const char* argv[]) {
     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "host:%s, port:%s", host.c_str(), port.c_str());
 
     networkclient_tester tester;
-    tester.run(host, port, 1, 7);
+    tester.run(host, port, 1, 7, 10);
 
     return 0;
 }

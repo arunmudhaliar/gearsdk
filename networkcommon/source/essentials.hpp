@@ -22,6 +22,12 @@
 #include <zlib.h>
 #include <time.h>
 
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
@@ -120,6 +126,8 @@ public:
     static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
     static int update_port(struct sockaddr* sa, uint16_t newPort);
     static uLong mod_crc32_z(uLong adler, const Bytef *buf, z_size_t len);
+    
+    static bool get_json_string(rapidjson::Document& obj, qstring& output);
 };
 
 // h3 structs

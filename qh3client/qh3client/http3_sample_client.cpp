@@ -32,19 +32,19 @@ void http3_sample_client::init_connection() {
 
     create_connections();
 
-    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
-        UNUSED(timer);
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
-                              total_connections_issued.load(), total_connections_returned.load(),
-                              total_connections_returned_success.load(), live_connections.load());
-        if (live_connections<30) {
-            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections");
-            create_connections();
-            //shutdown_mainloop();
-        }
-        }, 3);
-    //
-    //    ev_run(loop, 0);
+//    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
+//        UNUSED(timer);
+//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
+//                              total_connections_issued.load(), total_connections_returned.load(),
+//                              total_connections_returned_success.load(), live_connections.load());
+//        if (live_connections<30) {
+//            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections");
+//            create_connections();
+//            //shutdown_mainloop();
+//        }
+//        }, 3);
+//    //
+//    //    ev_run(loop, 0);
 }
 
 void http3_sample_client::create_connections() {

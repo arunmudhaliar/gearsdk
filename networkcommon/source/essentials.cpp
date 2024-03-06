@@ -15,7 +15,7 @@
 
 using namespace gsdk;
 
-#pragma region QMutex
+// MARK: - QMutex
 int qmutex::log_flag = 0;
 
 qmutex::qmutex() {
@@ -137,9 +137,8 @@ void qmutex::unBlock(const char* unblockedBy_) {
     DEBUG_ASSERT(__LOGTAG__, (condition.signal() == 0), __FUNCTION__);
     DEBUG_ASSERT(__LOGTAG__, (unLock() == 0), __FUNCTION__);
 }
-#pragma endregion QMutex
 
-#pragma region QMutexCondition
+// MARK: - QMutexCondition
 qmutexcondition::qmutexcondition() {
     inited = false;
 }
@@ -217,7 +216,7 @@ int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
     }
     return wait_req;
 }
-#pragma endregion QMutexCondition
+// END MARK: -
 
 
 int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
@@ -505,6 +504,15 @@ unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
     unsigned long  crc_ = crc32(0L, Z_NULL, 0);
     crc_ = mod_crc32_z(crc_, (const unsigned char*)buffer, len);
     return crc_;
+}
+
+bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
+    // Convert JSON document to string
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    obj.Accept(writer);
+    output = buffer.GetString();
+    return true;
 }
 
 bool conn_io_req_res::has_crc_header() {

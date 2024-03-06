@@ -20,6 +20,7 @@
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
+#include "../../qhiredis/source/qhiredis_async.hpp"
 
 extern "C"
 {
@@ -36,6 +37,7 @@ extern "C"
         sizeof(struct sockaddr_storage) + \
         MAX_CID_LEN
 
+// MARK: -
 class conn_io;
 struct connections {
     int sock;
@@ -46,6 +48,7 @@ struct connections {
     uint8_t out[Q_MAX_DATAGRAM_SIZE];
 };
 
+// MARK: -
 class bridge_qpeerconnection {
 public:
     virtual void flush_egress(struct ev_loop* loop, conn_io* qconnection) = 0;
@@ -57,6 +60,7 @@ public:
     inline virtual struct ev_loop* get_mainloop() = 0;
 };
 
+// MARK: -
 class conn_io {
 public:
     conn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_len, int sock);
@@ -79,9 +83,11 @@ public:
     bool connection_established = false;
     uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
     uint64_t last_stream_s = 0;
+    int user_data = 0;
 };
 
-class qnetworkserver : protected bridge_qpeerconnection {
+// MARK: -
+class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhiredis_async {
 private:
     struct runserverconfig {
         qstring host;
@@ -101,9 +107,11 @@ public:
     void broadcast_message(const qstring& buffer, bool flush);
     void network_server_begin();
     void network_server_end();
+    bool is_run();
 
 protected:
     virtual void on_network_server_begin() = 0;
+    virtual void on_network_server_init() = 0;
     virtual void on_network_server_end() = 0;
     void flush_egress(struct ev_loop* loop, conn_io* qconnection) override final;
     void destroy_connection(struct ev_loop* loop, conn_io* qconnection) override final;
@@ -111,11 +119,17 @@ protected:
     void onconnection_connect(conn_io* qconnection) override;
     void onconnection_connected(conn_io* qconnection) override;
     void onconnection_destroy(conn_io* qconnection) override;
+    void on_qhiredis_async_key_expired(const qstring&) override;
+    
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;
     }
 
     qtextfilelogger logger;
+    qstring host_id;
+    qstring port_id;
+    qhiredis* hiredis = nullptr;
+    qhiredis_async* hiredis_async = nullptr;
 private:
     static void debug_log(const uint8_t* line, void* argp);
     static void timeout_cb(EV_P_ ev_timer* w, int revents);
@@ -145,7 +159,6 @@ private:
     qmutex run_mutex;
     qmutex runconfig_mutex;
     pthread_t run_thread_id;
-    qhiredis* hiredis = nullptr;
 };
 
 #endif /* qnetworkserver_hpp */

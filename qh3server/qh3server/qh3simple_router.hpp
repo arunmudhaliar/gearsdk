@@ -41,7 +41,7 @@ private:
     int spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result);
     static void* spawn_qh3server_internal(void* data);
     
-    static int next_available_port(const qstring& host, port_range& range, int index);  // index starts with 0
+    static int next_available_port(const qstring& host, port_range& range, int& index);  // index starts with 0
     static int is_port_available(const qstring& host, int port_number);
     
     route* command_feedback_route = nullptr;

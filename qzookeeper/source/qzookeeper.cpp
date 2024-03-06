@@ -186,6 +186,8 @@ void* qzookeeper::connect_internal(void* data) {
     thiz->connection_in_progress = false;
     thiz->running = false;
     thiz->shutdown();
+    ev_loop_destroy(thiz->mainloop);
+    thiz->mainloop = nullptr;
     pthread_exit(0);
 }
 

@@ -16,6 +16,7 @@ using namespace rapidjson;
 
 int room::room_id_counter = 0;
 
+// MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) :
 roomserverinterface(interface),
 room_config(room_config),
@@ -285,4 +286,12 @@ void room::sendto(player* p, const qstring& msg) {
         return;
     }
     p->qconnection->sendmessage(msg, true);
+}
+
+qstring room::get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id) {
+    qstring signature(qstring::format_string("%s%s#%s-%d-%d-%d-%d", prefix.c_str(),
+                                       host_id.c_str(), port_id.c_str(),
+                                       room_config.min_players, room_config.max_players,
+                                       room_config.bet_amountx, room_config.reward_multiplierx));
+    return signature;
 }

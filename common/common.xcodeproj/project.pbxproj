@@ -85,6 +85,7 @@
 		556AB71A2AFA993200D688DB /* crypto_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = crypto_helper.hpp; sourceTree = "<group>"; };
 		556ABAF82B0D276800D688DB /* qstring.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = qstring.h; sourceTree = "<group>"; };
 		55853CC72AC32A1E00901E52 /* sdktypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sdktypes.cpp; sourceTree = "<group>"; };
+		55A72F702B93B14400064250 /* typex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = typex.h; sourceTree = "<group>"; };
 		55B372FA2AC325B200F0095E /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B3730B2AC3263200F0095E /* sdktypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sdktypes.hpp; sourceTree = "<group>"; };
 		55E4D30E2AC8A73000555999 /* gxcrc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gxcrc32.cpp; sourceTree = "<group>"; };
@@ -161,6 +162,7 @@
 		55B372F12AC325B200F0095E = {
 			isa = PBXGroup;
 			children = (
+				55A72F702B93B14400064250 /* typex.h */,
 				556ABAF82B0D276800D688DB /* qstring.h */,
 				556AB7192AFA993200D688DB /* crypto_helper.cpp */,
 				556AB71A2AFA993200D688DB /* crypto_helper.hpp */,

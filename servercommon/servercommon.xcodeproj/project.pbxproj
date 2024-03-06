@@ -61,8 +61,6 @@
 		556AB6992AF50BFB00D688DB /* mongoc.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6472AF50BFB00D688DB /* mongoc.h */; };
 		556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6B72AF50C3500D688DB /* qmongo.cpp */; };
 		556AB6BA2AF50C3500D688DB /* qmongo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6B82AF50C3500D688DB /* qmongo.hpp */; };
-		55A72F5F2B7F1DA200064250 /* discord_util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F5D2B7F1DA200064250 /* discord_util.cpp */; };
-		55A72F602B7F1DA200064250 /* discord_util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55A72F5E2B7F1DA200064250 /* discord_util.hpp */; };
 		55A72F622B7F1EF000064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F612B7F1EF000064250 /* libdpp.10.0.30.dylib */; };
 		55A9CD102B6580BC006CAD14 /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD0F2B6580BC006CAD14 /* libnetworkcommon.a */; };
 /* End PBXBuildFile section */
@@ -123,8 +121,6 @@
 		556AB6472AF50BFB00D688DB /* mongoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mongoc.h; sourceTree = "<group>"; };
 		556AB6B72AF50C3500D688DB /* qmongo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qmongo.cpp; sourceTree = "<group>"; };
 		556AB6B82AF50C3500D688DB /* qmongo.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qmongo.hpp; sourceTree = "<group>"; };
-		55A72F5D2B7F1DA200064250 /* discord_util.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = discord_util.cpp; sourceTree = "<group>"; };
-		55A72F5E2B7F1DA200064250 /* discord_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = discord_util.hpp; sourceTree = "<group>"; };
 		55A72F612B7F1EF000064250 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
 		55A9CD0F2B6580BC006CAD14 /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -164,8 +160,6 @@
 			children = (
 				556AB6122AF50BFB00D688DB /* libmongoc-1.0 */,
 				556AB6B62AF50C2200D688DB /* qmongo */,
-				55A72F5D2B7F1DA200064250 /* discord_util.cpp */,
-				55A72F5E2B7F1DA200064250 /* discord_util.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -313,7 +307,6 @@
 				556AB6682AF50BFB00D688DB /* mongoc-stream-socket.h in Headers */,
 				556AB6852AF50BFB00D688DB /* mongoc-error.h in Headers */,
 				556AB6982AF50BFB00D688DB /* mongoc-config.h in Headers */,
-				55A72F602B7F1DA200064250 /* discord_util.hpp in Headers */,
 				556AB67A2AF50BFB00D688DB /* mongoc-version.h in Headers */,
 				556AB6892AF50BFB00D688DB /* mongoc-cursor.h in Headers */,
 			);
@@ -376,7 +369,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A72F5F2B7F1DA200064250 /* discord_util.cpp in Sources */,
 				556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -512,6 +504,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/source\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -535,6 +528,7 @@
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/source\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

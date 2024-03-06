@@ -14,8 +14,6 @@
 #include <android/log.h>
 #endif
 
-
-#define LOGBUFFER_SIZE 256 * 2
 using namespace gsdk;
 
 struct utsname device::device_details;
@@ -127,6 +125,7 @@ JavaVM* device::g_JavaVM = nullptr;
 
     type_debug_warn_or_err_cb global_warn_cb = nullptr;
     type_debug_warn_or_err_cb global_err_cb = nullptr;
+    type_debug_warn_or_err_cb global_assert_cb = nullptr;
         
     void set_warn_callback(type_debug_warn_or_err_cb cb) {
         global_warn_cb = cb;
@@ -134,7 +133,10 @@ JavaVM* device::g_JavaVM = nullptr;
     void set_error_callback(type_debug_warn_or_err_cb cb) {
         global_err_cb = cb;
     }
-
+    void set_assert_callback(type_debug_warn_or_err_cb cb) {
+        global_assert_cb = cb;
+    }
+        
     void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
         if (logLevel > LOG_LEVEL) {
             return;
@@ -186,20 +188,17 @@ JavaVM* device::g_JavaVM = nullptr;
             global_err_cb(buffer);
         }
     }
-    void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
-        if (condition) {
-            return;
-        }
+    void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_err_cb) {
-            global_err_cb(buffer);
+        //fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
+        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
+        if (global_assert_cb) {
+            global_assert_cb(buffer);
         }
-        assert(condition);
     }
     void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
