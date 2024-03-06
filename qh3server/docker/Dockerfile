@@ -12,6 +12,7 @@ COPY qh3client/ ./qh3client
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
 COPY qzookeeper/ ./qzookeeper
+COPY qutils/ ./qutils
 COPY make_qh3server.sh ./
 COPY run_qh3server.sh ./
 COPY qh3server/certs/cert.crt ./qh3server/

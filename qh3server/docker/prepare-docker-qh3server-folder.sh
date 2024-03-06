@@ -12,6 +12,7 @@ cp -r ./qhiredis/ ./docker-qh3server/qhiredis
 cp -r ./qstats-crawler/ ./docker-qh3server/qstats-crawler
 cp -r ./servercommon/ ./docker-qh3server/servercommon
 cp -r ./qzookeeper/ ./docker-qh3server/qzookeeper
+cp -r ./qutils/ ./docker-qh3server/qutils
 cp ./qh3server/docker/Dockerfile ./docker-qh3server/Dockerfile
 cp ./qh3server/docker/make_qh3server.sh ./docker-qh3server/make_qh3server.sh
 cp ./qh3server/docker/run_qh3server.sh ./docker-qh3server/run_qh3server.sh
@@ -51,6 +52,7 @@ rm -rf ./docker-qh3server/qhiredis/libs/macos
 rm -rf ./docker-qh3server/qstats-crawler/libs/macos
 rm -rf ./docker-qh3server/servercommon/libs/macos
 rm -rf ./docker-qh3server/qzookeeper/libs/macos
+rm -rf ./docker-qh3server/qutils/libs/macos
 rm -rf ./docker-qh3server/qh3server/docker
 rm -rf ./docker-qh3server/qh3server/*.dSYM
 rm -rf ./docker-qh3server/qh3server/qh3server-app

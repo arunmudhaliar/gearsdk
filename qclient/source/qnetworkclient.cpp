@@ -428,7 +428,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
             qdata* sd = *it;
             ssize_t send_res = qconnection_->SendMessage((const char*)sd->data, sd->size, sd->fin);
             if (sd->size != send_res) {
-                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "send_cb failed for %s, err %d", sd->data, send_res);
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "send_cb failed for %.*s, err %d", sd->size, sd->data, send_res);
             }
             else {
                 successfullySent.push_back(sd);

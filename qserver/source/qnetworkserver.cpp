@@ -708,10 +708,22 @@ void *qnetworkserver::run_internal(void *data)
     int res_crt_load = quiche_config_load_cert_chain_from_pem_file(thiz->config, certFile.c_str());
     if (res_crt_load!=0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s", certFile.c_str());
+        freeaddrinfo(local);
+        GX_DELETE(thiz->hiredis);
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
     int res_key_load = quiche_config_load_priv_key_from_pem_file(thiz->config, keyFile.c_str());
     if (res_key_load!=0) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
+        freeaddrinfo(local);
+        GX_DELETE(thiz->hiredis);
+        runConfig->pthread_returnValue = -1;
+        runConfig->finished = true;
+        DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
+        pthread_exit(&runConfig->pthread_returnValue);
     }
     
     quiche_config_set_application_protos(thiz->config,

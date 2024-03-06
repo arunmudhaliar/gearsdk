@@ -752,10 +752,16 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     int res_crt_load = quiche_config_load_cert_chain_from_pem_file(config, certFile.c_str());
     if (res_crt_load != 0) {
         DEBUG_PRINT_ERROR(const_logtag, "CERT load error - %s", certFile.c_str());
+        close(sock);
+        freeaddrinfo(local);
+        return -1;
     }
     int res_key_load = quiche_config_load_priv_key_from_pem_file(config, keyFile.c_str());
     if (res_key_load != 0) {
         DEBUG_PRINT_ERROR(const_logtag, "KEY load error - %s", keyFile.c_str());
+        close(sock);
+        freeaddrinfo(local);
+        return -1;
     }
 
     quiche_config_set_application_protos(config,
