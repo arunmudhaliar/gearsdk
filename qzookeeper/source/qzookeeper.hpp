@@ -64,11 +64,11 @@ private:
     
     pthread_t zk_thread_id;
     qstring connection_url;
-    std::atomic<bool> connection_in_progress = false;
-    std::atomic<bool> running = false;
+    std::atomic<bool> connection_in_progress;
+    std::atomic<bool> running;
     struct ev_loop* mainloop = nullptr;
-    std::atomic<bool> op_in_progress = false;
-    std::atomic<int> op_result = 0;
+    std::atomic<bool> op_in_progress;
+    std::atomic<int> op_result;
     qstring get_result;
     int connection_state = -1;
     int retry_count = 0;

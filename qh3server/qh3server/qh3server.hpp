@@ -30,6 +30,7 @@
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
+
 //#if PLATFORM == PLATFORM_MAC
 //namespace fs = std::__fs::filesystem;
 //#elif PLATFORM == PLATFORM_LINUX

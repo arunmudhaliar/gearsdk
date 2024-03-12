@@ -18,17 +18,10 @@ http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstri
 http3_sample_server::~http3_sample_server() {
     GX_DELETE(hiredis);
     GX_DELETE(mongo);
+    GX_DELETE(zkconfig);
 }
 
 bool http3_sample_server::on_server_pre_init() {
-    if (mongo->connect()!=0) {
-        return false;
-    }
-    
-    if (hiredis->connect_redis()!=0) {
-        return false;
-    }
-    
 #if ENABLE_ZK
     GX_DELETE(qzk);
     qzk = DEBUG_NEW qzookeeper();
@@ -38,10 +31,25 @@ bool http3_sample_server::on_server_pre_init() {
         GX_DELETE(qzk);
         return false;
     }
-    qstring zk_test_res;
-    qzk->get_data("/qh3server/roomconfig", zk_test_res);
-    qzk->set_data("/qh3server/test", "hello");
+    
+    GX_DELETE(zkconfig);
+    zkconfig = DEBUG_NEW serverconfig();
+#if DEV_BUILD
+    zkconfig->load("configs/dev/runtime-config.json", qzk, "/qh3server");
+#elif PROD_BUILD
+    zkconfig->load("configs/prod/runtime-config.json", qzk, "/qh3server");
+#else
+    zkconfig->load("configs/dev/runtime-config.json", qzk, "/qh3server");
 #endif
+#endif
+    
+    if (mongo->connect()!=0) {
+        return false;
+    }
+    
+    if (hiredis->connect_redis()!=0) {
+        return false;
+    }
     return true;
 }
 

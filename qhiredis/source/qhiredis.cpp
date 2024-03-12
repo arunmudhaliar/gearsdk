@@ -22,7 +22,7 @@ int qhiredis::connect_redis(bool unix_socket) {
 
 int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, bool unix_socket) {
     if (context) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!!");
+        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!! - %s:%d", hostname.c_str(), port);
         return 2;
     }
     struct timeval timeout = { 30, 500000 }; // 30.5 seconds
@@ -34,11 +34,11 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
     }
     if (context == nullptr || context->err) {
         if (context) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s", context->errstr);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s - %s:%d", context->errstr, hostname.c_str(), port);
             disconnect_redis();
         }
         else {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context");
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context - %s:%d", hostname.c_str(), port);
         }
         return 1;
     }
@@ -46,12 +46,12 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
     // Setting the notify-keyspace-events to Ex
     redisReply *reply = (redisReply*)redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
     if (reply->type == REDIS_REPLY_ERROR) {
-        printf("Error setting hiredis CONFIG: %s\n", reply->str);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error setting hiredis CONFIG: %s", reply->str);
     } else {
-        printf("hiredis CONFIG set successfully\n");
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "hiredis CONFIG set successfully");
     }
     
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s:%d", hostname.c_str(), port);
     return 0;
 }
 
@@ -113,11 +113,12 @@ int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const
     
     // Check reply->type to confirm the command was successful
     if (reply->type == REDIS_REPLY_INTEGER) {
-        printf("The field was newly set: %lld\n", reply->integer);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer,
+               hashkey.c_str(), field.c_str(), value.c_str());
     } else if (reply->type == REDIS_REPLY_STATUS) {
-        printf("Status: %s\n", reply->str);
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Status: %s", reply->str);
     } else {
-        printf("Unexpected reply type: %d\n", reply->type);
+        DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
     }
     
     freeReplyObject(reply);
@@ -138,9 +139,9 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
     if (reply->type == REDIS_REPLY_STRING) {
         value = qstring::format_string("%.*s", reply->len, reply->str);
     } else if (reply->type == REDIS_REPLY_NIL) {
-        printf("The field does not exist.\n");
+        DEBUG_PRINT_WARN(__LOGTAG__, "The field does not exist.");
     } else {
-        printf("Unexpected reply type: %d\n", reply->type);
+        DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
     }
     
     freeReplyObject(reply);
@@ -149,7 +150,7 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
 
 void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
     if (!context) {
-        printf("Error. Context is null.\n");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
         return;
     }
     iterate_hash(context, key.c_str(), arg, callback);
@@ -173,7 +174,7 @@ void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* a
                 callback(data->element[i]->str, data->element[i + 1]->str, arg);
             }
         } else {
-            printf("Error: %s\n", reply->str);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Error: %s", reply->str);
             break;
         }
         freeReplyObject(reply);

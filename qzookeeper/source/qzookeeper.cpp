@@ -98,6 +98,10 @@ void qzookeeper::watcher(zhandle_t *zzh, int type, int state, const char *path, 
 
 qzookeeper::qzookeeper() :
     qtimer_sceduler() {
+        connection_in_progress = false;
+        running = false;
+        op_in_progress = false;
+        op_result = 0;
 }
 
 qzookeeper::~qzookeeper() {

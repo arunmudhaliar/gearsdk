@@ -37,6 +37,7 @@
 		55A72F642B7F227F00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
 		55A72F652B7F22DC00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
 		55A72F662B7F22DC00064250 /* libdpp.10.0.30.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		55CE94EC2B9F0263002C0278 /* configs in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55CE94EB2B9F0263002C0278 /* configs */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,6 +59,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				55CE94EC2B9F0263002C0278 /* configs in CopyFiles */,
 				556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */,
 				556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */,
 			);
@@ -107,6 +109,7 @@
 		55A4ADD72AEFBA6300BC4CED /* qh3server.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3server.hpp; sourceTree = "<group>"; };
 		55A4ADD92AEFBD2600BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../servercommon/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
+		55CE94EB2B9F0263002C0278 /* configs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = configs; path = ../configs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +160,7 @@
 		55A4AD962AEF825700BC4CED = {
 			isa = PBXGroup;
 			children = (
+				55CE94EB2B9F0263002C0278 /* configs */,
 				5594E26F2B489BEF00E47984 /* qzookeeper.cpp */,
 				5594E2342B3FCA0100E47984 /* shared_client_files */,
 				5574F20E2B1F727B007C93AA /* debug_new.cpp */,
@@ -230,9 +234,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55A4ADA62AEF825800BC4CED /* Build configuration list for PBXNativeTarget "qh3server" */;
 			buildPhases = (
+				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				55A4AD9B2AEF825800BC4CED /* Sources */,
 				55A4AD9C2AEF825800BC4CED /* Frameworks */,
-				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				5594E2742B494B0500E47984 /* Embed Libraries */,
 			);
 			buildRules = (
@@ -422,6 +426,7 @@
 					"FORK_QH3_SERVER=0",
 					THREADED,
 					"ENABLE_ZK=1",
+					"DEV_BUILD=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
@@ -461,6 +466,8 @@
 					"LOG_LEVEL=5",
 					"FORK_QH3_SERVER=1",
 					THREADED,
+					"ENABLE_ZK=1",
+					"PROD_BUILD=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",

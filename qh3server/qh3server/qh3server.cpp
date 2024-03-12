@@ -8,6 +8,7 @@
 #include "qh3server.hpp"
 
 qh3server::~qh3server() {
+    GX_DELETE(relay_through_router_info);
     DEBUG_PRINT_IMPORTANT2(logtag.c_str(), "qh3server destroyed !!!");
 }
 
@@ -452,7 +453,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
             const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
             if (conn_io->total_sent_bytes < (ssize_t)payload.buffer.length()) {
                 server->send_in_chunks(conn_io);
-                if (conn_io->total_sent_bytes==payload.buffer.length()) {
+                if (conn_io->total_sent_bytes==(ssize_t)payload.buffer.length()) {
                     DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "FINISH Stream sending .... [%d] [%d]", conn_io->total_sent_bytes, payload.buffer.length());
                 }
             }
@@ -640,7 +641,7 @@ void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
     size_t chunk_size = SEND_CHUNK_SIZE;
     uint8_t* data = (uint8_t*)payload.buffer.c_str();
     size_t start_index = conn_io->total_sent_bytes;
-    ssize_t total_payload_size = payload.buffer.length();
+    size_t total_payload_size = (size_t)payload.buffer.length();
     
      // Send the data in chunks
     for (size_t offset = start_index; offset < total_payload_size; offset += chunk_size) {
@@ -714,6 +715,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     struct addrinfo* local;
     if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
         DEBUG_PRINT_ERROR(const_logtag, "failed to resolve host - port[%s]", port.c_str());
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -721,6 +723,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     if (sock < 0) {
         DEBUG_PRINT_ERROR(const_logtag, "failed to create socket - port[%s]", port.c_str());
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -728,6 +731,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "failed to make socket non-blocking - port[%s]", port.c_str());
         close(sock);    // (amudaliar) : Needed for running as virtual servers. Else new servers wont be able to bind.
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -735,6 +739,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "failed to bind socket - port[%s]", port.c_str());
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -743,6 +748,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "failed to create config");
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -754,6 +760,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "CERT load error - %s", certFile.c_str());
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
     int res_key_load = quiche_config_load_priv_key_from_pem_file(config, keyFile.c_str());
@@ -761,6 +768,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "KEY load error - %s", keyFile.c_str());
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -785,6 +793,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         DEBUG_PRINT_ERROR(const_logtag, "failed to create HTTP/3 config");
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
 
@@ -816,6 +825,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         GX_DELETE(logger);
         close(sock);
         freeaddrinfo(local);
+        GX_DELETE(relay_through_router_info);
         return -1;
     }
     qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
@@ -830,6 +840,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     qtimer_sceduler close_dangling_connections_scheduler;
     close_dangling_connections_scheduler.set_ev_lopp(mainloop);
     qtimer* dangling_connections_check_timer =  close_dangling_connections_scheduler.schedule_repeat_timer([this, const_logtag](qtimer& timer) {
+            UNUSED(timer);
             int dangling_connections = 0;
             int dangling_with_response = 0;
             int flushed_on_exit = 0;
@@ -929,6 +940,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
     qtimer_sceduler wait_scheduler;
     wait_scheduler.set_ev_lopp(wait_loop);
     qtimer* wait_timer = wait_scheduler.schedule_repeat_timer([this, wait_loop, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
+        UNUSED(timer);
         int service_shutdown_cnt = 0;
         if (get_stats_loggeer()->config.finished) {
             DEBUG_PRINT_IMPORTANT(const_logtag, "stats service finished !!!");
@@ -955,7 +967,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
             ssize_t sent = sendto(sock, shut_cmd.c_str(), shut_cmd.length(), 0,
                                   cmd_center_feedback_address->ai_addr,
                                   cmd_center_feedback_address->ai_addrlen);
-            if (sent != shut_cmd.length()) {
+            if (sent != (ssize_t)shut_cmd.length()) {
                 DEBUG_PRINT_ERROR(const_logtag, "ERROR sending shutdown event to command center !!!");
             }
             freeaddrinfo(cmd_center_feedback_address);

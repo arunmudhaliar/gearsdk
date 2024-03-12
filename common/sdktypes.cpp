@@ -36,6 +36,13 @@ JavaVM* device::g_JavaVM = nullptr;
     }
 
     void print_common_info() {
+#if DEV_BUILD
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
+#elif PROD_BUILD
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
+#else
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
+#endif
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
         const char* endian_str = "Little endian machine";
 #else
@@ -206,7 +213,7 @@ JavaVM* device::g_JavaVM = nullptr;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[36m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
     }
     void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -214,7 +221,7 @@ JavaVM* device::g_JavaVM = nullptr;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[96m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
     }
 
     void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len) {

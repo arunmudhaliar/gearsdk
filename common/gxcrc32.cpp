@@ -252,7 +252,7 @@ void gxcrc32::Update(unsigned char* buf, int off, int len, bool isBinary) {
 		return;	//throw new ArgumentNullException( "buf" );
 	}
 
-	if (off < 0 || len < 0 || (!isBinary && (off + len > strlen((char*)buf)))) {
+	if (off < 0 || len < 0 || (!isBinary && (off + len > (int)strlen((char*)buf)))) {
 		return; //throw new ArgumentOutOfRangeException();
 	}
 

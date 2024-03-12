@@ -60,7 +60,7 @@ private:
         FLAG_ROOM_CONFIG_RECEIVED = (1<<0)
     };
     
-    void do_process_connected(conn_io* qconnection, const msg_room_config& room_config_msg);
+    void do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg);
 };
 
 #endif /* roomserver_hpp */

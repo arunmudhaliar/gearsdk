@@ -67,7 +67,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
     client = mongoc_client_new_from_uri(uri);
     if (!client) {
         cleanup();
-        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create client !!!");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create client !!! - %s", uri_string.c_str());
         return EXIT_FAILURE;
     }
 
@@ -82,7 +82,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
      */
     database = mongoc_client_get_database(client, db_name.c_str());
 
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected");
+    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s", uri_string.c_str());
     if (interface) {
         interface->on_mongo_connect();
     }

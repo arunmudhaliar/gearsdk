@@ -13,6 +13,7 @@
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../networkcommon/source/qtextfile.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
+#include "../../networkcommon/source/serverconfig.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
 
@@ -36,6 +37,7 @@ protected:
     qmongo* mongo = nullptr;
     qhiredis* hiredis = nullptr;
     qzookeeper* qzk = nullptr;
+    serverconfig* zkconfig = nullptr;
 public:
     http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
     ~http3_sample_server();

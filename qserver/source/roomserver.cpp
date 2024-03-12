@@ -91,7 +91,7 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
                 qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
                 new_connections.erase(itr_found);
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
-                do_process_connected(qconnection, *room_config_msg);
+                do_process_roomjoin(qconnection, *room_config_msg);
             } else {
                 msg_room_server_shutdown* room_server_shutdown_msg = message_parser.parse<msg_room_server_shutdown>(recv_len, buf);
                 if (room_server_shutdown_msg) {
@@ -136,7 +136,7 @@ void roomserver::onconnection_connected(conn_io* qconnection) {
     new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
 }
 
-void roomserver::do_process_connected(conn_io* qconnection, const msg_room_config& room_config_msg) {
+void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg) {
     // check if he was part of any active room.
     room* room_ = nullptr;
     std::map<unsigned, room*>::iterator iterator =  connection_map.find(qconnection->cid_hash_val);
