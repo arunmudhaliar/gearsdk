@@ -6,4 +6,4 @@ export PREP_DOCKER=true
 export BUILD_DOCKER=true
 export PUBLISH_DOCKER=true
 
-sh ./qh3server-jenkins-script.sh
+sh $WORKSPACE/scripts/qh3server-jenkins-script.sh
