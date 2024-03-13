@@ -14,19 +14,19 @@ if [ $BUILD_EXECUTABLE = true ] ; then
   set -x
   
   cd $WORKSPACE/qh3server
-  make clean
-  make $BUILD_TYPE
+#   make clean
+#   make $BUILD_TYPE
   
   # cd $WORKSPACE/qh3client
   # make clean
   # make $BUILD_TYPE
  
-  mv $WORKSPACE/qh3server/qh3server-app $WORKSPACE/qh3server/build/qh3server-app
+#   mv $WORKSPACE/qh3server/qh3server-app $WORKSPACE/qh3server/build/qh3server-app
   #mv $WORKSPACE/qh3server/qh3client-app $WORKSPACE/qh3server/build/qh3client-app
-  cp $WORKSPACE/qh3server/certs/cert.crt $WORKSPACE/qh3server/build/cert.crt
-  cp $WORKSPACE/qh3server/certs/cert.key $WORKSPACE/qh3server/build/cert.key
+#   cp $WORKSPACE/qh3server/certs/cert.crt $WORKSPACE/qh3server/build/cert.crt
+#   cp $WORKSPACE/qh3server/certs/cert.key $WORKSPACE/qh3server/build/cert.key
   
-  zip -r $WORKSPACE/out/build_$BUILD_ID.zip $WORKSPACE/qh3server/build/
+#   zip -r $WORKSPACE/out/build_$BUILD_ID.zip $WORKSPACE/qh3server/build/
   echo
   echo
   echo
@@ -39,7 +39,7 @@ if [ $PREP_DOCKER = true ] ; then
    echo "--- PREPARE DOCKER FOLDER ---"
    set -x
    cd $WORKSPACE/qh3server
-   make clean
+   # make clean
    
    cd $WORKSPACE/qh3server/docker
    # copy the certs from build. certs required for docker image
@@ -48,7 +48,7 @@ if [ $PREP_DOCKER = true ] ; then
    sh ./prepare-docker-qh3server-folder.sh
    # remove the build folder from docker folder. Not requird.
    rm -rf $WORKSPACE/docker-qh3server/qh3server/build   
-   zip -r $WORKSPACE/out/docker_qh3server_$BUILD_ID.zip $WORKSPACE/docker-qh3server
+   # zip -r $WORKSPACE/out/docker_qh3server_$BUILD_ID.zip $WORKSPACE/docker-qh3server
    
    if [ $BUILD_DOCKER = true ] ; then
       cd $WORKSPACE/docker-qh3server
