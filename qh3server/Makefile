@@ -11,6 +11,7 @@ $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qstatslogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
+$(NETWORK_COMMON_SRCDIR)/serverconfig.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \
@@ -18,6 +19,7 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
+$(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
 $(ZK_SRCDIR)/source/qzookeeper.cpp \
@@ -36,10 +38,13 @@ C_SRCS =$(COMMON_SRCDIR)/crypto/sha256.c \
 
 OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 
-USER_DEFINES = -DLOG_LEVEL=2 -DFORK_QH3_SERVER=1 -DTHREADED
-# CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -frtti -std=c++17 -fsigned-char -fexceptions -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
-CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden
-# CXFLAGS = -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+USER_DEFINES = -DLOG_LEVEL=2 -DFORK_QH3_SERVER=1 -DTHREADED -DENABLE_ZK=1
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall
+CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+
+# Debug and Release specific flags are better placed in their respective build rules
+DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
+RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
@@ -56,23 +61,39 @@ endif
 
 EXE = qh3server-app
 CXX ?= clang
+CC ?= clang
 
-DEBUG_LDFLAGS = -W -Wall -g -O0 -DDEBUG $(LDFLAGS) $(RPATH_FLAGS)
-RELEASE_LDFLAGS = -W -Wall $(LDFLAGS) $(RPATH_FLAGS)
+DEBUG_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)
+RELEASE_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)
+
+
+# Add this rule back and adjust for the `objects/` directory, if you decide to use it.
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Assuming you introduce CXFLAGS for C compilation
+%.o: %.c
+	$(CC) $(CXFLAGS) -c $< -o $@
+
 
 #.cpp.o:
 #	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-objects/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c
+# objects/%.o: %.cpp
+# 	$(CXX) $(CXXFLAGS) -c
 
 all: debug
 
 clean:
 	rm -f $(OBJS) $(EXE)
 
+# You can explicitly tell make that all your targets depend on the Makefile. This way, any change to the Makefile will trigger a rebuild.
+$(OBJS): Makefile
+
+debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
 debug: $(OBJS)
 	$(CXX) $(DEBUG_LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
+release: CXXFLAGS += $(RELEASE_CXXFLAGS)
 release: $(OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
