@@ -14,6 +14,9 @@ COPY qserver/certs/cert.key ./qserver/
 RUN apt-get update && apt-get install make -y
 RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
+RUN apt-get install libsasl2-dev -y
+RUN apt install libsnappy-dev -y
+RUN apt-get install libzstd-dev -y
 RUN apt install iproute2 -y
 RUN apt-get install zlib1g-dev -y
 RUN sh make_qserver.sh
