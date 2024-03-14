@@ -1,5 +1,6 @@
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 QHIREDIS_SRCDIR = ../qhiredis/source
+SERVER_COMMON_SRCDIR = ../servercommon/source
 COMMON_SRCDIR = ../common
 QUTILS_SRCDIR = ../qutils
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
