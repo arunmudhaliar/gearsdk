@@ -218,6 +218,14 @@ public:
         int res = strncmp(a_str, b_str, len);
         return res == 0;
     }
+    
+    bool operator!=(const qstring& str) {
+        const char* b_str = str.c_str();
+        const char* a_str = c_str();
+        long len = str.length();
+        int res = strncmp(a_str, b_str, len);
+        return res != 0;
+    }
 
     bool operator<(const qstring& other) const {
         return strcmp(utstring_body(ut_string), utstring_body(other.get_utstring())) < 0;

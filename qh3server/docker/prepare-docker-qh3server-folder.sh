@@ -5,6 +5,7 @@ mkdir ./docker-qh3server
 
 # qh3server files
 cp -r ./common ./docker-qh3server/common
+cp -r ./config ./docker-qh3server/config
 cp -r ./networkcommon/ ./docker-qh3server/networkcommon
 cp -r ./qh3server/ ./docker-qh3server/qh3server
 cp -r ./qh3client/ ./docker-qh3server/qh3client

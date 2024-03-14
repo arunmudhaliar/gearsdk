@@ -9,6 +9,7 @@ COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qh3server/ ./qh3server
 COPY qh3client/ ./qh3client
+COPY config ./qh3server/config
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
 COPY qzookeeper/ ./qzookeeper

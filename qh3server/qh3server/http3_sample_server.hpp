@@ -45,6 +45,8 @@ public:
     void test_mongo_db();
     
 private:
+    int validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
+    
     void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     void parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);

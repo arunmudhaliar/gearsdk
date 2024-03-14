@@ -224,11 +224,29 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     qstring login_time_str(strtok(ctime(&givemetime), "\n"));
     writer.write(buffer, login_time_str);
     
-    // calcualte sha
-    crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
-    crypto_helper::sha256(sha_data);
-    // session token header
-    qstring token(sha_data.out, strlen(sha_data.out));
+    
+    qstring token;
+    
+    // check if redis has token
+    qstring token_in_redis;
+    qstring redis_format_pid(qstring::format_string("tokens:%s", pid.c_str()));
+    hiredis->get_value(redis_format_pid, token_in_redis);
+    if (token_in_redis.length()!=0) {
+        token = token_in_redis;
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "token '%s' retreived from redis for user id : %x", token.c_str(), crc);
+    } else {
+        // calcualte sha
+        crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
+        crypto_helper::sha256(sha_data);
+        // session token header
+        token.bin_copy((const uint8_t*)sha_data.out, strlen(sha_data.out));
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x", token.c_str(), crc);
+    }
+    
+    // set session token on redis
+    hiredis->set_value(redis_format_pid, token, 5*60);   // 5 minutes
+    //
+
     conn_io->http_response->add_or_get_header("token", token);
     
     // try find the user. (This needs to improve)
@@ -284,13 +302,10 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
     bson_destroy (&find_query);
     //
     
-    // set session token on redis
-    hiredis->set_value(pid, token, 5*60);   // 5 minutes
-    //
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str(), port_id_cstr);
 }
 
-void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
+int http3_sample_server::validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
     const char* const_logtag = logtag.c_str();
     const char* port_id_cstr = port_id.c_str();
     const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
@@ -304,7 +319,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
         DEBUG_PRINT_ERROR(const_logtag, "No token header in %s", path_header->value.c_str());
         qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "No token header in %s", path_header->value.c_str());
         qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "no_token");
-        return;
+        return -1;
     }
     
     bson_t bson;
@@ -313,7 +328,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
         DEBUG_PRINT_ERROR(const_logtag, "%s", error.message);
         qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - ERROR - %s", path_header->value.c_str(), error.message);
         qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
-       return;
+       return -2;
     }
     
     // parse
@@ -333,19 +348,28 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
         DEBUG_PRINT_ERROR(const_logtag, "user.pid parse failed %s", path_header->value.c_str());
         qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "user.pid parse failed %s", path_header->value.c_str());
         qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.pid_parse_fail");
-        return;
+        return -3;
     }
     bson_destroy (&bson);
 
     // check with redis
     qstring token_in_redis;
     hiredis->get_value(pid, token_in_redis);
-    if (token_in_redis==token_header->value) {
-        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "Valid user");
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
-    }
     qh3server::get_stats_loggeer()->server_count("parse", 1, token_in_redis, pid, "", token_header->value, "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.token_check");
+    if (token_in_redis!=token_header->value) {
+        DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
+        return -4;
+    }
+    
+    DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "Valid user");
+    return 0;
+}
+
+void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {
+    int result = validte_token(path_header, conn_io);
+    if (result!=0) {
+        return;
+    }
 #if TEST_RESPONSE
     if (test_response.length()==0) {
         qtextfile::get_content("./128KB.json", test_response);
