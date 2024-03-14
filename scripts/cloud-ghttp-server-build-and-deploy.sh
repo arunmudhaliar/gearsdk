@@ -41,7 +41,7 @@ if [ $PREP_DOCKER = true ] ; then
    # rm -rf $WORKSPACE/docker-qh3server/qh3server/build   
    # zip -r $WORKSPACE/out/docker_qh3server_$BUILD_ID.zip $WORKSPACE/docker-qh3server
 
-   sed -i "s/192\.168\.0\.230/$SERVER_IP/" $WORKSPACE/docker-qh3server/run_qh3server.sh
+   sed -i "s/192\.168\.0\.230/$SERVICE_SERVER_IP/" $WORKSPACE/docker-qh3server/run_qh3server.sh
 
    if [ $BUILD_DOCKER = true ] ; then
       cd $WORKSPACE/docker-qh3server
