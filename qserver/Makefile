@@ -39,13 +39,13 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto
-	LDFLAGS = -L$(QUTILS_SRCDIR)/libs/linux
-	RPATH_FLAGS = -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
+	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
 ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libz.a -ldpp -framework CoreFoundation -framework Security
-	LDFLAGS = -L$(QUTILS_SRCDIR)/libs/macos
-	RPATH_FLAGS = -Wl,-rpath,$(QUTILS_SRCDIR)/libs/macos
+	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/macos -L$(QUTILS_SRCDIR)/libs/macos
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/macos -Wl,-rpath,$(QUTILS_SRCDIR)/libs/macos
 endif
 
 EXE = qserver-app
