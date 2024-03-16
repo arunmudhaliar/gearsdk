@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAC2B97B03D00BE7723 /* libqutils.a */; };
 		55384BAF2B97B09D00BE7723 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */; };
-		55384BB02B97B09D00BE7723 /* libdpp.10.0.30.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
@@ -36,7 +35,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				55384BB02B97B09D00BE7723 /* libdpp.10.0.30.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -186,6 +184,7 @@
 				55B372B52AC2ABCD00F0095E /* Frameworks */,
 				55B372B62AC2ABCD00F0095E /* CopyFiles */,
 				55384BB12B97B09D00BE7723 /* Embed Libraries */,
+				555F45BE2BA63EFC0077ADEE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -226,6 +225,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		555F45BE2BA63EFC0077ADEE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.10.0.30.dylib\" \"${BUILT_PRODUCTS_DIR}/libdpp.10.0.30.dylib\"\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B372B42AC2ABCD00F0095E /* Sources */ = {
@@ -381,7 +400,7 @@
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-noexcept-type";
@@ -409,7 +428,7 @@
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-noexcept-type";

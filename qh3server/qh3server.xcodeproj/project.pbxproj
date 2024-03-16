@@ -225,9 +225,9 @@
 			buildConfigurationList = 55A4ADA62AEF825800BC4CED /* Build configuration list for PBXNativeTarget "qh3server" */;
 			buildPhases = (
 				55A4AD9B2AEF825800BC4CED /* Sources */,
-				5594E2742B494B0500E47984 /* Embed Libraries */,
-				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				55A4AD9C2AEF825800BC4CED /* Frameworks */,
+				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
+				5594E2742B494B0500E47984 /* Embed Libraries */,
 				555F45BD2BA627F00077ADEE /* ShellScript */,
 			);
 			buildRules = (
