@@ -6,10 +6,14 @@
 //
 
 #include "discord_util.hpp"
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation"
+#endif
 #include <dpp/dpp.h>
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 #include "../common/sdktypes.hpp"
 
 qstring discord_util::current_web_hook = "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4";
