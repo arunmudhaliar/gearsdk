@@ -318,6 +318,7 @@ int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
 }
 
 void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(revents);
     conn_io_client* qconnection_ = (conn_io_client*)w->data;
     if (qconnection_->conn == nullptr) {
         return;

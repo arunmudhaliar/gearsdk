@@ -698,7 +698,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
         .ai_socktype = SOCK_DGRAM,
         .ai_protocol = IPPROTO_UDP
     };
-
+    app_directory = rootDir;
     host_id = host;
     port_id = port;
     GX_DELETE(relay_through_router_info);

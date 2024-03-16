@@ -260,6 +260,10 @@
 					"\"$(SRCROOT)/hiredis\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -274,6 +278,10 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/hiredis\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

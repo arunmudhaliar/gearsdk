@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
-		556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C82AF01D0500D688DB /* cert.key */; };
-		556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 556AB5C92AF01D0500D688DB /* cert.crt */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
 		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
 		556AB6102AF50A8900D688DB /* libmongoc-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB60F2AF50A8900D688DB /* libmongoc-static-1.0.a */; };
@@ -26,7 +24,6 @@
 		5594E2372B3FCD4200E47984 /* qh3simple_router_structs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */; };
 		5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5594E26D2B489B9E00E47984 /* libzookeeper_mt.a */; };
 		5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E26F2B489BEF00E47984 /* qzookeeper.cpp */; };
-		5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBD2AEF836400BC4CED /* libcommon.a */; };
 		55A4ADC02AEF836900BC4CED /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADBF2AEF836900BC4CED /* libnetworkcommon.a */; };
 		55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC12AEF838200BC4CED /* libev.a */; };
@@ -36,8 +33,6 @@
 		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
 		55A72F642B7F227F00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
 		55A72F652B7F22DC00064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; };
-		55A72F662B7F22DC00064250 /* libdpp.10.0.30.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		55CE94EC2B9F0263002C0278 /* configs in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55CE94EB2B9F0263002C0278 /* configs */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,8 +42,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5594E2732B494B0500E47984 /* libzookeeper_mt.2.dylib in Embed Libraries */,
-				55A72F662B7F22DC00064250 /* libdpp.10.0.30.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -59,9 +52,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				55CE94EC2B9F0263002C0278 /* configs in CopyFiles */,
-				556AB5CA2AF01D1700D688DB /* cert.key in CopyFiles */,
-				556AB5CB2AF01D1700D688DB /* cert.crt in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,10 +224,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55A4ADA62AEF825800BC4CED /* Build configuration list for PBXNativeTarget "qh3server" */;
 			buildPhases = (
-				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				55A4AD9B2AEF825800BC4CED /* Sources */,
-				55A4AD9C2AEF825800BC4CED /* Frameworks */,
 				5594E2742B494B0500E47984 /* Embed Libraries */,
+				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
+				55A4AD9C2AEF825800BC4CED /* Frameworks */,
+				555F45BD2BA627F00077ADEE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -279,6 +270,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		555F45BD2BA627F00077ADEE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Copy the configs directory\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# Create the destination directory if it does not exist\n# if [ ! -d \"$DST_DIR\" ]; then\n#   mkdir -p \"$DST_DIR\"\n# fi\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.10.0.30.dylib\" \"${BUILT_PRODUCTS_DIR}/libdpp.10.0.30.dylib\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55A4AD9B2AEF825800BC4CED /* Sources */ = {

@@ -8,7 +8,10 @@
 #ifndef qzookeeper_hpp
 #define qzookeeper_hpp
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
 #include <zookeeper.h>
+#pragma clang diagnostic pop
 #include <proto.h>
 #include <stdlib.h>
 #include <stdio.h>

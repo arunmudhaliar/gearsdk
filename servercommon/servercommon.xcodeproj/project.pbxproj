@@ -61,8 +61,6 @@
 		556AB6992AF50BFB00D688DB /* mongoc.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6472AF50BFB00D688DB /* mongoc.h */; };
 		556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6B72AF50C3500D688DB /* qmongo.cpp */; };
 		556AB6BA2AF50C3500D688DB /* qmongo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6B82AF50C3500D688DB /* qmongo.hpp */; };
-		55A72F622B7F1EF000064250 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F612B7F1EF000064250 /* libdpp.10.0.30.dylib */; };
-		55A9CD102B6580BC006CAD14 /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD0F2B6580BC006CAD14 /* libnetworkcommon.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -130,8 +128,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A72F622B7F1EF000064250 /* libdpp.10.0.30.dylib in Frameworks */,
-				55A9CD102B6580BC006CAD14 /* libnetworkcommon.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +506,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs/macos",
 				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -533,6 +533,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/libs/macos",
+				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

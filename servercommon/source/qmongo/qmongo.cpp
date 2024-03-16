@@ -99,7 +99,10 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qs
     mongoc_index_opt_init(&opt);
     bson_init(&indexkey);
     interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (!mongoc_collection_create_index_with_opts(collection, &indexkey, &opt, nullptr,  &reply, &error)) {
+//#pragma GCC diagnostic pop
         fprintf(stderr, "%s : err_code %d\n", error.message, error.code);
         bson_destroy(&indexkey);
         bson_validate(&reply, BSON_VALIDATE_NONE, NULL);

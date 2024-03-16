@@ -16,7 +16,9 @@
 using namespace rapidjson;
 using namespace client;
 
-http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
+http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) :
+    bridge(bridge_), router_port(router_port_) {
+    UNUSED(bridge);
     hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
 }
 
@@ -142,6 +144,7 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
     Value servers(kArrayType);
     
     hiredis->iterate_hash(qstring::format_string("servers:%s", host_id.c_str()), &doc, [&allocator, &servers](const char* field, const char* value, void* arg){
+        UNUSED(arg);
         Value serverObj(kObjectType);
         // Convert the key and value to `Value` type
         Value f(field, allocator);
@@ -153,6 +156,7 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
     
     Value gservers(kArrayType);
     hiredis->iterate_hash("gservers", &doc, [&allocator, &gservers](const char* field, const char* value, void* arg){
+        UNUSED(arg);
         Value gserverObj(kObjectType);
         // Convert the key and value to `Value` type
         Value f(field, allocator);
@@ -172,12 +176,17 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
 void http3_command_server::send_shutdown_to_all() {
     conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
     qh3client_helper::send_async_request<client::qh3client>(host_id, router_port, req, nullptr,
-        [this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+        [](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+            UNUSED(response);
+            UNUSED(client_specific_data);
+            UNUSED(arg);
+            UNUSED(success);
             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
         }, 1);
 }
 
 void http3_command_server::command_feedback_recv_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(loop);
     UNUSED(revents);
     route* route_client = (route*)w->data;
     bridge_command_center* bridge = (bridge_command_center*)route_client->arg;

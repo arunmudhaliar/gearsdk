@@ -175,7 +175,7 @@ protected:
     qstring logtag = __LOGTAG__;
     qstring port_id;
     qstring host_id;
-    
+    fs::path app_directory = ".";
 public:
     virtual ~qh3server();
     qtextfilelogger* get_file_logger() { return logger; }

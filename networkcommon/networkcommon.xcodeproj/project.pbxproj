@@ -344,6 +344,11 @@
 					"$(PROJECT_DIR)/quiche_lib/debug",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
@@ -367,6 +372,11 @@
 					"$(PROJECT_DIR)/quiche_lib/debug",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wno-noexcept-type";

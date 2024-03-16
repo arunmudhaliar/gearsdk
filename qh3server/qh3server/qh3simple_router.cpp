@@ -233,6 +233,7 @@ int qh3simple_router::run() {
 }
 
 void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(loop);
     UNUSED(revents);
     qh3simple_router* router = (qh3simple_router*)w->data;
     static uint8_t buf[65535];
@@ -281,6 +282,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(loop);
     UNUSED(revents);
     qh3simple_router* router = (qh3simple_router*)w->data;
     static uint8_t buf_return[65535];
@@ -523,7 +525,7 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
     // if found delete
     if (found) {
         if (cmd.compare(qstring::format_string("shut-ack-%s", port))==0) {  // shut downed
-            int oldSz = (int)routes.size();
+            size_t oldSz = routes.size();
             routes.erase(std::remove(routes.begin(), routes.end(), found), routes.end());
             if(oldSz!=routes.size()) {
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from router", found->host.c_str(), found->port.c_str());
@@ -533,7 +535,11 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
                 if (routes.size()==0) {
                     conn_io_req_res* req = conn_io_req_res::create("/shutdown_cmd_center", "");
                     qh3client_helper::send_async_request<client::qh3client>(command_route->host, command_route->port, req, nullptr,
-                        [this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+                        [](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+                            UNUSED(response);
+                            UNUSED(client_specific_data);
+                            UNUSED(arg);
+                            UNUSED(success);
                             DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
                         }, 1);
                 }

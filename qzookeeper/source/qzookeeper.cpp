@@ -207,6 +207,7 @@ void qzookeeper::shutdown() {
 
 void qzookeeper::my_data_completion(int rc, const char *value, int value_len,
         const struct Stat *stat, const void *data) {
+    UNUSED(stat);
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
     if (value) {
@@ -350,6 +351,7 @@ int qzookeeper::delete_path(const qstring& zk_path) {
 }
 
 void qzookeeper::close_zk(const int state) {
+    UNUSED(state);
     if (zh) {
         zookeeper_close(zh);
         zh = nullptr;

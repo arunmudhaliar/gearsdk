@@ -216,6 +216,7 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
 }
 
 void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
+    UNUSED(loop);
     UNUSED(revents);
     struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)w->data;
 

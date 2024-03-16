@@ -38,7 +38,7 @@ bool qtimer_sceduler::destroy_timer(qtimer* qtimer_) {
         return false;
     }
 
-    int oldSz = (int)timers.size();
+    size_t oldSz = timers.size();
     timers.erase(std::remove(timers.begin(), timers.end(), qtimer_), timers.end());
     if (oldSz != timers.size()) {
         qtimer_sceduler_data* data = (qtimer_sceduler_data*)qtimer_->data;

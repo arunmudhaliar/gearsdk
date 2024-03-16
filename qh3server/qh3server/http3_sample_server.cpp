@@ -35,11 +35,14 @@ bool http3_sample_server::on_server_pre_init() {
     GX_DELETE(zkconfig);
     zkconfig = DEBUG_NEW serverconfig();
 #if DEV_BUILD
-    zkconfig->load("configs/dev/runtime-config.json", qzk, "/qh3server");
+    fs::path config_path(app_directory / "configs/dev/runtime-config.json");
+    zkconfig->load(config_path, qzk, "/qh3server");
 #elif PROD_BUILD
-    zkconfig->load("configs/prod/runtime-config.json", qzk, "/qh3server");
+    fs::path config_path(app_directory / "configs/prod/runtime-config.json");
+    zkconfig->load(config_path, qzk, "/qh3server");
 #else
-    zkconfig->load("configs/dev/runtime-config.json", qzk, "/qh3server");
+    fs::path config_path(app_directory / "configs/dev/runtime-config.json");
+    zkconfig->load(config_path, qzk, "/qh3server");
 #endif
 #endif
     
@@ -65,6 +68,7 @@ void http3_sample_server::on_run_end() {
     qtimer_sceduler wait_scheduler;
     wait_scheduler.set_ev_lopp(wait_loop);
     qtimer* wait_timer = wait_scheduler.schedule_repeat_timer([this, wait_loop](qtimer& timer) {
+        UNUSED(timer);
         if (!qzk->is_running()) {
             DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qzk service finished !!!");
             ev_break(wait_loop, EVBREAK_ONE);
