@@ -139,7 +139,8 @@ int qzookeeper::retry_connection() {
     retry_count++;
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "qzookeeper - retry connection !!!");
     int flags = ZOO_READONLY;
-    zh = zookeeper_init(connection_url.c_str(), watcher, 30000, &myid, this, flags);
+    bool use_fresh = connection_state==ZOO_EXPIRED_SESSION_STATE || connection_state==ZOO_AUTH_FAILED_STATE || connection_state==ZOO_NOTCONNECTED_STATE;
+    zh = zookeeper_init(connection_url.c_str(), watcher, 30000, use_fresh? nullptr : &myid, this, flags);
     return 0;
 }
 
@@ -170,9 +171,10 @@ void* qzookeeper::connect_internal(void* data) {
     
     thiz->connection_check_timer = thiz->schedule_repeat_timer([thiz](qtimer& timer) {
         UNUSED(timer);
-        if (thiz->connection_state!=ZOO_CONNECTED_STATE /*&& thiz->connection_in_progress*/) {
+        if (!(thiz->connection_state==ZOO_CONNECTING_STATE || thiz->connection_state==ZOO_ASSOCIATING_STATE || thiz->connection_state==ZOO_CONNECTED_STATE) /*&& thiz->connection_in_progress*/) {
             thiz->close_zk(-1);
-            DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper - zk server not responding !!! connection failed. %d", thiz->retry_count);
+            DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper - zk server not responding !!! connection failed. re-try:%d, STATE:%d",
+                              thiz->retry_count, thiz->connection_state);
             if (thiz->retry_count<2) {
                 thiz->retry_connection();
             } else {

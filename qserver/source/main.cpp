@@ -34,7 +34,7 @@ int32_t main(int32_t argc, const char * argv[]) {
     gsdk::set_assert_callback(assert_callback);
     qstring host = "127.0.0.1";
     qstring port = "4000";
-    qstring mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:6006";
+    qstring mongodb_uri = "mongodb://localhost:27017";      // "mongodb://192.168.0.230:27017";
     qstring redis_ip = "127.0.0.1";
     qstring zk_uri = "127.0.0.1:2181";
     uint16_t redis_port = 6379;

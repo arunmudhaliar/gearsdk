@@ -12,6 +12,7 @@
 #include <map>
 #include "../../common/qstring.h"
 #include "../../common/sdktypes.hpp"
+#include "../../networkcommon/source/essentials.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qmongo"

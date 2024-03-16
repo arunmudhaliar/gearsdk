@@ -6,7 +6,6 @@
 //
 
 #include "qmongo.hpp"
-#include "../../networkcommon/source/essentials.hpp"
 #include <zlib.h>
 
 qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) :
@@ -36,8 +35,8 @@ void qmongo::cleanup() {
     if (client) {
         mongoc_client_destroy(client);
         client = nullptr;
+        mongoc_cleanup();
     }
-    mongoc_cleanup();
 }
 
 int qmongo::connect() {

@@ -31,6 +31,16 @@ int discord_util::send(const qstring& msg) {
     } catch (const dpp::rest_exception& e) {
         DEBUG_PRINT( LOG_LEVEL_0, __LOGTAG__, "Caught exception: %s", e.what());
         // Implement retry logic here, respecting the Retry-After header
+    } catch (const std::system_error& e) {
+        DEBUG_PRINT( LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s", e.what());
+        // Implement specific handling logic for std::system_error here
+        // This could be related to thread join issues or other system-level errors
+    } catch (const std::exception& e) {
+        DEBUG_PRINT( LOG_LEVEL_0, __LOGTAG__, "Caught std::exception: %s", e.what());
+        // Handle other std::exception derived exceptions
+    } catch (...) {
+        DEBUG_PRINT( LOG_LEVEL_0, __LOGTAG__, "Caught an unknown exception");
+        // Handle any non-standard exceptions
     }
     return 0;
 }
