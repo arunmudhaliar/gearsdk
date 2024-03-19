@@ -10,7 +10,7 @@
 
 #include "qnetworkserver.hpp"
 #include "room.hpp"
-#include "../../networkcommon/source/roommessage.hpp"
+#include "../../networkcommon/source/message.hpp"
 
 #include <map>
 #include <vector>
@@ -52,7 +52,7 @@ protected:
     std::map<unsigned, ev_tstamp> new_connections;
     ssize_t zombie_rooms = 0;
     
-    room_message_parser message_parser;
+    message_parser msg_parser;
     qtimer* waiting_room_check_zombie_timer = nullptr;
     
 private:

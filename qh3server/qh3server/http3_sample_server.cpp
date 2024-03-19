@@ -19,6 +19,7 @@ http3_sample_server::~http3_sample_server() {
     GX_DELETE(hiredis);
     GX_DELETE(mongo);
     GX_DELETE(zkconfig);
+    GX_DELETE(room_config_list);
 }
 
 bool http3_sample_server::on_server_pre_init() {
@@ -53,6 +54,14 @@ bool http3_sample_server::on_server_pre_init() {
     if (hiredis->connect_redis()!=0) {
         return false;
     }
+    
+    msg_parser.register_message_type<rq_msg_user_get>();
+    msg_parser.register_message_type<msg_room_config_list>();
+    msg_parser.register_message_type<msg_room_config>();
+    qstring room_config_list_str(zkconfig->get_string("gserver/roomconfig", ""));
+    GX_DELETE(room_config_list);
+    room_config_list = msg_parser.parse<msg_room_config_list>(room_config_list_str.length(), (uint8_t*)room_config_list_str.c_str());
+    DEBUG_ASSERT(__LOGTAG__, (room_config_list!=nullptr), "Invalid room configs !!!");
     return true;
 }
 
@@ -169,103 +178,78 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
         qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
     }
     
-    bson_t bson;
-    bson_error_t error;
-    if (!bson_init_from_json (&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
-        DEBUG_PRINT_ERROR(const_logtag, "%s", error.message);
-        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - ERROR - %s, returning. !!!", path_header->value.c_str(), error.message);
+    DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%.*s", payload.buffer.length(), payload.buffer.c_str());
+    
+    rq_msg_user_get* user_get_msg_rq = msg_parser.parse<rq_msg_user_get>(payload.buffer.length(), (uint8_t*)payload.buffer.c_str());
+    if (user_get_msg_rq == nullptr) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Parse failed %.*s", payload.buffer.length(), payload.buffer.c_str());
+        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "ERROR - Parse failed %s, req:%.*s, returning. !!!", path_header->value.c_str(), payload.buffer.length(), payload.buffer.c_str());
         qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
-       return;
+        return;
     }
     
-    // parse
-    bson_iter_t iter;
-    bson_iter_t sub_iter;
-    qstring sys_name;
-    qstring node_name;
-    qstring release;
-    qstring arch;
+    unsigned long  crc = crc32(0L, Z_NULL, 0);
+    crc = essentials::mod_crc32_z(crc, (uint8_t*)user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
+    crc = essentials::mod_crc32_z(crc, (uint8_t*)user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
+    crc = essentials::mod_crc32_z(crc, (uint8_t*)user_get_msg_rq->release.c_str(), user_get_msg_rq->release.length());
+    crc = essentials::mod_crc32_z(crc, (uint8_t*)user_get_msg_rq->arch.c_str(), user_get_msg_rq->arch.length());
+    
     qbuffer buffer;
     buffer.allocate(128);
     qbuffer_writer writer;
-    if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "details.sys_name", &sub_iter)) {
-        sys_name = bson_iter_utf8 (&sub_iter, NULL);
-        if (sys_name.length()) {
-            writer.write(buffer, sys_name);
-        }
-    }
-    if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "details.node_name", &sub_iter)) {
-        node_name = bson_iter_utf8 (&sub_iter, NULL);
-        if (node_name.length()) {
-            writer.write(buffer, node_name);
-        }
-    }
-    if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "details.release", &sub_iter)) {
-        release = bson_iter_utf8 (&sub_iter, NULL);
-        if (release.length()) {
-            writer.write(buffer, release);
-        }
-    }
-    if (bson_iter_init (&iter, &bson) && bson_iter_find_descendant (&iter, "details.arch", &sub_iter)) {
-        arch = bson_iter_utf8 (&sub_iter, NULL);
-        if (arch.length()) {
-            writer.write(buffer, arch);
-        }
-    }
-    bson_destroy (&bson);
-    
-    unsigned long  crc = crc32(0L, Z_NULL, 0);
-    crc = essentials::mod_crc32_z(crc, buffer.data, buffer.index);
+
     writer.write(buffer, crc);
     DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%s - user id : %x", path_header->value.c_str(), crc);
     
-    qstring pid;
-    pid.format("%lx", crc);
-    qstring user_name;
-    user_name.format("guest-%lx", crc);
-    
+    // response packet
+    res_msg_user_get user_get_msg_respose;
+    user_get_msg_respose.pid.format("%lx", crc);
+    user_get_msg_respose.user_name.format("guest-%lx", crc);
     time_t givemetime = time(NULL);
-    qstring login_time_str(strtok(ctime(&givemetime), "\n"));
-    writer.write(buffer, login_time_str);
-    
-    
-    qstring token;
+    user_get_msg_respose.last_login = strtok(ctime(&givemetime), "\n");
+    writer.write(buffer, user_get_msg_respose.last_login);
     
     // check if redis has token
     qstring token_in_redis;
-    qstring redis_format_pid(qstring::format_string("tokens:%s", pid.c_str()));
+    qstring redis_format_pid(qstring::format_string("tokens:%s", user_get_msg_respose.pid.c_str()));
     hiredis->get_value(redis_format_pid, token_in_redis);
     if (token_in_redis.length()!=0) {
-        token = token_in_redis;
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "token '%s' retreived from redis for user id : %x", token.c_str(), crc);
+        user_get_msg_respose.token = token_in_redis;
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "token '%s' retreived from redis for user id : %x", user_get_msg_respose.token.c_str(), crc);
     } else {
         // calcualte sha
         crypto_helper::sha256_data sha_data((const char*)buffer.data, (int)buffer.index);
         crypto_helper::sha256(sha_data);
         // session token header
-        token.bin_copy((const uint8_t*)sha_data.out, strlen(sha_data.out));
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x", token.c_str(), crc);
+        user_get_msg_respose.token.bin_copy((const uint8_t*)sha_data.out, strlen(sha_data.out));
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x", user_get_msg_respose.token.c_str(), crc);
     }
     
     // set session token on redis
-    hiredis->set_value(redis_format_pid, token, 5*60);   // 5 minutes
+    int32_t user_token_expiry_time = zkconfig->get_int32("server_config/user_token_expiry_time", DEFAULT_USER_TOKEN_EXPIRY_TIME);
+    hiredis->set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time);
     //
 
-    conn_io->http_response->add_or_get_header("token", token);
+    conn_io->http_response->add_or_get_header("token", user_get_msg_respose.token);
     
     // try find the user. (This needs to improve)
     bool found = false;
     bson_t find_query;
     bson_init(&find_query);
-    bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), pid.c_str(), (int)pid.length());
+    bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), user_get_msg_respose.pid.c_str(), (int)user_get_msg_respose.pid.length());
     mongoc_cursor_t* cursor = mongo->find("users", find_query);
     const bson_t *doc = nullptr;
     while (mongoc_cursor_next(cursor, &doc)) {
         found = true;
-        char* json_string = bson_as_json(doc, nullptr);
-        conn_io->http_response->set_payload(qstring(json_string, strlen(json_string)));
-        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), json_string);
-        bson_free(json_string);
+//        char* json_string = bson_as_json(doc, nullptr);
+//        conn_io->http_response->set_payload(qstring(json_string, strlen(json_string)));
+//        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), json_string);
+//        bson_free(json_string);
+        
+        qstring response_json;
+        user_get_msg_respose.get_json_string(response_json);
+        conn_io->http_response->set_payload(response_json);
+        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), response_json.c_str());
     }
     mongoc_cursor_destroy(cursor);
     
@@ -277,18 +261,21 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
         bson_t meta;
         bson_init(&meta);
         bson_append_document_begin (&res_bson, "user", 4, &meta);
-        bson_append_utf8(&meta, "pid", strlen("pid"), pid.c_str(), (int)pid.length());
-        bson_append_utf8(&meta, "name", strlen("name"), user_name.c_str(), (int)user_name.length());
-        bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name.c_str(), (int)sys_name.length());
-        bson_append_utf8(&meta, "node_name", strlen("node_name"), node_name.c_str(), (int)node_name.length());
-        bson_append_utf8(&meta, "arch", strlen("arch"), arch.c_str(), (int)arch.length());
-        bson_append_utf8(&meta, "last_login", strlen("last_login"), login_time_str.c_str(), (int)login_time_str.length());
+        bson_append_utf8(&meta, "pid", strlen("pid"), user_get_msg_respose.pid.c_str(), (int)user_get_msg_respose.pid.length());
+        bson_append_utf8(&meta, "name", strlen("name"), user_get_msg_respose.user_name.c_str(), (int)user_get_msg_respose.user_name.length());
+        bson_append_utf8(&meta, "sys_name", strlen("sys_name"), user_get_msg_rq->sys_name.c_str(), (int)user_get_msg_rq->sys_name.length());
+        bson_append_utf8(&meta, "node_name", strlen("node_name"), user_get_msg_rq->node_name.c_str(), (int)user_get_msg_rq->node_name.length());
+        bson_append_utf8(&meta, "arch", strlen("arch"), user_get_msg_rq->arch.c_str(), (int)user_get_msg_rq->arch.length());
+        bson_append_utf8(&meta, "last_login", strlen("last_login"), user_get_msg_respose.last_login.c_str(), (int)user_get_msg_respose.last_login.length());
         bson_append_document_end (&res_bson, &meta);
         if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
-            char* json_string = bson_as_json(&res_bson, nullptr);
-            conn_io->http_response->set_payload(qstring(json_string, strlen(json_string)));
-            qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - new-user - %s", path_header->value.c_str(), json_string);
-            bson_free(json_string);
+            //char* json_string = bson_as_json(&res_bson, nullptr);
+//            char* json_string = bson_as_json(&res_bson, nullptr);
+            qstring response_json;
+            user_get_msg_respose.get_json_string(response_json);
+            conn_io->http_response->set_payload(response_json);
+            qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - new-user - %s", path_header->value.c_str(), response_json.c_str());
+//            bson_free(json_string);
         } else {
             qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - new-user failed", path_header->value.c_str());
         }
@@ -296,17 +283,20 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
         bson_destroy (&res_bson);
     }
     
-    bson_t* update = BCON_NEW ("$set", "{", "user.last_login", BCON_UTF8 (login_time_str.c_str()), "}");
+    bson_t* update = BCON_NEW ("$set", "{", "user.last_login", BCON_UTF8 (user_get_msg_respose.last_login.c_str()), "}");
     if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
-        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "user-last-login - %s, pid:%s", login_time_str.c_str(), pid.c_str());
+        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "user-last-login - %s, pid:%s", user_get_msg_respose.last_login.c_str(), user_get_msg_respose.pid.c_str());
     } else {
-        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - %s", path_header->value.c_str(), pid.c_str());
+        qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - %s", path_header->value.c_str(), user_get_msg_respose.pid.c_str());
     }
     bson_destroy(update);
     bson_destroy (&find_query);
     //
     
+    GX_DELETE(user_get_msg_rq);
+    
     qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str(), port_id_cstr);
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
 }
 
 int http3_sample_server::validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io) {

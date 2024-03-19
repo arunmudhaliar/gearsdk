@@ -12,6 +12,7 @@ $(NETWORK_COMMON_SRCDIR)/qstatslogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
 $(NETWORK_COMMON_SRCDIR)/serverconfig.cpp \
+$(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \

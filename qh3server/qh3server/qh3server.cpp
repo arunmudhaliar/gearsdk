@@ -500,7 +500,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
                 case Event_type::Finished: {
                     EV_START_RECORD(parse_start_time);
                     conn_io->bridge->parse(conn_io);
-                    EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 200);
+                    EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 1200);
 
                     EV_START_RECORD(send_start_time);
                     if (payload.buffer.length() == 0) {

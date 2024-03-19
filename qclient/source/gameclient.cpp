@@ -6,7 +6,7 @@
 //
 
 #include "gameclient.hpp"
-#include "../../networkcommon/source/roommessage.hpp"
+#include "../../networkcommon/source/message.hpp"
 
 void gameclient::onconnect(conn_io_client* qconnection) {
     if (shutdown_client) {

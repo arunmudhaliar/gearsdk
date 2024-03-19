@@ -7,7 +7,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
-$(NETWORK_COMMON_SRCDIR)/roommessage.cpp \
+$(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \

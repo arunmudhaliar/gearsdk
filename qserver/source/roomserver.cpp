@@ -86,14 +86,14 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
             }
         }
         if (itr_found!=new_connections.end()) {
-            msg_room_config* room_config_msg = message_parser.parse<msg_room_config>(recv_len, buf);
+            msg_room_config* room_config_msg = msg_parser.parse<msg_room_config>(recv_len, buf);
             if (room_config_msg) {
                 qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
                 new_connections.erase(itr_found);
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
                 do_process_roomjoin(qconnection, *room_config_msg);
             } else {
-                msg_room_server_shutdown* room_server_shutdown_msg = message_parser.parse<msg_room_server_shutdown>(recv_len, buf);
+                msg_room_server_shutdown* room_server_shutdown_msg = msg_parser.parse<msg_room_server_shutdown>(recv_len, buf);
                 if (room_server_shutdown_msg) {
                     new_connections.erase(itr_found);
                     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "msg_room_server_shutdown received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);

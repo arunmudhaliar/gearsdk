@@ -9,7 +9,7 @@
 #define room_hpp
 
 #include "qnetworkserver.hpp"
-#include "../../networkcommon/source/roommessage.hpp"
+#include "../../networkcommon/source/message.hpp"
 #include "../../common/typex.h"
 
 #include <map>

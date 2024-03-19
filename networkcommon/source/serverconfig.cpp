@@ -42,6 +42,28 @@ int serverconfig::get_config(const qstring& key, const qstring& default_value, q
     return 0;
 }
 
+int serverconfig::get_int32(const qstring& key, const int32_t default_value) {
+    std::map<qstring, qstring>::iterator itr = configs.find(key);
+    if (itr==configs.end()) {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "get_int32 : zk config not found for key %s. setting default value of %d !!!.", key.c_str(), default_value);
+        return default_value;
+    }
+    int result = default_value;
+    if (gsdk::str2int(&result, itr->second.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Unable to parse %s value - %s. setting default value of %d !!!.", key.c_str(), itr->second.c_str(), default_value);
+    }
+    return result;
+}
+
+qstring serverconfig::get_string(const qstring& key, const qstring& default_value) {
+    std::map<qstring, qstring>::iterator itr = configs.find(key);
+    if (itr==configs.end()) {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "get_string : zk config not found for key %s. setting default value of %s !!!.", key.c_str(), default_value.c_str());
+        return default_value;
+    }
+    return itr->second;
+}
+
 void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder) {
     rapidjson::Document doc;
     rapidjson::ParseResult ok = doc.Parse((char*)buffer.c_str(), buffer.length());

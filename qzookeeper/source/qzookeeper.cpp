@@ -211,7 +211,7 @@ void qzookeeper::my_data_completion(int rc, const char *value, int value_len,
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
     if (value) {
-        DEBUG_RAW(LOG_LEVEL_0, "\tvalue = %.*s", value_len, value);
+        DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", value_len, value);
         thiz->get_result.clear();
         thiz->get_result.run_printf(value, value_len);
     }
@@ -226,7 +226,7 @@ void qzookeeper::dumpStat(const struct Stat *stat) {
     time_t tmtime;
 
     if (!stat) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "null");
+        DEBUG_PRINT_ERROR(__LOGTAG__, "[zk] : dumpStat --> null");
         return;
     }
     tctime = stat->ctime/1000;
@@ -239,7 +239,7 @@ void qzookeeper::dumpStat(const struct Stat *stat) {
     ctime_r(&tmtime, tmtimes);
     ctime_r(&tctime, tctimes);
 
-    DEBUG_RAW(LOG_LEVEL_0, "\tctime = %s\t\tczxid=%llx\n"
+    DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : ctime = %s\t\tczxid=%llx\n"
     "\t\tmtime=%s\t\tmzxid=%llx\n"
     "\t\tversion=%x\taversion=%x\n"
     "\t\tephemeralOwner = %llx",
@@ -253,7 +253,7 @@ void qzookeeper::dumpStat(const struct Stat *stat) {
 void qzookeeper::my_stat_completion(int rc, const struct Stat *stat, const void *data) {
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
-    DEBUG_RAW(LOG_LEVEL_0, "\trc = %d Stat:", rc);
+    DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : rc = %d Stat:", rc);
     dumpStat(stat);
     thiz->op_result = rc;
     thiz->op_in_progress = false;
@@ -262,7 +262,7 @@ void qzookeeper::my_stat_completion(int rc, const struct Stat *stat, const void 
 void qzookeeper::my_void_completion(int rc, const void *data) {
     qzookeeper* thiz = (qzookeeper*)data;
     thiz->op_in_progress = true;
-    DEBUG_RAW(LOG_LEVEL_0, "\trc = %d delete:", rc);
+    DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : rc = %d delete:", rc);
     thiz->op_result = rc;
     thiz->op_in_progress = false;
 }
@@ -352,7 +352,7 @@ int qzookeeper::delete_path(const qstring& zk_path) {
 
 void qzookeeper::close_zk(const int state) {
     UNUSED(state);
-    if (zh) {
+    if (zh != nullptr) {
         zookeeper_close(zh);
         zh = nullptr;
     }

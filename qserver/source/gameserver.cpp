@@ -39,8 +39,8 @@ void game_room::onroom_end() {
 void gameserver::on_network_server_init() {
     roomserver::on_network_server_init();
     DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "gameserver::init");
-    message_parser.register_message_type<msg_room_config>();
-    message_parser.register_message_type<msg_room_server_shutdown>();
+    msg_parser.register_message_type<msg_room_config>();
+    msg_parser.register_message_type<msg_room_server_shutdown>();
 }
 
 room* gameserver::create_room(const msg_room_config* room_config_msg) {

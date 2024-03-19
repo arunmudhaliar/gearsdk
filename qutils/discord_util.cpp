@@ -51,3 +51,20 @@ int discord_util::send(const qstring& msg) {
     }
     return 0;
 }
+
+
+void* discord_util::send_async_internal(void* data) {
+    discord_util::discord_async_data* msg = (discord_util::discord_async_data*)data;
+    discord_util::send(msg->msg);
+    GX_DELETE(msg);
+    pthread_exit(0);
+}
+
+void discord_util::send_async(const qstring& msg) {
+    discord_util::discord_async_data* new_msg = DEBUG_NEW discord_util::discord_async_data(msg);
+    if (pthread_create(&new_msg->tid, nullptr, discord_util::send_async_internal, (void*)new_msg) < 0) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+        GX_DELETE(new_msg);
+        return;
+    }
+}

@@ -14,8 +14,10 @@
 #include "../../networkcommon/source/qtextfile.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "../../networkcommon/source/serverconfig.hpp"
+#include "../../networkcommon/source/message.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
+#define DEFAULT_USER_TOKEN_EXPIRY_TIME 300      // in seconds
 
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_sample_server"
@@ -38,6 +40,8 @@ protected:
     qhiredis* hiredis = nullptr;
     qzookeeper* qzk = nullptr;
     serverconfig* zkconfig = nullptr;
+    msg_room_config_list* room_config_list = nullptr;
+    
 public:
     http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
     ~http3_sample_server();
@@ -53,6 +57,7 @@ private:
     void parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3 *conn_io);
     
     qstring zk_uri;
+    message_parser msg_parser;
     
 #if TEST_RESPONSE
     qstring test_response;

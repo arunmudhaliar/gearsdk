@@ -29,7 +29,8 @@ public:
     void clear();
     void load(const fs::path& path, qzookeeper* qzk, const qstring& zk_root_folder);
     int get_config(const qstring& key, const qstring& default_value, qstring& result);
-    
+    int get_int32(const qstring& key, const int32_t default_value);
+    qstring get_string(const qstring& key, const qstring& default_value);
 private:
     void iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder);
     
