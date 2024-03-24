@@ -35,18 +35,18 @@
 #include <string>
 
 #include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <unistd.h>
 
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include <ev.h>
 #include <uthash.h>
@@ -58,9 +58,7 @@
 #define MAX_DATAGRAM_SIZE 1350
 
 #define MAX_TOKEN_LEN \
-    sizeof("quiche") - 1 + \
-    sizeof(struct sockaddr_storage) + \
-    MAX_CID_LEN
+	sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
 
 struct connections {
     int sock;
