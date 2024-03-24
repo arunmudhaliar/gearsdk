@@ -1,0 +1,54 @@
+---
+Language:        Cpp
+# Defines the C++ standard version to use
+Standard:        Cpp11
+
+# Use 4 spaces for indentation
+UseTab:          Always
+IndentWidth:     4
+TabWidth:        4
+# BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+# Column limit, 0 means no limit
+ColumnLimit:     0
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands:   true
+AlignTrailingComments: true
+
+# Pointer and reference alignment
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+# Spaces before and after various tokens
+SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+
+# Control structure spacing
+SpaceAfterCStyleCast: true
+SpacesInParentheses: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: true
+SpacesInSquareBrackets: false
+
+# Include categories for ordering includes
+IncludeCategories:
+  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority:        2
+  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+    Priority:        3
+  - Regex:           '.*'
+    Priority:        1
+SortIncludes:    true
+...
