@@ -730,7 +730,8 @@ void* qnetworkserver::run_internal(void* data) {
 		if (service_shutdown_cnt >= 1) {
 			ev_break(wait_loop, EVBREAK_ONE);
 		}
-	}, 3);
+	},
+															  3);
 	ev_run(wait_loop, 0);
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);

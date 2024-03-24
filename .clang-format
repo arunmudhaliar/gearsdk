@@ -15,6 +15,8 @@ AllowShortFunctionsOnASingleLine: Inline
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 
+BinPackParameters: true
+
 # Column limit, 0 means no limit
 ColumnLimit:     0
 
