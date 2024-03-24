@@ -137,6 +137,7 @@
 				55A4ADAE2AEF82AA00BC4CED /* Sources */,
 				55A4ADAF2AEF82AA00BC4CED /* Frameworks */,
 				55A4ADB02AEF82AA00BC4CED /* CopyFiles */,
+				5595E1232BB08B7B00FA2618 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -178,6 +179,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5595E1232BB08B7B00FA2618 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55A4ADAE2AEF82AA00BC4CED /* Sources */ = {

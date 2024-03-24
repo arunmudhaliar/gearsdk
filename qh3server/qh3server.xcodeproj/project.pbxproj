@@ -229,6 +229,7 @@
 				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				5594E2742B494B0500E47984 /* Embed Libraries */,
 				555F45BD2BA627F00077ADEE /* ShellScript */,
+				5595E1222BB08AA900FA2618 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -288,6 +289,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Copy the configs directory\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# Create the destination directory if it does not exist\n# if [ ! -d \"$DST_DIR\" ]; then\n#   mkdir -p \"$DST_DIR\"\n# fi\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.10.0.30.dylib\" \"${BUILT_PRODUCTS_DIR}/libdpp.10.0.30.dylib\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5595E1222BB08AA900FA2618 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
