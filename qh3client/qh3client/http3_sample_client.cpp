@@ -48,28 +48,20 @@ void http3_sample_client::init_connection() {
 }
 
 void http3_sample_client::create_connections() {
-    qstring sys_name(essentials::get_sysname());
-    qstring device_name(essentials::get_device_name());
-    qstring arch(essentials::get_device_arch());
-    qstring release_str(essentials::get_device_release_str());
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "create_connections");
+    rq_msg_user_get user_get_msg_rq;
+    
+    user_get_msg_rq.sys_name = essentials::get_sysname();
+    user_get_msg_rq.node_name = essentials::get_device_name();
+    user_get_msg_rq.arch = essentials::get_device_arch();
+    user_get_msg_rq.release = essentials::get_device_release_str();
 
-    bson_t parent;
-    bson_init(&parent);
-    bson_t meta;
-    bson_append_document_begin(&parent, "details", strlen("details"), &meta);
-    bson_append_utf8(&meta, "sys_name", strlen("sys_name"), sys_name.c_str(), (int)sys_name.length());
-    bson_append_utf8(&meta, "node_name", strlen("node_name"), device_name.c_str(), (int)device_name.length());
-    bson_append_utf8(&meta, "release", strlen("release"), release_str.c_str(), (int)release_str.length());
-    bson_append_utf8(&meta, "arch", strlen("arch"), arch.c_str(), (int)arch.length());
-    bson_append_document_end(&parent, &meta);
-
-    size_t length = 0;
-    char* json_string_data = bson_as_json(&parent, &length);
-    bson_destroy(&parent);
-
+    qstring json_str;
+    user_get_msg_rq.get_json_string(json_str);
+    
     for (int x = 0;x < 1;x++) {
         qh3client_helper::send_async_request<client::qh3client>(host, port,
-            conn_io_req_res::create("/user_get", qstring(json_string_data, length)), nullptr,
+            conn_io_req_res::create("/user_get", json_str), nullptr,
             [this, x](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
                 bool validate = response->validate();
 //                assert(validate);
@@ -95,7 +87,7 @@ void http3_sample_client::create_connections() {
                 // parse
                 bson_iter_t iter;
                 bson_iter_t sub_iter;
-                if (bson_iter_init(&iter, &bson) && bson_iter_find_descendant(&iter, "user.pid", &sub_iter)) {
+                if (bson_iter_init(&iter, &bson) && bson_iter_find_descendant(&iter, "pid", &sub_iter)) {
                     pid = bson_iter_utf8(&sub_iter, NULL);
                 }
                 bson_destroy(&bson);
@@ -109,12 +101,9 @@ void http3_sample_client::create_connections() {
         live_connections++;
         total_connections_issued++;
     }
-    bson_free(json_string_data);
 }
 
 void http3_sample_client::on_login_complete(const qstring& token, bool result) {
-    return;
-    
     if (result == false) {
         DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Login failed t:%s !!!", token.c_str());
         return;

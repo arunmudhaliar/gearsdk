@@ -54,7 +54,7 @@ void conn_io_client::Release() {
         quiche_conn_free(conn);
         conn = nullptr;
     }
-    
+
     for (auto it = sendBuffer.cbegin(); it != sendBuffer.cend(); it++) {
         qdata* sd = *it;
         GX_DELETE(sd);
@@ -166,7 +166,7 @@ ssize_t conn_io_client::SendMessage(const char* buf, size_t buflen, bool fin) {
         //        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
         ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*)buf,
             buflen, fin);
-        if (sent_len != buflen) {
+        if (sent_len != (ssize_t)buflen) {
             DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
             break;
         }
@@ -274,7 +274,7 @@ int qnetworkclient::close() {
     send_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
 #endif
-    
+
     if (state == CON_STATE::STATE_CONNECT) {
         if (qclient_connection) {
             int conActive = qclient_connection->ConnectionActive();
@@ -301,11 +301,11 @@ int qnetworkclient::sendMessage(const uint8_t* buffer, ssize_t size, bool flush)
     close_mutex.block(__FUNCTION__);
     sendloop_mutex.block(__FUNCTION__);
 #endif
-    
+
     if (qclient_connection) {
         qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata(buffer, size));
     }
-    
+
 #if USE_PTHREAD
     sendloop_mutex.unBlock(__FUNCTION__);
     close_mutex.unBlock(__FUNCTION__);
@@ -422,7 +422,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
     qconnection_->bridge->het_close_mutex()->block(__FUNCTION__);
     qconnection_->bridge->get_send_mutex()->block(__FUNCTION__);
 #endif
-    
+
     if (qconnection_->bridge->getstate() == CON_STATE::STATE_CONNECT) {
         std::vector<qdata*> successfullySent;
         for (auto it = qconnection_->sendBuffer.cbegin(); it != qconnection_->sendBuffer.cend(); it++) {
@@ -615,7 +615,7 @@ void* qnetworkclient::run_internal(void* data) {
     thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
 
     ev_loop_destroy(thiz->mainloop);
-    
+
     quiche_config_free(config);
 
 #if USE_PTHREAD

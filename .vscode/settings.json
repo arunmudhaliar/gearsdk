@@ -2,7 +2,8 @@
     "makefile.makefilePath": "./qserver",
     "makefile.compileCommandsPath": "./qserver",
     "files.associations": {
-        "*.pch": "cpp"
+        "*.pch": "cpp",
+        "vector": "cpp"
     },
     "editor.formatOnSave": true,
     "C_Cpp.formatting": "vcFormat"

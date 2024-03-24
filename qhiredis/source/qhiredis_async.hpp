@@ -23,22 +23,22 @@
 
 class interface_qhiredis_async {
 public:
-    virtual void on_qhiredis_async_key_expired(const qstring&) = 0;
+    virtual void on_qhiredis_async_key_expired(const qstring& expired_key) = 0;
 };
 
 class qhiredis_async {
 public:
     qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface);
     ~qhiredis_async();
-    
+
     int connect_async_redis(struct ev_loop* loop);
     void disconnect_async_redis();
-    
+
 private:
-    static void on_connect_cb(const redisAsyncContext *c, int status);
-    static void on_disconnect_cb(const redisAsyncContext *c, int status);
-    static void on_message_cb(struct redisAsyncContext *c, void *reply, void *priv);
-    
+    static void on_connect_cb(const redisAsyncContext* c, int status);
+    static void on_disconnect_cb(const redisAsyncContext* c, int status);
+    static void on_message_cb(struct redisAsyncContext* c, void* reply, void* priv);
+
     redisAsyncContext* async_context = nullptr;
     qstring redis_ip = "127.0.0.1";
     uint16_t redis_port;

@@ -33,11 +33,11 @@ class room;
 class roomserver_interface {
 public:
     virtual void onroom_pre_start(room* r) = 0;
-    virtual struct ev_loop * get_netowrk_main_loop() = 0;
+    virtual struct ev_loop* get_netowrk_main_loop() = 0;
 };
 
 class room_interface {
-    virtual void onroom_create()= 0;
+    virtual void onroom_create() = 0;
     virtual void onroom_start() = 0;
     virtual void onroom_player_added(player* p) = 0;
     virtual void onroom_message(player* p, const qstring& msg) = 0;
@@ -75,9 +75,9 @@ struct roomconfig {
 // MARK: -
 class room : public room_interface {
 private:
-    room() : room_config(roomconfig(1, 1, 0, FX_TWO, false)), creation_time(0) {
+    room() : creation_time(0), room_config(roomconfig(1, 1, 0, FX_TWO, false)) {
     }
-    
+
 public:
     enum states {
         room_uninitialised,
@@ -87,33 +87,33 @@ public:
     };
     room(roomserver_interface*, const roomconfig& room_config);
     virtual ~room();
-    
+
     ssize_t try_add_connection(conn_io* qconnection);
     ssize_t remove_connection(conn_io* qconnection);
     player* get_player(conn_io* qconnection);
-    inline bool is_min_capacity_reached() { return playermap.size()>=room_config.min_players; }
-    inline bool is_max_capacity_reached() { return playermap.size()>=room_config.max_players; }
+    inline bool is_min_capacity_reached() { return (int)playermap.size() >= room_config.min_players; }
+    inline bool is_max_capacity_reached() { return (int)playermap.size() >= room_config.max_players; }
     inline ssize_t get_playermap_count() { return playermap.size(); }
     states get_state() { return state; }
     const qstring& get_state_string();
-    bool is_state(states state) { return this->state==state; }
+    bool is_state(states state) { return this->state == state; }
     void kick_all_except(conn_io* qconnection);
     void print_info();
     ev_tstamp since_creation();
-    
+
     std::map<unsigned, player*> playermap;
     const int room_id = 0;
     const ev_tstamp creation_time;
-    
+
     void pass_message_to_room(player* p, const qstring& msg);
-    
+
     void broadcast(const qstring& msg);
     void broadcast_except(player* p, const qstring& msg);
     void sendto(player* p, const qstring& msg);
     inline const roomconfig& get_room_config() { return room_config; }
-    
+
     qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
-    
+
 protected:
     void onroom_create() override;
     void onroom_start() override;
@@ -121,19 +121,19 @@ protected:
     void onroom_message(player* p, const qstring& msg) override;
     void onroom_player_removed(player* p) override;
     void onroom_end() override;
-    
+
 private:
     void set_state(states state);
     void on_state_change(states prev_state);
-    
+
     void send_event_player_add_or_remove(player* p, bool add);
     void send_event_room_start_or_end(bool room_start);
-    
+
     const roomconfig room_config;
     states state = room_uninitialised;
     roomserver_interface* roomserverinterface;
     static int room_id_counter;
-    qstring states_string[4] = {"uninitialised", "waiting", "start", "end" };
+    qstring states_string[4] = { "uninitialised", "waiting", "start", "end" };
 };
 
 #endif /* room_hpp */

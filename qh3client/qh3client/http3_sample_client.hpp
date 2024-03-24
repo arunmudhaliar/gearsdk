@@ -9,6 +9,7 @@
 #define http3_sample_client_hpp
 
 #include "qh3client_helper.hpp"
+#include "../networkcommon/source/message.hpp"
 #include <atomic>
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
@@ -35,5 +36,6 @@ private:
 
     qstring session_token;
     qstring pid;
+    message_parser msg_parser;
 };
 #endif /* http3_sample_client_hpp */

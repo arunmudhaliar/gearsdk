@@ -22,7 +22,7 @@
 #define __LOGTAG__ "message"
 
 #define DECLARE_MESSAGE_PRE_REQUISITES(classtype, msg_type_string) \
-static const qstring get_type_string() { return msg_type_string; } \
+static qstring get_type_string() { return msg_type_string; } \
 static unsigned long get_type_string_crc() { \
     qstring type_string(classtype::get_type_string()); \
     unsigned long type_string_crc = crc32(0L, Z_NULL, 0); \
@@ -32,7 +32,7 @@ static unsigned long get_type_string_crc() { \
 static message_base* create() { \
     return new classtype(); \
 } \
-void get_json_string(qstring& result) { \
+void get_json_string(qstring& result) const { \
     Document doc; \
     serialize(doc, doc.GetAllocator()); \
     essentials::get_json_string(doc, result); \
@@ -40,7 +40,7 @@ void get_json_string(qstring& result) { \
 qstring get_type() override { \
     return msg_type_string; \
 } \
-unsigned long get_type_crc() override { \
+unsigned long get_type_crc() const override { \
     return classtype::get_type_string_crc(); \
 }
 
@@ -52,11 +52,13 @@ using namespace rapidjson;
 
 // MARK: -
 class message_base {
+protected:
+    message_base(){};
 public:
     virtual ~message_base();
     // A method to deserialize from a RapidJSON document
     virtual bool deserialize(rapidjson::Value& obj);
-    virtual void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator);
+    virtual void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const ;
     static const qstring get_type_string() { return "message_base"; }
     static unsigned long get_type_string_crc() {
         qstring type_string(message_base::get_type_string());
@@ -72,19 +74,12 @@ public:
         serialize(doc, doc.GetAllocator());
         essentials::get_json_string(doc, result);
     }
-    virtual unsigned long get_type_crc() {
+    virtual unsigned long get_type_crc() const {
         return message_base::get_type_string_crc();
     }
     virtual qstring get_type() {
         return "message_base";
     }
-protected:
-    message_base(unsigned long type_string_crc);
-    
-    unsigned short signature = 0x7A9B;
-    unsigned long cached_type_string_crc = 0;
-private:
-    message_base(){};
 };
 
 // MARK: -
@@ -103,7 +98,7 @@ private:
 class msg_room_config : public message_base {
 public:
     msg_room_config();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(msg_room_config, "msg_room_config")
     int min = 2;
@@ -116,8 +111,9 @@ public:
 class msg_room_config_list : public message_base {
 public:
     msg_room_config_list();
+    msg_room_config_list(const msg_room_config_list& list);
     virtual ~msg_room_config_list();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(msg_room_config_list, "msg_room_config_list")
     std::vector<msg_room_config*> configs;
@@ -125,22 +121,12 @@ private:
     void destroy_all();
 };
 
-class msg_room_server_shutdown : public message_base {
-public:
-    msg_room_server_shutdown();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
-    bool deserialize(rapidjson::Value& obj) override;
-    DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_shutdown, "msg_room_server_shutdown")
-};
-
 // MARK: -
 class rq_msg_user_base : public message_base {
-private:
-    rq_msg_user_base();
 public:
+    rq_msg_user_base();
     virtual ~rq_msg_user_base();
-    rq_msg_user_base(unsigned long type_string_crc);
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(rq_msg_user_base, "rq_msg_user_base")
     qstring pid;
@@ -151,7 +137,8 @@ public:
 class rq_msg_user_get : public rq_msg_user_base {
 public:
     rq_msg_user_get();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    virtual ~rq_msg_user_get();
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(rq_msg_user_get, "rq_msg_user_get")
     qstring sys_name;
@@ -162,15 +149,14 @@ public:
 
 // MARK: -
 class res_msg_user_base : public message_base {
-private:
-    res_msg_user_base();
 public:
+    res_msg_user_base();
     virtual ~res_msg_user_base();
-    res_msg_user_base(unsigned long type_string_crc);
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(res_msg_user_base, "res_msg_user_base")
     qstring pid;
+    msg_room_config_list* room_list = nullptr;
 };
 
 
@@ -178,7 +164,7 @@ public:
 class res_msg_user_get : public res_msg_user_base {
 public:
     res_msg_user_get();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) override;
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
     bool deserialize(rapidjson::Value& obj) override;
     DECLARE_MESSAGE_PRE_REQUISITES(res_msg_user_get, "res_msg_user_get")
     qstring last_login;

@@ -119,7 +119,7 @@ protected:
     void onconnection_connect(conn_io* qconnection) override;
     void onconnection_connected(conn_io* qconnection) override;
     void onconnection_destroy(conn_io* qconnection) override;
-    void on_qhiredis_async_key_expired(const qstring&) override;
+    void on_qhiredis_async_key_expired(const qstring& expired_key) override;
     
     inline struct ev_loop* get_mainloop() override final {
         return mainloop;

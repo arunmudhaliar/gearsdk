@@ -8,40 +8,22 @@
 #include "message.hpp"
 
 // MARK: - message_base
-message_base::message_base(unsigned long type_string_crc) : cached_type_string_crc(type_string_crc) {
-}
 message_base::~message_base() {
 }
 
-void message_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void message_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
+    UNUSED(allocator);
     obj.SetObject();
-
-    // Create a JSON object to hold the data
-    obj.AddMember("sig", Value().SetUint(signature), allocator);
-    obj.AddMember("t_crc", Value().SetInt64(get_type_crc()), allocator);
 }
 
 bool message_base::deserialize(rapidjson::Value& obj) {
-    if (obj.IsObject()) {
-        if (obj.HasMember("sig") && obj["sig"].IsUint()) {
-            signature = (unsigned short)obj["sig"].GetUint();
-        } else {
-            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s - message dont have sig", get_type().c_str());
-        }
-        if (obj.HasMember("t_crc") && obj["t_crc"].IsInt64()) {
-            cached_type_string_crc = obj["t_crc"].GetInt64();
-        } else {
-            DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s - message dont have t_crc", get_type().c_str());
-        }
-    } else {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "%s - message dont have sig or t_crc", get_type().c_str());
-    }
+    UNUSED(obj);
     return true;
 }
 
 // MARK: - msg_room_config
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_config)
-msg_room_config::msg_room_config() : message_base(msg_room_config::get_type_string_crc()) {
+msg_room_config::msg_room_config() : message_base() {
 }
 
 bool msg_room_config::deserialize(rapidjson::Value& obj) {
@@ -77,7 +59,7 @@ bool msg_room_config::deserialize(rapidjson::Value& obj) {
     return true;
 }
 
-void msg_room_config::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void msg_room_config::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_base::serialize(obj, allocator);
 //    obj.SetObject();
 
@@ -91,7 +73,19 @@ void msg_room_config::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 
 // MARK: - msg_room_config_list
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_config_list)
-msg_room_config_list::msg_room_config_list() : message_base(msg_room_config_list::get_type_string_crc()) {
+msg_room_config_list::msg_room_config_list() : message_base() {
+}
+
+msg_room_config_list::msg_room_config_list(const msg_room_config_list& list) : message_base() {
+    qstring result;
+    list.get_json_string(result);
+    rapidjson::Document obj;
+    obj.Parse((char*)result.c_str(), result.length());
+    if (obj.HasParseError()) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "msg_room_config_list::msg_room_config_list(copy constructor) failed while parsing json string %.*s", result.length(), (char*)result.c_str());
+        return;
+    }
+    deserialize(obj);
 }
 
 msg_room_config_list::~msg_room_config_list() {
@@ -122,7 +116,7 @@ bool msg_room_config_list::deserialize(rapidjson::Value& obj) {
     return true;
 }
 
-void msg_room_config_list::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void msg_room_config_list::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_base::serialize(obj, allocator);
     obj.SetArray();
     // Create an array of objects
@@ -147,25 +141,9 @@ void msg_room_config_list::serialize(rapidjson::Value& obj, rapidjson::Document:
     obj2.AddMember("allow_after_start", false, allocator);
 }
 
-// MARK: - msg_room_server_shutdown
-DEFINE_MESSAGE_PRE_REQUISITES(msg_room_server_shutdown)
-msg_room_server_shutdown::msg_room_server_shutdown() : message_base(msg_room_server_shutdown::get_type_string_crc()) {
-}
-void msg_room_server_shutdown::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
-    message_base::serialize(obj, allocator);
-}
-bool msg_room_server_shutdown::deserialize(rapidjson::Value& obj) {
-    message_base::deserialize(obj);
-    return true;
-}
-
-
 // MARK: - rq_msg_user_base
 DEFINE_MESSAGE_PRE_REQUISITES(rq_msg_user_base)
-rq_msg_user_base::rq_msg_user_base() : message_base(0) {
-    DEBUG_ASSERT(__LOGTAG__, false, "This line of code must not be executed !!!");
-}
-rq_msg_user_base::rq_msg_user_base(unsigned long type_string_crc) : message_base(type_string_crc) {
+rq_msg_user_base::rq_msg_user_base() : message_base() {
 }
 
 rq_msg_user_base::~rq_msg_user_base() {
@@ -186,7 +164,7 @@ bool rq_msg_user_base::deserialize(rapidjson::Value& obj) {
     return true;
 }
 
-void rq_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void rq_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_base::serialize(obj, allocator);
 //    obj.SetObject();
 
@@ -197,9 +175,11 @@ void rq_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::All
 
 // MARK: - rq_msg_user_get
 DEFINE_MESSAGE_PRE_REQUISITES(rq_msg_user_get)
-rq_msg_user_get::rq_msg_user_get() : rq_msg_user_base(rq_msg_user_get::get_type_string_crc()) {
+rq_msg_user_get::rq_msg_user_get() : rq_msg_user_base() {
 }
 
+rq_msg_user_get::~rq_msg_user_get() {
+}
 bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
     if (!rq_msg_user_base::deserialize(obj)) {
         return false;
@@ -237,7 +217,7 @@ bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
     return true;
 }
 
-void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     rq_msg_user_base::serialize(obj, allocator);
 //    obj.SetObject();
 
@@ -256,12 +236,10 @@ void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 
 // MARK: - res_msg_user_base
 DEFINE_MESSAGE_PRE_REQUISITES(res_msg_user_base)
-res_msg_user_base::res_msg_user_base() : message_base(0) {
-    DEBUG_ASSERT(__LOGTAG__, false, "This line of code must not be executed !!!");
-}
-res_msg_user_base::res_msg_user_base(unsigned long type_string_crc) : message_base(type_string_crc) {
+res_msg_user_base::res_msg_user_base() : message_base() {
 }
 res_msg_user_base::~res_msg_user_base() {
+    GX_DELETE(room_list);
 }
 
 bool res_msg_user_base::deserialize(rapidjson::Value& obj) {
@@ -274,17 +252,32 @@ bool res_msg_user_base::deserialize(rapidjson::Value& obj) {
     } else {
         return false;
     }
+    
+    if (obj.HasMember("room_list") && obj["room_list"].IsObject()) {
+        GX_DELETE(room_list);
+        room_list = (msg_room_config_list*)msg_room_config_list::create();
+        Value& room_list_obj = obj["room_list"];
+        room_list->deserialize(room_list_obj);
+    }
+    
     return true;
 }
 
-void res_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void res_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_base::serialize(obj, allocator);
     obj.AddMember("pid", Value().SetString(pid.c_str(), (uint32_t)pid.length()), allocator);
+    
+    // room config
+    if (room_list!=nullptr) {
+        rapidjson::Value room_list_obj(rapidjson::kObjectType);
+        room_list->serialize(room_list_obj, allocator);
+        obj.AddMember("room_list", room_list_obj, allocator);
+    }
 }
 
 // MARK: - res_msg_user_get
 DEFINE_MESSAGE_PRE_REQUISITES(res_msg_user_get)
-res_msg_user_get::res_msg_user_get() : res_msg_user_base(res_msg_user_get::get_type_string_crc()) {
+res_msg_user_get::res_msg_user_get() : res_msg_user_base() {
 }
 
 bool res_msg_user_get::deserialize(rapidjson::Value& obj) {
@@ -305,7 +298,7 @@ bool res_msg_user_get::deserialize(rapidjson::Value& obj) {
     return true;
 }
 
-void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) {
+void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     res_msg_user_base::serialize(obj, allocator);
 
     // Create a JSON object to hold the data
@@ -361,3 +354,5 @@ template<typename T> T* message_parser::parse(ssize_t len, uint8_t* buf) {
         return nullptr;
     }
 }
+
+#include "roommessage.cpp"
