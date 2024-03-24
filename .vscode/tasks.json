@@ -13,5 +13,10 @@
             "type": "shell",
             "command": "find ${workspaceFolder}/qh3client ${workspaceFolder}/qclient -type f \\( -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' -o -iname '*.c' \\) | xargs clang-format -i"
         }
+        {
+            "label": "Format library code",
+            "type": "shell",
+            "command": "find ${workspaceFolder}/networkcommon/source ${workspaceFolder}/servercommon/source ${workspaceFolder}/qhiredis/source ${workspaceFolder}/qstats-crawler/qstats-crawler ${workspaceFolder}/qstats-crawler/qstats-crawler ${workspaceFolder}/qzookeeper/source -type f \\( -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' -o -iname '*.c' \\) | xargs clang-format -i"
+        }
     ]
 }

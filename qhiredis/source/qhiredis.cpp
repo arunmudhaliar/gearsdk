@@ -7,299 +7,297 @@
 
 #include "qhiredis.hpp"
 
-qhiredis::qhiredis(const qstring& redis_ip, uint16_t redis_port) :
-    redis_ip(redis_ip), redis_port(redis_port) {
-    context = nullptr;
+qhiredis::qhiredis(const qstring& redis_ip, uint16_t redis_port)
+	: redis_ip(redis_ip), redis_port(redis_port) {
+	context = nullptr;
 }
 
 qhiredis::~qhiredis() {
-    disconnect_redis();
+	disconnect_redis();
 }
 
 int qhiredis::connect_redis(bool unix_socket) {
-    return connect_redis_internal(redis_ip, redis_port, unix_socket);
+	return connect_redis_internal(redis_ip, redis_port, unix_socket);
 }
 
 int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, bool unix_socket) {
-    if (context) {
-        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!! - %s:%d", hostname.c_str(), port);
-        return 2;
-    }
-    struct timeval timeout = { 30, 500000 }; // 30.5 seconds
-    if (unix_socket) {
-        context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
-    }
-    else {
-        context = redisConnectWithTimeout(hostname.c_str(), (int)port, timeout);
-    }
-    if (context == nullptr || context->err) {
-        if (context) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s - %s:%d", context->errstr, hostname.c_str(), port);
-            disconnect_redis();
-        }
-        else {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context - %s:%d", hostname.c_str(), port);
-        }
-        return 1;
-    }
-    
-    // Setting the notify-keyspace-events to Ex
-    redisReply *reply = (redisReply*)redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
-    if (reply->type == REDIS_REPLY_ERROR) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Error setting hiredis CONFIG: %s", reply->str);
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "hiredis CONFIG set successfully");
-    }
-    
-    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s:%d", hostname.c_str(), port);
-    return 0;
+	if (context) {
+		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!! - %s:%d", hostname.c_str(), port);
+		return 2;
+	}
+	struct timeval timeout = {30, 500000}; // 30.5 seconds
+	if (unix_socket) {
+		context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
+	} else {
+		context = redisConnectWithTimeout(hostname.c_str(), (int) port, timeout);
+	}
+	if (context == nullptr || context->err) {
+		if (context) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: %s - %s:%d", context->errstr, hostname.c_str(), port);
+			disconnect_redis();
+		} else {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Connection error: can't allocate redis context - %s:%d", hostname.c_str(), port);
+		}
+		return 1;
+	}
+
+	// Setting the notify-keyspace-events to Ex
+	redisReply* reply = (redisReply*) redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
+	if (reply->type == REDIS_REPLY_ERROR) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Error setting hiredis CONFIG: %s", reply->str);
+	} else {
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "hiredis CONFIG set successfully");
+	}
+
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s:%d", hostname.c_str(), port);
+	return 0;
 }
 
 void qhiredis::disconnect_redis() {
-    if (!context) {
-        return;
-    }
-    /* Disconnects and frees the context */
-    redisFree(context);
-    context = nullptr;
+	if (!context) {
+		return;
+	}
+	/* Disconnects and frees the context */
+	redisFree(context);
+	context = nullptr;
 }
 
 int qhiredis::set_value(const qstring& key, const qstring& value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b", key.c_str(), key.length(), value.c_str(), value.length());
-    if (reply == nullptr) {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "SET %b %b", key.c_str(), key.length(), value.c_str(), value.length());
+	if (reply == nullptr) {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::set_value(const qstring& key, const qstring& value, int expiry_in_sec) {
-    if (!context) {
-        return 2;
-    }
-    redisReply* reply = (redisReply*)redisCommand(context, "SET %b %b EX %d", key.c_str(), key.length(), value.c_str(), value.length(), expiry_in_sec);
-    if (reply == nullptr) {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "SET %b %b EX %d", key.c_str(), key.length(), value.c_str(), value.length(), expiry_in_sec);
+	if (reply == nullptr) {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::get_value(const qstring& key, qstring& value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply* reply = (redisReply*)redisCommand(context, "GET %b", key.c_str(), key.length());
-    if (reply == nullptr) {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    value = qstring::format_string("%.*s", reply->len, reply->str);
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "GET %b", key.c_str(), key.length());
+	if (reply == nullptr) {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	value = qstring::format_string("%.*s", reply->len, reply->str);
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const qstring& value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply* reply = (redisReply*)redisCommand(context, "HSET %b %b %b",
-                                                  hashkey.c_str(), hashkey.length(), field.c_str(), field.length(), value.c_str(), value.length());
-    if (reply == nullptr) {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    
-    // Check reply->type to confirm the command was successful
-    if (reply->type == REDIS_REPLY_INTEGER) {
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer,
-               hashkey.c_str(), field.c_str(), value.c_str());
-    } else if (reply->type == REDIS_REPLY_STATUS) {
-        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Status: %s", reply->str);
-    } else {
-        DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
-    }
-    
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "HSET %b %b %b",
+												   hashkey.c_str(), hashkey.length(), field.c_str(), field.length(), value.c_str(), value.length());
+	if (reply == nullptr) {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+
+	// Check reply->type to confirm the command was successful
+	if (reply->type == REDIS_REPLY_INTEGER) {
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer,
+					hashkey.c_str(), field.c_str(), value.c_str());
+	} else if (reply->type == REDIS_REPLY_STATUS) {
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Status: %s", reply->str);
+	} else {
+		DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
+	}
+
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstring& value) {
-    if (!context) {
-        return 2;
-    }
-    // Get the hash field value.
-    redisReply* reply = (redisReply*)redisCommand(context, "HGET %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length());
-    if (reply == nullptr) {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
+	if (!context) {
+		return 2;
+	}
+	// Get the hash field value.
+	redisReply* reply = (redisReply*) redisCommand(context, "HGET %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length());
+	if (reply == nullptr) {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
 
-    // Check if the value was successfully retrieved
-    if (reply->type == REDIS_REPLY_STRING) {
-        value = qstring::format_string("%.*s", reply->len, reply->str);
-    } else if (reply->type == REDIS_REPLY_NIL) {
-        DEBUG_PRINT_WARN(__LOGTAG__, "The field does not exist.");
-    } else {
-        DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
-    }
-    
-    freeReplyObject(reply);
-    return 0;
+	// Check if the value was successfully retrieved
+	if (reply->type == REDIS_REPLY_STRING) {
+		value = qstring::format_string("%.*s", reply->len, reply->str);
+	} else if (reply->type == REDIS_REPLY_NIL) {
+		DEBUG_PRINT_WARN(__LOGTAG__, "The field does not exist.");
+	} else {
+		DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
+	}
+
+	freeReplyObject(reply);
+	return 0;
 }
 
 void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
-    if (!context) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
-        return;
-    }
-    iterate_hash(context, key.c_str(), arg, callback);
+	if (!context) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
+		return;
+	}
+	iterate_hash(context, key.c_str(), arg, callback);
 }
 
 void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
-    unsigned long cursor = 0;
-    redisReply *reply;
-    do {
-        // Execute HSCAN command
-        reply = (redisReply*)redisCommand(context, "HSCAN %s %lu", hash_key, cursor);
+	unsigned long cursor = 0;
+	redisReply* reply;
+	do {
+		// Execute HSCAN command
+		reply = (redisReply*) redisCommand(context, "HSCAN %s %lu", hash_key, cursor);
 
-        if (reply!=nullptr && reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
-            // The first element of the reply is the new cursor to use in the next call.
-            cursor = strtoul(reply->element[0]->str, nullptr, 10);
+		if (reply != nullptr && reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
+			// The first element of the reply is the new cursor to use in the next call.
+			cursor = strtoul(reply->element[0]->str, nullptr, 10);
 
-            // The second element of the reply is an array of key-value pairs.
-            redisReply *data = reply->element[1];
-            for (size_t i = 0; i < data->elements; i += 2) {
-//                printf("Field: %s, Value: %s\n", data->element[i]->str, data->element[i + 1]->str);
-                callback(data->element[i]->str, data->element[i + 1]->str, arg);
-            }
-        } else {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Error: %s", reply->str);
-            break;
-        }
-        freeReplyObject(reply);
-    } while (cursor != 0);
+			// The second element of the reply is an array of key-value pairs.
+			redisReply* data = reply->element[1];
+			for (size_t i = 0; i < data->elements; i += 2) {
+				//                printf("Field: %s, Value: %s\n", data->element[i]->str, data->element[i + 1]->str);
+				callback(data->element[i]->str, data->element[i + 1]->str, arg);
+			}
+		} else {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Error: %s", reply->str);
+			break;
+		}
+		freeReplyObject(reply);
+	} while (cursor != 0);
 }
 
-int qhiredis::incr(const qstring& key, long long &value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "INCR %b", key.c_str(), key.length());
-    if (reply != nullptr) {
-        value = reply->integer;
-        printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
-    } else {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+int qhiredis::incr(const qstring& key, long long& value) {
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "INCR %b", key.c_str(), key.length());
+	if (reply != nullptr) {
+		value = reply->integer;
+		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+	} else {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
-int qhiredis::decr(const qstring& key, long long &value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "DECR %b", key.c_str(), key.length());
-    if (reply != nullptr) {
-        value = reply->integer;
-        printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
-    } else {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+int qhiredis::decr(const qstring& key, long long& value) {
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "DECR %b", key.c_str(), key.length());
+	if (reply != nullptr) {
+		value = reply->integer;
+		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+	} else {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
-int qhiredis::incr_by(const qstring& key, const int delta, long long &value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "INCRBY %b %d", key.c_str(), key.length(), delta);
-    if (reply != nullptr) {
-        value = reply->integer;
-        printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
-    } else {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+int qhiredis::incr_by(const qstring& key, const int delta, long long& value) {
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "INCRBY %b %d", key.c_str(), key.length(), delta);
+	if (reply != nullptr) {
+		value = reply->integer;
+		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+	} else {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
-int qhiredis::decr_by(const qstring& key, const int delta, long long &value) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "DECRBY %b %d", key.c_str(), key.length(), delta);
-    if (reply != nullptr) {
-        value = reply->integer;
-        printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
-    } else {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+int qhiredis::decr_by(const qstring& key, const int delta, long long& value) {
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "DECRBY %b %d", key.c_str(), key.length(), delta);
+	if (reply != nullptr) {
+		value = reply->integer;
+		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+	} else {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::expire_key(const qstring& key, int expiry_in_sec) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "EXPIRE %b %d", key.c_str(), key.length(), expiry_in_sec);
-    if (reply != nullptr) {
-        if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1) {
-            printf("'%s' expiration time set successfully.\n", key.c_str());
-        } else {
-            printf("Failed to set expiration time for '%s'.\n", key.c_str());
-        }
-    } else {
-        if (context->err) {
-            DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
-        }
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "EXPIRE %b %d", key.c_str(), key.length(), expiry_in_sec);
+	if (reply != nullptr) {
+		if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1) {
+			printf("'%s' expiration time set successfully.\n", key.c_str());
+		} else {
+			printf("Failed to set expiration time for '%s'.\n", key.c_str());
+		}
+	} else {
+		if (context->err) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
+		}
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
 int qhiredis::delete_key(const qstring& key) {
-    if (!context) {
-        return 2;
-    }
-    redisReply *reply = (redisReply*)redisCommand(context, "DEL %b", key.c_str(), key.length());
-    if (reply == nullptr) {
-        printf("hiredis DEL execution failed for key %s\n", key.c_str());
-        return 1;
-    }
-    freeReplyObject(reply);
-    return 0;
+	if (!context) {
+		return 2;
+	}
+	redisReply* reply = (redisReply*) redisCommand(context, "DEL %b", key.c_str(), key.length());
+	if (reply == nullptr) {
+		printf("hiredis DEL execution failed for key %s\n", key.c_str());
+		return 1;
+	}
+	freeReplyObject(reply);
+	return 0;
 }
 
 #if 0
