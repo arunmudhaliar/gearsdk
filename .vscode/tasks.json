@@ -4,18 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Format Server code",
             "type": "shell",
-            "label": "make-qserver",
-            "command": "make",
-            "args": [],
-            "options": {
-                "cwd": "${workspaceFolder}/qserver"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "make"
+            "command": "find ${workspaceFolder}/qh3server ${workspaceFolder}/qserver -type f \\( -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' -o -iname '*.c' \\) | xargs clang-format -i"
+        },
+        {
+            "label": "Format Client code",
+            "type": "shell",
+            "command": "find ${workspaceFolder}/qh3client ${workspaceFolder}/qclient -type f \\( -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' -o -iname '*.c' \\) | xargs clang-format -i"
+        },
+        {
+            "label": "Format library code",
+            "type": "shell",
+            "command": "find ${workspaceFolder}/qutils ${workspaceFolder}/networkcommon/source ${workspaceFolder}/servercommon/source ${workspaceFolder}/qhiredis/source ${workspaceFolder}/qstats-crawler/qstats-crawler ${workspaceFolder}/qzookeeper/source -type d \\( -path '*/ev' -o -path '*/quiche' -o -path '*/libmongoc-1.0' -o -path '*/libmongoc-1.0' -o -path '*/libs' -o -path '*/dpp' \\) -prune -o -type f \\( -iname '*.cpp' -o -iname '*.h' -o -iname '*.hpp' -o -iname '*.c' \\) -print | xargs clang-format -i"
         }
     ]
 }

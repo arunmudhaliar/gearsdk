@@ -1,36 +1,27 @@
-git branch
-rm -rf $WORKSPACE/out
-rm -rf $WORKSPACE/qh3server/build
-mkdir $WORKSPACE/qh3server/build
-mkdir $WORKSPACE/out
+#!/bin/bash
+echo branch $BRANCH
+# pwd
+# ls
+branch_name="${BRANCH#origin/}"
+echo branch name $branch_name
+root_dir="/home/ubuntu"
+deploy_dir="$root_dir/deploy-build"
+echo "Deploy directory "$deploy_dir
+rm -rf "$deploy_dir/gsdk-source"
+mkdir "$deploy_dir/gsdk-source"
+git clone git@github.com:arunmudhaliar/gearsdk.git "$deploy_dir/gsdk-source"
+cd "$deploy_dir/gsdk-source"
+pwd
 
-if [ $BUILD_EXECUTABLE = true ] ; then
-  set +x
-  if [ $BUILD_TYPE = "release" ] ; then
-     echo "++++++++++++ RELEASE build ++++++++++++"
-     echo "++++++++++++ RELEASE build ++++++++++++"
-     echo "++++++++++++ RELEASE build ++++++++++++"
-  fi
-  set -x
-  
-  cd $WORKSPACE/qh3server
-  make clean
-  make $BUILD_TYPE
-  
-  # cd $WORKSPACE/qh3client
-  # make clean
-  # make $BUILD_TYPE
- 
-  mv $WORKSPACE/qh3server/qh3server-app $WORKSPACE/qh3server/build/qh3server-app
-  #mv $WORKSPACE/qh3server/qh3client-app $WORKSPACE/qh3server/build/qh3client-app
-  cp $WORKSPACE/qh3server/certs/cert.crt $WORKSPACE/qh3server/build/cert.crt
-  cp $WORKSPACE/qh3server/certs/cert.key $WORKSPACE/qh3server/build/cert.key
-  
-  zip -r $WORKSPACE/out/build_$BUILD_ID.zip $WORKSPACE/qh3server/build/
-  echo
-  echo
-  echo
-fi
+git fetch origin
+git branch -r
+git checkout $BRANCH
+git reset --hard
+git pull origin $branch_name
+
+CACHE_WORKSPACE=$WORKSPACE
+WORKSPACE=$deploy_dir/gsdk-source
+echo "WORKSPACE directory "$WORKSPACE
 
 if [ $PREP_DOCKER = true ] ; then
    set +x
@@ -39,7 +30,7 @@ if [ $PREP_DOCKER = true ] ; then
    echo "--- PREPARE DOCKER FOLDER ---"
    set -x
    cd $WORKSPACE/qh3server
-   make clean
+   # make clean
    
    cd $WORKSPACE/qh3server/docker
    # copy the certs from build. certs required for docker image
@@ -47,9 +38,11 @@ if [ $PREP_DOCKER = true ] ; then
    # cp $WORKSPACE/qh3server/build/cert.key $WORKSPACE/qh3server/certs/cert.key
    sh ./prepare-docker-qh3server-folder.sh
    # remove the build folder from docker folder. Not requird.
-   rm -rf $WORKSPACE/docker-qh3server/qh3server/build   
-   zip -r $WORKSPACE/out/docker_qh3server_$BUILD_ID.zip $WORKSPACE/docker-qh3server
-   
+   # rm -rf $WORKSPACE/docker-qh3server/qh3server/build   
+   # zip -r $WORKSPACE/out/docker_qh3server_$BUILD_ID.zip $WORKSPACE/docker-qh3server
+
+   sed -i "s/192\.168\.0\.230/$SERVER_IP/" $WORKSPACE/docker-qh3server/run_qh3server.sh
+
    if [ $BUILD_DOCKER = true ] ; then
       cd $WORKSPACE/docker-qh3server
       set +x
@@ -57,7 +50,7 @@ if [ $PREP_DOCKER = true ] ; then
       echo "--- BUILD DOCKER ---"
       echo "--- BUILD DOCKER ---"
       set -x
-      docker build -t qh3server-exp .
+      sudo docker build -t qh3server-exp .
       
       if [ $PUBLISH_DOCKER = true ] ; then
          set +x
@@ -65,10 +58,12 @@ if [ $PREP_DOCKER = true ] ; then
          echo "--- PUBLISH DOCKER ---"
          echo "--- PUBLISH DOCKER ---"
          set -x
-         docker stop qh3server-container
-         docker rm --force qh3server-container
+         # sudo docker stop qh3server-container
+         # sudo docker rm --force qh3server-container
 #         docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp
-		 docker run --publish 4004:4004/udp --publish 4010:4010/udp --publish 4011:4011/udp --publish 5100:5100/udp --publish 5101:5101/udp --publish 5102:5102/udp --publish 5103:5103/udp --publish 5104:5104/udp --name qh3server-container -d qh3server-exp
+		 sudo docker run --publish 4004:4004/udp --publish 4010:4010/udp --publish 4011:4011/udp --publish 5100:5100/udp --publish 5101:5101/udp --publish 5102:5102/udp --publish 5103:5103/udp --publish 5104:5104/udp --name qh3server-container --restart unless-stopped -d qh3server-exp
       fi
    fi
 fi
+
+WORKSPACE=$CACHE_WORKSPACE

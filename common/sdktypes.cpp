@@ -14,8 +14,6 @@
 #include <android/log.h>
 #endif
 
-
-#define LOGBUFFER_SIZE 256 * 2
 using namespace gsdk;
 
 struct utsname device::device_details;
@@ -38,6 +36,13 @@ JavaVM* device::g_JavaVM = nullptr;
     }
 
     void print_common_info() {
+#if DEV_BUILD
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
+#elif PROD_BUILD
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
+#else
+        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
+#endif
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
         const char* endian_str = "Little endian machine";
 #else
@@ -127,6 +132,7 @@ JavaVM* device::g_JavaVM = nullptr;
 
     type_debug_warn_or_err_cb global_warn_cb = nullptr;
     type_debug_warn_or_err_cb global_err_cb = nullptr;
+    type_debug_warn_or_err_cb global_assert_cb = nullptr;
         
     void set_warn_callback(type_debug_warn_or_err_cb cb) {
         global_warn_cb = cb;
@@ -134,7 +140,10 @@ JavaVM* device::g_JavaVM = nullptr;
     void set_error_callback(type_debug_warn_or_err_cb cb) {
         global_err_cb = cb;
     }
-
+    void set_assert_callback(type_debug_warn_or_err_cb cb) {
+        global_assert_cb = cb;
+    }
+        
     void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
         if (logLevel > LOG_LEVEL) {
             return;
@@ -186,20 +195,17 @@ JavaVM* device::g_JavaVM = nullptr;
             global_err_cb(buffer);
         }
     }
-    void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...) {
-        if (condition) {
-            return;
-        }
+    void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
         va_list v;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_err_cb) {
-            global_err_cb(buffer);
+        //fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
+        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
+        if (global_assert_cb) {
+            global_assert_cb(buffer);
         }
-        assert(condition);
     }
     void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -207,7 +213,7 @@ JavaVM* device::g_JavaVM = nullptr;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[36m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
     }
     void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
         char buffer[LOGBUFFER_SIZE + 1];
@@ -215,7 +221,7 @@ JavaVM* device::g_JavaVM = nullptr;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
         va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[96m****", "[%s] : %s\x1b[0m", tag, buffer);
+        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
     }
 
     void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len) {

@@ -22,7 +22,7 @@ elif [ $machine = 'Mac' ]; then
 	ip=$(ipconfig getifaddr en0)
 fi
 port=4004
-db_uri=mongodb://192.168.0.230:6006
+db_uri=mongodb://192.168.0.230:27017
 redis_ip=192.168.0.230
 redis_port=6379
 zk_uri=192.168.0.230:2181

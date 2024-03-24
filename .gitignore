@@ -80,3 +80,5 @@ qh3client-app
 qunityplugin/qunityplugin_android_proj/app/release
 qh3server/logs
 qh3server/stats
+qserver/glogs
+qh3server/configs

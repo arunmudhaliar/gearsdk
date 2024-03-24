@@ -35,7 +35,7 @@ public:
         utstring_new(ut_string);
         utstring_printf(ut_string, "%d", n);
     }
-    
+
     qstring(const long n) {
         utstring_new(ut_string);
         utstring_printf(ut_string, "%ld", n);
@@ -95,7 +95,7 @@ public:
         clear();
         utstring_printf(ut_string, "%s", str);
     }
-    
+
     void run_printf(const char* str, int len) {    // wont clear the data
         if (str == nullptr) {
             return;
@@ -110,7 +110,7 @@ public:
         clear();
         utstring_bincpy(ut_string, buf, len);
     }
-    
+
     void format(const char* fmt, ...) {
         clear();
         va_list ap;
@@ -133,21 +133,21 @@ public:
     }
 
     void replace(const qstring& sub_str, const qstring& str) {
-        if (length()==0) {
+        if (length() == 0) {
             return;
         }
         std::vector<qstring> array;
         split(sub_str, array);
-        if (array.size()==0) {
+        if (array.size() == 0) {
             return;
         }
-        bool is_last_char_match = (length()-sub_str.length())==find(length()-str.length(), sub_str);
-//        bool is_last_char_match = array[array.size()-1].length()>=str.length() && (length()-sub_str.length())==find(length()-str.length(), sub_str);
+        bool is_last_char_match = (length() - sub_str.length()) == (unsigned long)find(length() - str.length(), sub_str);
+        //        bool is_last_char_match = array[array.size()-1].length()>=str.length() && (length()-sub_str.length())==find(length()-str.length(), sub_str);
         clear();
-        int itr = 0;
+        size_t itr = 0;
         for (auto s : array) {
             utstring_concat(ut_string, s.ut_string);
-            if (itr<array.size()-1 || is_last_char_match)
+            if (itr < array.size() - 1 || is_last_char_match)
                 utstring_concat(ut_string, str.ut_string);
             itr++;
         }
@@ -162,8 +162,8 @@ public:
             const char* src = c_str() + prev_start_pos;
             long len = start_pos - prev_start_pos;
             if (include_empty_string || len) {
-//                // Note : len==0 means empty string
-//                utstring_bincpy(new_str.ut_string, src, len==0 ? sub_str.length() : len);
+                //                // Note : len==0 means empty string
+                //                utstring_bincpy(new_str.ut_string, src, len==0 ? sub_str.length() : len);
                 utstring_bincpy(new_str.ut_string, src, len);
                 array.push_back(new_str);
             }
@@ -217,6 +217,18 @@ public:
         long len = str.length();
         int res = strncmp(a_str, b_str, len);
         return res == 0;
+    }
+    
+    bool operator!=(const qstring& str) {
+        const char* b_str = str.c_str();
+        const char* a_str = c_str();
+        long len = str.length();
+        int res = strncmp(a_str, b_str, len);
+        return res != 0;
+    }
+
+    bool operator<(const qstring& other) const {
+        return strcmp(utstring_body(ut_string), utstring_body(other.get_utstring())) < 0;
     }
 
     int compare(const qstring& str) const {

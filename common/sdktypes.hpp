@@ -85,6 +85,17 @@ namespace fs = std::__fs::filesystem;
 #define LOG_LEVEL LOG_LEVEL_3
 #endif
 
+#define LOGBUFFER_SIZE 256 * 2
+
+#define DEBUG_ASSERT(tag, expr, ...) \
+    do { \
+        if (!(expr)) { \
+            DEBUG_ASSERT_INTERNAL(tag, #expr, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+            assert(expr); \
+        } \
+    } while (0)
+
+
 #if PLATFORM == PLATFORM_ANDROID
 extern "C" DECLSPEC int init_gsdk(JavaVM* JavaVM);
 #else
@@ -98,7 +109,7 @@ extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* f
 extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);
-extern "C" DECLSPEC void DEBUG_ASSERT(const char* tag, bool condition, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len);
@@ -144,6 +155,7 @@ extern "C" DECLSPEC str2int_errno str2int(int *out, const char *s, int base);
 typedef void (*type_debug_warn_or_err_cb)(const char*);
 extern "C" DECLSPEC void set_warn_callback(type_debug_warn_or_err_cb cb);
 extern "C" DECLSPEC void set_error_callback(type_debug_warn_or_err_cb cb);
+extern "C" DECLSPEC void set_assert_callback(type_debug_warn_or_err_cb cb);
 
 };
 #endif /* sdktypes_hpp */

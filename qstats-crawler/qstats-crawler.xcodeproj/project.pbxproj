@@ -33,6 +33,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		55384BB22B98F59F00BE7723 /* qstats-crawler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "qstats-crawler.entitlements"; sourceTree = "<group>"; };
 		556ABACE2B0A8AAD00D688DB /* qstats-crawler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "qstats-crawler"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAD12B0A8AAD00D688DB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		556ABAD92B0A8BDA00D688DB /* qpgsql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qpgsql.cpp; sourceTree = "<group>"; };
@@ -89,6 +90,7 @@
 		556ABAD02B0A8AAD00D688DB /* qstats-crawler */ = {
 			isa = PBXGroup;
 			children = (
+				55384BB22B98F59F00BE7723 /* qstats-crawler.entitlements */,
 				5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */,
 				5574F20A2B11D941007C93AA /* qstats-crawler.h */,
 				556ABAD12B0A8AAD00D688DB /* main.cpp */,
@@ -298,6 +300,7 @@
 		556ABAD62B0A8AAD00D688DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "qstats-crawler/qstats-crawler.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -305,6 +308,7 @@
 					"\"$(SRCROOT)/libpgsql/include\"",
 					"\"$(SRCROOT)/qpgsql\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -319,6 +323,7 @@
 		556ABAD72B0A8AAD00D688DB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "qstats-crawler/qstats-crawler.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -326,6 +331,7 @@
 					"\"$(SRCROOT)/libpgsql/include\"",
 					"\"$(SRCROOT)/qpgsql\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

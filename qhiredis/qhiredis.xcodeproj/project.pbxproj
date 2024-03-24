@@ -9,12 +9,16 @@
 /* Begin PBXBuildFile section */
 		556AB5EC2AF1B2FE00D688DB /* qhiredis.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB5EA2AF1B2FE00D688DB /* qhiredis.hpp */; };
 		556AB5ED2AF1B2FE00D688DB /* qhiredis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5EB2AF1B2FE00D688DB /* qhiredis.cpp */; };
+		55A72F732B945FA300064250 /* qhiredis_async.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F712B945FA300064250 /* qhiredis_async.cpp */; };
+		55A72F742B945FA300064250 /* qhiredis_async.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55A72F722B945FA300064250 /* qhiredis_async.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		556AB5D82AF1AEF300D688DB /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556AB5EA2AF1B2FE00D688DB /* qhiredis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = qhiredis.hpp; sourceTree = "<group>"; };
 		556AB5EB2AF1B2FE00D688DB /* qhiredis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qhiredis.cpp; sourceTree = "<group>"; };
+		55A72F712B945FA300064250 /* qhiredis_async.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qhiredis_async.cpp; sourceTree = "<group>"; };
+		55A72F722B945FA300064250 /* qhiredis_async.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qhiredis_async.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +53,8 @@
 			children = (
 				556AB5EA2AF1B2FE00D688DB /* qhiredis.hpp */,
 				556AB5EB2AF1B2FE00D688DB /* qhiredis.cpp */,
+				55A72F712B945FA300064250 /* qhiredis_async.cpp */,
+				55A72F722B945FA300064250 /* qhiredis_async.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -60,6 +66,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55A72F742B945FA300064250 /* qhiredis_async.hpp in Headers */,
 				556AB5EC2AF1B2FE00D688DB /* qhiredis.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -122,6 +129,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				556AB5ED2AF1B2FE00D688DB /* qhiredis.cpp in Sources */,
+				55A72F732B945FA300064250 /* qhiredis_async.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,7 +256,14 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/hiredis\"";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/hiredis\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -260,7 +275,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/hiredis\"";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/hiredis\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+				);
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-fvisibility-inlines-hidden",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};

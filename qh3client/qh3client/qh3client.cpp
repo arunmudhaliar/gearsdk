@@ -6,57 +6,54 @@
 //
 
 #include "qh3client.hpp"
-#include "../../common/sdktypes.hpp"
+
 #include "../../common/gxcrc32.h"
+#include "../../common/sdktypes.hpp"
+
 #include <zlib.h>
 
 using namespace client;
 void qh3client::debug_log(const uint8_t* line, void* argp) {
-    UNUSED(argp);
-    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, (char*)line);
+	UNUSED(argp);
+	DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, (char*) line);
 }
 
 void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) {
-    SendInfo send_info;
+	SendInfo send_info;
 
-    while (1) {
-        ssize_t written = quiche_conn_send(conn_io->conn, conn_io->out, sizeof(conn_io->out),
-            &send_info);
+	while (1) {
+		ssize_t written = quiche_conn_send(conn_io->conn, conn_io->out, sizeof(conn_io->out), &send_info);
 
-        if (written == QUICHE_ERR_DONE) {
-            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
-            break;
-        }
+		if (written == QUICHE_ERR_DONE) {
+			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
+			break;
+		}
 
-        if (written < 0) {
-            fprintf(stderr, "failed to create packet: %zd\n", written);
-            return;
-        }
+		if (written < 0) {
+			fprintf(stderr, "failed to create packet: %zd\n", written);
+			return;
+		}
 
-        ssize_t sent = sendto(conn_io->sock, conn_io->out, written, 0,
-            (struct sockaddr*)&send_info.to,
-            send_info.to_len);
+		ssize_t sent = sendto(conn_io->sock, conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 
-        if (sent != written) {
-            perror("failed to send");
-            return;
-        }
+		if (sent != written) {
+			perror("failed to send");
+			return;
+		}
 
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
-    }
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+	}
 
-    double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
-    conn_io->timer.repeat = t;
-    ev_timer_again(loop, &conn_io->timer);
+	double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
+	conn_io->timer.repeat = t;
+	ev_timer_again(loop, &conn_io->timer);
 }
 
-int qh3client::for_each_setting(uint64_t identifier, uint64_t value,
-    void* argp) {
-    UNUSED(argp);
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP/3 SETTING: %" PRIu64 "=%" PRIu64 "",
-        identifier, value);
+int qh3client::for_each_setting(uint64_t identifier, uint64_t value, void* argp) {
+	UNUSED(argp);
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP/3 SETTING: %" PRIu64 "=%" PRIu64 "", identifier, value);
 
-    return 0;
+	return 0;
 }
 
 /*
@@ -66,185 +63,175 @@ int qh3client::for_each_setting(uint64_t identifier, uint64_t value,
    size_t value_len,
    void *argp)
  */
-int qh3client::for_each_header(const uint8_t* name, size_t name_len,
-    const uint8_t* value, size_t value_len,
-    void* argp) {
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP header: %.*s=%.*s",
-        (int)name_len, name, (int)value_len, value);
+int qh3client::for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp) {
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP header: %.*s=%.*s", (int) name_len, name, (int) value_len, value);
 
-    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)argp;
-    if (conn_io->response == nullptr) {
-        return 0;
-    }
-    conn_io->response->add_or_get_header(qstring(name, name_len), qstring(value, value_len));
-    return 0;
+	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) argp;
+	if (conn_io->response == nullptr) {
+		return 0;
+	}
+	conn_io->response->add_or_get_header(qstring(name, name_len), qstring(value, value_len));
+	return 0;
 }
 
 int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) {
-    const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
-    int header_size = 5;
-    Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
-    headers[0] = {
-            .name = (uint8_t*)":method",
-            .name_len = sizeof(":method") - 1,
+	const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
+	int header_size = 5;
+	Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
+	headers[0] = {
+		.name = (uint8_t*) ":method",
+		.name_len = sizeof(":method") - 1,
 
-            .value = (uint8_t*)"GET",
-            .value_len = sizeof("GET") - 1,
-    };
-    headers[1] = {
-            .name = (uint8_t*)":scheme",
-            .name_len = sizeof(":scheme") - 1,
+		.value = (uint8_t*) "GET",
+		.value_len = sizeof("GET") - 1,
+	};
+	headers[1] = {
+		.name = (uint8_t*) ":scheme",
+		.name_len = sizeof(":scheme") - 1,
 
-            .value = (uint8_t*)"https",
-            .value_len = sizeof("https") - 1,
-    };
-    headers[2] = {
-            .name = (uint8_t*)":authority",
-            .name_len = sizeof(":authority") - 1,
+		.value = (uint8_t*) "https",
+		.value_len = sizeof("https") - 1,
+	};
+	headers[2] = {
+		.name = (uint8_t*) ":authority",
+		.name_len = sizeof(":authority") - 1,
 
-            .value = (uint8_t*)conn_io->host,
-            .value_len = strlen(conn_io->host),
-    };
-    headers[3] = {
-            .name = (uint8_t*)"user-agent",
-            .name_len = sizeof("user-agent") - 1,
+		.value = (uint8_t*) conn_io->host,
+		.value_len = strlen(conn_io->host),
+	};
+	headers[3] = {
+		.name = (uint8_t*) "user-agent",
+		.name_len = sizeof("user-agent") - 1,
 
-            .value = (uint8_t*)"quiche",
-            .value_len = sizeof("quiche") - 1,
-    };
-    headers[4] = {
-            .name = (uint8_t*)"crc",
-            .name_len = sizeof("crc") - 1,
+		.value = (uint8_t*) "quiche",
+		.value_len = sizeof("quiche") - 1,
+	};
+	headers[4] = {
+		.name = (uint8_t*) "crc",
+		.name_len = sizeof("crc") - 1,
 
-            .value = (uint8_t*)crc_buffer.c_str(),
-            .value_len = crc_buffer.length(),
-    };
+		.value = (uint8_t*) crc_buffer.c_str(),
+		.value_len = crc_buffer.length(),
+	};
 
-    int additional_header_index = 0;
-    for (auto it : data_getorpost_->headers) {
-        headers[header_size + additional_header_index] = {
-            .name = (uint8_t*)it.second->name.c_str(),
-            .name_len = it.second->name.length(),
+	int additional_header_index = 0;
+	for (auto it : data_getorpost_->headers) {
+		headers[header_size + additional_header_index] = {
+			.name = (uint8_t*) it.second->name.c_str(),
+			.name_len = it.second->name.length(),
 
-            .value = (uint8_t*)it.second->value.c_str(),
-            .value_len = it.second->value.length(),
-        };
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
-        additional_header_index++;
-    }
+			.value = (uint8_t*) it.second->value.c_str(),
+			.value_len = it.second->value.length(),
+		};
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+		additional_header_index++;
+	}
 
-    int64_t stream_id = quiche_h3_send_request(conn_io->http3,
-        conn_io->conn,
-        headers, header_size + data_getorpost_->headers.size(), true);
-    GX_DELETE_ARY(headers);
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent HTTP GET request %" PRId64 "", stream_id);
-    return stream_id;
+	int64_t stream_id = quiche_h3_send_request(conn_io->http3, conn_io->conn, headers, header_size + data_getorpost_->headers.size(), true);
+	GX_DELETE_ARY(headers);
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent HTTP GET request %" PRId64 "", stream_id);
+	return stream_id;
 }
 
 int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) {
-    const qstring& content_length_data = qstring::format_string("%d", (int)data_getorpost_->data.buffer.length());
-    const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
+	const qstring& content_length_data = qstring::format_string("%d", (int) data_getorpost_->data.buffer.length());
+	const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
 
-    int header_size = 6;
-    Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
-    headers[0] = {
-            .name = (uint8_t*)":method",
-            .name_len = sizeof(":method") - 1,
+	int header_size = 6;
+	Header* headers = DEBUG_NEW Header[header_size + data_getorpost_->headers.size()];
+	headers[0] = {
+		.name = (uint8_t*) ":method",
+		.name_len = sizeof(":method") - 1,
 
-            .value = (uint8_t*)"POST",
-            .value_len = sizeof("POST") - 1,
-    };
-    headers[1] = {
-            .name = (uint8_t*)":scheme",
-            .name_len = sizeof(":scheme") - 1,
+		.value = (uint8_t*) "POST",
+		.value_len = sizeof("POST") - 1,
+	};
+	headers[1] = {
+		.name = (uint8_t*) ":scheme",
+		.name_len = sizeof(":scheme") - 1,
 
-            .value = (uint8_t*)"https",
-            .value_len = sizeof("https") - 1,
-    };
-    headers[2] = {
-            .name = (uint8_t*)":authority",
-            .name_len = sizeof(":authority") - 1,
+		.value = (uint8_t*) "https",
+		.value_len = sizeof("https") - 1,
+	};
+	headers[2] = {
+		.name = (uint8_t*) ":authority",
+		.name_len = sizeof(":authority") - 1,
 
-            .value = (uint8_t*)conn_io->host,
-            .value_len = strlen(conn_io->host),
-    };
-    headers[3] = {
-            .name = (uint8_t*)"user-agent",
-            .name_len = sizeof("user-agent") - 1,
+		.value = (uint8_t*) conn_io->host,
+		.value_len = strlen(conn_io->host),
+	};
+	headers[3] = {
+		.name = (uint8_t*) "user-agent",
+		.name_len = sizeof("user-agent") - 1,
 
-            .value = (uint8_t*)"quiche",
-            .value_len = sizeof("quiche") - 1,
-    };
-    headers[4] = {
-            .name = (uint8_t*)"content-length",
-            .name_len = sizeof("content-length") - 1,
+		.value = (uint8_t*) "quiche",
+		.value_len = sizeof("quiche") - 1,
+	};
+	headers[4] = {
+		.name = (uint8_t*) "content-length",
+		.name_len = sizeof("content-length") - 1,
 
-            .value = (uint8_t*)content_length_data.c_str(),
-            .value_len = content_length_data.length(),
-    };
-    headers[5] = {
-            .name = (uint8_t*)"crc",
-            .name_len = sizeof("crc") - 1,
+		.value = (uint8_t*) content_length_data.c_str(),
+		.value_len = content_length_data.length(),
+	};
+	headers[5] = {
+		.name = (uint8_t*) "crc",
+		.name_len = sizeof("crc") - 1,
 
-            .value = (uint8_t*)crc_buffer.c_str(),
-            .value_len = crc_buffer.length(),
-    };
+		.value = (uint8_t*) crc_buffer.c_str(),
+		.value_len = crc_buffer.length(),
+	};
 
-    int additional_header_index = 0;
-    for (auto it : data_getorpost_->headers) {
-        headers[header_size + additional_header_index] = {
-            .name = (uint8_t*)it.second->name.c_str(),
-            .name_len = it.second->name.length(),
+	int additional_header_index = 0;
+	for (auto it : data_getorpost_->headers) {
+		headers[header_size + additional_header_index] = {
+			.name = (uint8_t*) it.second->name.c_str(),
+			.name_len = it.second->name.length(),
 
-            .value = (uint8_t*)it.second->value.c_str(),
-            .value_len = it.second->value.length(),
-        };
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
-        additional_header_index++;
-    }
+			.value = (uint8_t*) it.second->value.c_str(),
+			.value_len = it.second->value.length(),
+		};
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+		additional_header_index++;
+	}
 
-    int64_t stream_id = quiche_h3_send_request(conn_io->http3,
-        conn_io->conn,
-        headers, header_size + data_getorpost_->headers.size(), false);
-    ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id,
-        (u_int8_t*)data_getorpost_->get_payload().buffer.c_str(), data_getorpost_->get_payload().buffer.length(),
-        true);
-    GX_DELETE_ARY(headers);
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent HTTP POST request %" PRId64 " with body %ld", stream_id, send_len);
-    return stream_id;
+	int64_t stream_id = quiche_h3_send_request(conn_io->http3, conn_io->conn, headers, header_size + data_getorpost_->headers.size(), false);
+	ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id, (u_int8_t*) data_getorpost_->get_payload().buffer.c_str(), data_getorpost_->get_payload().buffer.length(), true);
+	GX_DELETE_ARY(headers);
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent HTTP POST request %" PRId64 " with body %ld", stream_id, send_len);
+	return stream_id;
 }
 
 void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
-    UNUSED(revents);
-    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)w->data;
+	UNUSED(loop);
+	UNUSED(revents);
+	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) w->data;
 
-    while (1) {
-        struct sockaddr_storage peer_addr;
-        socklen_t peer_addr_len = sizeof(peer_addr);
-        memset(&peer_addr, 0, peer_addr_len);
+	while (1) {
+		struct sockaddr_storage peer_addr;
+		socklen_t peer_addr_len = sizeof(peer_addr);
+		memset(&peer_addr, 0, peer_addr_len);
 
-        ssize_t read = recvfrom(conn_io->sock, conn_io->buf, sizeof(conn_io->buf), 0,
-            (struct sockaddr*)&peer_addr,
-            &peer_addr_len);
+		ssize_t read = recvfrom(conn_io->sock, conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
 
-        if (read < 0) {
-            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
-                break;
-            }
+		if (read < 0) {
+			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
+				break;
+			}
 
-            perror("failed to read");
-            return;
-        }
-        
+			perror("failed to read");
+			return;
+		}
+
 #if LOG_LEVEL >= LOG_LEVEL_4
-        char name[INET6_ADDRSTRLEN];
-        char port[10];
-        getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server unmodified %s:%s read:%d", name, port, read);
+		char name[INET6_ADDRSTRLEN];
+		char port[10];
+		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server unmodified %s:%s read:%d", name, port, read);
 #endif
-        
+
 #if 0
         if (conn_io->two_byte_port_check) {
             EV_START_RECORD(server_port_deserialise_time);
@@ -253,363 +240,337 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
             essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
             EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
-            
+
 #if LOG_LEVEL >= LOG_LEVEL_4
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server modified %s:%s read:%d", name, port, read);
 #endif
         }
 #endif
-        
-        RecvInfo recv_info = {
-            (struct sockaddr*)&peer_addr,
-            peer_addr_len,
 
-            (struct sockaddr*)&conn_io->local_addr,
-            conn_io->local_addr_len,
-        };
+		RecvInfo recv_info = {
+			(struct sockaddr*) &peer_addr,
+			peer_addr_len,
 
-        ssize_t done = quiche_conn_recv(conn_io->conn, conn_io->buf, read, &recv_info);
+			(struct sockaddr*) &conn_io->local_addr,
+			conn_io->local_addr_len,
+		};
 
-        if (done < 0) {
-            fprintf(stderr, "failed to process packet: %zd\n", done);
-            continue;
-        }
+		ssize_t done = quiche_conn_recv(conn_io->conn, conn_io->buf, read, &recv_info);
 
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
-    }
+		if (done < 0) {
+			fprintf(stderr, "failed to process packet: %zd\n", done);
+			continue;
+		}
 
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done reading");
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
+	}
 
-    if (quiche_conn_is_closed(conn_io->conn)) {
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed");
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done reading");
 
-        ev_break(EV_A_ EVBREAK_ONE);
-        return;
-    }
+	if (quiche_conn_is_closed(conn_io->conn)) {
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed");
 
-    if (quiche_conn_is_established(conn_io->conn) && !conn_io->req_sent) {
-        const uint8_t* app_proto;
-        size_t app_proto_len;
+		ev_break(EV_A_ EVBREAK_ONE);
+		return;
+	}
 
-        quiche_conn_application_proto(conn_io->conn, &app_proto, &app_proto_len);
+	if (quiche_conn_is_established(conn_io->conn) && !conn_io->req_sent) {
+		const uint8_t* app_proto;
+		size_t app_proto_len;
 
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection established: %.*s",
-            (int)app_proto_len, app_proto);
+		quiche_conn_application_proto(conn_io->conn, &app_proto, &app_proto_len);
 
-        Config* config = quiche_h3_config_new();
-        if (config == NULL) {
-            fprintf(stderr, "failed to create HTTP/3 config\n");
-            return;
-        }
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
 
-        conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn, config);
-        if (conn_io->http3 == NULL) {
-            fprintf(stderr, "failed to create HTTP/3 connection\n");
-            return;
-        }
+		Config* config = quiche_h3_config_new();
+		if (config == NULL) {
+			fprintf(stderr, "failed to create HTTP/3 config\n");
+			return;
+		}
 
-        quiche_h3_config_free(config);
+		conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn, config);
+		if (conn_io->http3 == NULL) {
+			fprintf(stderr, "failed to create HTTP/3 connection\n");
+			return;
+		}
 
-        const conn_io_req_res* data_getorpost_ = conn_io->bridge->get_getorpost_http_request();
-        if (data_getorpost_->is_postrequest()) {
-            conn_io->bridge->send_post_http_request(data_getorpost_, conn_io);
-        }
-        else {
-            conn_io->bridge->send_get_http_request(data_getorpost_, conn_io);
-        }
-        conn_io->req_sent = true;
-    }
+		quiche_h3_config_free(config);
 
-    if (quiche_conn_is_established(conn_io->conn)) {
-        Event* ev;
+		const conn_io_req_res* data_getorpost_ = conn_io->bridge->get_getorpost_http_request();
+		if (data_getorpost_->is_postrequest()) {
+			conn_io->bridge->send_post_http_request(data_getorpost_, conn_io);
+		} else {
+			conn_io->bridge->send_get_http_request(data_getorpost_, conn_io);
+		}
+		conn_io->req_sent = true;
+	}
 
-        while (1) {
-            int64_t s = quiche_h3_conn_poll(conn_io->http3,
-                conn_io->conn,
-                (const struct Event**)&ev);
+	if (quiche_conn_is_established(conn_io->conn)) {
+		Event* ev;
 
-            if (s < 0) {
-                break;
-            }
+		while (1) {
+			int64_t s = quiche_h3_conn_poll(conn_io->http3, conn_io->conn, (const struct Event**) &ev);
 
-            if (!conn_io->settings_received) {
-                int rc = quiche_h3_for_each_setting(conn_io->http3,
-                    for_each_setting,
-                    NULL);
+			if (s < 0) {
+				break;
+			}
 
-                if (rc == 0) {
-                    conn_io->settings_received = true;
-                }
-            }
+			if (!conn_io->settings_received) {
+				int rc = quiche_h3_for_each_setting(conn_io->http3, for_each_setting, NULL);
 
-            switch (quiche_h3_event_type(ev)) {
-            case Event_type::Headers: {
-                int rc = quiche_h3_event_for_each_header((const struct Event*)ev, for_each_header,
-                    conn_io);
+				if (rc == 0) {
+					conn_io->settings_received = true;
+				}
+			}
 
-                if (rc != 0) {
-                    fprintf(stderr, "failed to process headers");
-                }
+			switch (quiche_h3_event_type(ev)) {
+				case Event_type::Headers: {
+					int rc = quiche_h3_event_for_each_header((const struct Event*) ev, for_each_header, conn_io);
 
-                break;
-            }
+					if (rc != 0) {
+						fprintf(stderr, "failed to process headers");
+					}
 
-            case Event_type::Data: {
-                for (;;) {
-                    ssize_t len = quiche_h3_recv_body(conn_io->http3,
-                        conn_io->conn, s,
-                        conn_io->buf, sizeof(conn_io->buf));
+					break;
+				}
 
-                    if (len <= 0) {
-                        break;
-                    }
+				case Event_type::Data: {
+					for (;;) {
+						ssize_t len = quiche_h3_recv_body(conn_io->http3, conn_io->conn, s, conn_io->buf, sizeof(conn_io->buf));
 
-                    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "received - %.*s", (int)len, conn_io->buf);
-                    if (conn_io->response) {
-                        conn_io->response->append_to_payload(conn_io->buf, (int)len);
-                    }
-                }
+						if (len <= 0) {
+							break;
+						}
 
-                conn_io->res_received = true;
-                break;
-            }
+						DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "received - %.*s", (int) len, conn_io->buf);
+						if (conn_io->response) {
+							conn_io->response->append_to_payload(conn_io->buf, (int) len);
+						}
+					}
 
-            case Event_type::Finished:
-                if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
-                    fprintf(stderr, "failed to close connection\n");
-                }
-                break;
+					conn_io->res_received = true;
+					break;
+				}
 
-            case Event_type::Reset:
-                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "request was reset");
+				case Event_type::Finished:
+					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
+						fprintf(stderr, "failed to close connection\n");
+					}
+					break;
 
-                if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
-                    fprintf(stderr, "failed to close connection\n");
-                }
-                break;
+				case Event_type::Reset:
+					DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "request was reset");
 
-            case Event_type::PriorityUpdate:
-                break;
+					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
+						fprintf(stderr, "failed to close connection\n");
+					}
+					break;
 
-            case Event_type::GoAway: {
-                DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got GOAWAY");
-                break;
-            }
-            }
+				case Event_type::PriorityUpdate:
+					break;
 
-            quiche_h3_event_free(ev);
-        }
-    }
+				case Event_type::GoAway: {
+					DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "got GOAWAY");
+					break;
+				}
+			}
 
-    conn_io->bridge->flush_egress(loop, conn_io);
+			quiche_h3_event_free(ev);
+		}
+	}
+
+	conn_io->bridge->flush_egress(loop, conn_io);
 }
 
 void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
-    UNUSED(revents);
-    struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*)w->data;
-    quiche_conn_on_timeout(conn_io->conn);
+	UNUSED(revents);
+	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) w->data;
+	quiche_conn_on_timeout(conn_io->conn);
 
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
 
-    conn_io->bridge->flush_egress(loop, conn_io);
+	conn_io->bridge->flush_egress(loop, conn_io);
 
-    if (quiche_conn_is_closed(conn_io->conn)) {
-        Stats stats;
-        PathStats path_stats;
+	if (quiche_conn_is_closed(conn_io->conn)) {
+		Stats stats;
+		PathStats path_stats;
 
-        quiche_conn_stats(conn_io->conn, &stats);
-        quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+		quiche_conn_stats(conn_io->conn, &stats);
+		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
-            stats.recv, stats.sent, stats.lost, path_stats.rtt);
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns", stats.recv, stats.sent, stats.lost, path_stats.rtt);
 
-        ev_break(EV_A_ EVBREAK_ONE);
-        return;
-    }
+		ev_break(EV_A_ EVBREAK_ONE);
+		return;
+	}
 }
 
-qh3client::qh3client(const qstring& host, const qstring& port, void* arg) :
-    host(host),
-    port(port),
-    arg(arg) {
-}
+qh3client::qh3client(const qstring& host, const qstring& port, void* arg) : host(host), port(port), arg(arg) {}
 
 qh3client::~qh3client() {
-    GX_DELETE(conn_io);
-    DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qh3client destroyed");
+	GX_DELETE(conn_io);
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qh3client destroyed");
 }
 
 int qh3client::close_socket(int sock) {
-    int result = close(sock);
-    if (result < 0) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Socket closure failed: %s", strerror(errno));
-    }
-    return result;
+	int result = close(sock);
+	if (result < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Socket closure failed: %s", strerror(errno));
+	}
+	return result;
 }
 
-void qh3client::on_prepare_client_send() {
-}
-void qh3client::on_post_send_cleanup() {
-}
+void qh3client::on_prepare_client_send() {}
+void qh3client::on_post_send_cleanup() {}
 void* qh3client::get_client_specific_data() {
-    return this;
+	return this;
 }
 int qh3client::send_request(const conn_io_req_res* data_get_) {
-    this->on_prepare_client_send();
-    this->http_request = data_get_;
+	this->on_prepare_client_send();
+	this->http_request = data_get_;
 
-    const struct addrinfo hints = {
-        .ai_family = PF_UNSPEC,
-        .ai_socktype = SOCK_DGRAM,
-        .ai_protocol = IPPROTO_UDP
-    };
+	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
-//    quiche_enable_debug_logging(debug_log, NULL);
+	//    quiche_enable_debug_logging(debug_log, NULL);
 
-    struct addrinfo* peer;
-    if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-        fprintf(stderr, "failed to resolve host");
-        return -1;
-    }
+	struct addrinfo* peer;
+	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
+		fprintf(stderr, "failed to resolve host");
+		return -1;
+	}
 
-    int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        fprintf(stderr, "failed to create socket");
-        freeaddrinfo(peer);
-        return -1;
-    }
+	int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
+	if (sock < 0) {
+		fprintf(stderr, "failed to create socket");
+		freeaddrinfo(peer);
+		return -1;
+	}
 
-    if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-        fprintf(stderr, "failed to make socket non-blocking");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
+	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
+		fprintf(stderr, "failed to make socket non-blocking");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
 
-    Config* config = quiche_config_new(0xbabababa);
-    if (config == NULL) {
-        fprintf(stderr, "failed to create config\n");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
+	Config* config = quiche_config_new(0xbabababa);
+	if (config == NULL) {
+		fprintf(stderr, "failed to create config\n");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
 
-    quiche_config_set_application_protos(config,
-        (uint8_t*)QUICHE_H3_APPLICATION_PROTOCOL,
-        sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
+	quiche_config_set_application_protos(config, (uint8_t*) QUICHE_H3_APPLICATION_PROTOCOL, sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
 
-    quiche_config_set_max_idle_timeout(config, 25000);
-    quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
-    quiche_config_set_initial_max_data(config, 10000000);
-    quiche_config_set_initial_max_stream_data_bidi_local(config, 1000000);
-    quiche_config_set_initial_max_stream_data_bidi_remote(config, 1000000);
-    quiche_config_set_initial_max_stream_data_uni(config, 1000000);
-    quiche_config_set_initial_max_streams_bidi(config, 100);
-    quiche_config_set_initial_max_streams_uni(config, 100);
-    quiche_config_set_disable_active_migration(config, true);
+	quiche_config_set_max_idle_timeout(config, 25000);
+	quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
+	quiche_config_set_max_send_udp_payload_size(config, MAX_DATAGRAM_SIZE);
+	quiche_config_set_initial_max_data(config, 10000000);
+	quiche_config_set_initial_max_stream_data_bidi_local(config, 1000000);
+	quiche_config_set_initial_max_stream_data_bidi_remote(config, 1000000);
+	quiche_config_set_initial_max_stream_data_uni(config, 1000000);
+	quiche_config_set_initial_max_streams_bidi(config, 100);
+	quiche_config_set_initial_max_streams_uni(config, 100);
+	quiche_config_set_disable_active_migration(config, true);
 
-    if (getenv("SSLKEYLOGFILE")) {
-        quiche_config_log_keys(config);
-    }
+	if (getenv("SSLKEYLOGFILE")) {
+		quiche_config_log_keys(config);
+	}
 
-    // ABC: old config creation here
+	// ABC: old config creation here
 
-    uint8_t scid[LOCAL_CONN_ID_LEN];
-    int rng = open("/dev/urandom", O_RDONLY);
-    if (rng < 0) {
-        fprintf(stderr, "failed to open /dev/urandom");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
+	uint8_t scid[LOCAL_CONN_ID_LEN];
+	int rng = open("/dev/urandom", O_RDONLY);
+	if (rng < 0) {
+		fprintf(stderr, "failed to open /dev/urandom");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
 
-    ssize_t rand_len = read(rng, &scid, sizeof(scid));
-    if (rand_len < 0) {
-        close(rng);
-        fprintf(stderr, "failed to create connection ID");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
-    close(rng);
+	ssize_t rand_len = read(rng, &scid, sizeof(scid));
+	if (rand_len < 0) {
+		close(rng);
+		fprintf(stderr, "failed to create connection ID");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
+	close(rng);
 
-    GX_DELETE(conn_io);
-    conn_io = DEBUG_NEW struct conn_io_qh3_client();
-    if (conn_io == NULL) {
-        fprintf(stderr, "failed to allocate connection IO\n");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
+	GX_DELETE(conn_io);
+	conn_io = DEBUG_NEW struct conn_io_qh3_client();
+	if (conn_io == NULL) {
+		fprintf(stderr, "failed to allocate connection IO\n");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
 
-    conn_io->local_addr_len = sizeof(conn_io->local_addr);
-    if (getsockname(sock, (struct sockaddr*)&conn_io->local_addr,
-        &conn_io->local_addr_len) != 0) {
-        fprintf(stderr, "failed to get local address of socket - %s", strerror(errno));
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    };
-    
-    Connection* conn = quiche_connect(host.c_str(), (const uint8_t*)scid, sizeof(scid),
-        (struct sockaddr*)&conn_io->local_addr,
-        conn_io->local_addr_len,
-        peer->ai_addr, peer->ai_addrlen, config);
+	conn_io->local_addr_len = sizeof(conn_io->local_addr);
+	if (getsockname(sock, (struct sockaddr*) &conn_io->local_addr, &conn_io->local_addr_len) != 0) {
+		fprintf(stderr, "failed to get local address of socket - %s", strerror(errno));
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	};
 
-    if (conn == NULL) {
-        fprintf(stderr, "failed to create connection\n");
-        freeaddrinfo(peer);
-        close_socket(sock);
-        return -1;
-    }
+	Connection* conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &conn_io->local_addr, conn_io->local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
+
+	if (conn == NULL) {
+		fprintf(stderr, "failed to create connection\n");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
 
 #if LOG_LEVEL >= LOG_LEVEL_4
-    char name[INET6_ADDRSTRLEN];
-    char port[10];
-    getnameinfo((struct sockaddr*)&conn_io->local_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "local client address %s:%s", name, port);
-    DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*)scid, sizeof(scid));
+	char name[INET6_ADDRSTRLEN];
+	char port[10];
+	getnameinfo((struct sockaddr*) &conn_io->local_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
+	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "local client address %s:%s", name, port);
+	DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*) scid, sizeof(scid));
 #endif
-    
-//    conn_io->two_byte_port_check = two_byte_port_check;
-    conn_io->sock = sock;
-    conn_io->conn = conn;
-    conn_io->host = host.c_str();
-    conn_io->bridge = this;
 
-    ev_io watcher;
+	//    conn_io->two_byte_port_check = two_byte_port_check;
+	conn_io->sock = sock;
+	conn_io->conn = conn;
+	conn_io->host = host.c_str();
+	conn_io->bridge = this;
 
-    mainloop = ev_loop_new(0);
+	ev_io watcher;
 
-    ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
-    ev_io_start(mainloop, &watcher);
-    watcher.data = conn_io;
+	mainloop = ev_loop_new(0);
 
-    ev_init(&conn_io->timer, timeout_cb);
-    conn_io->timer.data = conn_io;
-    conn_io->creation_time = ev_now(mainloop);
-    
-    flush_egress(mainloop, conn_io);
+	ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
+	ev_io_start(mainloop, &watcher);
+	watcher.data = conn_io;
 
-    ev_loop(mainloop, 0);
+	ev_init(&conn_io->timer, timeout_cb);
+	conn_io->timer.data = conn_io;
+	conn_io->creation_time = ev_now(mainloop);
 
-    ev_timer_stop(mainloop, &conn_io->timer);
-    ev_io_stop(mainloop, &watcher);
-    ev_loop_destroy(mainloop);
+	flush_egress(mainloop, conn_io);
 
-    freeaddrinfo(peer);
+	ev_loop(mainloop, 0);
 
-    if (conn_io->http3) {
-        quiche_h3_conn_free(conn_io->http3);
-    }
+	ev_timer_stop(mainloop, &conn_io->timer);
+	ev_io_stop(mainloop, &watcher);
+	ev_loop_destroy(mainloop);
 
-    quiche_conn_free(conn);
+	freeaddrinfo(peer);
 
-    quiche_config_free(config);
+	if (conn_io->http3) {
+		quiche_h3_conn_free(conn_io->http3);
+	}
 
-    close_socket(sock);
+	quiche_conn_free(conn);
 
-    return 0;
+	quiche_config_free(config);
+
+	close_socket(sock);
+
+	return 0;
 }

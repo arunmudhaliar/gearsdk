@@ -6,3 +6,32 @@
 //
 
 #include "gameclient.hpp"
+
+#include "../../networkcommon/source/message.hpp"
+#include "../../networkcommon/source/roommessage.hpp"
+
+void gameclient::onconnect(conn_io_client* qconnection) {
+	if (shutdown_client) {
+		test_send_shutdown_event();
+		return;
+	}
+	Document doc;
+	msg_room_match_request* msg = dynamic_cast<msg_room_match_request*>(msg_room_match_request::create());
+	qstring msg_room_config_packet;
+	msg->serialize(doc, doc.GetAllocator());
+	essentials::get_json_string(doc, msg_room_config_packet);
+	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
+	sendMessage(msg_room_config_packet, true);
+	GX_DELETE(msg);
+}
+
+void gameclient::test_send_shutdown_event() {
+	Document doc;
+	msg_room_server_shutdown* msg = dynamic_cast<msg_room_server_shutdown*>(msg_room_server_shutdown::create());
+	qstring msg_room_server_shutdown_packet;
+	msg->serialize(doc, doc.GetAllocator());
+	essentials::get_json_string(doc, msg_room_server_shutdown_packet);
+	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room shutdown --> %s", msg_room_server_shutdown_packet.c_str());
+	sendMessage(msg_room_server_shutdown_packet, true);
+	GX_DELETE(msg);
+}

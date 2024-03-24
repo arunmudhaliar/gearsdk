@@ -15,6 +15,9 @@
 #include <map>
 #include <algorithm>
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qunitysdk"
+
 namespace qunitysdk {
 using namespace client;
 
@@ -56,9 +59,9 @@ std::map<unsigned long, qsocket*> qsockets;
 extern "C" {
     __attribute__((unused)) static void pre_init_sdk();
 
-    typedef void (*type_qh3client_plugin_helper_cb)(const char* payload, void* arg, int result);
+    typedef void (*type_qh3client_plugin_helper_cb)(const char* payload, void* arg, bool success);
     __attribute__((unused)) static int send_async_request(const char* host, const char* port,
-                                  const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback);
+                                  const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback, int retry);
     void destroy_qsocket(qsocket* qs);
     __attribute__((unused)) static bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg,
                              qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,

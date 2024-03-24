@@ -1,0 +1,71 @@
+//
+//  discord_util.cpp
+//  servercommon
+//
+//  Created by Arun A on 16/02/24.
+//
+
+#include "discord_util.hpp"
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
+#endif
+#include <dpp/dpp.h>
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#include "../common/sdktypes.hpp"
+
+qstring discord_util::current_web_hook =
+	"https://discord.com/api/webhooks/1207911659214082058/"
+	"A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4";
+
+void discord_util::set_web_hook(const qstring& web_hook) {
+	// https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4
+	current_web_hook = web_hook;
+}
+
+int discord_util::send(const qstring& msg) {
+	dpp::cluster bot(""); /* Normally, you put your bot token in here, but its not
+							 required for webhooks. */
+
+	bot.on_log(dpp::utility::cout_logger());
+
+	/* Construct a webhook object using the URL you got from Discord */
+	dpp::webhook wh(current_web_hook.c_str());
+
+	try {
+		/* Send a message with this webhook */
+		bot.execute_webhook_sync(wh, dpp::message(msg.c_str()));
+	} catch (const dpp::rest_exception& e) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught exception: %s", e.what());
+		// Implement retry logic here, respecting the Retry-After header
+	} catch (const std::system_error& e) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s", e.what());
+		// Implement specific handling logic for std::system_error here
+		// This could be related to thread join issues or other system-level errors
+	} catch (const std::exception& e) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::exception: %s", e.what());
+		// Handle other std::exception derived exceptions
+	} catch (...) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught an unknown exception");
+		// Handle any non-standard exceptions
+	}
+	return 0;
+}
+
+void* discord_util::send_async_internal(void* data) {
+	discord_util::discord_async_data* msg = (discord_util::discord_async_data*) data;
+	discord_util::send(msg->msg);
+	GX_DELETE(msg);
+	pthread_exit(0);
+}
+
+void discord_util::send_async(const qstring& msg) {
+	discord_util::discord_async_data* new_msg = DEBUG_NEW discord_util::discord_async_data(msg);
+	if (pthread_create(&new_msg->tid, nullptr, discord_util::send_async_internal, (void*) new_msg) < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+		GX_DELETE(new_msg);
+		return;
+	}
+}

@@ -9,9 +9,11 @@ COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qh3server/ ./qh3server
 COPY qh3client/ ./qh3client
+COPY configs ./qh3server/configs
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
 COPY qzookeeper/ ./qzookeeper
+COPY qutils/ ./qutils
 COPY make_qh3server.sh ./
 COPY run_qh3server.sh ./
 COPY qh3server/certs/cert.crt ./qh3server/
@@ -29,20 +31,20 @@ RUN chmod 755 ./run_qh3server.sh
 # ------- qstats-crawler -------
 # ------- qstats-crawler -------
 # ------- qstats-crawler -------
-COPY qstats-crawler/ ./qstats-crawler
-COPY make_qstats-crawler.sh ./
-COPY run_qstats-crawler.sh ./
-COPY make_postgresql.sh ./
-RUN apt-get install wget -y
-RUN apt-get install libreadline-dev -y
-RUN apt-get install zlib1g-dev -y
-RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
-RUN tar -xvzf postgresql-15.5.tar.gz
-RUN pwd
-RUN sh make_postgresql.sh
-RUN pwd
-RUN sh make_qstats-crawler.sh
-RUN chmod 755 ./run_qstats-crawler.sh
+# COPY qstats-crawler/ ./qstats-crawler
+# COPY make_qstats-crawler.sh ./
+# COPY run_qstats-crawler.sh ./
+# COPY make_postgresql.sh ./
+# RUN apt-get install wget -y
+# RUN apt-get install libreadline-dev -y
+# RUN apt-get install zlib1g-dev -y
+# RUN wget https://ftp.postgresql.org/pub/source/v15.5/postgresql-15.5.tar.gz
+# RUN tar -xvzf postgresql-15.5.tar.gz
+# RUN pwd
+# RUN sh make_postgresql.sh
+# RUN pwd
+# RUN sh make_qstats-crawler.sh
+# RUN chmod 755 ./run_qstats-crawler.sh
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tshark
 

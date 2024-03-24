@@ -75,14 +75,14 @@ void pre_init_sdk() {
 }
 
 int send_async_request(const char* host, const char* port,
-                                     const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback) {
+                                     const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback, int retry) {
     DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "host %s, port %s, path %s, payload %s", host, port, path, payload);
     return qh3client_helper::send_async_request<client::qh3client>(host, port, conn_io_req_res::create(path, payload), arg,
-            [callback](conn_io_req_res *response, void* client_specific_data, void* arg) {
+            [callback](conn_io_req_res *response, void* client_specific_data, void* arg, bool success) {
                 const conn_io_req_res::payload &payload = response->data;
-                callback(payload.buffer.c_str(), arg, 0);
+                callback(payload.buffer.c_str(), arg, success);
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "payload %s", payload.buffer.c_str());
-            });
+            }, retry);
 }
 
 void destroy_qsocket(qsocket* qs) {

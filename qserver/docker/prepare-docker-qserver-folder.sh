@@ -5,6 +5,7 @@ mkdir ./docker-server
 cp -r ./common ./docker-server/common
 cp -r ./networkcommon/ ./docker-server/networkcommon
 cp -r ./qhiredis/ ./docker-server/qhiredis
+cp -r ./qutils/ ./docker-server/qutils
 cp -r ./qserver/ ./docker-server/qserver
 cp ./qserver/docker/Dockerfile ./docker-server/Dockerfile
 cp ./qserver/docker/make_qserver.sh ./docker-server/make_qserver.sh
@@ -33,6 +34,7 @@ rm -rf -- ./docker-server/**/**/**/**/*.xcodeproj
 
 rm -rf ./docker-server/networkcommon/libs/macos
 rm -rf ./docker-server/qhiredis/libs/macos
+rm -rf ./docker-server/qutils/libs/macos
 rm -rf ./docker-server/qserver/docker
 rm -rf ./docker-server/qserver/*.dSYM
 rm -rf ./docker-server/qserver/qserver-app

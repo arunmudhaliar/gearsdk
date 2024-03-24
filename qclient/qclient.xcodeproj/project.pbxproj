@@ -132,6 +132,7 @@
 				55B3729F2AC2AB4A00F0095E /* Sources */,
 				55B372A02AC2AB4A00F0095E /* Frameworks */,
 				55B372A12AC2AB4A00F0095E /* CopyFiles */,
+				5595E1242BB08B9600FA2618 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -172,6 +173,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5595E1242BB08B9600FA2618 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B3729F2AC2AB4A00F0095E /* Sources */ = {
@@ -318,6 +339,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -346,6 +368,7 @@
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
 					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;

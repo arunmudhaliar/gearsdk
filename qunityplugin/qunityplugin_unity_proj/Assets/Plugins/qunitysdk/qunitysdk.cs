@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class qunitysdk : MonoBehaviour
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, int result);
+    public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, bool success);
 
     // qsocket
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -22,7 +22,7 @@ public class qunitysdk : MonoBehaviour
 
     public abstract class mqsocket {
         abstract protected void onconnect();
-        abstract protected void onmessage( ulong recv_len, IntPtr buf );
+        abstract protected void onmessage( ulong recv_len, string buf );
         abstract protected void onreleaseconnection();
         abstract protected void onclose();
     }
@@ -31,7 +31,7 @@ public class qunitysdk : MonoBehaviour
         public ulong guid_crc = 0;
 
         public Action<qsocket> OnConnect;
-        public Action<qsocket, ulong, IntPtr> OnMessage;
+        public Action<qsocket, ulong, string> OnMessage;
         public Action<qsocket> OnReleaseConnection;
         public Action<qsocket> OnClose;
 
@@ -46,7 +46,7 @@ public class qunitysdk : MonoBehaviour
             OnConnect(this);
         }
 
-        protected override void onmessage( ulong recv_len, IntPtr buf ) {
+        protected override void onmessage( ulong recv_len, string buf ) {
             OnMessage(this, recv_len, buf);
         }
 
@@ -69,11 +69,18 @@ public class qunitysdk : MonoBehaviour
         }
         [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onmessage))]
         private static void global_onmessage( ulong guid_crc, ulong recv_len, IntPtr buf ) {
+
+            byte[] array = new byte[recv_len];
+
+            // Copy the bytes from the unmanaged memory to the byte array
+            Marshal.Copy(buf, array, 0, (int)recv_len);
+
+            string msg = System.Text.Encoding.UTF8.GetString(array, 0, (int)recv_len);
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
                     return;
                 }
-                qunitysdk.sockets[guid_crc].onmessage(recv_len, buf);
+                qunitysdk.sockets[guid_crc].onmessage(recv_len, msg);
             });
         }
         [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onreleaseconnection))]
@@ -133,7 +140,7 @@ public class qunitysdk : MonoBehaviour
     public static extern void pre_init_sdk();
 
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb);
+    public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb, int retry);
 
     // qsocket
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
