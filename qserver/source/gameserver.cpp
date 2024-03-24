@@ -8,17 +8,12 @@
 #include "gameserver.hpp"
 
 // MARK: - game_room
-game_room::game_room(roomserver_interface* interface, const roomconfig& room_config)
-	: room(interface, room_config) {
-}
+game_room::game_room(roomserver_interface* interface, const roomconfig& room_config) : room(interface, room_config) {}
 
-game_room::~game_room() {
-}
+game_room::~game_room() {}
 
-void game_room::onroom_create() {
-}
-void game_room::onroom_start() {
-}
+void game_room::onroom_create() {}
+void game_room::onroom_start() {}
 void game_room::onroom_player_added(player* p) {
 	UNUSED(p);
 }
@@ -30,8 +25,7 @@ void game_room::onroom_message(player* p, const qstring& msg) {
 void game_room::onroom_player_removed(player* p) {
 	UNUSED(p);
 }
-void game_room::onroom_end() {
-}
+void game_room::onroom_end() {}
 
 // MARK: - gameserver
 //----------------------------------------------------------------------------

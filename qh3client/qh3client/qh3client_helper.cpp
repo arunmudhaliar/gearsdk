@@ -9,20 +9,15 @@
 
 using namespace client;
 
-template int qh3client_helper::send_async_request<qh3client>(
-	const qstring host, const qstring port,
-	const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
+template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
 
 #if PLATFORM == PLATFORM_ANDROID
 #include "qh3client-android.h"
-template int qh3client_helper::send_async_request<qh3client_android>(
-	const qstring host, const qstring port,
-	const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
+template int qh3client_helper::send_async_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
 #endif
 
 template <typename T>
-int qh3client_helper::send_request(const qstring host, const qstring port,
-								   const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry) {
+int qh3client_helper::send_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry) {
 	qh3_req_obj* req_obj = DEBUG_NEW qh3_req_obj(host, port, data_getorpost_);
 	req_obj->async_cb = async_cb;
 	req_obj->retry = retry;
@@ -35,8 +30,7 @@ int qh3client_helper::send_request(const qstring host, const qstring port,
 }
 
 template <typename T>
-int qh3client_helper::send_async_request(const qstring host, const qstring port,
-										 const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry) {
+int qh3client_helper::send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry) {
 	qh3_req_obj* req_obj = DEBUG_NEW qh3_req_obj(host, port, data_getorpost_);
 	req_obj->async_cb = async_cb;
 	req_obj->arg = arg;
@@ -60,7 +54,7 @@ void* qh3client_helper::run_internal(void* data) {
 		T* new_client = DEBUG_NEW T(req_obj->host, req_obj->port, req_obj->arg);
 		new_client->send_request(req_obj->data);
 		response_received = new_client->conn_io->res_received;
-		if (response_received || x == req_obj->retry) { // if no response even after last try just return the callback with empty response.
+		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
 			if (req_obj->async_cb && new_client->conn_io && new_client->conn_io->response) {
 				req_obj->async_cb(new_client->conn_io->response, new_client->get_client_specific_data(), new_client->arg, response_received);
 			}

@@ -8,15 +8,11 @@
 
 // MARK: - message_room_base
 DEFINE_MESSAGE_PRE_REQUISITES(message_room_base)
-message_room_base::message_room_base()
-	: message_base() {
+message_room_base::message_room_base() : message_base() {
 	DEBUG_ASSERT(__LOGTAG__, false, "This line of code must not be executed !!!");
 }
-message_room_base::message_room_base(unsigned long type_string_crc)
-	: message_base(), cached_type_string_crc(type_string_crc) {
-}
-message_room_base::~message_room_base() {
-}
+message_room_base::message_room_base(unsigned long type_string_crc) : message_base(), cached_type_string_crc(type_string_crc) {}
+message_room_base::~message_room_base() {}
 
 void message_room_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	obj.SetObject();
@@ -72,9 +68,7 @@ int message_room_base::deserialize_header(ssize_t len, uint8_t* buf, unsigned sh
 
 // MARK: - msg_room_match_request
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_match_request)
-msg_room_match_request::msg_room_match_request()
-	: message_room_base(msg_room_match_request::get_type_string_crc()) {
-}
+msg_room_match_request::msg_room_match_request() : message_room_base(msg_room_match_request::get_type_string_crc()) {}
 void msg_room_match_request::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	message_room_base::serialize(obj, allocator);
 
@@ -102,9 +96,7 @@ bool msg_room_match_request::deserialize(rapidjson::Value& obj) {
 
 // MARK: - msg_room_server_shutdown
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_server_shutdown)
-msg_room_server_shutdown::msg_room_server_shutdown()
-	: message_room_base(msg_room_server_shutdown::get_type_string_crc()) {
-}
+msg_room_server_shutdown::msg_room_server_shutdown() : message_room_base(msg_room_server_shutdown::get_type_string_crc()) {}
 void msg_room_server_shutdown::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	message_room_base::serialize(obj, allocator);
 }

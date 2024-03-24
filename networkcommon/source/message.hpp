@@ -8,15 +8,15 @@
 #ifndef message_hpp
 #define message_hpp
 
+#include "essentials.hpp"
+#include "qstring.h"
+#include "typex.h"
+
+#include <map>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-
-#include "essentials.hpp"
-#include "qstring.h"
-#include "typex.h"
-#include <map>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "message"
@@ -54,10 +54,10 @@ using namespace rapidjson;
 
 // MARK: -
 class message_base {
-  protected:
+   protected:
 	message_base() {};
 
-  public:
+   public:
 	virtual ~message_base();
 	// A method to deserialize from a RapidJSON document
 	virtual bool deserialize(rapidjson::Value& obj);
@@ -69,52 +69,46 @@ class message_base {
 		type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*) type_string.c_str(), type_string.length());
 		return type_string_crc;
 	}
-	static message_base* create() {
-		return new message_base();
-	}
+	static message_base* create() { return new message_base(); }
 	void get_json_string(qstring& result) {
 		Document doc;
 		serialize(doc, doc.GetAllocator());
 		essentials::get_json_string(doc, result);
 	}
-	virtual unsigned long get_type_crc() const {
-		return message_base::get_type_string_crc();
-	}
-	virtual qstring get_type() {
-		return "message_base";
-	}
+	virtual unsigned long get_type_crc() const { return message_base::get_type_string_crc(); }
+	virtual qstring get_type() { return "message_base"; }
 };
 
 // MARK: -
 class message_parser {
-  public:
+   public:
 	~message_parser();
 	template <typename T>
 	void register_message_type();
 	template <typename T>
 	T* parse(ssize_t len, uint8_t* buf);
 
-  private:
+   private:
 	typedef message_base* (*type_room_message_create_cb)();
 	std::map<unsigned long, type_room_message_create_cb> records;
 };
 
 // MARK: -
 class msg_room_config : public message_base {
-  public:
+   public:
 	msg_room_config();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_config, "msg_room_config")
 	int min = 2;
 	int max = 4;
-	intx betx = 0; // Note: betx & rewardx are in fixed point values
+	intx betx = 0;	// Note: betx & rewardx are in fixed point values
 	intx rewardx = FX_TWO;
 	bool allow_after_start = false;
 };
 
 class msg_room_config_list : public message_base {
-  public:
+   public:
 	msg_room_config_list();
 	msg_room_config_list(const msg_room_config_list& list);
 	virtual ~msg_room_config_list();
@@ -123,13 +117,13 @@ class msg_room_config_list : public message_base {
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_config_list, "msg_room_config_list")
 	std::vector<msg_room_config*> configs;
 
-  private:
+   private:
 	void destroy_all();
 };
 
 // MARK: -
 class rq_msg_user_base : public message_base {
-  public:
+   public:
 	rq_msg_user_base();
 	virtual ~rq_msg_user_base();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
@@ -141,7 +135,7 @@ class rq_msg_user_base : public message_base {
 
 // MARK: -
 class rq_msg_user_get : public rq_msg_user_base {
-  public:
+   public:
 	rq_msg_user_get();
 	virtual ~rq_msg_user_get();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
@@ -155,7 +149,7 @@ class rq_msg_user_get : public rq_msg_user_base {
 
 // MARK: -
 class res_msg_user_base : public message_base {
-  public:
+   public:
 	res_msg_user_base();
 	virtual ~res_msg_user_base();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
@@ -167,7 +161,7 @@ class res_msg_user_base : public message_base {
 
 // MARK: -
 class res_msg_user_get : public res_msg_user_base {
-  public:
+   public:
 	res_msg_user_get();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;

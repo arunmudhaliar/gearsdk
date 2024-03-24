@@ -6,6 +6,7 @@
 //
 
 #include "qstats-crawler.h"
+
 #include <iostream>
 
 void do_crawl(const fs::path& root_dir, const fs::path& file_pattern, const qstring& host, const qstring& port) {
@@ -64,12 +65,13 @@ int main(int argc, const char* argv[]) {
 	ev_tstamp creation_time = ev_now(loop);
 	scheduler.set_ev_lopp(loop);
 
-	qtimer* keep_alive_loop = scheduler.schedule_repeat_timer([loop, creation_time, root_dir, file_pattern, host, port](qtimer& timer) {
-		UNUSED(timer);
-		do_crawl(root_dir, file_pattern, host, port);
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRAWL - t:%5.2fs", ev_now(loop) - creation_time);
-	},
-															  60);
+	qtimer* keep_alive_loop = scheduler.schedule_repeat_timer(
+		[loop, creation_time, root_dir, file_pattern, host, port](qtimer& timer) {
+			UNUSED(timer);
+			do_crawl(root_dir, file_pattern, host, port);
+			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRAWL - t:%5.2fs", ev_now(loop) - creation_time);
+		},
+		60);
 	UNUSED(keep_alive_loop);
 	ev_run(loop, 0);
 	return 0;

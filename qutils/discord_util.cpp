@@ -41,8 +41,7 @@ int discord_util::send(const qstring& msg) {
 		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught exception: %s", e.what());
 		// Implement retry logic here, respecting the Retry-After header
 	} catch (const std::system_error& e) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s",
-					e.what());
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s", e.what());
 		// Implement specific handling logic for std::system_error here
 		// This could be related to thread join issues or other system-level errors
 	} catch (const std::exception& e) {
@@ -56,20 +55,16 @@ int discord_util::send(const qstring& msg) {
 }
 
 void* discord_util::send_async_internal(void* data) {
-	discord_util::discord_async_data* msg =
-		(discord_util::discord_async_data*) data;
+	discord_util::discord_async_data* msg = (discord_util::discord_async_data*) data;
 	discord_util::send(msg->msg);
 	GX_DELETE(msg);
 	pthread_exit(0);
 }
 
 void discord_util::send_async(const qstring& msg) {
-	discord_util::discord_async_data* new_msg =
-		DEBUG_NEW discord_util::discord_async_data(msg);
-	if (pthread_create(&new_msg->tid, nullptr, discord_util::send_async_internal,
-					   (void*) new_msg) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d",
-						  strerror(errno), errno);
+	discord_util::discord_async_data* new_msg = DEBUG_NEW discord_util::discord_async_data(msg);
+	if (pthread_create(&new_msg->tid, nullptr, discord_util::send_async_internal, (void*) new_msg) < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_msg);
 		return;
 	}

@@ -13,10 +13,10 @@
 using namespace client;
 
 class gameclient : public qnetworkclient {
-  protected:
+   protected:
 	void onconnect(conn_io_client* qconnection) override;
 
-  public:
+   public:
 	bool shutdown_client = false;
 	void test_send_shutdown_event();
 };

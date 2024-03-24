@@ -15,7 +15,7 @@
 #define __LOGTAG__ "qtextfile"
 
 class qtextfile {
-  public:
+   public:
 	qtextfile();
 	qtextfile(const fs::path& path, const qstring& mode = "r");
 	~qtextfile();
@@ -26,7 +26,7 @@ class qtextfile {
 	static int get_content(const fs::path& path, qstring& out);
 	int seek_to_begining();
 
-  private:
+   private:
 	FILE* fp = nullptr;
 	qstring buffer;
 };

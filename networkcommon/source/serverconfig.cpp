@@ -6,12 +6,12 @@
 //
 
 #include "serverconfig.hpp"
+
 #include <algorithm>
 #include <functional>
-#include <rapidjson/error/en.h> // Include for GetParseError_En
+#include <rapidjson/error/en.h>	 // Include for GetParseError_En
 
-serverconfig::serverconfig() {
-}
+serverconfig::serverconfig() {}
 
 serverconfig::~serverconfig() {
 	clear();

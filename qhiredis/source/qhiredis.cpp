@@ -7,8 +7,7 @@
 
 #include "qhiredis.hpp"
 
-qhiredis::qhiredis(const qstring& redis_ip, uint16_t redis_port)
-	: redis_ip(redis_ip), redis_port(redis_port) {
+qhiredis::qhiredis(const qstring& redis_ip, uint16_t redis_port) : redis_ip(redis_ip), redis_port(redis_port) {
 	context = nullptr;
 }
 
@@ -25,7 +24,7 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Already connected !!! - %s:%d", hostname.c_str(), port);
 		return 2;
 	}
-	struct timeval timeout = {30, 500000}; // 30.5 seconds
+	struct timeval timeout = {30, 500000};	// 30.5 seconds
 	if (unix_socket) {
 		context = redisConnectUnixWithTimeout(hostname.c_str(), timeout);
 	} else {
@@ -112,8 +111,7 @@ int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const
 	if (!context) {
 		return 2;
 	}
-	redisReply* reply = (redisReply*) redisCommand(context, "HSET %b %b %b",
-												   hashkey.c_str(), hashkey.length(), field.c_str(), field.length(), value.c_str(), value.length());
+	redisReply* reply = (redisReply*) redisCommand(context, "HSET %b %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length(), value.c_str(), value.length());
 	if (reply == nullptr) {
 		if (context->err) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);
@@ -123,8 +121,7 @@ int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const
 
 	// Check reply->type to confirm the command was successful
 	if (reply->type == REDIS_REPLY_INTEGER) {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer,
-					hashkey.c_str(), field.c_str(), value.c_str());
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer, hashkey.c_str(), field.c_str(), value.c_str());
 	} else if (reply->type == REDIS_REPLY_STATUS) {
 		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Status: %s", reply->str);
 	} else {

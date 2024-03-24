@@ -34,14 +34,11 @@ extern "C" {
 
 namespace client {
 struct qdata {
-	qdata(const uint8_t* _data, ssize_t sz, bool fin = false)
-		: size(sz), fin(fin) {
+	qdata(const uint8_t* _data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
 		this->data = new uint8_t[sz];
 		memcpy(this->data, _data, sz);
 	}
-	~qdata() {
-		GX_DELETE_ARY(this->data);
-	}
+	~qdata() { GX_DELETE_ARY(this->data); }
 	uint8_t* data = nullptr;
 	ssize_t size = 0;
 	bool fin = false;
@@ -49,10 +46,10 @@ struct qdata {
 
 class bridge_qcommand;
 class conn_io_client {
-  private:
+   private:
 	conn_io_client() {};
 
-  public:
+   public:
 	conn_io_client(bridge_qcommand* bridge, int id);
 	conn_io_client(bridge_qcommand* bridge, Config* config, int id);
 	~conn_io_client();
@@ -82,21 +79,17 @@ class conn_io_client {
 };
 
 class bridge_qconnection {
-  public:
+   public:
 	virtual void onconnect(conn_io_client* qconnection) = 0;
 	virtual void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) = 0;
 	virtual void onreleaseconnection(conn_io_client* qconnection) = 0;
 	virtual void onclose(conn_io_client* qconnection) = 0;
 };
 
-enum CON_STATE {
-	STATE_OPEN,
-	STATE_CONNECT,
-	STATE_CLOSE
-};
+enum CON_STATE { STATE_OPEN, STATE_CONNECT, STATE_CLOSE };
 
 class bridge_qcommand {
-  public:
+   public:
 	virtual void flushegress(struct ev_loop* loop, conn_io_client* qconnection) = 0;
 	virtual int release_connection(struct ev_loop* loop, conn_io_client* qconnection) = 0;
 	inline virtual struct ev_loop* getmainloop() = 0;
@@ -118,7 +111,7 @@ class bridge_qcommand {
 };
 
 class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
-  private:
+   private:
 	struct RunConfig {
 		qstring host;
 		qstring port;
@@ -149,38 +142,28 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	void setstate(CON_STATE state);
 	CON_STATE state = STATE_OPEN;
 
-  protected:
+   protected:
 	void flushegress(struct ev_loop* loop, conn_io_client* qconnection) override final;
 	int release_connection(struct ev_loop* loop, conn_io_client* qconnection) override final;
 	void onconnect(conn_io_client* qconnection) override;
 	void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override;
 	void onreleaseconnection(conn_io_client* qconnection) override;
 	void onclose(conn_io_client* qconnection) override;
-	inline struct ev_loop* getmainloop() override final {
-		return mainloop;
-	}
+	inline struct ev_loop* getmainloop() override final { return mainloop; }
 	void event_connect(conn_io_client* qconnection) override final;
 	void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override final;
 	void event_close(conn_io_client* qconnection) override final;
 
 #if USE_PTHREAD
-	qmutex* get_run_mutex() override final {
-		return &run_mutex;
-	}
-	qmutex* het_close_mutex() override final {
-		return &close_mutex;
-	}
-	qmutex* get_sendloop_mutex() override final {
-		return &sendloop_mutex;
-	}
+	qmutex* get_run_mutex() override final { return &run_mutex; }
+	qmutex* het_close_mutex() override final { return &close_mutex; }
+	qmutex* get_sendloop_mutex() override final { return &sendloop_mutex; }
 
-	qmutex* get_send_mutex() override final {
-		return &send_mutex;
-	}
+	qmutex* get_send_mutex() override final { return &send_mutex; }
 #endif
 	conn_io_client* qclient_connection = nullptr;
 
-  public:
+   public:
 	qnetworkclient();
 	~qnetworkclient();
 
@@ -198,5 +181,5 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	inline qmutex& get_runconfigmutex() { return runconfig_mutex; }
 #endif
 };
-}; // namespace client
+};	// namespace client
 #endif /* qnetworkclient_hpp */

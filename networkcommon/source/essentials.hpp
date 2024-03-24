@@ -12,20 +12,19 @@
 #include "../../common/sdktypes.hpp"
 #include "../../common/timer.h"
 #include "qtimer.hpp"
-#include <map>
-#include <string>
 
+#include <map>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <string>
 #include <vector>
 // #include <quiche.h>
-#include <time.h>
-#include <zlib.h>
-
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <time.h>
+#include <zlib.h>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
@@ -47,7 +46,7 @@
 
 class qmutex;
 class qmutexcondition {
-  public:
+   public:
 	qmutexcondition();
 	~qmutexcondition();
 	int init(const std::string& name);
@@ -55,7 +54,7 @@ class qmutexcondition {
 	int broadcast(const char* msg = nullptr);
 	int conditionWait(qmutex& qmutex, const char* msg);
 
-  private:
+   private:
 	int tryInitIfNot();
 	bool inited = false;
 	pthread_cond_t cond;
@@ -63,20 +62,18 @@ class qmutexcondition {
 };
 
 class qmutex {
-  public:
+   public:
 	qmutex();
 	~qmutex();
 	int init(const std::string& name);
 	int tryLock(const char* lockedBy, const char* msg = nullptr);
 	int unLock(const char* msg = nullptr);
-	inline pthread_mutex_t* getMutexInternal() {
-		return &mutex;
-	}
+	inline pthread_mutex_t* getMutexInternal() { return &mutex; }
 	void conditionalWait(const char* waiting_at);
 	void block(const char* blockedBy = nullptr);
 	void unBlock(const char* unblockedBy);
 
-  private:
+   private:
 	int tryInitIfNot();
 	bool inited = false;
 	bool allowTask = true;
@@ -93,12 +90,10 @@ class qmutex {
 };
 
 class essentials {
-  public:
+   public:
 	int init_essentials();
-	static int32_t resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[],
-										 const qstring& version_string_, unsigned version_code_,
-										 qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir,
-										 qstring& redis_ip, uint16_t& redis_port, qstring& zk_uri);
+	static int32_t resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string_, unsigned version_code_, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir, qstring& redis_ip,
+										 uint16_t& redis_port, qstring& zk_uri);
 
 	static time_t get_time_local();
 	static qstring get_time_local_tostring();
@@ -133,34 +128,24 @@ class essentials {
 
 struct conn_io_req_res {
 	typedef struct header {
-	  private:
-		header(const header& header_)
-			: name(header_.name),
-			  value(header_.value) {
-		}
-		header(const qstring& name_, const qstring& value_)
-			: name(name_),
-			  value(value_) {
-		}
+	   private:
+		header(const header& header_) : name(header_.name), value(header_.value) {}
+		header(const qstring& name_, const qstring& value_) : name(name_), value(value_) {}
 
-	  public:
+	   public:
 		static header* create(const qstring& name, const qstring& value) {
 			header* new_header = DEBUG_NEW header(name, value);
 			return new_header;
 		}
-		~header() {
-		}
+		~header() {}
 		qstring name;
 		qstring value;
 	} header;
 
 	typedef struct payload {
 		payload() {}
-		payload(const qstring& buffer_)
-			: buffer(buffer_) {
-		}
-		~payload() {
-		}
+		payload(const qstring& buffer_) : buffer(buffer_) {}
+		~payload() {}
 		qstring get_crc_string() const {
 			unsigned long crc = get_crc_value();
 			qstring crc_buffer = qstring::format_string("%lx", crc);
@@ -181,9 +166,8 @@ struct conn_io_req_res {
 		}
 	}
 
-  private:
-	conn_io_req_res() {
-	}
+   private:
+	conn_io_req_res() {}
 	conn_io_req_res(const conn_io_req_res& data) {
 		for (auto h : data.headers) {
 			add_or_get_header(h.second->name, h.second->value);
@@ -191,9 +175,7 @@ struct conn_io_req_res {
 		set_payload(data.data.buffer);
 	}
 
-	conn_io_req_res(const header& header) {
-		add_or_get_header(header.name, header.value);
-	}
+	conn_io_req_res(const header& header) { add_or_get_header(header.name, header.value); }
 	conn_io_req_res(const header& header, const payload& payload) {
 		add_or_get_header(header.name, header.value);
 		set_payload(payload.buffer);
@@ -204,10 +186,8 @@ struct conn_io_req_res {
 		set_payload(payload);
 	}
 
-  public:
-	static conn_io_req_res* create() {
-		return DEBUG_NEW conn_io_req_res();
-	}
+   public:
+	static conn_io_req_res* create() { return DEBUG_NEW conn_io_req_res(); }
 	static conn_io_req_res* create(const qstring& path, const qstring& payload_) {
 		conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
 		conn_io_req_res* new_rq_rs = DEBUG_NEW conn_io_req_res(*new_header, payload_);
@@ -220,9 +200,7 @@ struct conn_io_req_res {
 		GX_DELETE(new_header);
 		return new_rq_rs;
 	}
-	const payload& get_payload() const {
-		return data;
-	}
+	const payload& get_payload() const { return data; }
 	const payload& set_payload(const qstring& payload_) {
 		data.buffer = payload_;
 		return data;
@@ -232,9 +210,7 @@ struct conn_io_req_res {
 		return data;
 	}
 
-	void clear_payload() {
-		data.buffer.clear();
-	}
+	void clear_payload() { data.buffer.clear(); }
 
 	header* add_or_get_header(const qstring& name_, const qstring& value_) {
 		unsigned long crc = crc32(0L, Z_NULL, 0);
@@ -268,18 +244,10 @@ struct qaddress {
 		port = 0;
 		ip.clear();
 	}
-	qaddress(const qstring& ip_, uint16_t port_)
-		: port(port_), ip(ip_) {
-	}
-	qaddress(const qstring& ip_, const qstring& port_) {
-		set(ip_, port_);
-	}
-	qaddress(struct sockaddr& addr) {
-		set(addr);
-	}
-	qaddress(struct sockaddr* addr) {
-		set(*addr);
-	}
+	qaddress(const qstring& ip_, uint16_t port_) : port(port_), ip(ip_) {}
+	qaddress(const qstring& ip_, const qstring& port_) { set(ip_, port_); }
+	qaddress(struct sockaddr& addr) { set(addr); }
+	qaddress(struct sockaddr* addr) { set(*addr); }
 	int set(struct sockaddr& addr) {
 		char name[INET6_ADDRSTRLEN];
 		char port[10];

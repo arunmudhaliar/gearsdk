@@ -9,9 +9,9 @@
 #define qtimer_hpp
 
 #include "../../common/sdktypes.hpp"
-#include <ev.h>
 
 #include <algorithm>
+#include <ev.h>
 #include <functional>
 #include <vector>
 
@@ -37,10 +37,10 @@ class qtimer;
 typedef std::function<void(qtimer& qtimer_)> type_qtimer_cb;
 
 class qtimer {
-  private:
+   private:
 	qtimer() {}
 
-  public:
+   public:
 	static void evtimer_cb(EV_P_ ev_timer* w, int revents) {
 		UNUSED(revents);
 		qtimer* qtimer_ = (qtimer*) w->data;
@@ -65,19 +65,12 @@ class qtimer {
 		qtimer_->timeout_callback(*qtimer_);
 	}
 
-	qtimer(struct ev_loop* loop, type_qtimer_cb timeout_callback, void* data, float delay = 1.0f, float count = 1)
-		: loop(loop),
-		  timeout_callback(timeout_callback),
-		  count(count),
-		  delay(delay),
-		  data(data) {
+	qtimer(struct ev_loop* loop, type_qtimer_cb timeout_callback, void* data, float delay = 1.0f, float count = 1) : loop(loop), timeout_callback(timeout_callback), count(count), delay(delay), data(data) {
 		ev_timer_init(&timer, evtimer_cb, delay, 0);
 		timer.data = this;
 		ev_timer_start(loop, &timer);
 	}
-	virtual ~qtimer() {
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qtimer destructor");
-	}
+	virtual ~qtimer() { DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qtimer destructor"); }
 
 	ev_timer timer;
 	struct ev_loop* loop;
@@ -89,7 +82,7 @@ class qtimer {
 };
 
 class qtimer_sceduler {
-  public:
+   public:
 	qtimer_sceduler();
 	virtual ~qtimer_sceduler();
 
@@ -99,17 +92,12 @@ class qtimer_sceduler {
 	qtimer* schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);
 	void cancel_timer(qtimer* qtimer_);
 	bool cancel_and_destroy_timer(qtimer* qtimer_);
-	void shutdown_mainloop(); // carefull
+	void shutdown_mainloop();  // carefull
 
-  private:
+   private:
 	struct qtimer_sceduler_data {
-		qtimer_sceduler_data(void* data, void* scheduler, const type_qtimer_cb timeout_callback)
-			: data(data),
-			  scheduler(scheduler),
-			  timeout_callback(timeout_callback) {
-		}
-		qtimer_sceduler_data(const qtimer_sceduler_data& qtimerschedulerdata)
-			: timeout_callback(qtimerschedulerdata.timeout_callback) {
+		qtimer_sceduler_data(void* data, void* scheduler, const type_qtimer_cb timeout_callback) : data(data), scheduler(scheduler), timeout_callback(timeout_callback) {}
+		qtimer_sceduler_data(const qtimer_sceduler_data& qtimerschedulerdata) : timeout_callback(qtimerschedulerdata.timeout_callback) {
 			data = qtimerschedulerdata.data;
 			scheduler = qtimerschedulerdata.scheduler;
 		}

@@ -105,6 +105,6 @@ void networkclient_tester::run(const qstring& host, const qstring& port, int sen
 			GX_DELETE(client);
 		}
 		clientList.clear();
-		usleep(wait_sec_after_loop * 1000 * 1000); // wait for wait_sec_after_loop sec.
+		usleep(wait_sec_after_loop * 1000 * 1000);	// wait for wait_sec_after_loop sec.
 	}
 }

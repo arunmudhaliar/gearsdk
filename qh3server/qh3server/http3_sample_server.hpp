@@ -17,13 +17,13 @@
 #include "qh3server.hpp"
 
 #define SAMPLE_SERVER_SALT "lkfm7q3a"
-#define DEFAULT_USER_TOKEN_EXPIRY_TIME 300 // in seconds
+#define DEFAULT_USER_TOKEN_EXPIRY_TIME 300	// in seconds
 
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_sample_server"
 
 class http3_sample_server : public qh3server, interface_qmongo_connection {
-  protected:
+   protected:
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
 	void parse(struct conn_io_qh3* conn_io) override;
 	inline bool is_log_quiche() override;
@@ -42,13 +42,13 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	serverconfig* zkconfig = nullptr;
 	msg_room_config_list* room_config_list = nullptr;
 
-  public:
+   public:
 	http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
 	~http3_sample_server();
 
 	void test_mongo_db();
 
-  private:
+   private:
 	int validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 
 	void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);

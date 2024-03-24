@@ -24,12 +24,10 @@
 
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface {
-  public:
-	inline struct ev_loop* get_netowrk_main_loop() override final {
-		return get_mainloop();
-	}
+   public:
+	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
-  protected:
+   protected:
 	void on_network_server_begin() override final;
 	void on_network_server_init() override;
 	void on_network_server_end() override final;
@@ -60,10 +58,8 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	message_parser msg_parser;
 	qtimer* waiting_room_check_zombie_timer = nullptr;
 
-  private:
-	enum CONN_FLAGS {
-		FLAG_ROOM_CONFIG_RECEIVED = (1 << 0)
-	};
+   private:
+	enum CONN_FLAGS { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
 
 	void do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg);

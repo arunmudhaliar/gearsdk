@@ -15,7 +15,7 @@
 #define __LOGTAG__ "qstatslogger"
 
 class qstatslogger : public qtextfilelogger {
-  public:
+   public:
 	qstatslogger();
 	~qstatslogger();
 
@@ -30,22 +30,19 @@ class qstatslogger : public qtextfilelogger {
 	 */
 	size_t client_open(const qstring& duid, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story);
 
-	size_t server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version = "",
-						const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "",
-						const qstring& message = "");
+	size_t server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version = "", const qstring& epic = "", const qstring& myth = "", const qstring& legend = "",
+						const qstring& story = "", const qstring& message = "");
 
-	size_t server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version,
-								 const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+	size_t server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 								 const qstring& server_tstamp, const qstring& message);
-	size_t client_count(const qstring& count, long count_val, const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "",
-						const qstring& message = "");
+	size_t client_count(const qstring& count, long count_val, const qstring& epic = "", const qstring& myth = "", const qstring& legend = "", const qstring& story = "", const qstring& message = "");
 
 	void set_client_session(const qstring& session_str);
 	void set_client_version(const qstring& version_str);
 	void set_client_pid(const qstring& pid_str);
 	void set_total_ram(int ram);
 
-  private:
+   private:
 	// only for client
 	qstring client_session;
 	qstring client_version;

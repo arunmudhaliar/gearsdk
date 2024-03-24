@@ -11,6 +11,7 @@
 #include "../../common/qstring.h"
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+
 #include <map>
 #include <mongoc/mongoc.h>
 
@@ -18,13 +19,13 @@
 #define __LOGTAG__ "qmongo"
 
 class interface_qmongo_connection {
-  public:
+   public:
 	virtual void on_mongo_connect() = 0;
 	virtual void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) = 0;
 };
 
 class qmongo {
-  public:
+   public:
 	qmongo(interface_qmongo_connection* interfce, const qstring& app_name, const qstring& db_name, const qstring& uri_string = "mongodb://localhost:27017");
 	~qmongo();
 
@@ -35,7 +36,7 @@ class qmongo {
 	mongoc_collection_t* get_collection(const qstring& collection_name);
 	int connect();
 
-  private:
+   private:
 	qmongo() {}
 	int connect(const qstring& app_name, const qstring& db_name, const qstring& uri_string);
 	int create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name);

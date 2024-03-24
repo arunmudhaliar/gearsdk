@@ -8,8 +8,7 @@
 #include "message.hpp"
 
 // MARK: - message_base
-message_base::~message_base() {
-}
+message_base::~message_base() {}
 
 void message_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	UNUSED(allocator);
@@ -23,9 +22,7 @@ bool message_base::deserialize(rapidjson::Value& obj) {
 
 // MARK: - msg_room_config
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_config)
-msg_room_config::msg_room_config()
-	: message_base() {
-}
+msg_room_config::msg_room_config() : message_base() {}
 
 bool msg_room_config::deserialize(rapidjson::Value& obj) {
 	message_base::deserialize(obj);
@@ -80,12 +77,9 @@ void msg_room_config::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 
 // MARK: - msg_room_config_list
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_config_list)
-msg_room_config_list::msg_room_config_list()
-	: message_base() {
-}
+msg_room_config_list::msg_room_config_list() : message_base() {}
 
-msg_room_config_list::msg_room_config_list(const msg_room_config_list& list)
-	: message_base() {
+msg_room_config_list::msg_room_config_list(const msg_room_config_list& list) : message_base() {
 	qstring result;
 	list.get_json_string(result);
 	rapidjson::Document obj;
@@ -153,12 +147,9 @@ void msg_room_config_list::serialize(rapidjson::Value& obj, rapidjson::Document:
 
 // MARK: - rq_msg_user_base
 DEFINE_MESSAGE_PRE_REQUISITES(rq_msg_user_base)
-rq_msg_user_base::rq_msg_user_base()
-	: message_base() {
-}
+rq_msg_user_base::rq_msg_user_base() : message_base() {}
 
-rq_msg_user_base::~rq_msg_user_base() {
-}
+rq_msg_user_base::~rq_msg_user_base() {}
 bool rq_msg_user_base::deserialize(rapidjson::Value& obj) {
 	if (!message_base::deserialize(obj)) {
 		return false;
@@ -187,12 +178,9 @@ void rq_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::All
 
 // MARK: - rq_msg_user_get
 DEFINE_MESSAGE_PRE_REQUISITES(rq_msg_user_get)
-rq_msg_user_get::rq_msg_user_get()
-	: rq_msg_user_base() {
-}
+rq_msg_user_get::rq_msg_user_get() : rq_msg_user_base() {}
 
-rq_msg_user_get::~rq_msg_user_get() {
-}
+rq_msg_user_get::~rq_msg_user_get() {}
 bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
 	if (!rq_msg_user_base::deserialize(obj)) {
 		return false;
@@ -250,9 +238,7 @@ void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 
 // MARK: - res_msg_user_base
 DEFINE_MESSAGE_PRE_REQUISITES(res_msg_user_base)
-res_msg_user_base::res_msg_user_base()
-	: message_base() {
-}
+res_msg_user_base::res_msg_user_base() : message_base() {}
 res_msg_user_base::~res_msg_user_base() {
 	GX_DELETE(room_list);
 }
@@ -293,9 +279,7 @@ void res_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::Al
 
 // MARK: - res_msg_user_get
 DEFINE_MESSAGE_PRE_REQUISITES(res_msg_user_get)
-res_msg_user_get::res_msg_user_get()
-	: res_msg_user_base() {
-}
+res_msg_user_get::res_msg_user_get() : res_msg_user_base() {}
 
 bool res_msg_user_get::deserialize(rapidjson::Value& obj) {
 	if (!res_msg_user_base::deserialize(obj)) {
@@ -354,7 +338,7 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 	T* msg = dynamic_cast<T*>(new_msg);
 	if (msg == nullptr && new_msg != nullptr) {
 		DEBUG_ASSERT(__LOGTAG__, msg != nullptr, "room message dynamic_cast failed - %s !!!", T::get_type_string().c_str());
-		GX_DELETE(new_msg); // Note :- dont use msg since it may be possible if dynamic_cast not succeeded (Edge cases)
+		GX_DELETE(new_msg);	 // Note :- dont use msg since it may be possible if dynamic_cast not succeeded (Edge cases)
 		return nullptr;
 	}
 	rapidjson::Document obj;

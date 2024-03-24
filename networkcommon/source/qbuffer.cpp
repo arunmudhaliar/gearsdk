@@ -6,6 +6,7 @@
 //
 
 #include "qbuffer.hpp"
+
 #include <string.h>
 // --------------------------BufferReader--------------------------------
 // --------------------------BufferReader--------------------------------
@@ -24,7 +25,7 @@ void qbuffer::do_resize_if_required(ssize_t bytes_needed) {
 			memcpy(newData, data, index);
 			GX_DELETE_ARY(data);
 		}
-		if (size > 0) { // only warn if the buffer is resizing.
+		if (size > 0) {	 // only warn if the buffer is resizing.
 			DEBUG_PRINT_WARN(__LOGTAG__, "Buffer resize %d-->%d", size, resizeTo);
 		}
 		data = newData;

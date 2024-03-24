@@ -7,8 +7,7 @@
 
 #include "qhiredis_async.hpp"
 
-qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface)
-	: redis_ip(redis_ip), redis_port(redis_port), interface(interface) {
+qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface) : redis_ip(redis_ip), redis_port(redis_port), interface(interface) {
 	async_context = nullptr;
 }
 

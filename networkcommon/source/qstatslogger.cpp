@@ -7,13 +7,11 @@
 
 #include "qstatslogger.hpp"
 
-qstatslogger::qstatslogger()
-	: qtextfilelogger() {
+qstatslogger::qstatslogger() : qtextfilelogger() {
 	inited = false;
 }
 
-qstatslogger::~qstatslogger() {
-}
+qstatslogger::~qstatslogger() {}
 
 void qstatslogger::init(const qstring& install_os_, const qstring& device_name_, const qstring& device_model_, const int total_ram_) {
 	install_os = install_os_;
@@ -83,9 +81,9 @@ size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const
 	buffer += install_os;
 	buffer += seperator;
 	buffer += client_utc_tstamp;
-	buffer += seperator; // client_tstamp
+	buffer += seperator;  // client_tstamp
 	buffer += utc_time;
-	buffer += seperator; // utc_time
+	buffer += seperator;  // utc_time
 	buffer += device_name;
 	buffer += seperator;
 	buffer += device_model;
@@ -94,15 +92,13 @@ size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const
 	return log_stats(buffer);
 }
 
-size_t qstatslogger::server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version,
-								  const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+size_t qstatslogger::server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 								  const qstring& message) {
 	qstring server_utc_tstamp = essentials::get_time_utc_postgresql_format();
 	return server_count_internal(count, count_val, session, pid, version, epic, myth, legend, story, server_utc_tstamp, message);
 }
 
-size_t qstatslogger::server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version,
-										   const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+size_t qstatslogger::server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 										   const qstring& server_tstamp, const qstring& message) {
 	qstring utc_time = essentials::get_time_utc_string();
 	qstring seperator("|");
@@ -129,11 +125,11 @@ size_t qstatslogger::server_count_internal(const qstring& count, long count_val,
 	buffer += install_os;
 	buffer += seperator;
 	buffer += server_tstamp;
-	buffer += seperator; // server_tstamp
+	buffer += seperator;  // server_tstamp
 	buffer += "NULL";
-	buffer += seperator; // client_tstamp
+	buffer += seperator;  // client_tstamp
 	buffer += utc_time;
-	buffer += seperator; // utc_time
+	buffer += seperator;  // utc_time
 	buffer += message;
 	buffer += seperator;
 	buffer += device_name;
@@ -144,8 +140,7 @@ size_t qstatslogger::server_count_internal(const qstring& count, long count_val,
 	return log_stats(buffer);
 }
 
-size_t qstatslogger::client_count(const qstring& count, long count_val, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
-								  const qstring& message) {
+size_t qstatslogger::client_count(const qstring& count, long count_val, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story, const qstring& message) {
 	qstring client_utc_tstamp = essentials::get_time_utc_postgresql_format();
 	qstring utc_time = essentials::get_time_utc_string();
 	qstring seperator("|");
@@ -172,11 +167,11 @@ size_t qstatslogger::client_count(const qstring& count, long count_val, const qs
 	buffer += install_os;
 	buffer += seperator;
 	buffer += "NULL";
-	buffer += seperator; // server_tstamp
+	buffer += seperator;  // server_tstamp
 	buffer += client_utc_tstamp;
-	buffer += seperator; // client_tstamp
+	buffer += seperator;  // client_tstamp
 	buffer += utc_time;
-	buffer += seperator; // utc_time
+	buffer += seperator;  // utc_time
 	buffer += message;
 	buffer += seperator;
 	buffer += device_name;

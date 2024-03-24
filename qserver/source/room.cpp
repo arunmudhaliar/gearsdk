@@ -17,11 +17,7 @@ using namespace rapidjson;
 int room::room_id_counter = 0;
 
 // MARK: - room
-room::room(roomserver_interface* interface, const roomconfig& room_config)
-	: room_id(room::room_id_counter++),
-	  creation_time(ev_now(interface->get_netowrk_main_loop())),
-	  room_config(room_config),
-	  roomserverinterface(interface) {
+room::room(roomserver_interface* interface, const roomconfig& room_config) : room_id(room::room_id_counter++), creation_time(ev_now(interface->get_netowrk_main_loop())), room_config(room_config), roomserverinterface(interface) {
 	set_state(room_waiting);
 }
 
@@ -34,10 +30,8 @@ room::~room() {
 	}
 }
 
-void room::onroom_create() {
-}
-void room::onroom_start() {
-}
+void room::onroom_create() {}
+void room::onroom_start() {}
 
 void room::send_event_player_add_or_remove(player* p, bool add) {
 	Document doc;
@@ -117,8 +111,7 @@ void room::onroom_message(player* p, const qstring& msg) {
 void room::onroom_player_removed(player* p) {
 	UNUSED(p);
 }
-void room::onroom_end() {
-}
+void room::onroom_end() {}
 
 void room::pass_message_to_room(player* p, const qstring& msg) {
 	onroom_message(p, msg);
@@ -181,7 +174,7 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	playermap.erase(it);
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_id);
 	onroom_player_removed(removed_player);
-	GX_DELETE(removed_player); // Better to cache this than delete. He may rejoin.
+	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
 
 	// player leaving between gameplay and gone below min threshold
 	if ((int) playermap.size() < room_config.min_players && state >= room_start) {
@@ -199,7 +192,7 @@ void room::kick_all_except(conn_io* qconnection) {
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick all");
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ = it->second;
-		if (player_->qconnection == qconnection) { // to avoid recursive Close.
+		if (player_->qconnection == qconnection) {	// to avoid recursive Close.
 			continue;
 		}
 		player_->qconnection->close();
@@ -217,34 +210,33 @@ void room::set_state(states state) {
 
 void room::on_state_change(states prev_state) {
 	switch (state) {
-	case room_uninitialised: {
-		break;
-	}
-	case room_waiting: {
-		if (prev_state == room_uninitialised) {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - create %d", room_id);
-			onroom_create();
+		case room_uninitialised: {
+			break;
 		}
-	} break;
-	case room_start: {
-		roomserverinterface->onroom_pre_start(this);
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room_id);
-		send_event_room_start_or_end(true);
-		onroom_start();
-		break;
-	}
-	case room_end: {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room_id);
-		send_event_room_start_or_end(false);
-		onroom_end();
-		break;
-	}
+		case room_waiting: {
+			if (prev_state == room_uninitialised) {
+				DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - create %d", room_id);
+				onroom_create();
+			}
+		} break;
+		case room_start: {
+			roomserverinterface->onroom_pre_start(this);
+			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room_id);
+			send_event_room_start_or_end(true);
+			onroom_start();
+			break;
+		}
+		case room_end: {
+			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room_id);
+			send_event_room_start_or_end(false);
+			onroom_end();
+			break;
+		}
 	}
 }
 
 void room::print_info() {
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d",
-						   room_id, get_state_string().c_str(), since_creation(), playermap.size());
+	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d", room_id, get_state_string().c_str(), since_creation(), playermap.size());
 }
 
 ev_tstamp room::since_creation() {
@@ -289,9 +281,6 @@ void room::sendto(player* p, const qstring& msg) {
 }
 
 qstring room::get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id) {
-	qstring signature(qstring::format_string("%s%s#%s-%d-%d-%d-%d", prefix.c_str(),
-											 host_id.c_str(), port_id.c_str(),
-											 room_config.min_players, room_config.max_players,
-											 room_config.bet_amountx, room_config.reward_multiplierx));
+	qstring signature(qstring::format_string("%s%s#%s-%d-%d-%d-%d", prefix.c_str(), host_id.c_str(), port_id.c_str(), room_config.min_players, room_config.max_players, room_config.bet_amountx, room_config.reward_multiplierx));
 	return signature;
 }

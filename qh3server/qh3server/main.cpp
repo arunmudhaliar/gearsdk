@@ -35,7 +35,7 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://3.80.69.71:27017"; //"mongodb://192.168.0.230:27017"
+	qstring mongodb_uri = "mongodb://3.80.69.71:27017";	 //"mongodb://192.168.0.230:27017"
 	qstring redis_ip = "3.80.69.71";
 	qstring zk_uri = "3.80.69.71:2181";
 
@@ -45,9 +45,7 @@ int main(int argc, const char* argv[]) {
 
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
-	int result = essentials::resolve_cmd_line_args(
-		__LOGTAG__, argc, argv, version_string, version_code, host, port,
-		mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
+	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
 		exit(0);
 	}
@@ -55,8 +53,7 @@ int main(int argc, const char* argv[]) {
 	//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(),
 	//    redis_port, zk_uri); server.run(host, port, rootDir, nullptr, 4010, 0);   // port return not used, so passing 0
 
-	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port,
-							rootDir, nullptr, 4010, port, zk_uri, 4005);
+	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005);
 	qh3simple_router router(config);
 	router.run();
 

@@ -10,6 +10,7 @@
 
 #include "../../common/qstring.h"
 #include "../../common/sdktypes.hpp"
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -27,14 +28,10 @@ struct qbuffer {
 		size = sz;
 		index = pushed_index = 0;
 	}
-	void seek_to_begin() {
-		index = 0;
-	}
+	void seek_to_begin() { index = 0; }
 	void do_resize_if_required(ssize_t bytes_needed);
 
-	void stash() {
-		pushed_index = index;
-	}
+	void stash() { pushed_index = index; }
 	ssize_t pop() {
 		if (pushed_index > size) {
 			return -1;
@@ -43,23 +40,23 @@ struct qbuffer {
 		return index;
 	}
 
-	uint8_t* data = nullptr; // pointer to buffer data
-	ssize_t size = 0;		 // size of buffer data (bytes)
-	ssize_t index = 0;		 // index of next byte to be read/written
+	uint8_t* data = nullptr;  // pointer to buffer data
+	ssize_t size = 0;		  // size of buffer data (bytes)
+	ssize_t index = 0;		  // index of next byte to be read/written
 	ssize_t pushed_index = 0;
 };
 
 class qbuffer_reader {
-  public:
+   public:
 	void read(qbuffer& buffer, uint32_t& value);
 	void read(qbuffer& buffer, uint16_t& value);
 	void read(qbuffer& buffer, uint8_t& value);
 	void read(qbuffer& buffer, uint8_t* data, ssize_t length);
 	void read(qbuffer& buffer, unsigned long& value);
-}; // class BufferReader
+};	// class BufferReader
 
 class qbuffer_writer {
-  public:
+   public:
 	void write(qbuffer& buffer, int32_t value) const;
 	void write(qbuffer& buffer, uint32_t value) const;
 	void write(qbuffer& buffer, uint16_t value) const;
@@ -67,6 +64,6 @@ class qbuffer_writer {
 	void write(qbuffer& buffer, const uint8_t* data, ssize_t length) const;
 	void write(qbuffer& buffer, unsigned long value) const;
 	void write(qbuffer& buffer, const qstring& data) const;
-}; // class BufferWriter
+};	// class BufferWriter
 
 #endif /* qbuffer_hpp */

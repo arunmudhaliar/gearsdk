@@ -6,6 +6,7 @@
 //
 
 #include "gameclient.hpp"
+
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
 

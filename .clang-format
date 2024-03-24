@@ -18,7 +18,8 @@ AllowShortBlocksOnASingleLine: false
 BinPackParameters: true
 
 # Column limit, 0 means no limit
-ColumnLimit:     0
+BasedOnStyle: Google
+ColumnLimit: 240
 
 # Alignment
 AlignAfterOpenBracket: Align

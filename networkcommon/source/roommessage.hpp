@@ -11,10 +11,10 @@
 #include "message.hpp"
 
 class message_room_base : public message_base {
-  private:
+   private:
 	message_room_base();
 
-  public:
+   public:
 	message_room_base(unsigned long type_string_crc);
 	virtual ~message_room_base();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
@@ -26,7 +26,7 @@ class message_room_base : public message_base {
 };
 
 class msg_room_match_request : public message_room_base {
-  public:
+   public:
 	msg_room_match_request();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
@@ -35,7 +35,7 @@ class msg_room_match_request : public message_room_base {
 };
 
 class msg_room_server_shutdown : public message_room_base {
-  public:
+   public:
 	msg_room_server_shutdown();
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;

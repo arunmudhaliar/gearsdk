@@ -6,15 +6,12 @@
 //
 
 #include "http3_sample_server.hpp"
+
 #include "../../common/crypto_helper.hpp"
 #include "../../common/gxcrc32.h"
 #include "../../networkcommon/source/qbuffer.hpp"
 
-http3_sample_server::http3_sample_server(const qstring& mongodb_uri,
-										 const qstring& redis_ip,
-										 uint16_t redis_port,
-										 const qstring& zk_uri)
-	: zk_uri(zk_uri) {
+http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
 	mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
 	hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
 }
@@ -64,25 +61,19 @@ bool http3_sample_server::on_server_pre_init() {
 	msg_parser.register_message_type<msg_room_config>();
 	qstring room_config_list_str(zkconfig->get_string("gserver/roomconfig", ""));
 	GX_DELETE(room_config_list);
-	room_config_list = msg_parser.parse<msg_room_config_list>(
-		room_config_list_str.length(), (uint8_t*) room_config_list_str.c_str());
-	DEBUG_ASSERT(__LOGTAG__, (room_config_list != nullptr),
-				 "Invalid room configs !!!");
+	room_config_list = msg_parser.parse<msg_room_config_list>(room_config_list_str.length(), (uint8_t*) room_config_list_str.c_str());
+	DEBUG_ASSERT(__LOGTAG__, (room_config_list != nullptr), "Invalid room configs !!!");
 	return true;
 }
 
 void http3_sample_server::on_run_started() {
-	hiredis->set_hash_value(
-		qstring::format_string("servers:%s", host_id.c_str()),
-		qstring::format_string("server-%s", port_id.c_str()),
-		qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
+	hiredis->set_hash_value(qstring::format_string("servers:%s", host_id.c_str()), qstring::format_string("server-%s", port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
 void http3_sample_server::on_run_end() {
 #if ENABLE_ZK
 	qzk->shutdown();
-	DEBUG_PRINT_IMPORTANT(
-		__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_sceduler wait_scheduler;
 	wait_scheduler.set_ev_lopp(wait_loop);
@@ -113,31 +104,23 @@ bool http3_sample_server::is_log_quiche() {
 	return false;
 }
 
-void http3_sample_server::parse_header(const qstring& name,
-									   const qstring& value,
-									   struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
 }
 
 void http3_sample_server::parse(struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
-	conn_io_req_res::header* path_header =
-		conn_io->http_request->get_header(":path");
+	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
 	if (path_header == nullptr) {
 		DEBUG_PRINT_ERROR(const_logtag, "path_header == null, returning. !!!");
-		qh3server::get_stats_loggeer()->server_count(
-			"parse", 1, "", "", "", "error", "http3_sample_server", "",
-			port_id_cstr, "path_not_found");
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", "", port_id_cstr, "path_not_found");
 		return;
 	}
 
 	if (path_header->value.length() <= 1) {
-		DEBUG_PRINT_WARN(const_logtag, "path is very short - %s, returning. !!!",
-						 path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count(
-			"parse", 1, "", "", "", "warn", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "short_path");
+		DEBUG_PRINT_WARN(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "short_path");
 		return;
 	}
 
@@ -153,8 +136,7 @@ void http3_sample_server::parse(struct conn_io_qh3* conn_io) {
 	}
 }
 
-void http3_sample_server::parse_shutdown_test(
-	conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	bool has_crc_header = conn_io->http_request->has_crc_header();
@@ -168,23 +150,18 @@ void http3_sample_server::parse_shutdown_test(
 							   "validation not possible !!!",
 							   path_header->value.c_str());
 	}
-	qh3server::get_stats_loggeer()->server_count(
-		"parse", 1, "", "", "", "command", "http3_sample_server",
-		has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 	ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
 }
 
-void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header,
-									   struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	bool has_crc_header = conn_io->http_request->has_crc_header();
 	if (has_crc_header) {
 		bool validate = conn_io->http_request->validate();
 		if (!validate) {
-			qh3server::get_stats_loggeer()->server_count(
-				"parse", 1, "", "", "", "error", "http3_sample_server",
-				path_header->value.c_str(), port_id_cstr, "crc_fail");
+			qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
 		}
 		assert(validate);
 	} else {
@@ -196,67 +173,42 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header,
 	}
 	const char* res_string = "{\"name\" : \"http3_sample_server\"}";
 	conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
-	qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-									  "%s - whoami - %s",
-									  path_header->value.c_str(), res_string);
-	qh3server::get_stats_loggeer()->server_count(
-		"parse", 1, "", "", "", "command", "http3_sample_server",
-		has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+	qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), res_string);
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
-void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header,
-										 struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
-	const conn_io_req_res::payload& payload =
-		conn_io->http_request->get_payload();
+	const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
 	bool validate = conn_io->http_request->validate();
 	assert(validate);
 	if (!validate) {
-		qh3server::get_stats_loggeer()->server_count(
-			"parse", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "crc_fail");
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
 	}
 
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%.*s", payload.buffer.length(),
-				payload.buffer.c_str());
+	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%.*s", payload.buffer.length(), payload.buffer.c_str());
 
-	rq_msg_user_get* user_get_msg_rq = msg_parser.parse<rq_msg_user_get>(
-		payload.buffer.length(), (uint8_t*) payload.buffer.c_str());
+	rq_msg_user_get* user_get_msg_rq = msg_parser.parse<rq_msg_user_get>(payload.buffer.length(), (uint8_t*) payload.buffer.c_str());
 	if (user_get_msg_rq == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Parse failed %.*s", payload.buffer.length(),
-						  payload.buffer.c_str());
-		qh3server::get_file_logger()->log(
-			qlogfile::level_0, const_logtag,
-			"ERROR - Parse failed %s, req:%.*s, returning. !!!",
-			path_header->value.c_str(), payload.buffer.length(),
-			payload.buffer.c_str());
-		qh3server::get_stats_loggeer()->server_count(
-			"parse", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Parse failed %.*s", payload.buffer.length(), payload.buffer.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "ERROR - Parse failed %s, req:%.*s, returning. !!!", path_header->value.c_str(), payload.buffer.length(), payload.buffer.c_str());
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
 		return;
 	}
 
 	unsigned long crc = crc32(0L, Z_NULL, 0);
-	crc =
-		essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(),
-								user_get_msg_rq->sys_name.length());
-	crc = essentials::mod_crc32_z(crc,
-								  (uint8_t*) user_get_msg_rq->node_name.c_str(),
-								  user_get_msg_rq->node_name.length());
-	crc =
-		essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->release.c_str(),
-								user_get_msg_rq->release.length());
-	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->arch.c_str(),
-								  user_get_msg_rq->arch.length());
+	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
+	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
+	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->release.c_str(), user_get_msg_rq->release.length());
+	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->arch.c_str(), user_get_msg_rq->arch.length());
 
 	qbuffer buffer;
 	buffer.allocate(128);
 	qbuffer_writer writer;
 
 	writer.write(buffer, crc);
-	DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%s - user id : %x",
-				path_header->value.c_str(), crc);
+	DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%s - user id : %x", path_header->value.c_str(), crc);
 
 	// response packet
 	res_msg_user_get user_get_msg_respose;
@@ -268,55 +220,41 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header,
 
 	// check if redis has token
 	qstring token_in_redis;
-	qstring redis_format_pid(
-		qstring::format_string("tokens:%s", user_get_msg_respose.pid.c_str()));
+	qstring redis_format_pid(qstring::format_string("tokens:%s", user_get_msg_respose.pid.c_str()));
 	hiredis->get_value(redis_format_pid, token_in_redis);
 	if (token_in_redis.length() != 0) {
 		user_get_msg_respose.token = token_in_redis;
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__,
-					"token '%s' retreived from redis for user id : %x",
-					user_get_msg_respose.token.c_str(), crc);
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "token '%s' retreived from redis for user id : %x", user_get_msg_respose.token.c_str(), crc);
 	} else {
 		// calcualte sha
-		crypto_helper::sha256_data sha_data((const char*) buffer.data,
-											(int) buffer.index);
+		crypto_helper::sha256_data sha_data((const char*) buffer.data, (int) buffer.index);
 		crypto_helper::sha256(sha_data);
 		// session token header
-		user_get_msg_respose.token.bin_copy((const uint8_t*) sha_data.out,
-											strlen(sha_data.out));
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x",
-					user_get_msg_respose.token.c_str(), crc);
+		user_get_msg_respose.token.bin_copy((const uint8_t*) sha_data.out, strlen(sha_data.out));
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x", user_get_msg_respose.token.c_str(), crc);
 	}
 
 	// set session token on redis
-	int32_t user_token_expiry_time = zkconfig->get_int32(
-		"server_config/user_token_expiry_time", DEFAULT_USER_TOKEN_EXPIRY_TIME);
-	hiredis->set_value(redis_format_pid, user_get_msg_respose.token,
-					   user_token_expiry_time);
+	int32_t user_token_expiry_time = zkconfig->get_int32("server_config/user_token_expiry_time", DEFAULT_USER_TOKEN_EXPIRY_TIME);
+	hiredis->set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time);
 	//
 
-	conn_io->http_response->add_or_get_header("token",
-											  user_get_msg_respose.token);
+	conn_io->http_response->add_or_get_header("token", user_get_msg_respose.token);
 
 	// try find the user. (This needs to improve)
 	bool found = false;
 	bson_t find_query;
 	bson_init(&find_query);
-	bson_append_utf8(&find_query, "user.pid", strlen("user.pid"),
-					 user_get_msg_respose.pid.c_str(),
-					 (int) user_get_msg_respose.pid.length());
+	bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), user_get_msg_respose.pid.c_str(), (int) user_get_msg_respose.pid.length());
 	mongoc_cursor_t* cursor = mongo->find("users", find_query);
 	const bson_t* doc = nullptr;
 	while (mongoc_cursor_next(cursor, &doc)) {
 		found = true;
-		user_get_msg_respose.room_list =
-			DEBUG_NEW msg_room_config_list(*room_config_list);
+		user_get_msg_respose.room_list = DEBUG_NEW msg_room_config_list(*room_config_list);
 		qstring response_json;
 		user_get_msg_respose.get_json_string(response_json);
 		conn_io->http_response->set_payload(response_json);
-		qh3server::get_file_logger()->log(
-			qlogfile::level_0, const_logtag, "%s - user-found - %s",
-			path_header->value.c_str(), response_json.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), response_json.c_str());
 	}
 	mongoc_cursor_destroy(cursor);
 
@@ -328,55 +266,31 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header,
 		bson_t meta;
 		bson_init(&meta);
 		bson_append_document_begin(&res_bson, "user", 4, &meta);
-		bson_append_utf8(&meta, "pid", strlen("pid"),
-						 user_get_msg_respose.pid.c_str(),
-						 (int) user_get_msg_respose.pid.length());
-		bson_append_utf8(&meta, "name", strlen("name"),
-						 user_get_msg_respose.user_name.c_str(),
-						 (int) user_get_msg_respose.user_name.length());
-		bson_append_utf8(&meta, "sys_name", strlen("sys_name"),
-						 user_get_msg_rq->sys_name.c_str(),
-						 (int) user_get_msg_rq->sys_name.length());
-		bson_append_utf8(&meta, "node_name", strlen("node_name"),
-						 user_get_msg_rq->node_name.c_str(),
-						 (int) user_get_msg_rq->node_name.length());
-		bson_append_utf8(&meta, "arch", strlen("arch"),
-						 user_get_msg_rq->arch.c_str(),
-						 (int) user_get_msg_rq->arch.length());
-		bson_append_utf8(&meta, "last_login", strlen("last_login"),
-						 user_get_msg_respose.last_login.c_str(),
-						 (int) user_get_msg_respose.last_login.length());
+		bson_append_utf8(&meta, "pid", strlen("pid"), user_get_msg_respose.pid.c_str(), (int) user_get_msg_respose.pid.length());
+		bson_append_utf8(&meta, "name", strlen("name"), user_get_msg_respose.user_name.c_str(), (int) user_get_msg_respose.user_name.length());
+		bson_append_utf8(&meta, "sys_name", strlen("sys_name"), user_get_msg_rq->sys_name.c_str(), (int) user_get_msg_rq->sys_name.length());
+		bson_append_utf8(&meta, "node_name", strlen("node_name"), user_get_msg_rq->node_name.c_str(), (int) user_get_msg_rq->node_name.length());
+		bson_append_utf8(&meta, "arch", strlen("arch"), user_get_msg_rq->arch.c_str(), (int) user_get_msg_rq->arch.length());
+		bson_append_utf8(&meta, "last_login", strlen("last_login"), user_get_msg_respose.last_login.c_str(), (int) user_get_msg_respose.last_login.length());
 		bson_append_document_end(&res_bson, &meta);
 		if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
-			user_get_msg_respose.room_list =
-				DEBUG_NEW msg_room_config_list(*room_config_list);
+			user_get_msg_respose.room_list = DEBUG_NEW msg_room_config_list(*room_config_list);
 			qstring response_json;
 			user_get_msg_respose.get_json_string(response_json);
 			conn_io->http_response->set_payload(response_json);
-			qh3server::get_file_logger()->log(
-				qlogfile::level_0, const_logtag, "%s - new-user - %s",
-				path_header->value.c_str(), response_json.c_str());
+			qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - new-user - %s", path_header->value.c_str(), response_json.c_str());
 		} else {
-			qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-											  "%s - new-user failed",
-											  path_header->value.c_str());
+			qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - new-user failed", path_header->value.c_str());
 		}
 		bson_destroy(&meta);
 		bson_destroy(&res_bson);
 	}
 
-	bson_t* update =
-		BCON_NEW("$set", "{", "user.last_login",
-				 BCON_UTF8(user_get_msg_respose.last_login.c_str()), "}");
+	bson_t* update = BCON_NEW("$set", "{", "user.last_login", BCON_UTF8(user_get_msg_respose.last_login.c_str()), "}");
 	if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
-		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-										  "user-last-login - %s, pid:%s",
-										  user_get_msg_respose.last_login.c_str(),
-										  user_get_msg_respose.pid.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "user-last-login - %s, pid:%s", user_get_msg_respose.last_login.c_str(), user_get_msg_respose.pid.c_str());
 	} else {
-		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-										  "%s - %s", path_header->value.c_str(),
-										  user_get_msg_respose.pid.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - %s", path_header->value.c_str(), user_get_msg_respose.pid.c_str());
 	}
 	bson_destroy(update);
 	bson_destroy(&find_query);
@@ -384,50 +298,33 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header,
 
 	GX_DELETE(user_get_msg_rq);
 
-	qh3server::get_stats_loggeer()->server_count(
-		"parse", 1, "", "", "", "hit", "http3_sample_server",
-		path_header->value.c_str(), port_id_cstr);
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str(), port_id_cstr);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
 }
 
-int http3_sample_server::validte_token(conn_io_req_res::header* path_header,
-									   struct conn_io_qh3* conn_io) {
+int http3_sample_server::validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
-	const conn_io_req_res::payload& payload =
-		conn_io->http_request->get_payload();
+	const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
 	bool validate = conn_io->http_request->validate();
 	assert(validate);
 	if (!validate) {
-		qh3server::get_stats_loggeer()->server_count(
-			"validte_token", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "crc_fail");
+		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
 	}
-	conn_io_req_res::header* token_header =
-		conn_io->http_request->get_header("token");
+	conn_io_req_res::header* token_header = conn_io->http_request->get_header("token");
 	if (token_header == nullptr) {
-		DEBUG_PRINT_ERROR(const_logtag, "No token header in %s",
-						  path_header->value.c_str());
-		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-										  "No token header in %s",
-										  path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count(
-			"validte_token", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "no_token");
+		DEBUG_PRINT_ERROR(const_logtag, "No token header in %s", path_header->value.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "No token header in %s", path_header->value.c_str());
+		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "no_token");
 		return -1;
 	}
 
 	bson_t bson;
 	bson_error_t error;
-	if (!bson_init_from_json(&bson, payload.buffer.c_str(),
-							 payload.buffer.length(), &error)) {
+	if (!bson_init_from_json(&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
 		DEBUG_PRINT_ERROR(const_logtag, "%s", error.message);
-		qh3server::get_file_logger()->log(
-			qlogfile::level_0, const_logtag, "%s - ERROR - %s",
-			path_header->value.c_str(), error.message);
-		qh3server::get_stats_loggeer()->server_count(
-			"validte_token", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - ERROR - %s", path_header->value.c_str(), error.message);
+		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
 		return -2;
 	}
 
@@ -435,19 +332,13 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header,
 	bson_iter_t iter;
 	bson_iter_t sub_iter;
 	qstring pid;
-	if (bson_iter_init(&iter, &bson) &&
-		bson_iter_find_descendant(&iter, "user.pid", &sub_iter)) {
+	if (bson_iter_init(&iter, &bson) && bson_iter_find_descendant(&iter, "user.pid", &sub_iter)) {
 		pid = bson_iter_utf8(&sub_iter, NULL);
 	} else {
 		bson_destroy(&bson);
-		DEBUG_PRINT_ERROR(const_logtag, "user.pid parse failed %s",
-						  path_header->value.c_str());
-		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag,
-										  "user.pid parse failed %s",
-										  path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count(
-			"validte_token", 1, "", "", "", "error", "http3_sample_server",
-			path_header->value.c_str(), port_id_cstr, "user.pid_parse_fail");
+		DEBUG_PRINT_ERROR(const_logtag, "user.pid parse failed %s", path_header->value.c_str());
+		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "user.pid parse failed %s", path_header->value.c_str());
+		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.pid_parse_fail");
 		return -3;
 	}
 	bson_destroy(&bson);
@@ -455,13 +346,9 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header,
 	// check with redis
 	qstring token_in_redis;
 	hiredis->get_value(pid, token_in_redis);
-	qh3server::get_stats_loggeer()->server_count(
-		"validte_token", 1, token_in_redis, pid, "", token_header->value,
-		"http3_sample_server", path_header->value.c_str(), port_id_cstr,
-		"user.token_check");
+	qh3server::get_stats_loggeer()->server_count("validte_token", 1, token_in_redis, pid, "", token_header->value, "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.token_check");
 	if (token_in_redis != token_header->value) {
-		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!",
-					token_in_redis.c_str(), token_header->value.c_str());
+		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
 		return -4;
 	}
 
@@ -469,8 +356,7 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header,
 	return 0;
 }
 
-void http3_sample_server::parse_user_details(
-	conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	int result = validte_token(path_header, conn_io);
 	if (result != 0) {
 		return;
@@ -500,8 +386,7 @@ void http3_sample_server::test_mongo_db() {
 
 void http3_sample_server::on_mongo_connect() {}
 
-void http3_sample_server::on_mongo_create_index_keys(
-	const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) {
+void http3_sample_server::on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) {
 	UNUSED(collection_name);
 	BSON_APPEND_INT32(indexkey, "user.pid", 1);
 	char* idx2_name = mongoc_collection_keys_to_index_string(indexkey);

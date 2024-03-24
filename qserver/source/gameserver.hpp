@@ -15,11 +15,11 @@
 
 // MARK: -
 class game_room : public room {
-  public:
+   public:
 	game_room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~game_room();
 
-  protected:
+   protected:
 	void onroom_create() override;
 	void onroom_start() override;
 	void onroom_player_added(player* p) override;
@@ -30,7 +30,7 @@ class game_room : public room {
 
 // MARK: -
 class gameserver : public roomserver {
-  protected:
+   protected:
 	void on_network_server_init() override;
 	room* create_room(const msg_room_config* room_config_msg) override;
 };

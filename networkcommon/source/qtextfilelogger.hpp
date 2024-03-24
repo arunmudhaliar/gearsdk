@@ -21,14 +21,8 @@
 #define MAX_LOG_FILE_SIZE_IN_BYTES 1024 * 256
 
 class qlogfile {
-  public:
-	enum log_lvls {
-		level_0,
-		level_1,
-		level_2,
-		level_3,
-		level_4
-	};
+   public:
+	enum log_lvls { level_0, level_1, level_2, level_3, level_4 };
 
 	qlogfile(const qstring& path, uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
 	~qlogfile();
@@ -40,7 +34,7 @@ class qlogfile {
 	static bool file_exists(const qstring& filename);
 	static void get_all_log_files(fs::path& path, std::vector<fs::path>& files);
 
-  private:
+   private:
 	int finalise_logfile();
 	int create_new_logfile(bool finalize_prev_file);
 	FILE* fp = nullptr;
@@ -56,14 +50,12 @@ class qlogfile {
 };
 
 class qtextfilelogger : public qtimer_sceduler {
-  public:
+   public:
 	qtextfilelogger();
 	virtual ~qtextfilelogger();
 	struct qlog_config {
 		qlog_config() {}
-		qlog_config(const qstring& path, float flush_time, qtextfilelogger* logger, uint64_t max_size_of_file)
-			: logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file), logger(logger) {
-		}
+		qlog_config(const qstring& path, float flush_time, qtextfilelogger* logger, uint64_t max_size_of_file) : logfile_path(path), flush_time(flush_time), max_size_of_file(max_size_of_file), logger(logger) {}
 		qstring logfile_path;
 		float flush_time = 60;
 		uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES;

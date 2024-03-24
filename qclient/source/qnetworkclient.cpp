@@ -26,16 +26,9 @@ using namespace client;
 int qnetworkclient::connectionID = 0;
 
 // MARK: - QConnection
-conn_io_client::conn_io_client(bridge_qcommand* bridge, int id)
-	: bridge(bridge),
-	  id(id) {
-}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : bridge(bridge), id(id) {}
 
-conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id)
-	: bridge(bridge),
-	  config(config),
-	  id(id) {
-}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id) : bridge(bridge), config(config), id(id) {}
 
 conn_io_client::~conn_io_client() {
 	Release();
@@ -65,10 +58,7 @@ void conn_io_client::Release() {
 }
 
 int conn_io_client::Connect(qstring host, qstring port) {
-	const struct addrinfo hints = {
-		.ai_family = PF_UNSPEC,
-		.ai_socktype = SOCK_DGRAM,
-		.ai_protocol = IPPROTO_UDP};
+	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
 	if (peer) {
 		freeaddrinfo(peer);
@@ -106,16 +96,12 @@ int conn_io_client::Connect(qstring host, qstring port) {
 	close(rng);
 
 	local_addr_len = sizeof(local_addr);
-	if (getsockname(sock, (struct sockaddr*) &local_addr,
-					&local_addr_len) != 0) {
+	if (getsockname(sock, (struct sockaddr*) &local_addr, &local_addr_len) != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to get local address of socket");
 		return -1;
 	};
 
-	conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid),
-						  (struct sockaddr*) &local_addr,
-						  local_addr_len,
-						  peer->ai_addr, peer->ai_addrlen, config);
+	conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &local_addr, local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
 
 	if (conn == NULL) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection");
@@ -166,8 +152,7 @@ ssize_t conn_io_client::SendMessage(const char* buf, size_t buflen, bool fin) {
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-		ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*) buf,
-												   buflen, fin);
+		ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*) buf, buflen, fin);
 		if (sent_len != (ssize_t) buflen) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
 			break;
@@ -195,8 +180,7 @@ void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
 void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnection) {
 	SendInfo send_info;
 	while (true) {
-		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out),
-										   &send_info);
+		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out), &send_info);
 
 		if (written == QUICHE_ERR_DONE) {
 			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
@@ -208,9 +192,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnecti
 			return;
 		}
 
-		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0,
-							  (struct sockaddr*) &send_info.to,
-							  send_info.to_len);
+		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 
 		if (sent != written) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
@@ -330,9 +312,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 		socklen_t peer_addr_len = sizeof(peer_addr);
 		memset(&peer_addr, 0, peer_addr_len);
 
-		ssize_t read = recvfrom(qconnection_->sock, qconnection_->recv_buf, sizeof(qconnection_->recv_buf), 0,
-								(struct sockaddr*) &peer_addr,
-								&peer_addr_len);
+		ssize_t read = recvfrom(qconnection_->sock, qconnection_->recv_buf, sizeof(qconnection_->recv_buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
@@ -370,8 +350,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		quiche_conn_application_proto(qconnection_->conn, &app_proto, &app_proto_len);
 
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection established: %.*s",
-					(int) app_proto_len, app_proto);
+		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
 		qconnection_->bridge->event_connect(qconnection_);
 
 		const static uint8_t hi[] = "Hi";
@@ -389,9 +368,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 
 			bool fin = false;
-			ssize_t recv_len = quiche_conn_stream_recv(qconnection_->conn, s,
-													   qconnection_->recv_buf, sizeof(qconnection_->recv_buf),
-													   &fin);
+			ssize_t recv_len = quiche_conn_stream_recv(qconnection_->conn, s, qconnection_->recv_buf, sizeof(qconnection_->recv_buf), &fin);
 			if (recv_len < 0) {
 				break;
 			}
@@ -472,8 +449,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		quiche_conn_stats(qconnection_->conn, &stats);
 		quiche_conn_path_stats(qconnection_->conn, 0, &path_stats);
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns",
-					stats.recv, stats.sent, stats.lost, path_stats.rtt);
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns", stats.recv, stats.sent, stats.lost, path_stats.rtt);
 		qconnection_->bridge->event_close(qconnection_);
 		ev_break(EV_A_ EVBREAK_ONE);
 		return;
@@ -548,8 +524,7 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	}
 
-	quiche_config_set_application_protos(config,
-										 (uint8_t*) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
+	quiche_config_set_application_protos(config, (uint8_t*) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
 
 	quiche_config_set_max_idle_timeout(config, 30000);
 	quiche_config_set_max_recv_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);

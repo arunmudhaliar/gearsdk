@@ -7,8 +7,7 @@
 
 #include "qtextfile.hpp"
 
-qtextfile::qtextfile() {
-}
+qtextfile::qtextfile() {}
 
 qtextfile::qtextfile(const fs::path& path, const qstring& mode) {
 	open(path, mode);
@@ -31,7 +30,7 @@ int qtextfile::open(const fs::path& path, const qstring& mode) {
 }
 
 void qtextfile::close() {
-	if (fp) { // just close the file.
+	if (fp) {  // just close the file.
 		fclose(fp);
 		fp = nullptr;
 	}

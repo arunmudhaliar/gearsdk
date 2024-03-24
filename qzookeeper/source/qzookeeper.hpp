@@ -16,30 +16,28 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#include <proto.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <getopt.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-#include <assert.h>
-#include <errno.h>
-#include <time.h>
-
 #include "../../common/qstring.h"
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtimer.hpp"
 
+#include <assert.h>
+#include <errno.h>
+#include <getopt.h>
+#include <proto.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
 
 class qzookeeper : public qtimer_sceduler {
-  public:
+   public:
 	qzookeeper();
 	~qzookeeper();
 
@@ -50,7 +48,7 @@ class qzookeeper : public qtimer_sceduler {
 	int set_data(const qstring& zk_path, const qstring& data);
 	int delete_path(const qstring& zk_path);
 
-  private:
+   private:
 	int retry_connection();
 	void close_zk(const int state);
 

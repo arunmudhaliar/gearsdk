@@ -6,11 +6,10 @@
 //
 
 #include "qmongo.hpp"
+
 #include <zlib.h>
 
-qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string)
-	: interface(interfce_), app_name(app_name), db_name(db_name), uri_string(uri_string) {
-}
+qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) : interface(interfce_), app_name(app_name), db_name(db_name), uri_string(uri_string) {}
 
 qmongo::~qmongo() {
 	cleanup();
@@ -52,10 +51,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
 	bson_error_t error;
 	uri = mongoc_uri_new_with_error(uri_string.c_str(), &error);
 	if (!uri) {
-		DEBUG_PRINT_ERROR(__LOGTAG__,
-						  "failed to parse URI: %s, error message: %s",
-						  uri_string.c_str(),
-						  error.message);
+		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse URI: %s, error message: %s", uri_string.c_str(), error.message);
 		cleanup();
 		return EXIT_FAILURE;
 	}
@@ -168,8 +164,7 @@ int qmongo::update(const qstring& collection_name, bson_t& query, bson_t& update
 	/* Create the document if it didn't exist, and return the updated document */
 	mongoc_find_and_modify_opts_set_flags(opts, flags);
 
-	bool result = mongoc_collection_find_and_modify_with_opts(
-		get_collection(collection_name), &query, opts, &reply, &error);
+	bool result = mongoc_collection_find_and_modify_with_opts(get_collection(collection_name), &query, opts, &reply, &error);
 	if (!result) {
 		fprintf(stderr, "%s : err_code %d\n", error.message, error.code);
 	}

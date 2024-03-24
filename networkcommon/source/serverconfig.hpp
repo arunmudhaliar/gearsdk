@@ -11,6 +11,7 @@
 #include "../../common/qstring.h"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qtextfile.hpp"
+
 #include <algorithm>
 #include <map>
 #include <rapidjson/document.h>
@@ -21,7 +22,7 @@
 #define __LOGTAG__ "serverconfig"
 
 class serverconfig {
-  public:
+   public:
 	serverconfig();
 	~serverconfig();
 
@@ -31,7 +32,7 @@ class serverconfig {
 	int get_int32(const qstring& key, const int32_t default_value);
 	qstring get_string(const qstring& key, const qstring& default_value);
 
-  private:
+   private:
 	void iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder);
 
 	std::map<qstring, qstring> configs;

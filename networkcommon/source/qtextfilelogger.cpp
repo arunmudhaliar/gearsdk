@@ -6,14 +6,14 @@
 //
 
 #include "qtextfilelogger.hpp"
+
 #include "../../common/sdktypes.hpp"
 
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
 
-qlogfile::qlogfile(const qstring& path, uint64_t max_size_of_file)
-	: logfile_path(path), max_size_of_file(max_size_of_file) {
+qlogfile::qlogfile(const qstring& path, uint64_t max_size_of_file) : logfile_path(path), max_size_of_file(max_size_of_file) {
 	fs::path log_dir = fs::path(logfile_path.c_str()).parent_path();
 	if (!fs::is_directory(log_dir)) {
 		fs::create_directories(log_dir);
@@ -109,9 +109,9 @@ int qlogfile::finalise_logfile() {
 
 int qlogfile::create_new_logfile(bool finalize_prev_file) {
 	if (finalize_prev_file) {
-		finalise_logfile(); // rename the file after closing, thus finalize it for processing.
+		finalise_logfile();	 // rename the file after closing, thus finalize it for processing.
 	} else {
-		if (fp) { // just close the file.
+		if (fp) {  // just close the file.
 			fclose(fp);
 			fp = nullptr;
 		}
@@ -139,7 +139,7 @@ int qlogfile::create_new_logfile(bool finalize_prev_file) {
 			struct stat st;
 			stat(current_logfile_path.c_str(), &st);
 			if ((uint64_t) st.st_size < max_size_of_file) {
-				break; // open this file to append
+				break;	// open this file to append
 			}
 			//
 		}
@@ -193,7 +193,7 @@ uint64_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buff
 	const char* ctime_str_mod = strtok(ctime(&givemetime), "\n");
 	ssize_t ctime_str_len = strlen(ctime_str);
 	ssize_t tag_length = strlen(tag);
-	ssize_t spaces = 10; // 9 space + 1 extra space added !
+	ssize_t spaces = 10;  // 9 space + 1 extra space added !
 	uint64_t total_record_sz = ctime_str_len + spaces + tag_length + buffer_length;
 	qbuffer* record = create_new_record(ctime_str_len + spaces + tag_length + buffer_length, locked ? records : records_waiting);
 	snprintf((char*) record->data, total_record_sz, "%s : [%s] - %s\n", ctime_str_mod, tag, buffer);
@@ -222,8 +222,8 @@ uint64_t qlogfile::log_buffer(const char* buffer, uint64_t buffer_length) {
 		}
 		return -1;
 	}
-	uint64_t total_record_sz = buffer_length + 2;											  //+2 for \n
-	qbuffer* record = create_new_record(total_record_sz, locked ? records : records_waiting); //+1 for \n
+	uint64_t total_record_sz = buffer_length + 2;											   //+2 for \n
+	qbuffer* record = create_new_record(total_record_sz, locked ? records : records_waiting);  //+1 for \n
 	snprintf((char*) record->data, total_record_sz, "%s\n", buffer);
 	record->index = total_record_sz;
 	if (locked) {
@@ -270,9 +270,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
 	return (int) flushed_cnt;
 }
 
-qtextfilelogger::qtextfilelogger()
-	: qtimer_sceduler() {
-}
+qtextfilelogger::qtextfilelogger() : qtimer_sceduler() {}
 
 qtextfilelogger::~qtextfilelogger() {
 	if (log_loop) {
@@ -314,17 +312,18 @@ void* qtextfilelogger::run_log_session(void* data) {
 	logger->log_loop = ev_loop_new(0);
 	ev_tstamp creation_time = ev_now(logger->log_loop);
 	logger->set_ev_lopp(logger->log_loop);
-	logger->logtimer = logger->schedule_repeat_timer([logger, creation_time](qtimer& timer) {
-		UNUSED(timer);
-		if (logger->logfile->flush(true) > 0) {
-			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
-		}
-	},
-													 config->flush_time);
+	logger->logtimer = logger->schedule_repeat_timer(
+		[logger, creation_time](qtimer& timer) {
+			UNUSED(timer);
+			if (logger->logfile->flush(true) > 0) {
+				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
+			}
+		},
+		config->flush_time);
 	logger->log(qlogfile::level_0, __LOGTAG__, "start-session");
 	ev_run(logger->log_loop, 0);
 
-	logger->logtimer = nullptr; // scheduler will delete the timer;
+	logger->logtimer = nullptr;	 // scheduler will delete the timer;
 	config->finished = true;
 	GX_DELETE(logger->logfile);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "file logger exiting ...");

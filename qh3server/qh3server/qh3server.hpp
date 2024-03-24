@@ -8,28 +8,26 @@
 #ifndef qh3server_hpp
 #define qh3server_hpp
 
-#include <string>
-
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#include <ev.h>
-#include <quiche.h>
-#include <uthash.h>
-
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
+
+#include <errno.h>
+#include <ev.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <netdb.h>
+#include <quiche.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <uthash.h>
 
 // #if PLATFORM == PLATFORM_MAC
 // namespace fs = std::__fs::filesystem;
@@ -45,27 +43,24 @@
 #define LOCAL_CONN_ID_LEN 16
 #undef ORIGINAL_CLIENT_ADDR_SZ
 #define ORIGINAL_CLIENT_ADDR_SZ (3 * sizeof(uint16_t))
-#define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ // last 6 bytes is reserved for original client adress verification
+#define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ  // last 6 bytes is reserved for original client adress verification
 
-#define MAX_TOKEN_LEN                     \
-	sizeof("quiche") - 1 +                \
-		sizeof(struct sockaddr_storage) + \
-		MAX_CID_LEN
+#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
 
 #define SEND_CHUNK_SIZE 256
-#define DROP_CONNECTION_AFTER 45.0f // in seconds
+#define DROP_CONNECTION_AFTER 45.0f	 // in seconds
 
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
 class bridge_h3_connection {
-  public:
+   public:
 	virtual ssize_t flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) = 0;
 	virtual void destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) = 0;
 	inline virtual struct ev_loop* get_mainloop() = 0;
 	virtual void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) = 0;
 	virtual void parse(struct conn_io_qh3* conn_io) = 0;
-	virtual bool is_log_quiche() = 0; // NOTE : TODO - This is polling which is not a recommended solution. Need to use event based system.
+	virtual bool is_log_quiche() = 0;  // NOTE : TODO - This is polling which is not a recommended solution. Need to use event based system.
 };
 
 struct connections {
@@ -104,8 +99,7 @@ struct conn_io_qh3 {
 };
 
 struct routerinfo {
-	routerinfo(struct addrinfo* router_, uint16_t port_return)
-		: port_return(port_return) {
+	routerinfo(struct addrinfo* router_, uint16_t port_return) : port_return(port_return) {
 		router_address = DEBUG_NEW qaddress(*router_->ai_addr);
 		router_address->serialise(serialised_buffer);
 		router = (struct addrinfo*) malloc(sizeof(struct addrinfo));
@@ -123,7 +117,7 @@ struct routerinfo {
 };
 
 class qh3server : public bridge_h3_connection {
-  private:
+   private:
 	Config* config = nullptr;
 	Config* http3_config = nullptr;
 	struct connections* conns = nullptr;
@@ -132,32 +126,17 @@ class qh3server : public bridge_h3_connection {
 	static void debug_log(const uint8_t* line, void* argp);
 	ssize_t flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) override final;
 	void destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) override final;
-	inline virtual struct ev_loop* get_mainloop() override final {
-		return mainloop;
-	}
-	inline virtual bool is_log_quiche() override {
-		return false;
-	}
+	inline virtual struct ev_loop* get_mainloop() override final { return mainloop; }
+	inline virtual bool is_log_quiche() override { return false; }
 
 	void parse(struct conn_io_qh3* conn_io) override;
 
-	void mint_token(const uint8_t* dcid, size_t dcid_len,
-					struct sockaddr_storage* addr, socklen_t addr_len,
-					uint8_t* token, size_t* token_len);
-	bool validate_token(const uint8_t* token, size_t token_len,
-						struct sockaddr_storage* addr, socklen_t addr_len,
-						uint8_t* odcid, size_t* odcid_len);
+	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
+	bool validate_token(const uint8_t* token, size_t token_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* odcid, size_t* odcid_len);
 	static uint8_t* gen_cid(uint8_t* cid, size_t cid_len);
-	struct conn_io_qh3* create_conn(uint8_t* scid, size_t scid_len,
-									uint8_t* odcid, size_t odcid_len,
-									struct sockaddr* local_addr,
-									socklen_t local_addr_len,
-									struct sockaddr_storage* peer_addr,
-									socklen_t peer_addr_len,
+	struct conn_io_qh3* create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 									struct sockaddr_storage* peer_original_client_addr);
-	static int for_each_header(const uint8_t* name, size_t name_len,
-							   const uint8_t* value, size_t value_len,
-							   void* argp);
+	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
@@ -165,9 +144,9 @@ class qh3server : public bridge_h3_connection {
 
 	uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
 	uint8_t buf[65535];
-	routerinfo* relay_through_router_info = nullptr; // only valid for servers else NULL
+	routerinfo* relay_through_router_info = nullptr;  // only valid for servers else NULL
 
-  protected:
+   protected:
 	virtual bool on_server_pre_init() = 0;
 	virtual void on_run_started() = 0;
 	virtual void on_run_end() = 0;
@@ -179,7 +158,7 @@ class qh3server : public bridge_h3_connection {
 	qstring host_id;
 	fs::path app_directory = ".";
 
-  public:
+   public:
 	virtual ~qh3server();
 	qtextfilelogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }

@@ -11,13 +11,13 @@
 #include "../qpgsql/qpgsql.hpp"
 
 class qstats_crawler {
-  public:
+   public:
 	qstats_crawler();
 	~qstats_crawler();
 
 	void try_crawl(const qstring& root_filename, const qstring& host, const qstring& port);
 
-  private:
+   private:
 	int parse_file(fs::path file, int& parsed_lines);
 	int parse_line(fs::path current_file, const qstring& line);
 	int parse_count_stats(fs::path current_file, std::vector<qstring>& list);

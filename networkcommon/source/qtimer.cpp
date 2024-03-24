@@ -7,8 +7,7 @@
 
 #include "qtimer.hpp"
 
-qtimer_sceduler::qtimer_sceduler() {
-}
+qtimer_sceduler::qtimer_sceduler() {}
 
 qtimer_sceduler::~qtimer_sceduler() {
 	destroy_all();

@@ -15,50 +15,60 @@
 
 struct route;
 class bridge_command_center {
-  public:
+   public:
 	virtual const std::vector<route*>& get_routes() = 0;
 	virtual void cmd_feedback_from_client(struct sockaddr* client_addr, const qstring& cmd) = 0;
 };
 
 struct server_config_in {
-	server_config_in(const qstring& host, const qstring& port,
-					 const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_,
-					 const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_, const qstring& router_port_, const qstring& zk_uri, uint16_t router_port_return)
-		: host(host), port(port),
-		  mongodb_uri(mongodb_uri), redis_ip(redis_ip), redis_port(redis_port_), zk_uri(zk_uri),
-		  rootDir(rootDir), router(router_), command_port(command_port_), router_port(router_port_), router_port_return(router_port_return) {
-	}
+	server_config_in(const qstring& host, const qstring& port, const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_, const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_,
+					 const qstring& router_port_, const qstring& zk_uri, uint16_t router_port_return)
+		: host(host),
+		  port(port),
+		  mongodb_uri(mongodb_uri),
+		  redis_ip(redis_ip),
+		  redis_port(redis_port_),
+		  zk_uri(zk_uri),
+		  rootDir(rootDir),
+		  router(router_),
+		  command_port(command_port_),
+		  router_port(router_port_),
+		  router_port_return(router_port_return) {}
 
 	server_config_in(const server_config_in& config)
-		: host(config.host), port(config.port),
-		  mongodb_uri(config.mongodb_uri), redis_ip(config.redis_ip), redis_port(config.redis_port), zk_uri(config.zk_uri),
-		  rootDir(config.rootDir), command_server(config.command_server), command_port(config.command_port),
-		  command_feedback_port(config.command_feedback_port), ref(config.ref), router_port(config.router_port), router_port_return(config.router_port_return) {
-	}
+		: host(config.host),
+		  port(config.port),
+		  mongodb_uri(config.mongodb_uri),
+		  redis_ip(config.redis_ip),
+		  redis_port(config.redis_port),
+		  zk_uri(config.zk_uri),
+		  rootDir(config.rootDir),
+		  command_server(config.command_server),
+		  command_port(config.command_port),
+		  command_feedback_port(config.command_feedback_port),
+		  ref(config.ref),
+		  router_port(config.router_port),
+		  router_port_return(config.router_port_return) {}
 	qstring host = "localhost";
 	qstring port = "4004";
-	qstring mongodb_uri = "mongodb://localhost:27017"; //"mongodb://192.168.0.230:6006"
+	qstring mongodb_uri = "mongodb://localhost:27017";	//"mongodb://192.168.0.230:6006"
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port = 6379;
 	qstring zk_uri = "127.0.0.1:2181";
 	fs::path rootDir = ".";
 	pthread_t run_thread_id = 0;
-	struct addrinfo* router = nullptr; // only for slaves
+	struct addrinfo* router = nullptr;	// only for slaves
 	bool command_server = false;
 	uint16_t command_port = 4010;
-	uint16_t command_feedback_port = 4011; // this has to be re-assigned based on availabaility
+	uint16_t command_feedback_port = 4011;	// this has to be re-assigned based on availabaility
 	bridge_command_center* ref = nullptr;
 	qstring router_port;
 	uint16_t router_port_return = 4005;
 };
 
 struct route {
-	route(const qstring& host, const qstring& port, int server_id_)
-		: host(host), port(port), server_id(server_id_) {
-	}
-	~route() {
-		close_bridge_socket();
-	}
+	route(const qstring& host, const qstring& port, int server_id_) : host(host), port(port), server_id(server_id_) {}
+	~route() { close_bridge_socket(); }
 	int create_bridge(struct ev_loop* loop, void* arg, void (*router_command_recv_cb_ptr)(EV_P_ ev_io* w, int revents) = nullptr);
 	int close_bridge_socket();
 	ssize_t relay(uint8_t* buf, ssize_t len);

@@ -6,7 +6,9 @@
 //
 
 #include "http3_sample_client.hpp"
+
 #include "../../common/crypto_helper.hpp"
+
 #include <bson/bson.h>
 #include <zlib.h>
 
@@ -14,12 +16,9 @@ using namespace client;
 // std::atomic<int> http3_sample_client::live_connections = 0;
 // std::atomic<int> http3_sample_client::total_connections_returned = 0;
 
-http3_sample_client::http3_sample_client(const qstring& host, const qstring& port)
-	: host(host), port(port) {
-}
+http3_sample_client::http3_sample_client(const qstring& host, const qstring& port) : host(host), port(port) {}
 
-http3_sample_client::~http3_sample_client() {
-}
+http3_sample_client::~http3_sample_client() {}
 
 void http3_sample_client::init_connection() {
 	//    qh3client_helper::send_request(host, port, getorpost_reqdata("/whoami", "{}"),
@@ -60,41 +59,45 @@ void http3_sample_client::create_connections() {
 	user_get_msg_rq.get_json_string(json_str);
 
 	for (int x = 0; x < 1; x++) {
-		qh3client_helper::send_async_request<client::qh3client>(host, port, conn_io_req_res::create("/user_get", json_str), nullptr, [this, x](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
-                bool validate = response->validate();
-//                assert(validate);
-                if (!validate) {
-                    //DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
-                }
-                conn_io_req_res::header* token_header = response->get_header("token");
-                live_connections--;
-                total_connections_returned++;
-                if (token_header == nullptr) {
-                    this->on_login_complete("", false);
-                    return;
-                }
+		qh3client_helper::send_async_request<client::qh3client>(
+			host, port, conn_io_req_res::create("/user_get", json_str), nullptr,
+			[this, x](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+				bool validate = response->validate();
+				//                assert(validate);
+				if (!validate) {
+					// DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				}
+				conn_io_req_res::header* token_header = response->get_header("token");
+				live_connections--;
+				total_connections_returned++;
+				if (token_header == nullptr) {
+					this->on_login_complete("", false);
+					return;
+				}
 
-                const conn_io_req_res::payload& payload = response->data;
-                bson_t bson;
-                bson_error_t error;
-                if (!bson_init_from_json(&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
-                    DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
-                    return;
-                }
+				const conn_io_req_res::payload& payload = response->data;
+				bson_t bson;
+				bson_error_t error;
+				if (!bson_init_from_json(&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
+					DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
+					return;
+				}
 
-                // parse
-                bson_iter_t iter;
-                bson_iter_t sub_iter;
-                if (bson_iter_init(&iter, &bson) && bson_iter_find_descendant(&iter, "pid", &sub_iter)) {
-                    pid = bson_iter_utf8(&sub_iter, NULL);
-                }
-                bson_destroy(&bson);
+				// parse
+				bson_iter_t iter;
+				bson_iter_t sub_iter;
+				if (bson_iter_init(&iter, &bson) && bson_iter_find_descendant(&iter, "pid", &sub_iter)) {
+					pid = bson_iter_utf8(&sub_iter, NULL);
+				}
+				bson_destroy(&bson);
 
-                total_connections_returned_success++;
-                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+				total_connections_returned_success++;
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
 
-                session_token = token_header->value;
-                this->on_login_complete(token_header->value, token_header->value.length() > 0); }, 1);
+				session_token = token_header->value;
+				this->on_login_complete(token_header->value, token_header->value.length() > 0);
+			},
+			1);
 		live_connections++;
 		total_connections_issued++;
 	}
@@ -128,12 +131,16 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 
 	conn_io_req_res* req = conn_io_req_res::create("/user_details", qstring(json_string_data, length));
 	req->add_or_get_header("token", session_token);
-	qh3client_helper::send_async_request<client::qh3client>(host, port, req, nullptr, [this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
-            live_connections--;
-            total_connections_returned_success++;
-            total_connections_returned++;
-            const conn_io_req_res::payload& payload = response->get_payload();
-            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str()); }, 1);
+	qh3client_helper::send_async_request<client::qh3client>(
+		host, port, req, nullptr,
+		[this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+			live_connections--;
+			total_connections_returned_success++;
+			total_connections_returned++;
+			const conn_io_req_res::payload& payload = response->get_payload();
+			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str());
+		},
+		1);
 	live_connections++;
 	total_connections_issued++;
 	bson_free(json_string_data);

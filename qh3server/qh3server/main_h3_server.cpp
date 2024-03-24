@@ -32,33 +32,27 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <string>
-
+#include <errno.h>
+#include <ev.h>
+#include <fcntl.h>
 #include <inttypes.h>
+#include <netdb.h>
+#include <quiche.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-#include <errno.h>
-#include <fcntl.h>
-
-#include <netdb.h>
+#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
-
-#include <ev.h>
+#include <unistd.h>
 #include <uthash.h>
-
-#include <quiche.h>
 
 #define LOCAL_CONN_ID_LEN 16
 
 #define MAX_DATAGRAM_SIZE 1350
 
-#define MAX_TOKEN_LEN \
-	sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
+#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
 
 struct connections {
     int sock;

@@ -6,6 +6,7 @@
 //
 
 #include "qh3simple_router_structs.h"
+
 #include <fcntl.h>
 
 #if 0
@@ -38,20 +39,15 @@ void test_router_command_recv_cb(EV_P_ ev_io* w, int revents)  {
 #endif
 
 ssize_t route::relay(uint8_t* buf, ssize_t len) {
-	ssize_t sent =
-		sendto(bridge_sock, buf, len, 0, peer->ai_addr, peer->ai_addrlen);
+	ssize_t sent = sendto(bridge_sock, buf, len, 0, peer->ai_addr, peer->ai_addrlen);
 	if (sent != len) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
 		return -1;
 	}
 	return sent;
 }
-int route::create_bridge(struct ev_loop* loop, void* arg,
-						 void (*router_command_recv_cb_ptr)(EV_P_ ev_io* w,
-															int revents)) {
-	const struct addrinfo hints = {.ai_family = PF_UNSPEC,
-								   .ai_socktype = SOCK_DGRAM,
-								   .ai_protocol = IPPROTO_UDP};
+int route::create_bridge(struct ev_loop* loop, void* arg, void (*router_command_recv_cb_ptr)(EV_P_ ev_io* w, int revents)) {
+	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
 	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "bridge - failed to resolve host");
@@ -74,21 +70,16 @@ int route::create_bridge(struct ev_loop* loop, void* arg,
 
 	if (router_command_recv_cb_ptr != nullptr) {
 		if (bind(bridge_sock, peer->ai_addr, peer->ai_addrlen) < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__,
-							  "failed to bind bridge socket - port[%s:%s]",
-							  host.c_str(), port.c_str());
+			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to bind bridge socket - port[%s:%s]", host.c_str(), port.c_str());
 			freeaddrinfo(peer);
 			close_bridge_socket();
 			return -1;
 		}
-		ev_io_init(&command_watcher, router_command_recv_cb_ptr, bridge_sock,
-				   EV_READ);
+		ev_io_init(&command_watcher, router_command_recv_cb_ptr, bridge_sock, EV_READ);
 		ev_io_start(loop, &command_watcher);
 		this->arg = arg;
 		command_watcher.data = this;
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__,
-							   "Bridge socket enabled for receive in %s:%s",
-							   host.c_str(), port.c_str());
+		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Bridge socket enabled for receive in %s:%s", host.c_str(), port.c_str());
 	}
 
 	return 0;
@@ -100,8 +91,7 @@ int route::close_bridge_socket() {
 	}
 	int result = close(bridge_sock);
 	if (result < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Bridge socket closure failed: %s",
-						  strerror(errno));
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Bridge socket closure failed: %s", strerror(errno));
 	}
 	return result;
 }
