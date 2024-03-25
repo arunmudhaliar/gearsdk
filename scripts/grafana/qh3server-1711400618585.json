@@ -1053,7 +1053,7 @@
           "format": "time_series",
           "hide": false,
           "rawQuery": true,
-          "rawSql": "SELECT \"time\" AS \"time\", COUNT(count_val), device_name, session AS \"t_session\", legend AS \"api\", story as server FROM qtest_pgdb_schema.stats_count WHERE (count = 'parse' AND message = 'user.token_check' AND legend = '/user_details' AND epic <> session) GROUP BY \"time\", count_val, device_name, session, legend, story ORDER BY \"time\" ",
+          "rawSql": "SELECT \"time\" AS \"time\", COUNT(count_val), device_name, session AS \"t_session\", legend AS \"api\", story as server FROM qtest_pgdb_schema.stats_count WHERE (count = 'validte_token' AND message = 'user.token_check' AND legend = '/user_details' AND epic <> session) GROUP BY \"time\", count_val, device_name, session, legend, story ORDER BY \"time\" ",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1989,6 +1989,6 @@
   "timezone": "",
   "title": "qh3server",
   "uid": "f7add599-e08a-465f-b8a7-42bd1bec5dfb",
-  "version": 53,
+  "version": 54,
   "weekStart": ""
 }
