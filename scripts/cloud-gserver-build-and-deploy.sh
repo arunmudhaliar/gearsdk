@@ -9,7 +9,7 @@ deploy_dir="$root_dir/deploy-build"
 echo "Deploy directory "$deploy_dir
 # rm -rf "$deploy_dir/gsdk-source"
 # mkdir "$deploy_dir/gsdk-source"
-# git clone git@github.com:arunmudhaliar/gearsdk.git "$deploy_dir/gsdk-source"
+git clone git@github.com:arunmudhaliar/gearsdk.git "$deploy_dir/gsdk-source"
 cd "$deploy_dir/gsdk-source"
 pwd
 
