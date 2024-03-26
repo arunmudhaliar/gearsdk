@@ -32,7 +32,7 @@ class qlogfile {
 	qbuffer* create_new_record(uint64_t buffer_size, std::vector<qbuffer*>& list);
 
 	static bool file_exists(const qstring& filename);
-	static void get_all_log_files(fs::path& path, std::vector<fs::path>& files);
+	static void get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs=true);
 
    private:
 	int finalise_logfile();

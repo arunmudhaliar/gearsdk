@@ -10,12 +10,22 @@
 #include "../../networkcommon/source/qstatslogger.hpp"
 #include "../qpgsql/qpgsql.hpp"
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qstats_crawler"
+
 class qstats_crawler {
    public:
 	qstats_crawler();
 	~qstats_crawler();
 
-	void try_crawl(const qstring& root_filename, const qstring& host, const qstring& port);
+    enum CRAWL_EVENT {
+        CRAWL_START,
+        CRAWL_STOP
+    };
+    
+    typedef std::function<void(const qstring& root_filename, const std::vector<fs::path>& files, CRAWL_EVENT event)> type_qstats_crawler_crawl_event_cb;
+    
+	void try_crawl(const qstring& root_filename, const qstring& host, const qstring& port, type_qstats_crawler_crawl_event_cb event_cb);
 
    private:
 	int parse_file(fs::path file, int& parsed_lines);
