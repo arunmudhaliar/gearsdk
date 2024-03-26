@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using AOT;
 using System.Runtime.InteropServices;
-using System.Text;
 using UnityEngine.UI;
 using System.Net;
 using System.Net.Sockets;
@@ -98,6 +95,22 @@ public class TestScript : MonoBehaviour
 
         OnIpAddressEntered();
 
+
+        rq_msg_user_get msg_user_get = new rq_msg_user_get();
+
+        string osDescription = RuntimeInformation.OSDescription;
+        string machineName = Environment.MachineName;
+        string osArchitecture = RuntimeInformation.OSArchitecture.ToString();
+        string dotNetVersion = Environment.Version.ToString();
+        int processorCount = Environment.ProcessorCount;
+
+        msg_user_get.details.sys_name = osDescription;
+        msg_user_get.details.arch = osArchitecture;
+        msg_user_get.details.node_name = machineName;
+        msg_user_get.details.release = dotNetVersion;
+
+        string payload = JsonUtility.ToJson(msg_user_get);
+
         int batch_req_count = 10;
         if (!int.TryParse(no_of_requests.text, out batch_req_count)) {
             Debug.LogWarning("TestScript - invalid input !!!");
@@ -108,13 +121,16 @@ public class TestScript : MonoBehaviour
         for (int x = 0; x < batch_req_count; x++) {
             TMPro.TextMeshProUGUI result_text = Instantiate(resultLabelPrefab).GetComponent<TMPro.TextMeshProUGUI>();
             result_text.transform.SetParent(scrollRect.content);
+            result_text.transform.localScale = Vector3.one;
             result_text.text = "waiting ...";
             result_text.color = Color.red;
             qReqArg newArg = new qReqArg();
             newArg.instance = this;
             newArg.arg = (IntPtr)(child_count+x);
             IntPtr instancePtr = (IntPtr)GCHandle.Alloc(newArg, GCHandleType.Normal);
-            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            //qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            //user_get
+            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
             total_requests++;
         }
         UpateProgress();
@@ -181,9 +197,19 @@ public class TestScript : MonoBehaviour
     protected void onconnect(qunitysdk.qsocket qs) {
         Debug.Log("qsocket connected " + qs.guid_crc);
         if (qsocket1 == qs) {
+            msg_room_match_request msg_room_config_packet = new msg_room_match_request();
+            msg_room_config_packet.room_config = new msg_room_config();
+            string payload = JsonUtility.ToJson(msg_room_config_packet);
+            Debug.Log("-->" + payload);
+            qs.sendMessage(payload, true);
             qsocket1_send_btn.interactable = true;
             qsocket1_close_btn.interactable = true;
         } else {
+            msg_room_match_request msg_room_config_packet = new msg_room_match_request();
+            msg_room_config_packet.room_config = new msg_room_config();
+            string payload = JsonUtility.ToJson(msg_room_config_packet);
+            Debug.Log("-->" + payload);
+            qs.sendMessage(payload, true);
             qsocket2_send_btn.interactable = true;
             qsocket2_close_btn.interactable = true;
         }
