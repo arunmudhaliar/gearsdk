@@ -93,7 +93,8 @@ class qtimer_sceduler {
 	void cancel_timer(qtimer* qtimer_);
 	bool cancel_and_destroy_timer(qtimer* qtimer_);
 	void shutdown_mainloop();  // carefull
-
+    bool is_timer_present_in_list(qtimer* qtimer_);
+    
    private:
 	struct qtimer_sceduler_data {
 		qtimer_sceduler_data(void* data, void* scheduler, const type_qtimer_cb timeout_callback) : data(data), scheduler(scheduler), timeout_callback(timeout_callback) {}

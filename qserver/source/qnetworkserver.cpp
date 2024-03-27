@@ -533,6 +533,7 @@ void* qnetworkserver::run_internal(void* data) {
 	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
 		GX_DELETE(thiz->hiredis);
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -544,6 +545,7 @@ void* qnetworkserver::run_internal(void* data) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -554,6 +556,7 @@ void* qnetworkserver::run_internal(void* data) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -564,6 +567,7 @@ void* qnetworkserver::run_internal(void* data) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -575,6 +579,7 @@ void* qnetworkserver::run_internal(void* data) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -589,6 +594,7 @@ void* qnetworkserver::run_internal(void* data) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s", certFile.c_str());
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -599,6 +605,7 @@ void* qnetworkserver::run_internal(void* data) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
+		thiz->exit_services_gracefully();
 		runConfig->pthread_returnValue = -1;
 		runConfig->finished = true;
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
@@ -635,6 +642,7 @@ void* qnetworkserver::run_internal(void* data) {
 		ev_loop_destroy(thiz->mainloop);
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
+		thiz->exit_services_gracefully();
 		runConfig->finished = true;
 		runConfig->pthread_returnValue = -1;
 		pthread_exit(&runConfig->pthread_returnValue);
@@ -660,6 +668,8 @@ void* qnetworkserver::run_internal(void* data) {
 
 	quiche_config_free(thiz->config);
 
+	thiz->exit_services_gracefully();
+	/*
 	thiz->logger.end_session();
 
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for services to finish !!!");
@@ -682,9 +692,37 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_run(wait_loop, 0);
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);
+*/
 
 	runConfig->finished = true;
 	return 0;
+}
+
+void qnetworkserver::exit_services_gracefully() {
+	int status = logger.end_session();
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for services to finish !!!");
+	struct ev_loop* wait_loop = ev_loop_new();
+	qtimer_sceduler wait_scheduler;
+	wait_scheduler.set_ev_lopp(wait_loop);
+	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
+		[this, wait_loop, &status](qtimer& timer) {
+			UNUSED(timer);
+			if (status != 0) {	// in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
+				status = logger.end_session();
+			}
+			int service_shutdown_cnt = 0;
+			if (logger.config.finished) {
+				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats service finished !!!");
+				service_shutdown_cnt++;
+			}
+			if (service_shutdown_cnt >= 1) {
+				ev_break(wait_loop, EVBREAK_ONE);
+			}
+		},
+		3);
+	ev_run(wait_loop, 0);
+	wait_scheduler.cancel_and_destroy_timer(wait_timer);
+	ev_loop_destroy(wait_loop);
 }
 
 bool qnetworkserver::is_run() {

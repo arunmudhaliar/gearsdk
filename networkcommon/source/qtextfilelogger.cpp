@@ -352,6 +352,7 @@ uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const cha
 }
 
 int qtextfilelogger::end_session() {
+    if (logtimer == nullptr) return -1;
 	cancel_and_destroy_timer(logtimer);
 	logtimer = nullptr;
 	return 0;

@@ -6,6 +6,7 @@
 //
 
 #include "qtimer.hpp"
+#include <algorithm>
 
 qtimer_sceduler::qtimer_sceduler() {}
 
@@ -49,14 +50,26 @@ bool qtimer_sceduler::destroy_timer(qtimer* qtimer_) {
 }
 
 void qtimer_sceduler::cancel_timer(qtimer* qtimer_) {
+    if(!is_timer_present_in_list(qtimer_)) {
+        return;
+    }
 	qtimer_->finished = true;
 	ev_timer_stop(qtimer_->loop, &qtimer_->timer);
 }
 
 bool qtimer_sceduler::cancel_and_destroy_timer(qtimer* qtimer_) {
+    if(!is_timer_present_in_list(qtimer_)) {
+        return false;
+    }
 	qtimer_->finished = true;
 	ev_timer_stop(qtimer_->loop, &qtimer_->timer);
 	return destroy_timer(qtimer_);
+}
+
+bool qtimer_sceduler::is_timer_present_in_list(qtimer* qtimer_) {
+    if (qtimer_==nullptr) return false;
+    auto result = std::find(timers.begin(), timers.end(), qtimer_);
+    return (result != timers.end());
 }
 
 qtimer* qtimer_sceduler::schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data) {

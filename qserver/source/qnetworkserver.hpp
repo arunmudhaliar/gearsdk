@@ -119,6 +119,8 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 
 	inline struct ev_loop* get_mainloop() override final { return mainloop; }
 
+	void exit_services_gracefully();
+
 	qtextfilelogger logger;
 	qstring host_id;
 	qstring port_id;
