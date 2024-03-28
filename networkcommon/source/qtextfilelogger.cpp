@@ -49,7 +49,7 @@ bool qlogfile::file_exists(const qstring& filename) {
 	return access(filename.c_str(), F_OK) == 0;
 }
 
-void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
+void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs) {
 	unsigned int next_minor_counter_ = 0;
 	unsigned int next_major_version_ = 0;
 	fs::path current_logfile_path_;
@@ -66,11 +66,13 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files) {
 			next_major_version_++;
 			next_minor_counter_ = 0;
 			if (next_major_version_ > MAJOR_VERSION_ALARM_AT) {
-				if (files.size() > 50) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER ----- %s", path.native().c_str());
-				} else if (files.size() == 0) {
-					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND ----- %s", path.native().c_str());
-				}
+                if (print_error_logs) {
+                    if (files.size() > 50) {
+                        DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER ----- %s", path.native().c_str());
+                    } else if (files.size() == 0) {
+                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND ----- %s", path.native().c_str());
+                    }
+                }
 				break;
 			}
 		}
@@ -350,6 +352,7 @@ uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const cha
 }
 
 int qtextfilelogger::end_session() {
+    if (logtimer == nullptr) return -1;
 	cancel_and_destroy_timer(logtimer);
 	logtimer = nullptr;
 	return 0;

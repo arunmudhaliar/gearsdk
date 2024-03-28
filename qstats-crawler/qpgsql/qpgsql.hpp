@@ -13,6 +13,10 @@ extern "C" {
 #include "./libpq-fe.h"
 }
 
+
+#undef __LOGTAG__
+#define __LOGTAG__ "qpgsql"
+
 class qpgsql {
 public:
     qpgsql();

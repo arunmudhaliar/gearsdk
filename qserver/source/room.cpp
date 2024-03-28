@@ -18,6 +18,7 @@ int room::room_id_counter = 0;
 
 // MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) : room_id(room::room_id_counter++), creation_time(ev_now(interface->get_netowrk_main_loop())), room_config(room_config), roomserverinterface(interface) {
+	set_ev_lopp(roomserverinterface->get_netowrk_main_loop());
 	set_state(room_waiting);
 }
 
@@ -113,6 +114,9 @@ void room::onroom_player_removed(player* p) {
 }
 void room::onroom_end() {}
 
+void room::onroom_countdown_to_start(int count, int max_count) {}
+void room::onroom_countdown_cancelled() {}
+
 void room::pass_message_to_room(player* p, const qstring& msg) {
 	onroom_message(p, msg);
 }
@@ -127,7 +131,7 @@ ssize_t room::try_add_connection(conn_io* qconnection) {
 	}
 	if (state > room_waiting) {
 		if (!room_config.allow_join_after_start) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state !!!");
+			DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state and allow_join_after_start==false !!!");
 			return -3;
 		}
 	}
@@ -141,7 +145,25 @@ ssize_t room::try_add_connection(conn_io* qconnection) {
 	send_event_player_add_or_remove(player_, true);
 	onroom_player_added(player_);
 	if (is_min_capacity_reached()) {
-		set_state(room_start);
+		if ((int) playermap.size() == room_config.max_players) {
+			set_state(room_start);
+		} else {
+			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "start count down for room %d ...", room_id);
+			const int max_count_down = 5;
+			const float delay_between_count_down = 1.5f;
+			cancel_and_destroy_timer(count_down_timer);
+			count_down_timer = schedule_count_timer(
+				[this](qtimer& timer) {
+					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "count down %d room %d ...", timer.count, room_id);
+					if (timer.count > 0) {
+						onroom_countdown_to_start(timer.count, max_count_down);
+					} else {
+						set_state(room_start);
+					}
+				},
+				delay_between_count_down, max_count_down);
+			UNUSED(count_down_timer);
+		}
 	}
 	return playermap.size();
 }
@@ -175,6 +197,12 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_id);
 	onroom_player_removed(removed_player);
 	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
+
+	if (!is_min_capacity_reached() && state > room_uninitialised && state < room_start) {
+		cancel_and_destroy_timer(count_down_timer);
+		onroom_countdown_cancelled();
+		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "count down cancelled for room %d ...", room_id);
+	}
 
 	// player leaving between gameplay and gone below min threshold
 	if ((int) playermap.size() < room_config.min_players && state >= room_start) {

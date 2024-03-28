@@ -1,30 +1,19 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using AOT;
 using System.Runtime.InteropServices;
-using System.Text;
-using UnityEngine.UI;
 using System.Net;
 using System.Net.Sockets;
 
 public class TestScript : MonoBehaviour
 {
     public UnityEngine.UI.ScrollRect scrollRect;
+    public UnityEngine.UI.ScrollRect scrollRect_qsocket;
     public GameObject resultLabelPrefab;
-    public TMPro.TextMeshProUGUI titleText;
+    public GameObject qsocketTestPrefab;
     public TMPro.TMP_InputField no_of_requests;
     public UnityEngine.UI.Scrollbar progress;
 
-    public TMPro.TextMeshProUGUI qsocket1_response_text;
-    public TMPro.TextMeshProUGUI qsocket2_response_text;
-
-    public Button qsocket1_send_btn;
-    public Button qsocket2_send_btn;
-
-    public Button qsocket1_close_btn;
-    public Button qsocket2_close_btn;
     public TMPro.TMP_InputField server_ip;
     private string previous_valid_ip = "192.168.0.230";
 
@@ -35,12 +24,11 @@ public class TestScript : MonoBehaviour
         public TestScript instance;
         public IntPtr arg;
     }
+
     // Start is called before the first frame update
     void Start()
     {
         Debug.Log("TestScript - Start");
-        qsocket1 = new qunitysdk.qsocket();
-        qsocket2 = new qunitysdk.qsocket();
         previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
         server_ip.text = previous_valid_ip;
     }
@@ -98,6 +86,22 @@ public class TestScript : MonoBehaviour
 
         OnIpAddressEntered();
 
+
+        rq_msg_user_get msg_user_get = new rq_msg_user_get();
+
+        string osDescription = RuntimeInformation.OSDescription;
+        string machineName = Environment.MachineName;
+        string osArchitecture = RuntimeInformation.OSArchitecture.ToString();
+        string dotNetVersion = Environment.Version.ToString();
+        int processorCount = Environment.ProcessorCount;
+
+        msg_user_get.details.sys_name = osDescription;
+        msg_user_get.details.arch = osArchitecture;
+        msg_user_get.details.node_name = machineName;
+        msg_user_get.details.release = dotNetVersion;
+
+        string payload = JsonUtility.ToJson(msg_user_get);
+
         int batch_req_count = 10;
         if (!int.TryParse(no_of_requests.text, out batch_req_count)) {
             Debug.LogWarning("TestScript - invalid input !!!");
@@ -108,13 +112,16 @@ public class TestScript : MonoBehaviour
         for (int x = 0; x < batch_req_count; x++) {
             TMPro.TextMeshProUGUI result_text = Instantiate(resultLabelPrefab).GetComponent<TMPro.TextMeshProUGUI>();
             result_text.transform.SetParent(scrollRect.content);
+            result_text.transform.localScale = Vector3.one;
             result_text.text = "waiting ...";
             result_text.color = Color.red;
             qReqArg newArg = new qReqArg();
             newArg.instance = this;
             newArg.arg = (IntPtr)(child_count+x);
             IntPtr instancePtr = (IntPtr)GCHandle.Alloc(newArg, GCHandleType.Normal);
-            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            //qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            //user_get
+            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
             total_requests++;
         }
         UpateProgress();
@@ -134,86 +141,16 @@ public class TestScript : MonoBehaviour
         scrollRect.content.DetachChildren();
     }
 
-    // qsocket
-    qunitysdk.qsocket qsocket1 = null;
-    qunitysdk.qsocket qsocket2 = null;
-
-    public void On_C1_QSocketConnect() {
+    public void On_Btn_Add_Qsocket() {
         OnIpAddressEntered();
 
-        qsocket1.connect(server_ip.text.Trim(), "4000", IntPtr.Zero);
-        qsocket1.OnConnect = onconnect;
-        qsocket1.OnMessage = onmessage;
-        qsocket1.OnReleaseConnection = onreleaseconnection;
-        qsocket1.OnClose = onclose;
-    }
-
-    public void On_C1_QSocketSend() {
-        qsocket1.sendMessage("Hello c2 !!!", true);
-    }
-
-    public void On_C2_QSocketConnect() {
-        OnIpAddressEntered();
-
-        qsocket2.connect(server_ip.text.Trim(), "4000", IntPtr.Zero);
-        qsocket2.OnConnect = onconnect;
-        qsocket2.OnMessage = onmessage;
-        qsocket2.OnReleaseConnection = onreleaseconnection;
-        qsocket2.OnClose = onclose;
-    }
-
-    public void On_C2_QSocketSend() {
-        qsocket2.sendMessage("Hello c1 !!!", true);
-    }
-
-    public void On_C1_SocketClose() {
-        qsocket1.close();
-    }
-    public void On_C2_SocketClose() {
-        qsocket2.close();
+        Qsocket_Test test_qsocket = Instantiate(qsocketTestPrefab).GetComponent<Qsocket_Test>();
+        test_qsocket.transform.SetParent(scrollRect_qsocket.content);
+        test_qsocket.server_ip = server_ip.text.Trim();
+        test_qsocket.transform.localScale = Vector3.one;
     }
     public void On_PrintQsocketsInfo() {
         qunitysdk.qsocket_print_info();
-    }
-
-
-    ///
-    protected void onconnect(qunitysdk.qsocket qs) {
-        Debug.Log("qsocket connected " + qs.guid_crc);
-        if (qsocket1 == qs) {
-            qsocket1_send_btn.interactable = true;
-            qsocket1_close_btn.interactable = true;
-        } else {
-            qsocket2_send_btn.interactable = true;
-            qsocket2_close_btn.interactable = true;
-        }
-    }
-
-    protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, string msg ) {
-        Debug.Log("qsocket message received " + qs.guid_crc);
-        if (qsocket1 == qs) {
-            qsocket2_response_text.text = msg;
-            qsocket2_response_text.gameObject.SetActive(true);
-        } else {
-            qsocket1_response_text.text = msg;
-            qsocket1_response_text.gameObject.SetActive(true);
-        }
-        Debug.Log("msg : len " + recv_len +" - "+ msg);
-    }
-
-    protected void onreleaseconnection( qunitysdk.qsocket qs ) {
-        Debug.Log("qsocket release connection " + qs.guid_crc);
-    }
-
-    protected void onclose( qunitysdk.qsocket qs ) {
-        Debug.Log("qsocket close connection " + qs.guid_crc);
-        if (qsocket1 == qs) {
-            qsocket1_send_btn.interactable = false;
-            qsocket1_close_btn.interactable = false;
-        } else {
-            qsocket2_send_btn.interactable = false;
-            qsocket2_close_btn.interactable = false;
-        }
     }
 
     public void OnIpAddressEntered() {

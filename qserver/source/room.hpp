@@ -40,6 +40,8 @@ class room_interface {
 	virtual void onroom_message(player* p, const qstring& msg) = 0;
 	virtual void onroom_player_removed(player* p) = 0;
 	virtual void onroom_end() = 0;
+	virtual void onroom_countdown_to_start(int count, int max_count) = 0;
+	virtual void onroom_countdown_cancelled() = 0;
 };
 
 struct roomconfig {
@@ -56,7 +58,7 @@ struct roomconfig {
 };
 
 // MARK: -
-class room : public room_interface {
+class room : public room_interface, public qtimer_sceduler {
    private:
 	room() : creation_time(0), room_config(roomconfig(1, 1, 0, FX_TWO, false)) {}
 
@@ -98,6 +100,8 @@ class room : public room_interface {
 	void onroom_message(player* p, const qstring& msg) override;
 	void onroom_player_removed(player* p) override;
 	void onroom_end() override;
+	void onroom_countdown_to_start(int count, int max_count) override;
+	void onroom_countdown_cancelled() override;
 
    private:
 	void set_state(states state);
@@ -111,6 +115,7 @@ class room : public room_interface {
 	roomserver_interface* roomserverinterface;
 	static int room_id_counter;
 	qstring states_string[4] = {"uninitialised", "waiting", "start", "end"};
+	qtimer* count_down_timer = nullptr;	 // Note :- Do not try to access this timer outside the waiting period, since it may get destroyed by the scheduler.
 };
 
 #endif /* room_hpp */
