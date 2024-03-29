@@ -252,7 +252,7 @@ int qhiredis::decr_by(const qstring& key, const int delta, long long& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "DECRBY %b %d", key.c_str(), key.length(), delta);
 	if (reply != nullptr) {
 		value = reply->integer;
-		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+		printf("The decremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "Redis error: %s", context->errstr);

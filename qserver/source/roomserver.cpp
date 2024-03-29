@@ -64,21 +64,32 @@ void roomserver::onroom_pre_start(room* r) {
 		return;
 	}
 
+	// update the waiting room staus on redis
 	long long count_waiting_room_of_this_type = 0;
-	const qstring& key = r->get_room_signature("wroom:", host_id, port_id);
-	int result = this->hiredis->decr_by(key, 1, count_waiting_room_of_this_type);
-	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", key.c_str(), result);
+	const qstring& wkey = r->get_room_signature("wroom:", host_id, port_id);
+	int result = this->hiredis->decr_by(wkey, 1, count_waiting_room_of_this_type);
+	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", wkey.c_str(), result);
 	if (count_waiting_room_of_this_type > 0) {
-		result = this->hiredis->expire_key(key, 1 * 10);  // 1 minute(s)
-		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
+		result = this->hiredis->expire_key(wkey, 1 * 60);  // 1 minute(s)
+		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", wkey.c_str(), result);
 	} else {
-		result = this->hiredis->delete_key(key);
-		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis delete_key failed for key %s, result %d", key.c_str(), result);
+		result = this->hiredis->delete_key(wkey);
+		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis delete_key failed for key %s, result %d", wkey.c_str(), result);
 	}
 
 	if (std::find(rooms.begin(), rooms.end(), r) == rooms.end()) {
 		rooms.push_back(r);
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : removed from waiting list and pushed to rooms list %d", r->room_id);
+		// update the room status on redis
+		long long count_room_of_this_type = 0;
+		const qstring& rkey = r->get_room_signature("room:", host_id, port_id);
+		if (r->room_id == 0) {
+			int rresult = this->hiredis->set_value(rkey, "1");
+			DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis set_value failed for key %s, result %d", rkey.c_str(), rresult);
+		} else {
+			int rresult = this->hiredis->incr_by(rkey, 1, count_room_of_this_type);
+			DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis incr_by failed for key %s, result %d", rkey.c_str(), rresult);
+		}
 	} else {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "coudn't add the room to rooms list (Duplicate). CHECK !!!");
 	}
@@ -239,7 +250,7 @@ room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	const qstring& key = room_->get_room_signature("wroom:", host_id, port_id);
 	int result = this->hiredis->incr_by(key, 1, count_waiting_room_of_this_type);
 	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", key.c_str(), result);
-	result = this->hiredis->expire_key(key, 1 * 10);  // 1 minute(s)
+	result = this->hiredis->expire_key(key, 1 * 60);  // 1 minute(s)
 	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
 	return room_;
 }
@@ -266,6 +277,13 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 		ssize_t rooms_size = rooms.size();
 		rooms.erase(std::remove(rooms.begin(), rooms.end(), room_), rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (rooms_size > (ssize_t) rooms.size()), "check this");	// still in waiting room ???
+
+		// update the room status on redis
+		long long count_room_of_this_type = 0;
+		const qstring& rkey = room_->get_room_signature("room:", host_id, port_id);
+		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
+		DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
+
 		GX_DELETE(room_);
 		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room size %d", rooms.size());
 	}
@@ -287,7 +305,7 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 		long long count_waiting_room_of_this_type = 0;
 		int result = this->hiredis->incr_by(expired_key, count, count_waiting_room_of_this_type);
 		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", expired_key.c_str(), result);
-		result = this->hiredis->expire_key(expired_key, 1 * 10);  // 1 minute(s)
+		result = this->hiredis->expire_key(expired_key, 1 * 60);  // 1 minute(s)
 		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", expired_key.c_str(), result);
 	}
 }

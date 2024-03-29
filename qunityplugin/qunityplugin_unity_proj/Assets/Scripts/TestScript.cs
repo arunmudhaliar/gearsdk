@@ -160,6 +160,10 @@ public class TestScript : MonoBehaviour
             return;
         }
         previous_valid_ip = server_ip.text.Trim();
+        for (int x = 0; x < scrollRect_qsocket.content.childCount; x++) {
+            Qsocket_Test qsocket_test = scrollRect_qsocket.content.GetChild(x).GetComponent<Qsocket_Test>();
+            qsocket_test.server_ip = server_ip.text.Trim();
+        }
         PlayerPrefs.SetString("server_ip", previous_valid_ip);
     }
 }
