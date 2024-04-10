@@ -126,36 +126,32 @@ uint8_t* qh3server::gen_cid(uint8_t* cid, size_t cid_len) {
 struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 										   struct sockaddr_storage* peer_original_client_addr) {
 	const char* const_logtag = logtag.c_str();
-	struct conn_io_qh3* new_conn_io = DEBUG_NEW struct conn_io_qh3();
-	if (new_conn_io == NULL) {
-		DEBUG_PRINT_ERROR(const_logtag, "failed to allocate connection IO");
-		return NULL;
-	}
-	new_conn_io->creation_time = ev_now(mainloop);
 
 	if (scid_len != LOCAL_CONN_ID_LEN) {
 		DEBUG_PRINT_ERROR(const_logtag, "failed, scid length too short");
 	}
 
-	memcpy(new_conn_io->cid, scid, LOCAL_CONN_ID_LEN);
-
-	Connection* conn = quiche_accept(new_conn_io->cid, LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_original_client_addr, peer_addr_len, config);
-
+	Connection* conn = quiche_accept(scid, LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_original_client_addr, peer_addr_len, config);
 	if (conn == NULL) {
 		DEBUG_PRINT_ERROR(const_logtag, "failed to create connection");
 		return NULL;
 	}
 
+	struct conn_io_qh3* new_conn_io = DEBUG_NEW struct conn_io_qh3(this);
+	if (new_conn_io == NULL) {
+		quiche_conn_free(conn);
+		DEBUG_PRINT_ERROR(const_logtag, "failed to allocate connection IO");
+		return NULL;
+	}
+	memcpy(new_conn_io->cid, scid, LOCAL_CONN_ID_LEN);
+	new_conn_io->creation_time = ev_now(mainloop);
 	new_conn_io->sock = conns->sock;
 	new_conn_io->conn = conn;
-	new_conn_io->bridge = this;
-
 	memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
 	new_conn_io->peer_addr_len = peer_addr_len;
 
 	ev_init(&new_conn_io->timer, timeout_cb);
 	new_conn_io->timer.data = new_conn_io;
-
 	HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, new_conn_io);
 
 	DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "new connection");
@@ -570,10 +566,6 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 			DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
 			HASH_DELETE(hh, conns->h, conn_io);
-
-			ev_timer_stop(loop, &conn_io->timer);
-
-			quiche_conn_free(conn_io->conn);
 			GX_DELETE(conn_io);
 		}
 	}
@@ -606,8 +598,6 @@ void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
 
 void qh3server::destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) {
 	HASH_DELETE(hh, conns->h, conn_io);
-	ev_timer_stop(loop, &conn_io->timer);
-	quiche_conn_free(conn_io->conn);
 	GX_DELETE(conn_io);
 }
 
@@ -814,8 +804,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
 								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, ev_now(mainloop) - conn_io->creation_time);
 					HASH_DELETE(hh, conns->h, conn_io);
-					ev_timer_stop(mainloop, &conn_io->timer);
-					quiche_conn_free(conn_io->conn);
 					GX_DELETE(conn_io);
 					dangling_connections++;
 				}
@@ -862,8 +850,6 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 		DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 		HASH_DELETE(hh, conns->h, conn_io);
-		ev_timer_stop(mainloop, &conn_io->timer);
-		quiche_conn_free(conn_io->conn);
 		GX_DELETE(conn_io);
 		pending_connections++;
 	}

@@ -41,8 +41,8 @@ void roomserver::on_network_server_init() {
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "roomserver::init");
 	scheduler.cancel_and_destroy_timer(waiting_room_check_zombie_timer);
 
-	msg_parser.register_message_type<msg_room_match_request>();
-	msg_parser.register_message_type<msg_room_server_shutdown>();
+	//	msg_parser.register_message_type<msg_room_match_request>();
+	//	msg_parser.register_message_type<msg_room_server_shutdown>();
 
 	message_handlers.clear();
 	message_handlers[msg_room_match_request::get_type_string_crc()] = std::bind(&roomserver::process_match_request, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
@@ -52,6 +52,18 @@ void roomserver::on_network_server_init() {
 
 void roomserver::on_network_server_end() {
 	message_handlers.clear();
+
+	for (auto* wr : waiting_rooms) {
+		GX_DELETE(wr);
+	}
+	waiting_rooms.clear();
+
+	for (auto* r : rooms) {
+		GX_DELETE(r);
+	}
+	rooms.clear();
+	new_connections.clear();
+	connection_map.clear();
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "end");
 }
 
@@ -105,7 +117,7 @@ void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* 
 	qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
 	new_connections.erase(itr_found);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
-	do_process_roomjoin(qconnection, rq.room_config);
+	do_process_roomjoin(qconnection, rq);
 }
 
 void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data) {
@@ -180,12 +192,35 @@ void roomserver::onconnection_connected(conn_io* qconnection) {
 	new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
 }
 
-void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg) {
+room* roomserver::find_room(int room_id) {
+	for (auto it = rooms.cbegin(); it != rooms.cend(); it++) {
+		room* _room = *it;
+		if (_room->room_id == room_id) {
+			return _room;
+		}
+	}
+	return nullptr;
+}
+
+void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg) {
+	const msg_room_config& room_config_msg = room_match_request_msg.room_config;
 	// check if he was part of any active room.
 	room* room_ = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {
 		room_ = iterator->second;
+	}
+	// check if he was a disconnected player or not
+	if (room_ == nullptr && room_match_request_msg.room_id >= 0) {
+		room* found_room = find_room(room_match_request_msg.room_id);
+		if (found_room != nullptr && found_room->get_state() < room::room_end) {
+			if (found_room->is_cid_hash_in_disconnected_players_hash_list(room_match_request_msg.prev_cid_hash_val)) {
+				room_ = found_room;
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "found previous room:%d for connection %0x. previous connection %0x", found_room->room_id, qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
+			}
+		} else {
+			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: reconnection failed for connection %0x  (prev:%0x)!!!. either prev room was destroyed or in end state.", qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
+		}
 	}
 	bool connection_added_to_room = false;
 	if (room_ == nullptr) {
@@ -195,7 +230,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 		for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
 			room* waiting_room = *it;
 			ssize_t old_count = waiting_room->get_playermap_count();
-			ssize_t new_count = waiting_room->try_add_connection(qconnection);
+			ssize_t new_count = waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);
 			connection_added_to_room = new_count > old_count;
 			if (connection_added_to_room) {
 				room_ = waiting_room;
@@ -217,7 +252,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 		}
 		// check if he can be added back to the same room.
 		ssize_t old_count = room_->get_playermap_count();
-		ssize_t new_count = room_->try_add_connection(qconnection);
+		ssize_t new_count = room_->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
 		if (new_count == -2) {	// already part of the room
 			DEBUG_PRINT_ERROR(__LOGTAG__, "on_connection: this can not happen !!!, returning.");
 			return;
@@ -235,7 +270,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 	// create a new room and add him
 	if (!connection_added_to_room) {
 		room* waiting_room = create_waiting_room(&room_config_msg);
-		waiting_room->try_add_connection(qconnection);	// no need to check for limit since he is our first user in this room.
+		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);	// no need to check for limit since he is our first user in this room.
 		room_ = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_;
 		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);

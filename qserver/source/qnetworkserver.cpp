@@ -37,6 +37,7 @@ conn_io::~conn_io() {
 	ev_timer_stop(bridge->get_mainloop(), &timer);
 	if (conn) {
 		quiche_conn_free(conn);
+		conn = nullptr;
 	}
 }
 
@@ -172,12 +173,10 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 	conn_io* qconnection = DEBUG_NEW conn_io(this, scid, scid_len, conns->sock);
 	if (qconnection == nullptr) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate qconnection");
-		GX_DELETE(qconnection);
 		return nullptr;
 	}
 
 	Connection* conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_addr, peer_addr_len, config);
-
 	if (conn == nullptr) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection");
 		GX_DELETE(qconnection);
@@ -485,6 +484,33 @@ void qnetworkserver::broadcast_message(const qstring& buffer, bool flush) {
 	}
 }
 
+void qnetworkserver::force_disconnect_all() {
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "force disconnect all connections !!!");
+	// destroy connections
+	struct conn_io *tmp, *conn_io = NULL;
+	int pending_connections = 0;
+	HASH_ITER(hh, conns->h, conn_io, tmp) {
+		flush_egress(mainloop, conn_io);
+		//        if (sent_bytes) {
+		//            DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "force close --> try flush : sent bytes %zd", sent_bytes);
+		//        }
+		if (quiche_conn_is_closed(conn_io->conn)) {
+			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
+		}
+		Stats stats;
+		PathStats path_stats;
+		quiche_conn_stats(conn_io->conn, &stats);
+		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+		DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		HASH_DELETE(hh, conns->h, conn_io);
+		GX_DELETE(conn_io);
+		pending_connections++;
+	}
+	if (pending_connections > 0) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Force closed %d pending connections.", pending_connections);
+	}
+}
+
 void qnetworkserver::recv_cb(EV_P_ ev_io* w, int revents) {
 	qnetworkserver* server = (qnetworkserver*) w->data;
 	server->recv_cb_internal(loop, w, revents);
@@ -657,6 +683,8 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_loop(thiz->mainloop, 0);
 
 	thiz->network_server_end();
+
+	thiz->force_disconnect_all();
 
 	thiz->hiredis_async->disconnect_async_redis();
 	GX_DELETE(thiz->hiredis_async);

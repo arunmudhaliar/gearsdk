@@ -129,6 +129,8 @@ public class qunitysdk : MonoBehaviour
 
 #if UNITY_EDITOR_OSX
     const string cp = "Assets/Plugins/qunitysdk/libs/macos/libqunityplugin.dylib";
+#elif UNITY_STANDALONE_OSX
+    const string cp = "qunityplugin";
 #elif UNITY_IOS || UNITY_IPHONE
     const string cp = "__Internal";
 #elif UNITY_ANDROID

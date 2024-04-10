@@ -19,6 +19,7 @@ public class TestScript : MonoBehaviour
 
     public int total_requests = 0;
     public int total_request_response_came = 0;
+    private qunitysdk.qsocket qsocket_to_send_shutdown = null;
 
     struct qReqArg {
         public TestScript instance;
@@ -31,6 +32,7 @@ public class TestScript : MonoBehaviour
         Debug.Log("TestScript - Start");
         previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
         server_ip.text = previous_valid_ip;
+        qsocket_to_send_shutdown = new qunitysdk.qsocket();
     }
 
     public static bool IsValidIPv4( string ipString ) {
@@ -165,5 +167,31 @@ public class TestScript : MonoBehaviour
             qsocket_test.server_ip = server_ip.text.Trim();
         }
         PlayerPrefs.SetString("server_ip", previous_valid_ip);
+    }
+
+    public void ShutDown_QServer() {
+        qsocket_to_send_shutdown.connect(previous_valid_ip, "4000", IntPtr.Zero);
+
+        qsocket_to_send_shutdown.OnConnect = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : connect");
+            msg_room_server_shutdown msg_room_server_shutdown_packet = new msg_room_server_shutdown();
+            string payload = JsonUtility.ToJson(msg_room_server_shutdown_packet);
+            Debug.Log($"sending : {payload}");
+            qs.sendMessage(payload, true);
+        };
+        qsocket_to_send_shutdown.OnMessage = ( qunitysdk.qsocket qs, ulong recv_len, string msg ) => {
+            Debug.Log("shutdown socket : message "+msg);
+        };
+        qsocket_to_send_shutdown.OnReleaseConnection = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : release");
+        };
+        qsocket_to_send_shutdown.OnClose = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : closed");
+        };
+    }
+
+    public void Shutdown_Qh3Server() {
+        OnIpAddressEntered();
+        qunitysdk.send_async_request(server_ip.text.Trim(), "4010", "/shutdown_test", "", IntPtr.Zero, null, 0);
     }
 }

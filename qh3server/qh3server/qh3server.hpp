@@ -53,6 +53,7 @@
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
+// MARK: -
 class bridge_h3_connection {
    public:
 	virtual ssize_t flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) = 0;
@@ -63,6 +64,7 @@ class bridge_h3_connection {
 	virtual bool is_log_quiche() = 0;  // NOTE : TODO - This is polling which is not a recommended solution. Need to use event based system.
 };
 
+// MARK: -
 struct connections {
 	int sock;
 	struct sockaddr* local_addr = nullptr;
@@ -72,12 +74,20 @@ struct connections {
 	qstring quic_alternate_protocol_str;
 };
 
+// MARK: -
 struct conn_io_qh3 {
-	conn_io_qh3() {
+	conn_io_qh3(bridge_h3_connection* bridge) : bridge(bridge) {
 		http_request = conn_io_req_res::create();
 		http_response = conn_io_req_res::create();
 	}
 	~conn_io_qh3() {
+		if (bridge) {
+			ev_timer_stop(bridge->get_mainloop(), &timer);
+		}
+		if (conn) {
+			quiche_conn_free(conn);
+			conn = nullptr;
+		}
 		GX_DELETE(http_response);
 		GX_DELETE(http_request);
 	}
@@ -98,6 +108,7 @@ struct conn_io_qh3 {
 	qstring original_client_serialised_buffer;
 };
 
+// MARK: -
 struct routerinfo {
 	routerinfo(struct addrinfo* router_, uint16_t port_return) : port_return(port_return) {
 		router_address = DEBUG_NEW qaddress(*router_->ai_addr);
@@ -116,6 +127,7 @@ struct routerinfo {
 	uint16_t port_return = 4005;
 };
 
+// MARK: -
 class qh3server : public bridge_h3_connection {
    private:
 	Config* config = nullptr;

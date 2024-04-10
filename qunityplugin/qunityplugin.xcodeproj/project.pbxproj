@@ -302,6 +302,7 @@
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -322,6 +323,7 @@
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
 				PRODUCT_NAME = "$(TARGET_NAME)";

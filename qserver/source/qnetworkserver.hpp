@@ -136,6 +136,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	conn_io* create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	void recv_cb_internal(EV_P_ ev_io* w, int revents);
+	void force_disconnect_all();
 
 	Config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;

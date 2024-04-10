@@ -80,7 +80,9 @@ int send_async_request(const char* host, const char* port,
     return qh3client_helper::send_async_request<client::qh3client>(host, port, conn_io_req_res::create(path, payload), arg,
             [callback](conn_io_req_res *response, void* client_specific_data, void* arg, bool success) {
                 const conn_io_req_res::payload &payload = response->data;
-                callback(payload.buffer.c_str(), arg, success);
+                if (callback!=nullptr) {
+                    callback(payload.buffer.c_str(), arg, success);
+                }
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "payload %s", payload.buffer.c_str());
             }, retry);
 }

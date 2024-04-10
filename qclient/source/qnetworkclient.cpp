@@ -101,6 +101,8 @@ int conn_io_client::Connect(qstring host, qstring port) {
 		return -1;
 	};
 
+	HASH_VALUE(scid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
+
 	conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &local_addr, local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
 
 	if (conn == NULL) {
