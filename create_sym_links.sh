@@ -9,6 +9,12 @@ else
     exit 1
 fi
 
+# 'common sym link'
+echo 'creating common symlink'
+rm -rf ./common/libs/macos
+cd ./common/libs
+ln -s ./macos_$arch ./macos
+cd ../../
 
 # 'qhiredis sym link'
 echo 'creating qhiredis symlink'
@@ -21,6 +27,13 @@ cd ../../
 echo 'creating networkcommon symlink'
 rm -rf ./networkcommon/libs/macos
 cd ./networkcommon/libs
+ln -s ./macos_$arch ./macos
+cd ../../
+
+# 'servercommon sym link'
+echo 'creating servercommon symlink'
+rm -rf ./servercommon/libs/macos
+cd ./servercommon/libs
 ln -s ./macos_$arch ./macos
 cd ../../
 
