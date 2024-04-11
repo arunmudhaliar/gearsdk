@@ -44,4 +44,11 @@ cd ./qzookeeper/libs
 ln -s ./macos_$arch ./macos
 cd ../../
 
+# 'qutils sym link'
+echo 'creating qutils symlink'
+rm -rf ./qutils/libs/macos
+cd ./qutils/libs
+ln -s ./macos_$arch ./macos
+cd ../../
+
 echo 'symlink script finished.'
