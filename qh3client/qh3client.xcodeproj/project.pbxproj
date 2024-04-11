@@ -196,7 +196,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n\n";
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\n# find ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -330,8 +330,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/../common/nvwa/debug_new.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -359,8 +360,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				HEADER_SEARCH_PATHS = (

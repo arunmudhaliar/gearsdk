@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1796DF492BC8593900328EE7 /* libdpp.dylib */; };
 		55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAC2B97B03D00BE7723 /* libqutils.a */; };
-		55384BAF2B97B09D00BE7723 /* libdpp.10.0.30.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */; };
 		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
@@ -29,16 +29,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		55384BB12B97B09D00BE7723 /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		55B372B62AC2ABCD00F0095E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -53,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1796DF492BC8593900328EE7 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAC2B97B03D00BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../qutils/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
 		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -90,7 +81,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */,
-				55384BAF2B97B09D00BE7723 /* libdpp.10.0.30.dylib in Frameworks */,
 				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
 				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
 				55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */,
@@ -98,6 +88,7 @@
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
 				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
+				1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */,
 				55A72F6A2B83724C00064250 /* libhiredis.a in Frameworks */,
 				55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */,
 			);
@@ -109,6 +100,7 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1796DF492BC8593900328EE7 /* libdpp.dylib */,
 				55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */,
 				55384BAC2B97B03D00BE7723 /* libqutils.a */,
 				55A72F692B83723D00064250 /* libhiredis.a */,
@@ -183,7 +175,6 @@
 				55B372B42AC2ABCD00F0095E /* Sources */,
 				55B372B52AC2ABCD00F0095E /* Frameworks */,
 				55B372B62AC2ABCD00F0095E /* CopyFiles */,
-				55384BB12B97B09D00BE7723 /* Embed Libraries */,
 				555F45BE2BA63EFC0077ADEE /* ShellScript */,
 				5595E1252BB08BAB00FA2618 /* ShellScript */,
 			);
@@ -243,7 +234,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.10.0.30.dylib\" \"${BUILT_PRODUCTS_DIR}/libdpp.10.0.30.dylib\"\n\n";
+			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
 		};
 		5595E1252BB08BAB00FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -260,7 +251,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\n# find ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
