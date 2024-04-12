@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1763DC0C2BC8175300F71F07 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1763DC0B2BC8175300F71F07 /* libdpp.dylib */; };
 		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
 		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
@@ -32,6 +31,7 @@
 		55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC52AEFA3F800BC4CED /* CoreFoundation.framework */; };
 		55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC72AEFA40F00BC4CED /* Security.framework */; };
 		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
+		55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -89,6 +89,7 @@
 		55A4ADD72AEFBA6300BC4CED /* qh3server.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3server.hpp; sourceTree = "<group>"; };
 		55A4ADD92AEFBD2600BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../servercommon/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
+		55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos_x86_64/libdpp.dylib; sourceTree = "<group>"; };
 		55CE94EB2B9F0263002C0278 /* configs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = configs; path = ../configs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -97,6 +98,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
 				55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */,
@@ -107,7 +109,6 @@
 				556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */,
 				55A4ADC62AEFA3F800BC4CED /* CoreFoundation.framework in Frameworks */,
 				55A4ADC42AEF83A800BC4CED /* libquiche.a in Frameworks */,
-				1763DC0C2BC8175300F71F07 /* libdpp.dylib in Frameworks */,
 				55A4ADC22AEF838F00BC4CED /* libev.a in Frameworks */,
 				55A4ADBE2AEF836400BC4CED /* libcommon.a in Frameworks */,
 				55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */,
@@ -182,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				1763DC0B2BC8175300F71F07 /* libdpp.dylib */,
+				55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */,
 				55384BAA2B97ADB800BE7723 /* libqutils.a */,
 				55A72F632B7F227F00064250 /* libdpp.10.0.30.dylib */,
 				5594E2712B494ADC00E47984 /* libzookeeper_mt.2.dylib */,
@@ -295,7 +297,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# clang-format\n# brew install clang-format # (If clang-format is not installed)\n# find ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+			shellScript = "# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -433,7 +435,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3server/qh3server.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -469,6 +471,7 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -477,7 +480,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3server/qh3server.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -511,6 +514,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WARNING_CFLAGS = "";
 			};
 			name = Release;
