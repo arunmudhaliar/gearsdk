@@ -51,4 +51,16 @@ cd ./qutils/libs
 ln -s ./macos_$arch ./macos
 cd ../../
 
+# 'qunitysdk sym link'
+echo 'creating qunitysdk symlink'
+rm -rf ./qunityplugin/qunityplugin_unity_proj/Assets/Plugins/qunitysdk
+cd ./qunityplugin/qunityplugin_unity_proj
+# echo $(pwd)
+ln -s $(pwd)/qunitysdk/source $(pwd)/Assets/Plugins/qunitysdk
+rm -rf $(pwd)/Assets/Plugins/qunitysdk/libs
+mkdir $(pwd)/Assets/Plugins/qunitysdk/libs
+ln -s $(pwd)/qunitysdk/libs/android $(pwd)/Assets/Plugins/qunitysdk/libs/android
+ln -s $(pwd)/qunitysdk/libs/macos_$arch $(pwd)/Assets/Plugins/qunitysdk/libs/macos
+cd ../../
+
 echo 'symlink script finished.'
