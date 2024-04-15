@@ -55,14 +55,14 @@ public class TestScript : MonoBehaviour
     [MonoPInvokeCallback(typeof(qunitysdk.type_qh3client_helper_cb))]
     private static void test_callback( string payload, IntPtr arg, bool success ) {
         MainThreadDispatcher.RunOnMainThread(() => {
-            //Debug.Log(payload + ", arg " + arg + ", result " + result);
+            Debug.Log($"{ payload}, arg { arg }, result {success}");
             qReqArg reqArg = FromIntPtr(arg);
             TestScript thiz = reqArg.instance;
             if ((int)reqArg.arg < thiz.scrollRect.content.childCount) {
                 Transform text_game_object = thiz.scrollRect.content.GetChild((int)reqArg.arg);
                 TMPro.TextMeshProUGUI result_text = text_game_object.GetComponent<TMPro.TextMeshProUGUI>();
                 result_text.color = Color.green;
-                result_text.text = payload + ", result " + success;
+                result_text.text = $"{payload}, result {success}";
             }
             thiz.total_request_response_came++;
             thiz.UpateProgress();
@@ -182,7 +182,7 @@ public class TestScript : MonoBehaviour
             qs.sendMessage(payload, true);
         };
         qsocket_to_send_shutdown.OnMessage = ( qunitysdk.qsocket qs, ulong recv_len, string msg ) => {
-            Debug.Log("shutdown socket : message "+msg);
+            Debug.Log($"shutdown socket : message {msg}");
         };
         qsocket_to_send_shutdown.OnReleaseConnection = ( qunitysdk.qsocket qs ) => {
             Debug.Log("shutdown socket : release");

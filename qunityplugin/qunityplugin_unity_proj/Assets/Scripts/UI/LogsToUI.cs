@@ -20,6 +20,9 @@ public class LogToUI : MonoBehaviour {
 
     // This method is called whenever a log message is received
     private void HandleLog( string logString, string stackTrace, LogType type ) {
+        if (logText.text.Length>32*1024) {
+            logText.text = "LOGS AUTO CLEARED !!!";
+        }
         // Append the log message to the text element's text
         // This example adds the log type as a prefix, but you can customize it as needed
         logText.text += $"\n[{type}] {logString}";
