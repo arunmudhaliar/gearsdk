@@ -13,7 +13,7 @@ public class TestScript : MonoBehaviour
     public GameObject qsocketTestPrefab;
     public TMPro.TMP_InputField no_of_requests;
     public UnityEngine.UI.Scrollbar progress;
-
+    public UnityEngine.UI.Toggle userLoginRequestToggle;
     public TMPro.TMP_InputField server_ip;
     private string previous_valid_ip = "192.168.0.230";
 
@@ -121,9 +121,11 @@ public class TestScript : MonoBehaviour
             newArg.instance = this;
             newArg.arg = (IntPtr)(child_count+x);
             IntPtr instancePtr = (IntPtr)GCHandle.Alloc(newArg, GCHandleType.Normal);
-            //qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
-            //user_get
-            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
+            if (userLoginRequestToggle.isOn) {
+                qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
+            } else {
+                qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            }
             total_requests++;
         }
         UpateProgress();
