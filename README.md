@@ -137,10 +137,10 @@ https://carol-nichols.com/2017/04/20/rust-profiling-with-dtrace-on-osx/
 
 ```bash
 # generate the stacks file
-sudo dtrace -c './qh3server' -o ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server_sample.stacks -n 'profile-997 /execname == "qh3server"/ { @[ustack(100)] = count(); }'
+sudo dtrace -c './qh3server-app' -o ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server_sample.stacks -n 'profile-997 /execname == "qh3server-app"/ { @[ustack(100)] = count(); }'
 
 # generate the flamegraph
-stackcollapse.pl 2023-12-07_23.14.47-qh3server_sample.stacks | flamegraph.pl > ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server-pretty-graph.svg
+stackcollapse.pl 2024-04-17_00.27.17-qh3server_sample.stacks | flamegraph.pl > ./$(date +"%Y-%m-%d_%H.%M.%S")-qh3server-pretty-graph.svg
 ```
 qh3server
 [![qh3server flamegraph](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")](https://github.com/arunmudhaliar/gearsdk/blob/wip/docs/fgraph/2023-12-07_23.27.45-qh3server-pretty-graph.svg "qh3server flamegraph")
