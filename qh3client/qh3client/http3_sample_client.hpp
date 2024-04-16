@@ -8,7 +8,7 @@
 #ifndef http3_sample_client_hpp
 #define http3_sample_client_hpp
 
-#include "../networkcommon/source/message.hpp"
+#include "../../networkcommon/source/message.hpp"
 #include "qh3client_helper.hpp"
 
 #include <atomic>
