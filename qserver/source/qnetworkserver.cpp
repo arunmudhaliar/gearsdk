@@ -200,11 +200,11 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 
 void qnetworkserver::onconnection_connect(conn_io* qconnection) {
 	UNUSED(qconnection);
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< new connection");
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "<<<<< new connection");
 }
 void qnetworkserver::onconnection_connected(conn_io* qconnection) {
 	UNUSED(qconnection);
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "++++++++++<<<<<<<<<<< connection established");
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection established");
 }
 
 void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) {
@@ -214,9 +214,9 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_i
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
 	if (getnameinfo((struct sockaddr*) &qconnection->peer_addr, qconnection->peer_addr_len, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
+		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
 	} else {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len %d]", copybuf, recv_len);
+		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "<<<<< %s [len %d]", copybuf, recv_len);
 	}
 	GX_DELETE_ARY(copybuf);
 
@@ -231,25 +231,26 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 	SendInfo send_info;
 	while (true) {
 		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out), &send_info);
-
 		if (written == QUICHE_ERR_DONE) {
-			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
+			DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "done writing");
 			break;
 		}
-
 		if (written < 0) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create packet: %zd", written);
 			return;
 		}
 
 		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
-
 		if (sent != written) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
 			return;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) qconnection->egress_out, sent);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 	}
 
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -279,8 +280,7 @@ void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
 	conn_io* qconnection = (conn_io*) w->data;
-
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout !!!");
+	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", qconnection->cid_hash_val);
 	quiche_conn_on_timeout(qconnection->conn);
 	qconnection->bridge->flush_egress(loop, qconnection);
 
@@ -319,7 +319,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -367,7 +367,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 					continue;
 				}
 
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conns->out, sent);
+				DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 				continue;
 			}
 
@@ -395,7 +399,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 					continue;
 				}
 
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conns->out, sent);
+				DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 				continue;
 			}
 
@@ -426,7 +434,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			continue;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) conns->buf, done);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
+#endif
 
 		if (quiche_conn_is_established(qconnection->conn)) {
 			if (!qconnection->connection_established) {

@@ -25,7 +25,7 @@ void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* co
 		ssize_t written = quiche_conn_send(conn_io->conn, conn_io->out, sizeof(conn_io->out), &send_info);
 
 		if (written == QUICHE_ERR_DONE) {
-			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
+			DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "done writing");
 			break;
 		}
 
@@ -41,7 +41,11 @@ void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* co
 			return;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conn_io->out, sent);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 	}
 
 	double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
@@ -64,7 +68,7 @@ int qh3client::for_each_setting(uint64_t identifier, uint64_t value, void* argp)
    void *argp)
  */
 int qh3client::for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp) {
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "got HTTP header: %.*s=%.*s", (int) name_len, name, (int) value_len, value);
+	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "got HTTP header: %.*s=%.*s", (int) name_len, name, (int) value_len, value);
 
 	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) argp;
 	if (conn_io->response == nullptr) {
@@ -217,7 +221,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -225,7 +229,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 			return;
 		}
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -241,7 +245,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
             EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
         DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "from server modified %s:%s read:%d", name, port, read);
 #endif
@@ -263,10 +267,14 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 			continue;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv %zd bytes", done);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) conn_io->buf, done);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
+#endif
 	}
 
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done reading");
+	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "done reading");
 
 	if (quiche_conn_is_closed(conn_io->conn)) {
 		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed");
@@ -342,13 +350,16 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 						if (len <= 0) {
 							break;
 						}
+						DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "<<<<< (q) %.*s", (int) len, conn_io->buf);
 
-						DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "received - %.*s", (int) len, conn_io->buf);
 						if (conn_io->response) {
 							conn_io->response->append_to_payload(conn_io->buf, (int) len);
 						}
 					}
 
+#if LOG_LEVEL >= LOG_LEVEL_4
+					DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "payload q-received %zd bytes - crc: %lx", conn_io->response->get_payload().get_size(), conn_io->response->get_payload().get_crc_value());
+#endif
 					conn_io->res_received = true;
 					break;
 				}
@@ -388,7 +399,7 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) w->data;
 	quiche_conn_on_timeout(conn_io->conn);
 
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
+	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout");
 
 	conn_io->bridge->flush_egress(loop, conn_io);
 
@@ -526,7 +537,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 		return -1;
 	}
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 	char name[INET6_ADDRSTRLEN];
 	char port[10];
 	getnameinfo((struct sockaddr*) &conn_io->local_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);

@@ -32,6 +32,8 @@ JavaVM* device::g_JavaVM = nullptr;
             perror("uname doesn't return 0, so there is an error");
             return -1;
         }
+        
+        print_common_info();
         return 0;
     }
 
@@ -121,15 +123,34 @@ JavaVM* device::g_JavaVM = nullptr;
         va_start(v, format);
         vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #elif PLATFORM == PLATFORM_ANDROID
         __android_log_print(ANDROID_LOG_INFO, tag, "%s", buffer);
 #else
-        fprintf(stderr, "%s : [%d] [%s] - %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
+        fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #endif
         va_end(v);
     }
 
+    void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
+        if (logLevel > LOG_LEVEL) {
+            return;
+        }
+        time_t givemetime = time(NULL);
+        char buffer[LOGBUFFER_SIZE + 1];
+        va_list v;
+        va_start(v, format);
+        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+#if PLATFORM == PLATFORM_MAC
+        fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
+#elif PLATFORM == PLATFORM_ANDROID
+        __android_log_print(ANDROID_LOG_INFO, tag, "%s\t\t(%s : %s:%d)", buffer, file, function, line);
+#else
+        fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
+#endif
+        va_end(v);
+    }
+        
     type_debug_warn_or_err_cb global_warn_cb = nullptr;
     type_debug_warn_or_err_cb global_err_cb = nullptr;
     type_debug_warn_or_err_cb global_assert_cb = nullptr;

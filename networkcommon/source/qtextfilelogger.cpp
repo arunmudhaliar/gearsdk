@@ -318,7 +318,7 @@ void* qtextfilelogger::run_log_session(void* data) {
 		[logger, creation_time](qtimer& timer) {
 			UNUSED(timer);
 			if (logger->logfile->flush(true) > 0) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
 			}
 		},
 		config->flush_time);

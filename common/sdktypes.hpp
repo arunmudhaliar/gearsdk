@@ -95,6 +95,11 @@ namespace fs = std::__fs::filesystem;
         } \
     } while (0)
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define DEBUG_PRINT2(logLevel, tag, ...) \
+    do { \
+        DEBUG_PRINT2_INTERNAL(logLevel, tag, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+    } while (0)
 
 #if PLATFORM == PLATFORM_ANDROID
 extern "C" DECLSPEC int init_gsdk(JavaVM* JavaVM);
@@ -105,6 +110,7 @@ extern "C" DECLSPEC void print_common_info();
 extern "C" DECLSPEC int number_of_digits(unsigned int num);
 extern "C" DECLSPEC void DEBUG_RAW(int logLevel, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);
+extern "C" DECLSPEC void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);
 extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);

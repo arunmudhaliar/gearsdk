@@ -106,6 +106,7 @@ struct conn_io_qh3 {
 	ssize_t total_sent_bytes = 0;
 	int64_t stream_id = -1;
 	qstring original_client_serialised_buffer;
+	unsigned cid_hash_val = 0;
 };
 
 // MARK: -

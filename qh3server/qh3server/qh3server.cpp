@@ -29,7 +29,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 		ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out), &send_info);
 
 		if (written == QUICHE_ERR_DONE) {
-			DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "done writing");
+			DEBUG_PRINT2(LOG_LEVEL_5, const_logtag, "done writing");
 			break;
 		}
 
@@ -46,7 +46,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 		//
 
 		ssize_t sent = sendto(conn_io->sock, out, written, 0, (struct sockaddr*) &conn_io->peer_addr, conn_io->peer_addr_len);
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &conn_io->peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -61,8 +61,13 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 			return -1;
 		}
 
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) out, sent);
+		DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
+
 		qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
-		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
 		// return sent;
 		total_bytes_sent += sent;
 	}
@@ -147,6 +152,7 @@ struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8
 	new_conn_io->creation_time = ev_now(mainloop);
 	new_conn_io->sock = conns->sock;
 	new_conn_io->conn = conn;
+	HASH_VALUE(scid, scid_len, new_conn_io->cid_hash_val);
 	memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
 	new_conn_io->peer_addr_len = peer_addr_len;
 
@@ -164,7 +170,7 @@ void qh3server::parse_header(const qstring& name, const qstring& value, struct c
 	if (name.compare(":path") == 0) {
 		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "got HTTP header: %s=%s", name.c_str(), value.c_str());
 	} else {
-		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "got HTTP header: %s=%s", name.c_str(), value.c_str());
+		DEBUG_PRINT(LOG_LEVEL_5, const_logtag, "got HTTP header: %s=%s", name.c_str(), value.c_str());
 	}
 	conn_io->http_request->add_or_get_header(name, value);
 }
@@ -198,7 +204,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "recv would block");
+				DEBUG_PRINT(LOG_LEVEL_5, const_logtag, "recv would block");
 				break;
 			}
 
@@ -208,7 +214,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		server->get_stats_loggeer()->server_count("recv_cb", read, "", "", "", "rx", "qh3server", "", port_id_cstr);
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -228,7 +234,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 			// update the peer address port (return port)
 			essentials::update_port((struct sockaddr*) &peer_addr, server->relay_through_router_info->port_return);
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 			DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "crc of orinal-client addr (last %d bytes) = 0x%x", peer_addr_len, essentials::get_crc(&server->buf[read], peer_addr_len));
 			getnameinfo((struct sockaddr*) &peer_original_client_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 			DEBUG_PRINT_IMPORTANT2(const_logtag, "original-client-address %s:%s", name, port);
@@ -284,7 +290,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				//
 				ssize_t sent = sendto(conns->sock, server->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 				char name[INET6_ADDRSTRLEN];
 				char port[10];
 				getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -300,7 +306,11 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				}
 
 				server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
-				DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) server->out, sent);
+				DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 				continue;
 			}
 
@@ -330,7 +340,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				//
 				ssize_t sent = sendto(conns->sock, server->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 				char name[INET6_ADDRSTRLEN];
 				char port[10];
 				getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -347,7 +357,11 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				}
 
 				server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
-				DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) server->out, sent);
+				DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 				continue;
 			}
 
@@ -384,7 +398,11 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 			continue;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "recv %zd bytes", done);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) server->buf, done);
+		DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
+#endif
 
 		if (quiche_conn_is_established(conn_io->conn)) {
 			Event* ev;
@@ -436,7 +454,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 								break;
 							}
 							conn_io->http_request->set_payload(qstring(server->buf, len));
-							DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "%.*s", (int) len, server->buf);
+							DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "<<<<< (q) %.*s", (int) len, server->buf);
 						}
 						break;
 					}
@@ -532,8 +550,10 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 							}
 						}
 
-						EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 200);
-						DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "sent HTTP response over %" PRId64 " with body %s", s, payload.buffer.c_str());
+						EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 30);
+#if LOG_LEVEL >= LOG_LEVEL_4
+						DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-sent HTTP response over %" PRId64 " with body %s\n\t%zd bytes - crc: %lx", s, payload.buffer.c_str(), payload.get_size(), payload.get_crc_value());
+#endif
 					} break;
 
 					case Event_type::Reset:
@@ -590,7 +610,7 @@ void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
 			break;
 		}
 		if (fin) {
-			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "fin");
+			DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "fin");
 		}
 		conn_io->total_sent_bytes += sent;
 	}
@@ -605,9 +625,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
 	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) w->data;
 	quiche_conn_on_timeout(conn_io->conn);
-
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
-
+	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", conn_io->cid_hash_val);
 	conn_io->bridge->flush_egress(loop, conn_io);
 
 	if (quiche_conn_is_closed(conn_io->conn)) {
@@ -786,7 +804,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 						// : connection is still open");
 						ssize_t sent_bytes = flush_egress(mainloop, conn_io);
 						if (sent_bytes) {
-							DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
+							DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
 							flushed_on_exit++;
 						}
 					}
@@ -839,7 +857,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 	HASH_ITER(hh, conns->h, conn_io, tmp) {
 		ssize_t sent_bytes = flush_egress(mainloop, conn_io);
 		if (sent_bytes) {
-			DEBUG_PRINT(LOG_LEVEL_3, const_logtag, "force close --> try flush : sent bytes %zd", sent_bytes);
+			DEBUG_PRINT2(LOG_LEVEL_3, const_logtag, "force close --> try flush : sent bytes %zd", sent_bytes);
 		}
 		if (quiche_conn_is_closed(conn_io->conn)) {
 			DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "force close : connection is already closed");

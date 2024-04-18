@@ -243,7 +243,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -256,7 +256,7 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 			return;
 		}
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -291,7 +291,7 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv_return would block");
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv_return would block");
 				break;
 			}
 
@@ -304,7 +304,7 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 			return;
 		}
 
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -328,7 +328,7 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 		//
 
 		ssize_t sent = sendto(router->sock, buf_return, read, 0, client_info, peer_addr_len);
-#if LOG_LEVEL >= LOG_LEVEL_4
+#if LOG_LEVEL >= LOG_LEVEL_5
 		getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "recv_return - send to %s:%s bytes:%d", name, port, sent);
 #endif

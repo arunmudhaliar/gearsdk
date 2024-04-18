@@ -311,11 +311,11 @@ void message_parser::register_message_type() {
 	unsigned long crc = T::get_type_string_crc();
 	std::map<unsigned long, type_room_message_create_cb>::iterator it = records.find(crc);
 	if (it != records.end()) {
-		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "room message type already registered - %s !!!", T::get_type_string().c_str());
+		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "message type already registered - %s !!!", T::get_type_string().c_str());
 		return;
 	}
 	records[crc] = &T::create;
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room message type registered - %s : crc %ld !!!", T::get_type_string().c_str(), crc);
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "message type registered - %s : crc %ld !!!", T::get_type_string().c_str(), crc);
 }
 
 template <typename T>
@@ -323,13 +323,13 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 	unsigned long crc = T::get_type_string_crc();
 	std::map<unsigned long, type_room_message_create_cb>::iterator it = records.find(crc);
 	if (it == records.end()) {
-		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "room message type not registered - %s. registering.. !!!", T::get_type_string().c_str());
+		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "message type not registered - %s. registering.. !!!", T::get_type_string().c_str());
         register_message_type<T>();
 	}
 	message_base* new_msg = records[crc]();
 	T* msg = dynamic_cast<T*>(new_msg);
 	if (msg == nullptr && new_msg != nullptr) {
-		DEBUG_ASSERT(__LOGTAG__, msg != nullptr, "room message dynamic_cast failed - %s !!!", T::get_type_string().c_str());
+		DEBUG_ASSERT(__LOGTAG__, msg != nullptr, "message dynamic_cast failed - %s !!!", T::get_type_string().c_str());
 		GX_DELETE(new_msg);	 // Note :- dont use msg since it may be possible if dynamic_cast not succeeded (Edge cases)
 		return nullptr;
 	}
