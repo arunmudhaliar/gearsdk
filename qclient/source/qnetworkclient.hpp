@@ -76,6 +76,7 @@ class conn_io_client {
 	uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 
 	std::vector<qdata*> sendBuffer;
+	unsigned cid_hash_val = 0;
 };
 
 class bridge_qconnection {

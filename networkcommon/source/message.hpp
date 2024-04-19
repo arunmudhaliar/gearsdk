@@ -84,11 +84,11 @@ class message_parser {
    public:
 	~message_parser();
 	template <typename T>
-	void register_message_type();
-	template <typename T>
 	T* parse(ssize_t len, uint8_t* buf);
 
    private:
+    template <typename T>
+    void register_message_type();
 	typedef message_base* (*type_room_message_create_cb)();
 	std::map<unsigned long, type_room_message_create_cb> records;
 };

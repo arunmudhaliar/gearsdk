@@ -26,6 +26,9 @@ void game_room::onroom_player_removed(player* p) {
 	UNUSED(p);
 }
 void game_room::onroom_end() {}
+bool game_room::can_allow_reconnection(unsigned cid_hash) {
+	return true;
+}
 
 // MARK: - gameserver
 //----------------------------------------------------------------------------

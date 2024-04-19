@@ -71,7 +71,7 @@ class FX {
 }
 
 [Serializable]
-class msg_room_config : message_base {
+public class msg_room_config : message_base {
    public msg_room_config() : base() {
     }
     public static new string get_type_string() {

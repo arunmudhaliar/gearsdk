@@ -48,6 +48,8 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
 	void process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
 
+	room* find_room(int room_id);
+
 	qtimer_sceduler scheduler;
 	std::vector<room*> waiting_rooms;
 	std::vector<room*> rooms;
@@ -62,7 +64,7 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	enum CONN_FLAGS { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
 
-	void do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg);
+	void do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg);
 };
 
 #endif /* roomserver_hpp */

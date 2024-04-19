@@ -157,6 +157,9 @@ struct conn_io_req_res {
 			crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*) buffer.c_str(), buffer.length());
 			return crc_;
 		}
+        unsigned long get_size() const {
+            return buffer.length();
+        }
 		qstring buffer;
 	} payload;
 

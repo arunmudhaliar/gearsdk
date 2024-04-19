@@ -15,6 +15,7 @@ project("qunityplugin")
 include_directories("../../../../../../networkcommon/source/ev"
         "../../../../../../networkcommon/source/quiche"
         "../../../../../../common/uthash"
+        "../../../../../../common"
         )
 #message("debug msg"${CMAKE_CURRENT_SOURCE_DIR})
 

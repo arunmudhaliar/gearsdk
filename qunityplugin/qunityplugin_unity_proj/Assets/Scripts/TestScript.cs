@@ -13,12 +13,13 @@ public class TestScript : MonoBehaviour
     public GameObject qsocketTestPrefab;
     public TMPro.TMP_InputField no_of_requests;
     public UnityEngine.UI.Scrollbar progress;
-
+    public UnityEngine.UI.Toggle userLoginRequestToggle;
     public TMPro.TMP_InputField server_ip;
     private string previous_valid_ip = "192.168.0.230";
 
     public int total_requests = 0;
     public int total_request_response_came = 0;
+    private qunitysdk.qsocket qsocket_to_send_shutdown = null;
 
     struct qReqArg {
         public TestScript instance;
@@ -31,6 +32,7 @@ public class TestScript : MonoBehaviour
         Debug.Log("TestScript - Start");
         previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
         server_ip.text = previous_valid_ip;
+        qsocket_to_send_shutdown = new qunitysdk.qsocket();
     }
 
     public static bool IsValidIPv4( string ipString ) {
@@ -53,14 +55,14 @@ public class TestScript : MonoBehaviour
     [MonoPInvokeCallback(typeof(qunitysdk.type_qh3client_helper_cb))]
     private static void test_callback( string payload, IntPtr arg, bool success ) {
         MainThreadDispatcher.RunOnMainThread(() => {
-            //Debug.Log(payload + ", arg " + arg + ", result " + result);
+            Debug.Log($"{ payload}, arg { arg }, result {success}");
             qReqArg reqArg = FromIntPtr(arg);
             TestScript thiz = reqArg.instance;
             if ((int)reqArg.arg < thiz.scrollRect.content.childCount) {
                 Transform text_game_object = thiz.scrollRect.content.GetChild((int)reqArg.arg);
                 TMPro.TextMeshProUGUI result_text = text_game_object.GetComponent<TMPro.TextMeshProUGUI>();
                 result_text.color = Color.green;
-                result_text.text = payload + ", result " + success;
+                result_text.text = $"{payload}, result {success}";
             }
             thiz.total_request_response_came++;
             thiz.UpateProgress();
@@ -119,9 +121,11 @@ public class TestScript : MonoBehaviour
             newArg.instance = this;
             newArg.arg = (IntPtr)(child_count+x);
             IntPtr instancePtr = (IntPtr)GCHandle.Alloc(newArg, GCHandleType.Normal);
-            //qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
-            //user_get
-            qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
+            if (userLoginRequestToggle.isOn) {
+                qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/user_get", payload, instancePtr, test_callback, 1);
+            } else {
+                qunitysdk.send_async_request(server_ip.text.Trim(), "4004", "/whoami", "{}", instancePtr, test_callback, 1);
+            }
             total_requests++;
         }
         UpateProgress();
@@ -160,6 +164,36 @@ public class TestScript : MonoBehaviour
             return;
         }
         previous_valid_ip = server_ip.text.Trim();
+        for (int x = 0; x < scrollRect_qsocket.content.childCount; x++) {
+            Qsocket_Test qsocket_test = scrollRect_qsocket.content.GetChild(x).GetComponent<Qsocket_Test>();
+            qsocket_test.server_ip = server_ip.text.Trim();
+        }
         PlayerPrefs.SetString("server_ip", previous_valid_ip);
+    }
+
+    public void ShutDown_QServer() {
+        qsocket_to_send_shutdown.connect(previous_valid_ip, "4000", IntPtr.Zero);
+
+        qsocket_to_send_shutdown.OnConnect = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : connect");
+            msg_room_server_shutdown msg_room_server_shutdown_packet = new msg_room_server_shutdown();
+            string payload = JsonUtility.ToJson(msg_room_server_shutdown_packet);
+            Debug.Log($"sending : {payload}");
+            qs.sendMessage(payload, true);
+        };
+        qsocket_to_send_shutdown.OnMessage = ( qunitysdk.qsocket qs, ulong recv_len, string msg ) => {
+            Debug.Log($"shutdown socket : message {msg}");
+        };
+        qsocket_to_send_shutdown.OnReleaseConnection = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : release");
+        };
+        qsocket_to_send_shutdown.OnClose = ( qunitysdk.qsocket qs ) => {
+            Debug.Log("shutdown socket : closed");
+        };
+    }
+
+    public void Shutdown_Qh3Server() {
+        OnIpAddressEntered();
+        qunitysdk.send_async_request(server_ip.text.Trim(), "4010", "/shutdown_test", "", IntPtr.Zero, null, 0);
     }
 }

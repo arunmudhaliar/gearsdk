@@ -223,7 +223,6 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 	}
 
 	DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
-	print_common_info();
 
 	if (argc % 2 == 0) {
 		DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");

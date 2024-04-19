@@ -55,9 +55,20 @@ ifeq ($(UNAME), Linux)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
 ifeq ($(UNAME),Darwin)
-	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../servercommon/libs/macos/libmongoc-static-1.0.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libbson-static-1.0.a ../common/libs/macos/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -ldpp -lresolv -lsasl2
-	LDFLAGS = -L$(ZK_SRCDIR)/libs/macos -L$(SERVER_COMMON_SRCDIR)/../libs/macos -L$(QUTILS_SRCDIR)/libs/macos
-	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/macos -Wl,-rpath,$(QUTILS_SRCDIR)/libs/macos
+	# Define a variable that gets the architecture
+	ARCH := $(shell uname -m)
+	# ifeq ($(ARCH),arm64)
+	# 	@echo "ARM architecture"
+	# else ifeq ($(ARCH),x86_64)
+	# 	@echo "x86_64 architecture"
+	# else
+	# 	@echo "Unsupported architecture - $(ARCH). Exiting !!!"
+	# 	exit 1
+	# endif
+	MACOS_LIB_DIR = macos_$(ARCH)
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../servercommon/libs/$(MACOS_LIB_DIR)/libmongoc-static-1.0.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -ldpp -lresolv -lsasl2
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 endif
 
 EXE = qh3server-app

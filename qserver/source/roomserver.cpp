@@ -41,8 +41,8 @@ void roomserver::on_network_server_init() {
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "roomserver::init");
 	scheduler.cancel_and_destroy_timer(waiting_room_check_zombie_timer);
 
-	msg_parser.register_message_type<msg_room_match_request>();
-	msg_parser.register_message_type<msg_room_server_shutdown>();
+	//	msg_parser.register_message_type<msg_room_match_request>();
+	//	msg_parser.register_message_type<msg_room_server_shutdown>();
 
 	message_handlers.clear();
 	message_handlers[msg_room_match_request::get_type_string_crc()] = std::bind(&roomserver::process_match_request, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
@@ -52,6 +52,18 @@ void roomserver::on_network_server_init() {
 
 void roomserver::on_network_server_end() {
 	message_handlers.clear();
+
+	for (auto* wr : waiting_rooms) {
+		GX_DELETE(wr);
+	}
+	waiting_rooms.clear();
+
+	for (auto* r : rooms) {
+		GX_DELETE(r);
+	}
+	rooms.clear();
+	new_connections.clear();
+	connection_map.clear();
 	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "end");
 }
 
@@ -64,21 +76,32 @@ void roomserver::onroom_pre_start(room* r) {
 		return;
 	}
 
+	// update the waiting room staus on redis
 	long long count_waiting_room_of_this_type = 0;
-	const qstring& key = r->get_room_signature("wroom:", host_id, port_id);
-	int result = this->hiredis->decr_by(key, 1, count_waiting_room_of_this_type);
-	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", key.c_str(), result);
+	const qstring& wkey = r->get_room_signature("wroom:", host_id, port_id);
+	int result = this->hiredis->decr_by(wkey, 1, count_waiting_room_of_this_type);
+	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", wkey.c_str(), result);
 	if (count_waiting_room_of_this_type > 0) {
-		result = this->hiredis->expire_key(key, 1 * 10);  // 1 minute(s)
-		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
+		result = this->hiredis->expire_key(wkey, 1 * 60);  // 1 minute(s)
+		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", wkey.c_str(), result);
 	} else {
-		result = this->hiredis->delete_key(key);
-		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis delete_key failed for key %s, result %d", key.c_str(), result);
+		result = this->hiredis->delete_key(wkey);
+		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis delete_key failed for key %s, result %d", wkey.c_str(), result);
 	}
 
 	if (std::find(rooms.begin(), rooms.end(), r) == rooms.end()) {
 		rooms.push_back(r);
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : removed from waiting list and pushed to rooms list %d", r->room_id);
+		// update the room status on redis
+		long long count_room_of_this_type = 0;
+		const qstring& rkey = r->get_room_signature("room:", host_id, port_id);
+		if (r->room_id == 0) {
+			int rresult = this->hiredis->set_value(rkey, "1");
+			DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis set_value failed for key %s, result %d", rkey.c_str(), rresult);
+		} else {
+			int rresult = this->hiredis->incr_by(rkey, 1, count_room_of_this_type);
+			DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis incr_by failed for key %s, result %d", rkey.c_str(), rresult);
+		}
 	} else {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "coudn't add the room to rooms list (Duplicate). CHECK !!!");
 	}
@@ -94,7 +117,7 @@ void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* 
 	qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
 	new_connections.erase(itr_found);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
-	do_process_roomjoin(qconnection, rq.room_config);
+	do_process_roomjoin(qconnection, rq);
 }
 
 void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data) {
@@ -169,12 +192,35 @@ void roomserver::onconnection_connected(conn_io* qconnection) {
 	new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
 }
 
-void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config& room_config_msg) {
+room* roomserver::find_room(int room_id) {
+	for (auto it = rooms.cbegin(); it != rooms.cend(); it++) {
+		room* _room = *it;
+		if (_room->room_id == room_id) {
+			return _room;
+		}
+	}
+	return nullptr;
+}
+
+void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg) {
+	const msg_room_config& room_config_msg = room_match_request_msg.room_config;
 	// check if he was part of any active room.
 	room* room_ = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {
 		room_ = iterator->second;
+	}
+	// check if he was a disconnected player or not
+	if (room_ == nullptr && room_match_request_msg.room_id >= 0) {
+		room* found_room = find_room(room_match_request_msg.room_id);
+		if (found_room != nullptr && found_room->get_state() < room::room_end) {
+			if (found_room->is_cid_hash_in_disconnected_players_hash_list(room_match_request_msg.prev_cid_hash_val)) {
+				room_ = found_room;
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "found previous room:%d for connection %0x. previous connection %0x", found_room->room_id, qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
+			}
+		} else {
+			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: reconnection failed for connection %0x  (prev:%0x)!!!. either prev room was destroyed or in end state.", qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
+		}
 	}
 	bool connection_added_to_room = false;
 	if (room_ == nullptr) {
@@ -184,7 +230,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 		for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
 			room* waiting_room = *it;
 			ssize_t old_count = waiting_room->get_playermap_count();
-			ssize_t new_count = waiting_room->try_add_connection(qconnection);
+			ssize_t new_count = waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);
 			connection_added_to_room = new_count > old_count;
 			if (connection_added_to_room) {
 				room_ = waiting_room;
@@ -206,7 +252,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 		}
 		// check if he can be added back to the same room.
 		ssize_t old_count = room_->get_playermap_count();
-		ssize_t new_count = room_->try_add_connection(qconnection);
+		ssize_t new_count = room_->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
 		if (new_count == -2) {	// already part of the room
 			DEBUG_PRINT_ERROR(__LOGTAG__, "on_connection: this can not happen !!!, returning.");
 			return;
@@ -224,7 +270,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_config
 	// create a new room and add him
 	if (!connection_added_to_room) {
 		room* waiting_room = create_waiting_room(&room_config_msg);
-		waiting_room->try_add_connection(qconnection);	// no need to check for limit since he is our first user in this room.
+		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);	// no need to check for limit since he is our first user in this room.
 		room_ = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_;
 		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "on_connection: add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
@@ -239,7 +285,7 @@ room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	const qstring& key = room_->get_room_signature("wroom:", host_id, port_id);
 	int result = this->hiredis->incr_by(key, 1, count_waiting_room_of_this_type);
 	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", key.c_str(), result);
-	result = this->hiredis->expire_key(key, 1 * 10);  // 1 minute(s)
+	result = this->hiredis->expire_key(key, 1 * 60);  // 1 minute(s)
 	DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
 	return room_;
 }
@@ -266,6 +312,13 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 		ssize_t rooms_size = rooms.size();
 		rooms.erase(std::remove(rooms.begin(), rooms.end(), room_), rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (rooms_size > (ssize_t) rooms.size()), "check this");	// still in waiting room ???
+
+		// update the room status on redis
+		long long count_room_of_this_type = 0;
+		const qstring& rkey = room_->get_room_signature("room:", host_id, port_id);
+		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
+		DEBUG_WARN_COND(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
+
 		GX_DELETE(room_);
 		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room size %d", rooms.size());
 	}
@@ -287,7 +340,7 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 		long long count_waiting_room_of_this_type = 0;
 		int result = this->hiredis->incr_by(expired_key, count, count_waiting_room_of_this_type);
 		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", expired_key.c_str(), result);
-		result = this->hiredis->expire_key(expired_key, 1 * 10);  // 1 minute(s)
+		result = this->hiredis->expire_key(expired_key, 1 * 60);  // 1 minute(s)
 		DEBUG_WARN_COND(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", expired_key.c_str(), result);
 	}
 }

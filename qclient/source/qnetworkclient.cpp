@@ -101,6 +101,8 @@ int conn_io_client::Connect(qstring host, qstring port) {
 		return -1;
 	};
 
+	HASH_VALUE(scid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
+
 	conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &local_addr, local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
 
 	if (conn == NULL) {
@@ -183,7 +185,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnecti
 		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out), &send_info);
 
 		if (written == QUICHE_ERR_DONE) {
-			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "done writing");
+			DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "done writing");
 			break;
 		}
 
@@ -199,7 +201,11 @@ void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnecti
 			return;
 		}
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes", sent);
+#if LOG_LEVEL >= LOG_LEVEL_4
+		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) qconnection->egress_out, sent);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+#endif
 	}
 
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
@@ -316,7 +322,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "recv would block");
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -437,7 +443,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		return;
 	}
 
-	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "timeout");
+	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", qconnection_->cid_hash_val);
 
 	quiche_conn_on_timeout(qconnection_->conn);
 	qconnection_->bridge->flushegress(loop, qconnection_);
@@ -472,7 +478,7 @@ void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* q
 	uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "---------<<<<<<<<<<< %s [len:%d]", copybuf, recv_len);
+	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "<<<<< %s [len:%d]", copybuf, recv_len);
 	GX_DELETE_ARY(copybuf);
 }
 

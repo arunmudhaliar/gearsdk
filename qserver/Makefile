@@ -44,9 +44,20 @@ ifeq ($(UNAME), Linux)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
 ifeq ($(UNAME),Darwin)
-	LIBS = ../networkcommon/libs/macos/libquiche.a ../networkcommon/libs/macos/libev.a ../qhiredis/libs/macos/libhiredis.a ../common/libs/macos/libz.a -ldpp -framework CoreFoundation -framework Security
-	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/macos -L$(QUTILS_SRCDIR)/libs/macos
-	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/macos -Wl,-rpath,$(QUTILS_SRCDIR)/libs/macos
+	# Define a variable that gets the architecture
+	ARCH := $(shell uname -m)
+	# ifeq ($(ARCH),arm64)
+	# 	@echo "ARM architecture"
+	# else ifeq ($(ARCH),x86_64)
+	# 	@echo "x86_64 architecture"
+	# else
+	# 	@echo "Unsupported architecture - $(ARCH). Exiting !!!"
+	# 	exit 1
+	# endif
+	MACOS_LIB_DIR = macos_$(ARCH)
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -ldpp -framework CoreFoundation -framework Security
+	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 endif
 
 EXE = qserver-app

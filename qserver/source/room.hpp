@@ -20,9 +20,10 @@
 
 // MARK: -
 struct player {
-	player(conn_io* qcon) : qconnection(qcon) {}
+	player(conn_io* qcon, const qstring& pid) : qconnection(qcon), pid(pid) {}
 	~player() { DEBUG_PRINT_IMPORTANT(__LOGTAG__, "player destructor"); }
 	conn_io* qconnection;
+	qstring pid;
 };
 
 // MARK: -
@@ -42,6 +43,7 @@ class room_interface {
 	virtual void onroom_end() = 0;
 	virtual void onroom_countdown_to_start(int count, int max_count) = 0;
 	virtual void onroom_countdown_cancelled() = 0;
+	virtual bool can_allow_reconnection(unsigned cid_hash) = 0;
 };
 
 struct roomconfig {
@@ -67,7 +69,7 @@ class room : public room_interface, public qtimer_sceduler {
 	room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~room();
 
-	ssize_t try_add_connection(conn_io* qconnection);
+	ssize_t try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val = 0);
 	ssize_t remove_connection(conn_io* qconnection);
 	player* get_player(conn_io* qconnection);
 	inline bool is_min_capacity_reached() { return (int) playermap.size() >= room_config.min_players; }
@@ -81,6 +83,7 @@ class room : public room_interface, public qtimer_sceduler {
 	ev_tstamp since_creation();
 
 	std::map<unsigned, player*> playermap;
+	std::map<unsigned, ev_tstamp> disconnected_players_hash_after_room_start;
 	const int room_id = 0;
 	const ev_tstamp creation_time;
 
@@ -93,6 +96,8 @@ class room : public room_interface, public qtimer_sceduler {
 
 	qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
 
+	bool is_cid_hash_in_disconnected_players_hash_list(unsigned cid_hash);
+
    protected:
 	void onroom_create() override;
 	void onroom_start() override;
@@ -102,6 +107,7 @@ class room : public room_interface, public qtimer_sceduler {
 	void onroom_end() override;
 	void onroom_countdown_to_start(int count, int max_count) override;
 	void onroom_countdown_cancelled() override;
+	bool can_allow_reconnection(unsigned cid_hash) override;
 
    private:
 	void set_state(states state);

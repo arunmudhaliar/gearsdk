@@ -83,3 +83,5 @@ qh3server/stats
 qserver/glogs
 qh3server/configs
 *.blob
+macos
+qunityplugin/qunityplugin_unity_proj/qunitysdk/source/libs

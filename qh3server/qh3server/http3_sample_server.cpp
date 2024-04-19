@@ -56,9 +56,9 @@ bool http3_sample_server::on_server_pre_init() {
 		return false;
 	}
 
-	msg_parser.register_message_type<rq_msg_user_get>();
-	msg_parser.register_message_type<msg_room_config_list>();
-	msg_parser.register_message_type<msg_room_config>();
+	//	msg_parser.register_message_type<rq_msg_user_get>();
+	//	msg_parser.register_message_type<msg_room_config_list>();
+	//	msg_parser.register_message_type<msg_room_config>();
 	qstring room_config_list_str(zkconfig->get_string("gserver/roomconfig", ""));
 	GX_DELETE(room_config_list);
 	room_config_list = msg_parser.parse<msg_room_config_list>(room_config_list_str.length(), (uint8_t*) room_config_list_str.c_str());
