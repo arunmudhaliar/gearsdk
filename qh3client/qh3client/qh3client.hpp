@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3client.hpp
 //  qh3client
 //
@@ -7,24 +8,26 @@
 
 #ifndef qh3client_hpp
 #define qh3client_hpp
-
-#include "../../networkcommon/source/essentials.hpp"
-
+extern "C" {
 #include <errno.h>
 #include <ev.h>
 #include <fcntl.h>
 #include <inttypes.h>
-#include <map>
 #include <netdb.h>
 #include <quiche.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+}
+
+#include "../../networkcommon/source/essentials.hpp"
+
+#include <map>
+#include <string>
 
 #define LOCAL_CONN_ID_LEN 16
 
@@ -77,15 +80,15 @@ class qh3client : public bridge_h3client_connection {
 	struct ev_loop* mainloop = nullptr;
 
 	static void debug_log(const uint8_t* line, void* arg);
-	void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) override final;
-	inline struct ev_loop* get_mainloop() override final { return mainloop; }
-	inline const struct conn_io_req_res* get_getorpost_http_request() override final { return http_request; }
+	void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) final;
+	inline struct ev_loop* get_mainloop() final { return mainloop; }
+	inline const struct conn_io_req_res* get_getorpost_http_request() final { return http_request; }
 	static int for_each_setting(uint64_t identifier, uint64_t value, void* argp);
 	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
-	int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) override final;
-	int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) override final;
+	int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
+	int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
 	virtual void on_prepare_client_send();
 	int send_request(const conn_io_req_res* data_getorpost_);
 	virtual void on_post_send_cleanup();

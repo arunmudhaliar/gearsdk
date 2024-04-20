@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3simple_router_structs.h
 //  qh3server
 //

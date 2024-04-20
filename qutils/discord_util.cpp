@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  discord_util.cpp
 //  servercommon
 //

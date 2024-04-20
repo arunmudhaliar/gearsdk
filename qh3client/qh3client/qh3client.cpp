@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3client.cpp
 //  qh3client
 //
@@ -12,7 +13,8 @@
 
 #include <zlib.h>
 
-using namespace client;
+using client::qh3client;
+
 void qh3client::debug_log(const uint8_t* line, void* argp) {
 	UNUSED(argp);
 	DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, (char*) line);
@@ -43,7 +45,7 @@ void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* co
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conn_io->out, sent);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(conn_io->out), sent);
 		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 	}
@@ -138,7 +140,7 @@ int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost_,
 }
 
 int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) {
-	const qstring& content_length_data = qstring::format_string("%d", (int) data_getorpost_->data.buffer.length());
+	const qstring& content_length_data = qstring::format_string("%d", static_cast<int>(data_getorpost_->data.buffer.length()));
 	const qstring& crc_buffer = data_getorpost_->get_payload().get_crc_string();
 	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost_->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost_->data.buffer.length());
 
@@ -201,7 +203,7 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
 	}
 
 	int64_t stream_id = quiche_h3_send_request(conn_io->http3, conn_io->conn, headers, header_size + data_getorpost_->headers.size(), false);
-	ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id, (u_int8_t*) data_getorpost_->get_payload().buffer.c_str(), data_getorpost_->get_payload().buffer.length(), true);
+	ssize_t send_len = quiche_h3_send_body(conn_io->http3, conn_io->conn, stream_id, reinterpret_cast<const uint8_t*>(data_getorpost_->get_payload().buffer.c_str()), data_getorpost_->get_payload().buffer.length(), true);
 	GX_DELETE_ARY(headers);
 	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "sent HTTP POST request %" PRId64 " with body %ld", stream_id, send_len);
 	return stream_id;
@@ -241,7 +243,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             EV_START_RECORD(server_port_deserialise_time);
             read = read - ORIGINAL_CLIENT_ADDR_SZ;    // remove the size of port bytes from actual packet (quiche packet)
             const uint8_t* port_number_info = &conn_io->buf[read];
-            uint16_t port_from_packet = ntohs(*((uint16_t*)(port_number_info)));    // can do verification here
+            uint16_t port_from_packet = ntohs(*(reinterpret_cast<uint16_t*>(port_number_info)));    // can do verification here
             essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
             EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
 
@@ -269,7 +271,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
-		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) conn_io->buf, done);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, reinterpret_cast<const uint8_t*>(conn_io->buf), done);
 		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
 #endif
 	}
@@ -353,7 +355,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 						DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "<<<<< (q) %.*s", (int) len, conn_io->buf);
 
 						if (conn_io->response) {
-							conn_io->response->append_to_payload(conn_io->buf, (int) len);
+							conn_io->response->append_to_payload(conn_io->buf, static_cast<int>(len));
 						}
 					}
 
@@ -473,7 +475,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 		return -1;
 	}
 
-	quiche_config_set_application_protos(config, (uint8_t*) QUICHE_H3_APPLICATION_PROTOCOL, sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
+	quiche_config_set_application_protos(config, reinterpret_cast<const uint8_t*>(QUICHE_H3_APPLICATION_PROTOCOL), sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
 
 	quiche_config_set_max_idle_timeout(config, 25000);
 	quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
@@ -526,7 +528,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 		freeaddrinfo(peer);
 		close_socket(sock);
 		return -1;
-	};
+	}
 
 	Connection* conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &conn_io->local_addr, conn_io->local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
 

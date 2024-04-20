@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3client_helper.hpp
 //  qh3client
 //

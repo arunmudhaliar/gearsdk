@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qpgsql.cpp
 //  servercommon
 //

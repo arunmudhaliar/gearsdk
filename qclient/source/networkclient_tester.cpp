@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  networkclient_tester.cpp
 //  networkclient_tester
 //

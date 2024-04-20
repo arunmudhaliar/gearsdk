@@ -1,5 +1,6 @@
 #if 0
 //
+//  Copyright 2024 homenet25
 //  main.cpp
 //  qh3client
 //

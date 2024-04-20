@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3server.cpp
 //  qh3server
 //
@@ -14,7 +15,7 @@ qh3server::~qh3server() {
 
 void qh3server::debug_log(const uint8_t* line, void* argp) {
 	UNUSED(argp);
-	qh3server* server = (qh3server*) argp;
+	qh3server* server = reinterpret_cast<qh3server*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
 		DEBUG_PRINT(LOG_LEVEL_0, server->logtag.c_str(), (char*) line);
 	}
@@ -40,7 +41,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 
 		// if relay through router
 		if (via_router) {
-			memcpy((void*) &out[written], (void*) conn_io->original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+			memcpy(reinterpret_cast<void*>(&out[written]), reinterpret_cast<const void*>(conn_io->original_client_serialised_buffer.c_str()), ORIGINAL_CLIENT_ADDR_SZ);
 			written += ORIGINAL_CLIENT_ADDR_SZ;
 		}
 		//
@@ -63,7 +64,7 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) out, sent);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(out), sent);
 		DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 
@@ -187,7 +188,7 @@ int qh3server::for_each_header(const uint8_t* name, size_t name_len, const uint8
 
 void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(revents);
-	qh3server* server = (qh3server*) w->data;
+	qh3server* server = reinterpret_cast<qh3server*>(w->data);
 	struct connections* conns = server->conns;
 	struct conn_io_qh3 *tmp, *conn_io = NULL;
 	const char* const_logtag = server->logtag.c_str();
@@ -226,7 +227,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 			memset(&peer_original_client_addr, 0, peer_addr_len);
 			read = read - peer_addr_len;  // remove the client info
 			struct sockaddr* client_info = (struct sockaddr*) &peer_original_client_addr;
-			memcpy((void*) client_info, (void*) &server->buf[read], peer_addr_len);
+			memcpy(reinterpret_cast<void*>(client_info), reinterpret_cast<const void*>(&server->buf[read]), peer_addr_len);
 
 			// serialize the original client address for later use
 			qaddress original_client_address((struct sockaddr*) &peer_original_client_addr);
@@ -284,7 +285,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 				// if relay through router
 				if (via_router) {
-					memcpy((void*) &server->out[written], (void*) original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+					memcpy(reinterpret_cast<void*>(&server->out[written]), reinterpret_cast<const void*>(original_client_serialised_buffer.c_str()), ORIGINAL_CLIENT_ADDR_SZ);
 					written += ORIGINAL_CLIENT_ADDR_SZ;
 				}
 				//
@@ -308,7 +309,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
 #if LOG_LEVEL >= LOG_LEVEL_4
 				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) server->out, sent);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(server->out), sent);
 				DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 				continue;
@@ -334,7 +335,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 				// if relay through router
 				if (via_router) {
-					memcpy((void*) &server->out[written], (void*) original_client_serialised_buffer.c_str(), ORIGINAL_CLIENT_ADDR_SZ);
+					memcpy(reinterpret_cast<void*>(&server->out[written]), reinterpret_cast<const void*>(original_client_serialised_buffer.c_str()), ORIGINAL_CLIENT_ADDR_SZ);
 					written += ORIGINAL_CLIENT_ADDR_SZ;
 				}
 				//
@@ -359,7 +360,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 				server->get_stats_loggeer()->server_count("recv_cb", sent, "", "", "", "tx", "qh3server", "", port_id_cstr);
 #if LOG_LEVEL >= LOG_LEVEL_4
 				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) server->out, sent);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(server->out), sent);
 				DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 				continue;
@@ -378,7 +379,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 			// cache the original client adress for later use. (flush_engress)
 			conn_io->original_client_serialised_buffer.bin_copy((const uint8_t*) original_client_serialised_buffer.c_str(), original_client_serialised_buffer.length());
 
-			server->get_stats_loggeer()->set_total_ram((int) (essentials::get_process_used_mem()));
+			server->get_stats_loggeer()->set_total_ram(static_cast<int>((essentials::get_process_used_mem())));
 			server->get_stats_loggeer()->server_count("recv_cb", 1, "", "", "", "", "qh3server", "create_conn_io", port_id_cstr);
 		}
 
@@ -400,7 +401,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
-		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) server->buf, done);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, reinterpret_cast<const uint8_t*>(server->buf), done);
 		DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
 #endif
 
@@ -469,7 +470,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 							DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "no-response. ignoring the request!!!");
 							conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
 						}
-						const qstring& content_length_data = qstring::format_string("%d", (int) payload.buffer.length());
+						const qstring& content_length_data = qstring::format_string("%d", static_cast<int>(payload.buffer.length()));
 						const qstring& crc = payload.get_crc_string();
 
 						int header_size = 5;
@@ -531,7 +532,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 						conn_io->total_sent_bytes = 0;	// reset the total bytes sent over network
 						ssize_t bytes_to_send = payload.buffer.length();
 						if (bytes_to_send < SEND_CHUNK_SIZE) {	// if small chunk then try issue in one go.
-							ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, s, (uint8_t*) payload.buffer.c_str(), bytes_to_send, true);
+							ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, s, reinterpret_cast<const uint8_t*>(payload.buffer.c_str()), bytes_to_send, true);
 							if (sent < 0) {
 								break;
 							}
@@ -594,9 +595,9 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
 	const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
 	size_t chunk_size = SEND_CHUNK_SIZE;
-	uint8_t* data = (uint8_t*) payload.buffer.c_str();
+	const uint8_t* data = reinterpret_cast<const uint8_t*>(payload.buffer.c_str());
 	size_t start_index = conn_io->total_sent_bytes;
-	size_t total_payload_size = (size_t) payload.buffer.length();
+	size_t total_payload_size = static_cast<size_t>(payload.buffer.length());
 
 	// Send the data in chunks
 	for (size_t offset = start_index; offset < total_payload_size; offset += chunk_size) {
@@ -642,7 +643,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	}
 }
 
-int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router_, uint16_t command_center_feedback_port, uint16_t router_port_return) {
+int qh3server::run(const qstring& host, const qstring& port, const fs::path& rootDir, struct addrinfo* router_, uint16_t command_center_feedback_port, uint16_t router_port_return) {
 	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	app_directory = rootDir;
 	host_id = host;
@@ -678,7 +679,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		DEBUG_PRINT_ERROR(const_logtag, "failed to make socket non-blocking - port[%s]", port.c_str());
 		close(sock);  // (amudaliar) : Needed for running as virtual servers. Else
-					  // new servers wont be able to bind.
+		// new servers wont be able to bind.
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
 		return -1;
@@ -721,7 +722,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 		return -1;
 	}
 
-	quiche_config_set_application_protos(config, (uint8_t*) QUICHE_H3_APPLICATION_PROTOCOL, sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
+	quiche_config_set_application_protos(config, reinterpret_cast<const uint8_t*>(QUICHE_H3_APPLICATION_PROTOCOL), sizeof(QUICHE_H3_APPLICATION_PROTOCOL) - 1);
 
 	quiche_config_set_max_idle_timeout(config, 25000);
 	quiche_config_set_max_recv_udp_payload_size(config, MAX_DATAGRAM_SIZE);
@@ -798,7 +799,7 @@ int qh3server::run(const qstring& host, const qstring& port, fs::path& rootDir, 
 				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {  // DROP_CONNECTION_AFTER seconds after connection
 					// creation time.
 					if ((true) || !quiche_conn_is_closed(conn_io->conn)) {	// flushing even if the
-																			// connection is closed.
+						// connection is closed.
 						// DEBUG_PRINT(LOG_LEVEL_4,
 						// const_logtag, "dangling : try flush
 						// : connection is still open");

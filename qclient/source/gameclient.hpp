@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  gameclient.hpp
 //  networkclient
 //

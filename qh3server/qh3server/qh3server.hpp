@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3server.hpp
 //  qh3server
 //
@@ -28,14 +29,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <uthash.h>
-
-// #if PLATFORM == PLATFORM_MAC
-// namespace fs = std::__fs::filesystem;
-// #elif PLATFORM == PLATFORM_LINUX
-// namespace fs = std::filesystem;
-// #else
-// namespace fs = std::__fs::filesystem;
-// #endif
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3server"
@@ -76,7 +69,7 @@ struct connections {
 
 // MARK: -
 struct conn_io_qh3 {
-	conn_io_qh3(bridge_h3_connection* bridge) : bridge(bridge) {
+	explicit conn_io_qh3(bridge_h3_connection* bridge) : bridge(bridge) {
 		http_request = conn_io_req_res::create();
 		http_response = conn_io_req_res::create();
 	}
@@ -137,10 +130,10 @@ class qh3server : public bridge_h3_connection {
 	struct ev_loop* mainloop = nullptr;
 
 	static void debug_log(const uint8_t* line, void* argp);
-	ssize_t flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) override final;
-	void destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) override final;
-	inline virtual struct ev_loop* get_mainloop() override final { return mainloop; }
-	inline virtual bool is_log_quiche() override { return false; }
+	ssize_t flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) final;
+	void destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) final;
+	inline struct ev_loop* get_mainloop() final { return mainloop; }
+	inline bool is_log_quiche() override { return false; }
 
 	void parse(struct conn_io_qh3* conn_io) override;
 
@@ -176,7 +169,7 @@ class qh3server : public bridge_h3_connection {
 	qtextfilelogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-	int run(const qstring& host, const qstring& port, fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
+	int run(const qstring& host, const qstring& port, const fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
 };
 
 #endif /* qh3server_hpp */
