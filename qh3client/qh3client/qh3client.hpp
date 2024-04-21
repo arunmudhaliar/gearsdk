@@ -63,6 +63,8 @@ class bridge_h3client_connection {
 	virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
 };
 
+typedef std::function<void(conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
+
 class qh3client : public bridge_h3client_connection {
    public:
 	qh3client(const qstring& host, const qstring& port, void* arg);
@@ -81,7 +83,7 @@ class qh3client : public bridge_h3client_connection {
 	int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
 	int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
 	virtual void on_prepare_client_send();
-	int send_request(const conn_io_req_res* data_getorpost_);
+	int send_request(const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb response_cb_);
 	virtual void on_post_send_cleanup();
 	virtual void* get_client_specific_data();
 	const qstring host;
@@ -91,6 +93,7 @@ class qh3client : public bridge_h3client_connection {
 	void* arg = nullptr;
 
    private:
+	type_qh3client_helper_cb response_cb = nullptr;
 	int close_socket(int sock);
 };
 };	// namespace client

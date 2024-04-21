@@ -53,12 +53,10 @@ void* qh3client_helper::run_internal(void* data) {
 			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "run_internal : retrying - %d", x);
 		}
 		T* new_client = DEBUG_NEW T(req_obj->host, req_obj->port, req_obj->arg);
-		new_client->send_request(req_obj->data);
+		new_client->send_request(req_obj->data, req_obj->async_cb);
 		response_received = new_client->conn_io->res_received;
 		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
-			if (req_obj->async_cb && new_client->conn_io && new_client->conn_io->response) {
-				req_obj->async_cb(new_client->conn_io->response, new_client->get_client_specific_data(), new_client->arg, response_received);
-			}
+			DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "send_request returned");
 		}
 		new_client->on_post_send_cleanup();
 		GX_DELETE(new_client);

@@ -212,7 +212,8 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost_
 void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);
-	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) w->data;
+	qh3client* client = reinterpret_cast<qh3client*>(w->data);
+	struct conn_io_qh3_client* conn_io = client->conn_io;
 
 	while (1) {
 		struct sockaddr_storage peer_addr;
@@ -363,14 +364,19 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 					DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "payload q-received %zd bytes - crc: %lx", conn_io->response->get_payload().get_size(), conn_io->response->get_payload().get_crc_value());
 #endif
 					conn_io->res_received = true;
+
 					break;
 				}
 
-				case Event_type::Finished:
+				case Event_type::Finished: {
+					if (client->response_cb && client->conn_io && client->conn_io->response) {
+						client->response_cb(client->conn_io->response, client->get_client_specific_data(), client->arg, conn_io->res_received);
+					}
 					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
 						fprintf(stderr, "failed to close connection\n");
 					}
 					break;
+				}
 
 				case Event_type::Reset:
 					DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "request was reset");
@@ -439,9 +445,10 @@ void qh3client::on_post_send_cleanup() {}
 void* qh3client::get_client_specific_data() {
 	return this;
 }
-int qh3client::send_request(const conn_io_req_res* data_get_) {
+int qh3client::send_request(const conn_io_req_res* data_get_, type_qh3client_helper_cb response_cb_) {
 	this->on_prepare_client_send();
 	this->http_request = data_get_;
+	this->response_cb = response_cb_;
 
 	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
@@ -559,7 +566,7 @@ int qh3client::send_request(const conn_io_req_res* data_get_) {
 
 	ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
 	ev_io_start(mainloop, &watcher);
-	watcher.data = conn_io;
+	watcher.data = this;
 
 	ev_init(&conn_io->timer, timeout_cb);
 	conn_io->timer.data = conn_io;
