@@ -15,7 +15,8 @@ using namespace client;
 
 class gameclient : public qnetworkclient {
    public:
-   virtual ~gameclient();
+	virtual ~gameclient();
+
    protected:
 	void onconnect(conn_io_client* qconnection) override;
 

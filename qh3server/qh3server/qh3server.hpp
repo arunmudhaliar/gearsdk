@@ -9,26 +9,17 @@
 #ifndef qh3server_hpp
 #define qh3server_hpp
 
+extern "C" {
+#include <ev.h>
+#include <fcntl.h>
+#include <quiche.h>
+#include <uthash.h>
+}
+
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
-
-#include <errno.h>
-#include <ev.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
-#include <quiche.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <uthash.h>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3server"

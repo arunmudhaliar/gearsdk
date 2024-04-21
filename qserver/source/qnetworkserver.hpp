@@ -12,7 +12,6 @@
 extern "C" {
 #include <ev.h>
 #include <quiche.h>
-#include <stdio.h>
 #include <uthash.h>
 }
 
@@ -21,11 +20,6 @@ extern "C" {
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
-
-#include <algorithm>
-#include <filesystem>
-#include <map>
-#include <string>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkserver"

@@ -8,20 +8,11 @@
 
 #ifndef qh3client_hpp
 #define qh3client_hpp
+
 extern "C" {
-#include <errno.h>
 #include <ev.h>
 #include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
 #include <quiche.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 }
 
 #include "../../networkcommon/source/essentials.hpp"

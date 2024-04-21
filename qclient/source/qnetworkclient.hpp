@@ -10,29 +10,14 @@
 #define qnetworkclient_hpp
 
 extern "C" {
-#include <errno.h>
 #include <ev.h>
 #include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
 #include <quiche.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <uthash.h>
-}
-
-#include <algorithm>
-#include <sstream>
-#include <string>
-#include <vector>
 #if USE_PTHREAD
 #include <pthread.h>
 #endif
+}
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
