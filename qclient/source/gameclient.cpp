@@ -11,6 +11,9 @@
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
 
+gameclient::~gameclient() {
+}
+
 void gameclient::onconnect(conn_io_client* qconnection) {
 	if (shutdown_client) {
 		test_send_shutdown_event();

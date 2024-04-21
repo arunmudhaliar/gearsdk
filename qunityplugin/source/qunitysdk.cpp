@@ -170,7 +170,7 @@ void destroy_finished_qsockets() {
         unsigned long guid_crc = *it;
         std::map<unsigned long, qsocket*>::iterator it_qsocket = qsockets.find(guid_crc);
         if (it_qsocket!=qsockets.end()) {
-            int oldSz = (int)qsockets.size();
+            size_t oldSz = qsockets.size();
             qsockets.erase(it_qsocket);
             if (oldSz != qsockets.size()) {
                 DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "destroy_finished_qsockets - qsocket for guid_crc %x deleted !!!", guid_crc);

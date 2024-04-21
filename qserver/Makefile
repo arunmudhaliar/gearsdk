@@ -58,6 +58,11 @@ ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -ldpp -framework CoreFoundation -framework Security
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.3
+	LDFLAGS += -mmacosx-version-min=12.3
+	LDFLAGS += -mmacosx-version-min=12.3
 endif
 
 EXE = qserver-app

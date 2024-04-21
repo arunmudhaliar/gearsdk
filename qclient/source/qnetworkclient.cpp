@@ -14,9 +14,9 @@ using client::qnetworkclient;
 int qnetworkclient::connectionID = 0;
 
 // MARK: - QConnection
-conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : bridge(bridge), id(id) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : id(id), bridge(bridge) {}
 
-conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id) : bridge(bridge), config(config), id(id) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id) : id(id), bridge(bridge), config(config) {}
 
 conn_io_client::~conn_io_client() {
 	Release();
@@ -164,6 +164,7 @@ void qnetworkclient::setstate(CON_STATE state) {
 }
 
 void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
+	UNUSED(argp);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*) line);
 }
 
@@ -228,6 +229,7 @@ void qnetworkclient::forcerelease() {
 }
 
 int qnetworkclient::release_connection(struct ev_loop* loop, conn_io_client* qconnection) {
+	UNUSED(loop);
 	int retVal = 0;
 	if (qconnection != nullptr) {
 		qconnection->Release();
@@ -384,6 +386,8 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(loop);
+	UNUSED(revents);
 	conn_io_client* qconnection_ = reinterpret_cast<conn_io_client*>(w->data);
 #if USE_PTHREAD
 	// lock
@@ -410,7 +414,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 
 		for (auto it = successfullySent.cbegin(); it != successfullySent.cend(); it++) {
 			qdata* fd = *it;
-			int oldSz = static_cast<int>(qconnection_->sendBuffer.size());
+			size_t oldSz = qconnection_->sendBuffer.size();
 			qconnection_->sendBuffer.erase(std::remove(qconnection_->sendBuffer.begin(), qconnection_->sendBuffer.end(), fd), qconnection_->sendBuffer.end());
 			if (oldSz != qconnection_->sendBuffer.size()) {
 				GX_DELETE(fd);
@@ -425,6 +429,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 }
 
 void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(revents);
 	conn_io_client* qconnection_ = reinterpret_cast<conn_io_client*>(w->data);
 	if (qconnection_->conn == nullptr) {
 		ev_break(EV_A_ EVBREAK_ONE);
@@ -463,6 +468,7 @@ void qnetworkclient::onclose(conn_io_client* qconnection) {
 }
 
 void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+	UNUSED(qconnection);
 	uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
@@ -471,6 +477,7 @@ void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* q
 }
 
 void qnetworkclient::onreleaseconnection(conn_io_client* qconnection) {
+	UNUSED(qconnection);
 	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection about to release !!!");
 }
 
