@@ -7,15 +7,15 @@
 //
 
 #include "serverconfig.hpp"
-
-#include <algorithm>
-#include <functional>
 #include <rapidjson/error/en.h>	 // Include for GetParseError_En
 
-serverconfig::serverconfig() {}
+serverconfig::serverconfig(interface_qzookeeper* interface) : zk_interface(interface) {
+    zk_interface->register_value_change_callback(serverconfig::zk_value_change_listener, this);
+}
 
 serverconfig::~serverconfig() {
 	clear();
+    zk_interface->unregister_value_change_callback(serverconfig::zk_value_change_listener, this);
 }
 
 void serverconfig::clear() {
@@ -101,4 +101,26 @@ void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 			configs[mod_zk_key] = zk_res;
 		}
 	}
+}
+
+bool serverconfig::try_update_value(const qstring& path, const qstring& data) {
+    std::vector<qstring> array;
+    path.split("/", array);
+    qstring mod_zk_key(path);
+    if (array.size()>1) {
+        mod_zk_key.replace(qstring::format_string("/%s/", array[1].c_str()), "");
+    }
+    if (configs.find(mod_zk_key)!=configs.end()) {
+        configs[mod_zk_key] = data;
+        return true;
+    }
+    return false;
+}
+void serverconfig::zk_value_change_listener(const qstring& path, const qstring& data, void* context) {
+    serverconfig* config = reinterpret_cast<serverconfig*>(context);
+    if (config->try_update_value(path, data)){
+        DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "config updated k:%s", path.c_str());
+    } else {
+        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "config not found for k:%s", path.c_str());
+    }
 }

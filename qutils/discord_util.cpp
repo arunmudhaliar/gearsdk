@@ -32,10 +32,9 @@ int discord_util::send(const qstring& msg) {
 
 	bot.on_log(dpp::utility::cout_logger());
 
-	/* Construct a webhook object using the URL you got from Discord */
-	dpp::webhook wh(current_web_hook.c_str());
-
 	try {
+        /* Construct a webhook object using the URL you got from Discord */
+        dpp::webhook wh(current_web_hook.c_str());
 		/* Send a message with this webhook */
 		bot.execute_webhook_sync(wh, dpp::message(msg.c_str()));
 	} catch (const dpp::rest_exception& e) {

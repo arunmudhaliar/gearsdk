@@ -20,7 +20,6 @@ http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstri
 http3_sample_server::~http3_sample_server() {
 	GX_DELETE(hiredis);
 	GX_DELETE(mongo);
-	GX_DELETE(zkconfig);
 	GX_DELETE(room_config_list);
 }
 
@@ -36,7 +35,7 @@ bool http3_sample_server::on_server_pre_init() {
 	}
 
 	GX_DELETE(zkconfig);
-	zkconfig = DEBUG_NEW serverconfig();
+	zkconfig = DEBUG_NEW serverconfig(qzk);
 #if DEV_BUILD
 	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
 	zkconfig->load(config_path, qzk, "/qh3server");
@@ -72,6 +71,7 @@ void http3_sample_server::on_run_started() {
 }
 
 void http3_sample_server::on_run_end() {
+	GX_DELETE(zkconfig);
 #if ENABLE_ZK
 	qzk->shutdown();
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
@@ -134,6 +134,8 @@ void http3_sample_server::parse(struct conn_io_qh3* conn_io) {
 		parse_user_get(path_header, conn_io);
 	} else if (path_header->value.compare("/user_details") == 0) {
 		parse_user_details(path_header, conn_io);
+	} else if (path_header->value.compare("/get_match_making") == 0) {
+		parse_get_match_making(path_header, conn_io);
 	}
 }
 
@@ -368,6 +370,13 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
 	}
 	conn_io->http_response->set_payload(test_response);
 #endif
+}
+
+void http3_sample_server::parse_get_match_making(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+	int result = validte_token(path_header, conn_io);
+	if (result != 0) {
+		return;
+	}
 }
 
 void http3_sample_server::test_mongo_db() {

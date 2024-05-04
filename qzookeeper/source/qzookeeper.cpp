@@ -93,8 +93,18 @@ void qzookeeper::watcher(zhandle_t* zzh, int type, int state, const char* path, 
 		} else if (state == ZOO_EXPIRED_SESSION_STATE) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "Session expired. Shutting down...");
 			qzk->close_zk(state);
-		}
-	}
+        }
+	} else if (type == ZOO_CHANGED_EVENT) {
+        if (state == ZOO_CONNECTED_STATE) {
+            char buffer[4*1024];
+            int buffer_len = sizeof(buffer);
+            int rc = zoo_wget(zzh, path, watcher, context, buffer, &buffer_len, NULL);
+            if (rc == ZOK) {
+                DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "updated value for %s -->\n%s", path, buffer);
+                qzk->broadcast_value_change_to_all(path, qstring(buffer, buffer_len));
+            }
+        }
+    }
 }
 
 qzookeeper::qzookeeper() : qtimer_sceduler() {
@@ -365,4 +375,25 @@ void qzookeeper::close_zk(const int state) {
 		zookeeper_close(zh);
 		zh = nullptr;
 	}
+}
+
+void qzookeeper::register_value_change_callback(type_qzk_value_changed callback, void* context) {
+    std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
+    if (it!=value_change_callbacks.end()) {
+        return;
+    }
+    value_change_callbacks[callback] = context;
+}
+
+void qzookeeper::unregister_value_change_callback(type_qzk_value_changed callback, void* context) {
+    std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
+    if (it!=value_change_callbacks.end()) {
+        value_change_callbacks.erase(it);
+    }
+}
+
+void qzookeeper::broadcast_value_change_to_all(const qstring& path, const qstring& data) {
+    for (std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.begin(); it != value_change_callbacks.end(); it++) {
+        it->first(path, data, it->second);
+    }
 }
