@@ -348,7 +348,8 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header, str
 
 	// check with redis
 	qstring token_in_redis;
-	hiredis->get_value(pid, token_in_redis);
+	qstring redis_format_pid(qstring::format_string("tokens:%s", pid.c_str()));
+	hiredis->get_value(redis_format_pid, token_in_redis);
 	qh3server::get_stats_loggeer()->server_count("validte_token", 1, token_in_redis, pid, "", token_header->value, "http3_sample_server", path_header->value.c_str(), port_id_cstr, "user.token_check");
 	if (token_in_redis != token_header->value) {
 		DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
@@ -377,6 +378,8 @@ void http3_sample_server::parse_get_match_making(conn_io_req_res::header* path_h
 	if (result != 0) {
 		return;
 	}
+
+	hiredis->iterate_hash("gservers", nullptr, [](const char* field, const char* value, void* arg) { DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "gserver %s:%s", field, value); });
 }
 
 void http3_sample_server::test_mongo_db() {
