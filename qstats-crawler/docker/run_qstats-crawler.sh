@@ -1,4 +1,6 @@
 #!/bin/sh
 pwd
 cd ./qstats-crawler
-./qstats-crawler-app --d "$1" --f "$2" --host "$3" --port "$4"
+host=192.168.0.230
+port=5432
+./qstats-crawler-app --d "$1" --f "$2" --host "$host" --port "$port"
