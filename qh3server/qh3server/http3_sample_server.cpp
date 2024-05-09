@@ -67,7 +67,7 @@ bool http3_sample_server::on_server_pre_init() {
 }
 
 void http3_sample_server::on_run_started() {
-	hiredis->set_hash_value(qstring::format_string("servers:%s", host_id.c_str()), qstring::format_string("server-%s", port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
+	hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), qstring::format_string("server-%s", port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
 void http3_sample_server::on_run_end() {
@@ -379,7 +379,7 @@ void http3_sample_server::parse_get_match_making(conn_io_req_res::header* path_h
 		return;
 	}
 
-	hiredis->iterate_hash("gservers", nullptr, [](const char* field, const char* value, void* arg) { DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "gserver %s:%s", field, value); });
+	hiredis->scan("gservers", nullptr, [](const char* field, const char* value, void* arg) { DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s:%s", field, value); });
 }
 
 void http3_sample_server::test_mongo_db() {

@@ -19,6 +19,8 @@
 		5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
 		5574F2182B20EB53007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2172B20EB53007C93AA /* debug_new.cpp */; };
 		5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5574F2192B20EBC9007C93AA /* libnetworkcommon.a */; };
+		5576DA7A2BED541900B39413 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5576DA792BED541900B39413 /* libcurl.tbd */; };
+		5576DA802BED5FE700B39413 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7F2BED5FE700B39413 /* servercommon.cpp */; };
 		55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F672B8370CC00064250 /* libqhiredis.a */; };
 		55A72F6A2B83724C00064250 /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F692B83723D00064250 /* libhiredis.a */; };
 		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
@@ -61,6 +63,8 @@
 		5574E6C22ADBB1CD00FAFE08 /* gameserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameserver.hpp; sourceTree = "<group>"; };
 		5574F2172B20EB53007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		5574F2192B20EBC9007C93AA /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5576DA792BED541900B39413 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		5576DA7F2BED5FE700B39413 /* servercommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = servercommon.cpp; path = ../servercommon/source/servercommon.cpp; sourceTree = "<group>"; };
 		55A72F672B8370CC00064250 /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A72F692B83723D00064250 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos/libhiredis.a; sourceTree = "<group>"; };
 		55A9CD3E2B701314006CAD14 /* qserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qserver.entitlements; sourceTree = "<group>"; };
@@ -80,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA7A2BED541900B39413 /* libcurl.tbd in Frameworks */,
 				55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */,
 				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
 				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
@@ -100,6 +105,7 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5576DA792BED541900B39413 /* libcurl.tbd */,
 				1796DF492BC8593900328EE7 /* libdpp.dylib */,
 				55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */,
 				55384BAC2B97B03D00BE7723 /* libqutils.a */,
@@ -125,6 +131,7 @@
 			children = (
 				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,
+				5576DA7F2BED5FE700B39413 /* servercommon.cpp */,
 				55D1C6DB2AD32E8800470E01 /* certs */,
 				55B372BA2AC2ABCD00F0095E /* source */,
 				55B372B92AC2ABCD00F0095E /* Products */,
@@ -260,6 +267,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA802BED5FE700B39413 /* servercommon.cpp in Sources */,
 				55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */,
 				5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */,
 				5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */,

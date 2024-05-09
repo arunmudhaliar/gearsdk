@@ -192,6 +192,40 @@ void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* a
 	} while (cursor != 0);
 }
 
+
+void qhiredis::scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_value_cb callback) {
+    if (!context) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
+        return;
+    }
+    // Using SCAN to iterate over keys that match a pattern
+    redisReply* reply;
+    unsigned long cursor = 0;
+    do {
+        reply = (redisReply*) redisCommand(context, "SCAN %lu MATCH %s:*", cursor, prefix_key.c_str());
+        if (reply->type == REDIS_REPLY_ARRAY && reply->elements == 2) {
+            cursor = strtoul(reply->element[0]->str, NULL, 10);  // Update cursor
+
+            // Process the list of keys
+            redisReply *keys = reply->element[1];
+            for (size_t i = 0; i < keys->elements; i++) {
+//                printf("Found key: %s\n", keys->element[i]->str);
+
+                // Fetch all fields and values of the hash stored at the key
+                redisReply* hashContent = (redisReply*) redisCommand(context, "HGETALL %s", keys->element[i]->str);
+                if (hashContent->type == REDIS_REPLY_ARRAY) {
+                    for (size_t j = 0; j < hashContent->elements; j += 2) {
+//                        printf("  %s: %s\n", hashContent->element[j]->str, hashContent->element[j+1]->str);
+                        callback(hashContent->element[j]->str, hashContent->element[j+1]->str, arg);
+                    }
+                }
+                freeReplyObject(hashContent);
+            }
+        }
+        freeReplyObject(reply);
+    } while (cursor != 0);
+}
+
 int qhiredis::incr(const qstring& key, long long& value) {
 	if (!context) {
 		return 2;

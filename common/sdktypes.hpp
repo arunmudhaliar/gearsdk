@@ -129,6 +129,11 @@ namespace gsdk {
 #endif
     };
 
+    class server {
+    public:
+        static char machine_public_ip[16];
+    };
+
     //https://stackoverflow.com/questions/7021725/how-to-convert-a-string-to-integer-in-c
     typedef enum {
         STR2INT_SUCCESS,

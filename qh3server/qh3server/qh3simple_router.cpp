@@ -175,8 +175,8 @@ int qh3simple_router::run() {
 			return -1;
 		}
 
-		hiredis->set_hash_value(qstring::format_string("servers:%s", config.host.c_str()), "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
-		hiredis->set_hash_value(qstring::format_string("servers:%s", config.host.c_str()), "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
+		hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
+		hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
 
 		mainloop = ev_default_loop(0);
 

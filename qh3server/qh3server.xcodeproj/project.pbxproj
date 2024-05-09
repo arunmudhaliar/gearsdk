@@ -17,6 +17,7 @@
 		5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20E2B1F727B007C93AA /* debug_new.cpp */; };
 		5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
 		5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
+		5576DA782BED515E00B39413 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5576DA772BED514D00B39413 /* libcurl.tbd */; };
 		5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */; };
 		5594E2232B3A309700E47984 /* http3_command_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2212B3A309700E47984 /* http3_command_server.cpp */; };
 		5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
@@ -65,6 +66,7 @@
 		556ABAC12B0A784A00D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = ../servercommon/libs/macos/libpgcommon.a; sourceTree = "<group>"; };
 		556ABAC32B0A78FA00D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = ../servercommon/libs/macos/libpgport.a; sourceTree = "<group>"; };
 		5574F20E2B1F727B007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		5576DA772BED514D00B39413 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router.cpp; sourceTree = "<group>"; };
 		5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3simple_router.hpp; sourceTree = "<group>"; };
 		5594E2212B3A309700E47984 /* http3_command_server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = http3_command_server.cpp; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA782BED515E00B39413 /* libcurl.tbd in Frameworks */,
 				55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
@@ -182,6 +185,7 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5576DA772BED514D00B39413 /* libcurl.tbd */,
 				1763DC0B2BC8175300F71F07 /* libdpp.dylib */,
 				55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */,
 				55384BAA2B97ADB800BE7723 /* libqutils.a */,

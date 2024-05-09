@@ -8,6 +8,7 @@
 
 #include "../../common/sdktypes.hpp"
 #include "../../qutils/discord_util.hpp"
+#include "../../servercommon/source/servercommon.hpp"
 #include "http3_sample_server.hpp"
 #include "qh3simple_router.hpp"
 
@@ -29,6 +30,7 @@ void assert_callback(const char* msg) {
 
 int main(int argc, const char* argv[]) {
 	init_gsdk();
+	gsdk::servercommon::init_server_common();
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);
@@ -36,9 +38,9 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://3.80.69.71:27017";	 //"mongodb://192.168.0.230:27017"
-	qstring redis_ip = "3.80.69.71";
-	qstring zk_uri = "3.80.69.71:2181";
+	qstring mongodb_uri = "mongodb://35.172.219.66:27017";	//"mongodb://192.168.0.230:27017"
+	qstring redis_ip = "35.172.219.66";
+	qstring zk_uri = "35.172.219.66:2181";
 
 	//    qstring mongodb_uri = "mongodb://127.0.0.1:27017";
 	//    qstring redis_ip = "127.0.0.1";
