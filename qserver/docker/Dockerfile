@@ -5,6 +5,7 @@ WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qhiredis/ ./qhiredis
+COPY servercommon/ ./servercommon
 COPY qutils/ ./qutils
 COPY qserver/ ./qserver
 COPY make_qserver.sh ./
