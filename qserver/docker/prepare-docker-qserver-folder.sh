@@ -4,6 +4,7 @@ rm -rf ./docker-server
 mkdir ./docker-server
 cp -r ./common ./docker-server/common
 cp -r ./networkcommon/ ./docker-server/networkcommon
+cp -r ./servercommon/ ./docker-server/servercommon
 cp -r ./qhiredis/ ./docker-server/qhiredis
 cp -r ./qutils/ ./docker-server/qutils
 cp -r ./qserver/ ./docker-server/qserver
