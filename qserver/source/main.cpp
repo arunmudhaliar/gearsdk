@@ -37,9 +37,9 @@ int32_t main(int32_t argc, const char* argv[]) {
 	gsdk::set_assert_callback(assert_callback);
 	qstring host = "127.0.0.1";
 	qstring port = "4000";
-	qstring mongodb_uri = "mongodb://35.172.219.66:27017";	// "mongodb://192.168.0.230:27017";
-	qstring redis_ip = "35.172.219.66";
-	qstring zk_uri = "35.172.219.66:2181";
+	qstring mongodb_uri = "mongodb://18.208.130.48:27017";	// "mongodb://192.168.0.230:27017";
+	qstring redis_ip = "18.208.130.48";
+	qstring zk_uri = "18.208.130.48:2181";
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
 	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);

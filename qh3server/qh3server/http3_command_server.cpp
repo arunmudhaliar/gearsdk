@@ -28,7 +28,7 @@ http3_command_server::~http3_command_server() {
 }
 
 void http3_command_server::on_run_started() {
-	hiredis->set_hash_value(qstring::format_string("servers:%s", host_id.c_str()), "command_center", qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
+	hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), "command_center", qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
 bool http3_command_server::on_server_pre_init() {
@@ -153,7 +153,7 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
 	doc.AddMember("name", Value().SetString(server_id.c_str(), allocator), allocator);
 	Value servers(kArrayType);
 
-	hiredis->iterate_hash(qstring::format_string("servers:%s", host_id.c_str()), &doc, [&allocator, &servers](const char* field, const char* value, void* arg) {
+	hiredis->iterate_hash(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), &doc, [&allocator, &servers](const char* field, const char* value, void* arg) {
 		UNUSED(arg);
 		Value serverObj(kObjectType);
 		// Convert the key and value to `Value` type

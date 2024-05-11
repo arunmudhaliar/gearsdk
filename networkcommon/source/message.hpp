@@ -172,4 +172,13 @@ class res_msg_user_get : public res_msg_user_base {
 	qstring token;
 };
 
+// MARK: -
+class res_msg_match_making : public res_msg_user_base {
+   public:
+    res_msg_match_making();
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
+    bool deserialize(rapidjson::Value& obj) override;
+    DECLARE_MESSAGE_PRE_REQUISITES(res_msg_match_making, "res_msg_match_making")
+    std::map<qstring, qstring> gservers;
+};
 #endif /* message_hpp */

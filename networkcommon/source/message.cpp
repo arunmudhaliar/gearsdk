@@ -165,8 +165,8 @@ void rq_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::All
 	//    obj.SetObject();
 
 	// Create a JSON object to hold the data
-	obj.AddMember("pid", Value().SetString(pid.c_str(), (uint32_t) pid.length()), allocator);
-	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length()), allocator);
+	obj.AddMember("pid", Value().SetString(pid.c_str(), (uint32_t) pid.length(), allocator), allocator);
+	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length(), allocator), allocator);
 }
 
 // MARK: - rq_msg_user_get
@@ -220,10 +220,10 @@ void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 	rapidjson::Value details(rapidjson::kObjectType);
 
 	// Add values to the "details" object
-	details.AddMember("sys_name", Value().SetString(sys_name.c_str(), (uint32_t) sys_name.length()), allocator);
-	details.AddMember("node_name", Value().SetString(node_name.c_str(), (uint32_t) node_name.length()), allocator);
-	details.AddMember("release", Value().SetString(release.c_str(), (uint32_t) release.length()), allocator);
-	details.AddMember("arch", Value().SetString(arch.c_str(), (uint32_t) arch.length()), allocator);
+	details.AddMember("sys_name", Value().SetString(sys_name.c_str(), (uint32_t) sys_name.length(), allocator), allocator);
+	details.AddMember("node_name", Value().SetString(node_name.c_str(), (uint32_t) node_name.length(), allocator), allocator);
+	details.AddMember("release", Value().SetString(release.c_str(), (uint32_t) release.length(), allocator), allocator);
+	details.AddMember("arch", Value().SetString(arch.c_str(), (uint32_t) arch.length(), allocator), allocator);
 
 	// Add the "details" object to the main document
 	obj.AddMember("details", details, allocator);
@@ -260,7 +260,7 @@ bool res_msg_user_base::deserialize(rapidjson::Value& obj) {
 
 void res_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	message_base::serialize(obj, allocator);
-	obj.AddMember("pid", Value().SetString(pid.c_str(), (uint32_t) pid.length()), allocator);
+	obj.AddMember("pid", Value().SetString(pid.c_str(), (uint32_t) pid.length(), allocator), allocator);
 
 	// room config
 	if (room_list != nullptr) {
@@ -297,9 +297,38 @@ void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::All
 	res_msg_user_base::serialize(obj, allocator);
 
 	// Create a JSON object to hold the data
-	obj.AddMember("last_login", Value().SetString(last_login.c_str(), (uint32_t) last_login.length()), allocator);
-	obj.AddMember("user_name", Value().SetString(user_name.c_str(), (uint32_t) user_name.length()), allocator);
-	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length()), allocator);
+	obj.AddMember("last_login", Value().SetString(last_login.c_str(), (uint32_t) last_login.length(), allocator), allocator);
+	obj.AddMember("user_name", Value().SetString(user_name.c_str(), (uint32_t) user_name.length(), allocator), allocator);
+	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length(), allocator), allocator);
+}
+
+// MARK: - res_msg_match_making
+DEFINE_MESSAGE_PRE_REQUISITES(res_msg_match_making)
+res_msg_match_making::res_msg_match_making() : res_msg_user_base() {}
+
+bool res_msg_match_making::deserialize(rapidjson::Value& obj) {
+    if (!res_msg_user_base::deserialize(obj)) {
+        return false;
+    }
+    if (!obj.IsArray())
+        return false;
+
+    DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "res_msg_match_making::deserialize Not implemented !!!");
+    return true;
+}
+
+void res_msg_match_making::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
+    res_msg_user_base::serialize(obj, allocator);
+
+    obj.SetArray();
+    // Create an array of objects
+    rapidjson::Value array(rapidjson::kArrayType);
+    for (auto kv : gservers) {
+        rapidjson::Value obj1(rapidjson::kObjectType);
+        obj1.AddMember("gserver", Value().SetString(kv.second.c_str(), (uint32_t)kv.second.length(), allocator), allocator);
+        array.PushBack(obj1, allocator);
+    }
+    obj.Swap(array);
 }
 
 // MARK: - message_parser

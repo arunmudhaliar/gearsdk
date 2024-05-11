@@ -379,7 +379,18 @@ void http3_sample_server::parse_get_match_making(conn_io_req_res::header* path_h
 		return;
 	}
 
-	hiredis->scan("gservers", nullptr, [](const char* field, const char* value, void* arg) { DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s:%s", field, value); });
+	res_msg_match_making res_match_making;
+	hiredis->scan("gservers", &res_match_making, [](const char* field, const char* value, void* arg) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s:%s", field, value);
+		res_msg_match_making* res_match_making = (res_msg_match_making*) arg;
+		if (res_match_making->gservers.find(field) == res_match_making->gservers.end()) {
+			res_match_making->gservers[field] = value;
+		}
+	});
+
+	qstring json_payload;
+	res_match_making.get_json_string(json_payload);
+	conn_io->http_response->set_payload(json_payload);
 }
 
 void http3_sample_server::test_mongo_db() {

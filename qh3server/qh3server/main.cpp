@@ -38,9 +38,9 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://35.172.219.66:27017";	//"mongodb://192.168.0.230:27017"
-	qstring redis_ip = "35.172.219.66";
-	qstring zk_uri = "35.172.219.66:2181";
+	qstring mongodb_uri = "mongodb://18.208.130.48:27017";	//"mongodb://192.168.0.230:27017"
+	qstring redis_ip = "18.208.130.48";
+	qstring zk_uri = "18.208.130.48:2181";
 
 	//    qstring mongodb_uri = "mongodb://127.0.0.1:27017";
 	//    qstring redis_ip = "127.0.0.1";
