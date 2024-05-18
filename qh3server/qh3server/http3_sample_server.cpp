@@ -134,8 +134,8 @@ void http3_sample_server::parse(struct conn_io_qh3* conn_io) {
 		parse_user_get(path_header, conn_io);
 	} else if (path_header->value.compare("/user_details") == 0) {
 		parse_user_details(path_header, conn_io);
-	} else if (path_header->value.compare("/get_match_making") == 0) {
-		parse_get_match_making(path_header, conn_io);
+	} else if (path_header->value.compare("/get_gservers") == 0) {
+		parse_get_gservers(path_header, conn_io);
 	}
 }
 
@@ -243,6 +243,9 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	//
 
 	conn_io->http_response->add_or_get_header("token", user_get_msg_respose.token);
+
+	// fill gservers
+	get_gservers(user_get_msg_respose.gservers);
 
 	// try find the user. (This needs to improve)
 	bool found = false;
@@ -373,24 +376,26 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
 #endif
 }
 
-void http3_sample_server::parse_get_match_making(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+void http3_sample_server::parse_get_gservers(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	int result = validte_token(path_header, conn_io);
 	if (result != 0) {
 		return;
 	}
 
-	res_msg_match_making res_match_making;
-	hiredis->scan("gservers", &res_match_making, [](const char* field, const char* value, void* arg) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s:%s", field, value);
-		res_msg_match_making* res_match_making = (res_msg_match_making*) arg;
-		if (res_match_making->gservers.find(field) == res_match_making->gservers.end()) {
-			res_match_making->gservers[field] = value;
-		}
-	});
+	res_msg_gservers res_get_gservers;
+	get_gservers(res_get_gservers);
 
 	qstring json_payload;
-	res_match_making.get_json_string(json_payload);
+	res_get_gservers.get_json_string(json_payload);
 	conn_io->http_response->set_payload(json_payload);
+}
+
+void http3_sample_server::get_gservers(res_msg_gservers& res_get_gservers) {
+	hiredis->scan("gservers", &res_get_gservers, [](const char* key, const char* field, const char* value, void* arg) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - %s:%s", key, field, value);
+		res_msg_gservers* res_get_gservers = (res_msg_gservers*) arg;
+		res_get_gservers->gservers[key].push_back(value);
+	});
 }
 
 void http3_sample_server::test_mongo_db() {

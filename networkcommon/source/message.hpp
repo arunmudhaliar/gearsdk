@@ -161,6 +161,16 @@ class res_msg_user_base : public message_base {
 };
 
 // MARK: -
+class res_msg_gservers : public message_base {
+   public:
+    res_msg_gservers();
+    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
+    bool deserialize(rapidjson::Value& obj) override;
+    DECLARE_MESSAGE_PRE_REQUISITES(res_msg_gservers, "res_msg_gservers")
+    std::map<qstring, std::vector<qstring>> gservers;
+};
+
+// MARK: -
 class res_msg_user_get : public res_msg_user_base {
    public:
 	res_msg_user_get();
@@ -170,15 +180,8 @@ class res_msg_user_get : public res_msg_user_base {
 	qstring last_login;
 	qstring user_name;
 	qstring token;
+    res_msg_gservers gservers;
 };
 
-// MARK: -
-class res_msg_match_making : public res_msg_user_base {
-   public:
-    res_msg_match_making();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
-    bool deserialize(rapidjson::Value& obj) override;
-    DECLARE_MESSAGE_PRE_REQUISITES(res_msg_match_making, "res_msg_match_making")
-    std::map<qstring, qstring> gservers;
-};
+
 #endif /* message_hpp */

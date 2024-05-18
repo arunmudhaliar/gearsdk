@@ -24,8 +24,8 @@
 // https://redis.io/docs/management/persistence/
 
 // typedef void (*type_redis_hash_iterator_key_value_cb)(const char* field, const char* value, void* arg);
-typedef std::function<void(const char* field, const char* value, void* arg)> type_redis_hash_iterator_key_value_cb;
-typedef std::function<void(const char* field, const char* value, void* arg)> type_redis_scan_iterator_key_value_cb;
+typedef std::function<void(const char* field, const char* value, void* arg)> type_redis_hash_iterator_field_value_cb;
+typedef std::function<void(const char* key, const char* field, const char* value, void* arg)> type_redis_scan_iterator_key_field_value_cb;
 
 class qhiredis {
    public:
@@ -54,14 +54,14 @@ class qhiredis {
 	int decr_by(const qstring& key, const int delta, long long& value);
 
 	int expire_key(const qstring& key, int expiry_in_sec);
-	void iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback);
+	void iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_field_value_cb callback);
 	int delete_key(const qstring& key);
 
-    void scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_value_cb callback);
+    void scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_field_value_cb callback);
     
    private:
 	int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
-	static void iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_key_value_cb callback);
+	static void iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_field_value_cb callback);
 	redisContext* context = nullptr;
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port;

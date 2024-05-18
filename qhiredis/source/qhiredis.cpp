@@ -159,7 +159,7 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
 	return 0;
 }
 
-void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
+void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_field_value_cb callback) {
 	if (!context) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
 		return;
@@ -167,7 +167,7 @@ void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_itera
 	iterate_hash(context, key.c_str(), arg, callback);
 }
 
-void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_key_value_cb callback) {
+void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_field_value_cb callback) {
 	unsigned long cursor = 0;
 	redisReply* reply;
 	do {
@@ -193,7 +193,7 @@ void qhiredis::iterate_hash(redisContext* context, const char* hash_key, void* a
 }
 
 
-void qhiredis::scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_value_cb callback) {
+void qhiredis::scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_field_value_cb callback) {
     if (!context) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "Error. Context is null.");
         return;
@@ -216,7 +216,7 @@ void qhiredis::scan(const qstring& prefix_key, void* arg, type_redis_scan_iterat
                 if (hashContent->type == REDIS_REPLY_ARRAY) {
                     for (size_t j = 0; j < hashContent->elements; j += 2) {
 //                        printf("  %s: %s\n", hashContent->element[j]->str, hashContent->element[j+1]->str);
-                        callback(hashContent->element[j]->str, hashContent->element[j+1]->str, arg);
+                        callback(keys->element[i]->str, hashContent->element[j]->str, hashContent->element[j+1]->str, arg);
                     }
                 }
                 freeReplyObject(hashContent);

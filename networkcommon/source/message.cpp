@@ -248,7 +248,7 @@ bool res_msg_user_base::deserialize(rapidjson::Value& obj) {
 		return false;
 	}
 
-	if (obj.HasMember("room_list") && obj["room_list"].IsObject()) {
+	if (obj.HasMember("room_list") && obj["room_list"].IsArray()) {
 		GX_DELETE(room_list);
 		room_list = (msg_room_config_list*) msg_room_config_list::create();
 		Value& room_list_obj = obj["room_list"];
@@ -268,6 +268,58 @@ void res_msg_user_base::serialize(rapidjson::Value& obj, rapidjson::Document::Al
 		room_list->serialize(room_list_obj, allocator);
 		obj.AddMember("room_list", room_list_obj, allocator);
 	}
+}
+
+// MARK: - res_msg_gservers
+DEFINE_MESSAGE_PRE_REQUISITES(res_msg_gservers)
+res_msg_gservers::res_msg_gservers() : message_base() {}
+
+bool res_msg_gservers::deserialize(rapidjson::Value& obj) {
+    if (!message_base::deserialize(obj)) {
+        return false;
+    }
+    if (!obj.IsArray())
+        return false;
+
+    gservers.clear();
+    for (rapidjson::SizeType i = 0; i < obj.Size(); i++) {
+        const rapidjson::Value& group = obj[i];
+        // Iterate over the members of each group object
+        for (rapidjson::Value::ConstMemberIterator it = group.MemberBegin(); it != group.MemberEnd(); ++it) {
+            const qstring& key = it->name.GetString();
+            // Check if the value is an array
+            if (it->value.IsArray()) {
+                const rapidjson::Value& group_servers = it->value;
+                // Iterate over the servers array
+                for (rapidjson::SizeType j = 0; j < group_servers.Size(); j++) {
+                    const qstring& server = group_servers[j].GetString();
+                    gservers[key].push_back(server);
+                    //DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "g:%s, k:%s", key.c_str(), server.c_str());
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void res_msg_gservers::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
+    message_base::serialize(obj, allocator);
+    obj.SetArray();
+    for (auto kv : gservers) {
+        rapidjson::Value group(rapidjson::kObjectType);
+        rapidjson::Value group_servers(rapidjson::kArrayType);
+        for (auto g : kv.second) {
+            group_servers.PushBack(Value().SetString(g.c_str(), (uint32_t)g.length(), allocator), allocator);
+        }
+        
+        ssize_t key_len = kv.first.length();
+        char* dynamic_key = reinterpret_cast<char*>(allocator.Malloc(key_len+1));
+        memcpy(dynamic_key, kv.first.c_str(), key_len);
+        dynamic_key[key_len] = '\0';
+
+        group.AddMember(StringRef(dynamic_key, key_len), group_servers, allocator);
+        obj.PushBack(group, allocator);
+    }
 }
 
 // MARK: - res_msg_user_get
@@ -290,7 +342,11 @@ bool res_msg_user_get::deserialize(rapidjson::Value& obj) {
 	if (obj.HasMember("token") && obj["token"].IsString()) {
 		token = obj["token"].GetString();
 	}
-	return true;
+    if (obj.HasMember("gservers") && obj["gservers"].IsArray()) {
+        return gservers.deserialize(obj["gservers"].GetArray());
+    }
+    
+    return false;
 }
 
 void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
@@ -300,35 +356,10 @@ void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::All
 	obj.AddMember("last_login", Value().SetString(last_login.c_str(), (uint32_t) last_login.length(), allocator), allocator);
 	obj.AddMember("user_name", Value().SetString(user_name.c_str(), (uint32_t) user_name.length(), allocator), allocator);
 	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length(), allocator), allocator);
-}
-
-// MARK: - res_msg_match_making
-DEFINE_MESSAGE_PRE_REQUISITES(res_msg_match_making)
-res_msg_match_making::res_msg_match_making() : res_msg_user_base() {}
-
-bool res_msg_match_making::deserialize(rapidjson::Value& obj) {
-    if (!res_msg_user_base::deserialize(obj)) {
-        return false;
-    }
-    if (!obj.IsArray())
-        return false;
-
-    DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "res_msg_match_making::deserialize Not implemented !!!");
-    return true;
-}
-
-void res_msg_match_making::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
-    res_msg_user_base::serialize(obj, allocator);
-
-    obj.SetArray();
-    // Create an array of objects
-    rapidjson::Value array(rapidjson::kArrayType);
-    for (auto kv : gservers) {
-        rapidjson::Value obj1(rapidjson::kObjectType);
-        obj1.AddMember("gserver", Value().SetString(kv.second.c_str(), (uint32_t)kv.second.length(), allocator), allocator);
-        array.PushBack(obj1, allocator);
-    }
-    obj.Swap(array);
+    
+    rapidjson::Value gservers_obj(rapidjson::kArrayType);
+    gservers.serialize(gservers_obj, allocator);
+    obj.AddMember("gservers", gservers_obj, allocator);
 }
 
 // MARK: - message_parser
