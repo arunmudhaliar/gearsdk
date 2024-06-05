@@ -34,6 +34,7 @@ extern "C" {
 #define SEND_CHUNK_SIZE 256
 #define DROP_CONNECTION_AFTER 45.0f	 // in seconds
 
+#define DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS 20.0f
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
@@ -46,6 +47,7 @@ class bridge_h3_connection {
 	virtual void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) = 0;
 	virtual void parse(struct conn_io_qh3* conn_io) = 0;
 	virtual bool is_log_quiche() = 0;  // NOTE : TODO - This is polling which is not a recommended solution. Need to use event based system.
+	virtual float get_router_hb_interval_in_sec() = 0;
 };
 
 // MARK: -
@@ -125,7 +127,7 @@ class qh3server : public bridge_h3_connection {
 	void destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) final;
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	inline bool is_log_quiche() override { return false; }
-
+	float get_router_hb_interval_in_sec() override { return DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS; }
 	void parse(struct conn_io_qh3* conn_io) override;
 
 	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
@@ -138,6 +140,8 @@ class qh3server : public bridge_h3_connection {
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 
 	void send_in_chunks(struct conn_io_qh3* conn_io);
+
+	qtimer* router_hb_loop(qtimer_sceduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port);
 
 	uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
 	uint8_t buf[65535];

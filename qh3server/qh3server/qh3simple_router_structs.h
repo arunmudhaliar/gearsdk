@@ -73,6 +73,7 @@ struct route {
 	int create_bridge(struct ev_loop* loop, void* arg, void (*router_command_recv_cb_ptr)(EV_P_ ev_io* w, int revents) = nullptr);
 	int close_bridge_socket();
 	ssize_t relay(uint8_t* buf, ssize_t len);
+	void refresh_hb_timestamp(struct ev_loop* loop);
 	qstring host;
 	qstring port;
 	int server_id = -1;
@@ -81,6 +82,7 @@ struct route {
 	ev_io command_watcher;
 	void* arg = nullptr;
 	pid_t child_process_id = -1;
+	ev_tstamp last_hb_received_time = 0;
 };
 struct port_range {
 	const int min = 5100;

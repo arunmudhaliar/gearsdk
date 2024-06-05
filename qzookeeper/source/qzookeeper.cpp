@@ -118,11 +118,18 @@ qzookeeper::~qzookeeper() {
 	if (zh) {
 		zookeeper_close(zh);
 		zh = nullptr;
-	}
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "zk closed");
+    } else {
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "no zk handle. no need to close.");
+    }
 	if (mainloop) {
 		ev_loop_destroy(mainloop);
 		mainloop = nullptr;
-	}
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "zk mainloop destroyed");
+	} else {
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "no zk mainloop. no need to destroy mainloop.");
+    }
+    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "zk destroyed");
 }
 
 int qzookeeper::connect(const qstring& url) {
@@ -192,6 +199,7 @@ void* qzookeeper::connect_internal(void* data) {
 					thiz->retry_connection();
 				} else {
 					ev_break(thiz->mainloop, EVBREAK_ONE);
+                    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "mainloop break %s", qzookeeper::state2String(thiz->connection_state));
 				}
 			}
 		},
@@ -199,6 +207,8 @@ void* qzookeeper::connect_internal(void* data) {
 
 	ev_run(thiz->mainloop, 0);
 
+    DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "mainloop exited with connection state %s", qzookeeper::state2String(thiz->connection_state));
+    
 	if (thiz->zh) {
 		zookeeper_close(thiz->zh);
 		thiz->zh = nullptr;
@@ -215,8 +225,14 @@ void qzookeeper::shutdown() {
 	if (connection_check_timer) {
 		if (cancel_and_destroy_timer(connection_check_timer)) {
 			connection_check_timer = nullptr;
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qzookeeper - connection_check_timer detroyed !!!");
 		}
 	}
+    
+    if (mainloop != nullptr) {
+        ev_break(mainloop, EVBREAK_ONE);
+        DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "mainloop break");
+    }
 }
 
 void qzookeeper::my_data_completion(int rc, const char* value, int value_len, const struct Stat* stat, const void* data) {
@@ -224,7 +240,7 @@ void qzookeeper::my_data_completion(int rc, const char* value, int value_len, co
 	qzookeeper* thiz = (qzookeeper*) data;
 	thiz->op_in_progress = true;
 	if (value) {
-		DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", value_len, value);
+//		DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", value_len, value);
 		thiz->get_result.clear();
 		thiz->get_result.run_printf(value, value_len);
 	}
@@ -322,7 +338,7 @@ int qzookeeper::get_data(const qstring& zk_path, qstring& result, const qstring&
 	if (op_in_progress) {
 		return -5;
 	}
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
+//	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
 	op_in_progress = true;
 	op_result = -1;
 	int rc = zoo_aget(zh, zk_path.c_str(), 1, my_data_completion, this);
@@ -336,7 +352,12 @@ int qzookeeper::get_data(const qstring& zk_path, qstring& result, const qstring&
 		millisleep(50);
 	}
 	result.copy(get_result);
-	return op_result;
+    int return_val = op_result.load();
+    if (return_val==0) {
+        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
+        DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", result.length(), result.c_str());
+    }
+	return return_val;
 }
 
 int qzookeeper::delete_path(const qstring& zk_path) {
@@ -374,6 +395,7 @@ void qzookeeper::close_zk(const int state) {
 	if (zh != nullptr) {
 		zookeeper_close(zh);
 		zh = nullptr;
+        DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "qzookeeper - close_zk called !!!");
 	}
 }
 

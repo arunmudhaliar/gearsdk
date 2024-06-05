@@ -73,6 +73,16 @@ class qtimer {
 	}
 	virtual ~qtimer() { DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qtimer destructor"); }
 
+    void update_delay(float new_delay) {
+        // Stop the timer
+        ev_timer_stop(loop, &timer);
+
+        // Modify the timer's delay and restart it
+        timer.repeat = new_delay;
+        ev_timer_again(loop, &timer);
+        delay = new_delay;
+    }
+    
 	ev_timer timer;
 	struct ev_loop* loop;
 	const type_qtimer_cb timeout_callback;

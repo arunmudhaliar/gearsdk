@@ -46,6 +46,7 @@ class qhiredis {
 
 	int set_hash_value(const qstring& hashkey, const qstring& field, const qstring& value);
 	int get_hash_value(const qstring& hashkey, const qstring& field, qstring& value);
+    int delete_hash_field(const qstring& hashkey, const qstring& field);
 
 	int incr(const qstring& key, long long& value);
 	int decr(const qstring& key, long long& value);

@@ -30,6 +30,8 @@ class http3_command_server : public qh3server {
 	void on_run_started() override;
 	void on_run_end() override;
 
+	float get_router_hb_interval_in_sec() override;
+
 	qhiredis* hiredis = nullptr;
 
    public:

@@ -14,6 +14,7 @@ $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
 $(NETWORK_COMMON_SRCDIR)/serverconfig.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
+$(QHIREDIS_SRCDIR)/qhiredis_async.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
 $(SERVER_COMMON_SRCDIR)/servercommon.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \

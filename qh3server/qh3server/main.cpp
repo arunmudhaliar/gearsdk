@@ -6,6 +6,34 @@
 //  Created by Arun A on 30/10/23.
 //
 
+#if TEST_SIGNAL_HANDLER
+#include <execinfo.h>
+#include <iostream>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+void signalHandler(int signum) {
+	// Print the signal number
+	std::cerr << "Error: signal " << signum << " received." << std::endl;
+
+	// Get void*'s for all entries on the stack
+	void* array[10];
+	size_t size = backtrace(array, 10);
+
+	// Print out all the frames to stderr
+	std::cerr << "Obtained " << size << " stack frames:" << std::endl;
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+
+	exit(1);
+}
+
+void causeSegmentationFault() {
+	int* ptr = nullptr;
+	*ptr = 42;	// This will cause a segmentation fault
+}
+#endif
+
 #include "../../common/sdktypes.hpp"
 #include "../../qutils/discord_util.hpp"
 #include "../../servercommon/source/servercommon.hpp"
@@ -29,22 +57,25 @@ void assert_callback(const char* msg) {
 }
 
 int main(int argc, const char* argv[]) {
+#if TEST_SIGNAL_HANDLER
+	// Register signal handler for SIGSEGV
+	signal(SIGSEGV, signalHandler);
+	causeSegmentationFault();
+#endif
+
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);
 	// main http server
+
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
 	qstring mongodb_uri = "mongodb://18.208.130.48:27017";	//"mongodb://192.168.0.230:27017"
 	qstring redis_ip = "18.208.130.48";
 	qstring zk_uri = "18.208.130.48:2181";
-
-	//    qstring mongodb_uri = "mongodb://127.0.0.1:27017";
-	//    qstring redis_ip = "127.0.0.1";
-	//    qstring zk_uri = "127.0.0.1:2181";
 
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
@@ -60,5 +91,8 @@ int main(int argc, const char* argv[]) {
 	qh3simple_router router(config);
 	router.run();
 
+	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
+	sleep(5);
+	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
 	return 0;
 }

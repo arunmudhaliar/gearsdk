@@ -28,11 +28,16 @@ class discord_util {
 		qstring msg;
 	};
 
+    
 	static void set_web_hook(const qstring& web_hook);
 	static int send(const qstring& msg);
 	static void send_async(const qstring& msg);
 
    private:
+    static std::atomic<bool> inited;
+    static pthread_once_t init_once;
+    static void initialize_webhook_url();
+    
 	static void* send_async_internal(void* data);
 	static qstring current_web_hook;
 };

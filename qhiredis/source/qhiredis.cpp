@@ -46,7 +46,7 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 	if (reply->type == REDIS_REPLY_ERROR) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Error setting hiredis CONFIG: %s", reply->str);
 	} else {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "hiredis CONFIG set successfully");
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "hiredis CONFIG set successfully");
 	}
 
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s:%d", hostname.c_str(), port);
@@ -122,9 +122,9 @@ int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const
 
 	// Check reply->type to confirm the command was successful
 	if (reply->type == REDIS_REPLY_INTEGER) {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer, hashkey.c_str(), field.c_str(), value.c_str());
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "The field was newly set: %lld, hkey:%s, field:%s, value:%s", reply->integer, hashkey.c_str(), field.c_str(), value.c_str());
 	} else if (reply->type == REDIS_REPLY_STATUS) {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Status: %s", reply->str);
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "Status: %s", reply->str);
 	} else {
 		DEBUG_PRINT_WARN(__LOGTAG__, "Unexpected reply type: %d", reply->type);
 	}
@@ -157,6 +157,29 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
 
 	freeReplyObject(reply);
 	return 0;
+}
+
+int qhiredis::delete_hash_field(const qstring& hashkey, const qstring& field) {
+    if (!context) {
+        return 2;
+    }
+    // Execute HDEL command to delete the field from the Hash Set
+    redisReply *reply = (redisReply *)redisCommand(context, "HDEL %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length());
+    if (reply == NULL) {
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Error executing HDEL command");
+        return 1;
+    }
+
+    // Check if the field was successfully deleted
+    if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1) {
+        //printf("Field '%s' deleted from Hash Set '%s'\n", field, key);
+    } else {
+        DEBUG_PRINT_WARN(__LOGTAG__, "Field '%s' not found or error occurred", field.c_str());
+    }
+
+    // Free the reply object
+    freeReplyObject(reply);
+    return 0;
 }
 
 void qhiredis::iterate_hash(const qstring& key, void* arg, type_redis_hash_iterator_field_value_cb callback) {
@@ -305,9 +328,9 @@ int qhiredis::expire_key(const qstring& key, int expiry_in_sec) {
 	redisReply* reply = (redisReply*) redisCommand(context, "EXPIRE %b %d", key.c_str(), key.length(), expiry_in_sec);
 	if (reply != nullptr) {
 		if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1) {
-			printf("'%s' expiration time set successfully.\n", key.c_str());
+            DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "'%s' expiration time set successfully.\n", key.c_str());
 		} else {
-			printf("Failed to set expiration time for '%s'.\n", key.c_str());
+            DEBUG_PRINT_ERROR(__LOGTAG__, "Failed to set expiration time for '%s'.", key.c_str());
 		}
 	} else {
 		if (context->err) {
@@ -325,7 +348,7 @@ int qhiredis::delete_key(const qstring& key) {
 	}
 	redisReply* reply = (redisReply*) redisCommand(context, "DEL %b", key.c_str(), key.length());
 	if (reply == nullptr) {
-		printf("hiredis DEL execution failed for key %s\n", key.c_str());
+        DEBUG_PRINT_ERROR(__LOGTAG__, "hiredis DEL execution failed for key %s", key.c_str());
 		return 1;
 	}
 	freeReplyObject(reply);

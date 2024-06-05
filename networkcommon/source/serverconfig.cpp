@@ -84,6 +84,7 @@ void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 				DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "value (%s) must be a string !!!", n.GetString());
 				continue;
 			}
+            // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "keys %s", n.GetString());
 			config_keys[m.name.GetString()].push_back(n.GetString());
 		}
 	}
@@ -101,6 +102,7 @@ void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 			configs[mod_zk_key] = zk_res;
 		}
 	}
+    // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d keys loaded", configs.size());
 }
 
 bool serverconfig::try_update_value(const qstring& path, const qstring& data) {

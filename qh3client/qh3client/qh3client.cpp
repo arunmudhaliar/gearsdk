@@ -246,7 +246,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
             const uint8_t* port_number_info = &conn_io->buf[read];
             uint16_t port_from_packet = ntohs(*(reinterpret_cast<uint16_t*>(port_number_info)));    // can do verification here
             essentials::update_port((struct sockaddr*)&peer_addr, port_from_packet);
-            EV_STOP_RECORD(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
+            EV_PRINT_IF_ELAPSED(server_port_deserialise_time, __LOGTAG__, "server_port_deserialise_time t:%lu ms", 10);
 
 #if LOG_LEVEL >= LOG_LEVEL_5
         getnameinfo((struct sockaddr*)&peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);

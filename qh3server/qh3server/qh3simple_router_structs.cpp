@@ -96,3 +96,7 @@ int route::close_bridge_socket() {
 	}
 	return result;
 }
+
+void route::refresh_hb_timestamp(struct ev_loop* loop) {
+	last_hb_received_time = ev_now(loop);
+}

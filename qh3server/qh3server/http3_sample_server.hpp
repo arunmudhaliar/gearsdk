@@ -32,6 +32,8 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	void on_run_started() override;
 	void on_run_end() override;
 
+	float get_router_hb_interval_in_sec() override;
+
 	// mongo callbacks
 	void on_mongo_connect() override final;
 	void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) override final;
@@ -56,6 +58,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	void parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 	void parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 	void parse_get_gservers(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
+	void parse_ping(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 
 	void get_gservers(res_msg_gservers& res_get_gservers);
 

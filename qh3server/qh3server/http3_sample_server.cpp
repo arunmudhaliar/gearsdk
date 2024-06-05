@@ -39,12 +39,15 @@ bool http3_sample_server::on_server_pre_init() {
 #if DEV_BUILD
 	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
 	zkconfig->load(config_path, qzk, "/qh3server");
+	zkconfig->load(config_path, qzk, "/qh3router");
 #elif PROD_BUILD
 	fs::path config_path(app_directory / "configs/prod/runtime-config.json");
 	zkconfig->load(config_path, qzk, "/qh3server");
+	zkconfig->load(config_path, qzk, "/qh3router");
 #else
 	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
 	zkconfig->load(config_path, qzk, "/qh3server");
+	zkconfig->load(config_path, qzk, "/qh3router");
 #endif
 #endif
 
@@ -105,6 +108,11 @@ bool http3_sample_server::is_log_quiche() {
 	return false;
 }
 
+float http3_sample_server::get_router_hb_interval_in_sec() {
+	int timer_router_hb_interval_in_sec = zkconfig->get_int32("router/timer_router_hb_interval_in_sec", DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS);
+	return timer_router_hb_interval_in_sec;
+}
+
 void http3_sample_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
 }
@@ -136,7 +144,32 @@ void http3_sample_server::parse(struct conn_io_qh3* conn_io) {
 		parse_user_details(path_header, conn_io);
 	} else if (path_header->value.compare("/get_gservers") == 0) {
 		parse_get_gservers(path_header, conn_io);
+	} else if (path_header->value.compare("/ping") == 0) {
+		parse_ping(path_header, conn_io);
 	}
+}
+
+void http3_sample_server::parse_ping(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+	const char* const_logtag = logtag.c_str();
+	const char* port_id_cstr = port_id.c_str();
+	bool has_crc_header = conn_io->http_request->has_crc_header();
+	if (has_crc_header) {
+		bool validate = conn_io->http_request->validate();
+		if (!validate) {
+			qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
+		}
+		assert(validate);
+	} else {
+		// may be called from a browser
+		DEBUG_PRINT_IMPORTANT2(const_logtag,
+							   "May be '%s' requested from browser. So crc "
+							   "validation not possible !!!",
+							   path_header->value.c_str());
+	}
+	const char* res_string = "{\"pong\" : \"http3_sample_server\"}";
+	conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
+	qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - ping - %s", path_header->value.c_str(), res_string);
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_sample_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
 void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
@@ -181,6 +214,7 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, str
 }
 
 void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+	EV_START_RECORD(parse_start_time);
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
@@ -189,6 +223,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	if (!validate) {
 		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_sample_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
 	}
+
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post validate t:%lu ms", 5);
 
 	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%.*s", payload.buffer.length(), payload.buffer.c_str());
 
@@ -200,11 +236,15 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 		return;
 	}
 
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post  msg_parser.parse t:%lu ms", 5);
+
 	unsigned long crc = crc32(0L, Z_NULL, 0);
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->release.c_str(), user_get_msg_rq->release.length());
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->arch.c_str(), user_get_msg_rq->arch.length());
+
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post crc calculation t:%lu ms", 5);
 
 	qbuffer buffer;
 	buffer.allocate(128);
@@ -237,6 +277,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "new token '%s' for user id : %x", user_get_msg_respose.token.c_str(), crc);
 	}
 
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post token fetch t:%lu ms", 50);
+
 	// set session token on redis
 	int32_t user_token_expiry_time = zkconfig->get_int32("server_config/user_token_expiry_time", DEFAULT_USER_TOKEN_EXPIRY_TIME);
 	hiredis->set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time);
@@ -246,6 +288,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 
 	// fill gservers
 	get_gservers(user_get_msg_respose.gservers);
+
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post get_gservers t:%lu ms", 50);
 
 	// try find the user. (This needs to improve)
 	bool found = false;
@@ -263,6 +307,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 		qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), response_json.c_str());
 	}
 	mongoc_cursor_destroy(cursor);
+
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo find user t:%lu ms", 50);
 
 	// if not found try insert. (This needs to improve)
 	if (!found) {
@@ -290,6 +336,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 		}
 		bson_destroy(&meta);
 		bson_destroy(&res_bson);
+		EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo create user t:%lu ms", 50);
 	}
 
 	bson_t* update = BCON_NEW("$set", "{", "user.last_login", BCON_UTF8(user_get_msg_respose.last_login.c_str()), "}");
@@ -303,6 +350,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	//
 
 	GX_DELETE(user_get_msg_rq);
+
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo update user t:%lu ms", 50);
 
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", "http3_sample_server", path_header->value.c_str(), port_id_cstr);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
@@ -392,7 +441,7 @@ void http3_sample_server::parse_get_gservers(conn_io_req_res::header* path_heade
 
 void http3_sample_server::get_gservers(res_msg_gservers& res_get_gservers) {
 	hiredis->scan("gservers", &res_get_gservers, [](const char* key, const char* field, const char* value, void* arg) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - %s:%s", key, field, value);
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s - %s:%s", key, field, value);
 		res_msg_gservers* res_get_gservers = (res_msg_gservers*) arg;
 		res_get_gservers->gservers[key].push_back(value);
 	});

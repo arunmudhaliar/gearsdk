@@ -31,11 +31,21 @@
 #define __LOGTAG__ "essentials"
 
 #define EV_START_RECORD(timestamp_) unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_STOP_RECORD(timestamp_, tag, formatted_msg, warn_after_ms)                          \
-	unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_; \
-	if (elapsed_since_##timestamp_ > warn_after_ms) {                                          \
-		DEBUG_PRINT_WARN(tag, formatted_msg, elapsed_since_##timestamp_);                      \
-	}
+#define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg)                                            \
+        DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
+#define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                              \
+        DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);  \
+        timestamp_ = timer::getCurrentTimeInMilliSec()
+#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                          \
+    do {                                                                                            \
+        unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_;  \
+        if (elapsed_since_##timestamp_ > warn_after_ms) {                                           \
+            DEBUG_PRINT_WARN(tag, formatted_msg, elapsed_since_##timestamp_);                       \
+        }                                                                                           \
+    } while(false)
+#define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)                \
+    EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);                             \
+    timestamp_ = timer::getCurrentTimeInMilliSec()
 
 #if PLATFORM == PLATFORM_LINUX
 #define PTHREAD_NAME(name) pthread_setname_np(pthread_self(), name)

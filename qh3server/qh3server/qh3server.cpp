@@ -463,7 +463,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 					case Event_type::Finished: {
 						EV_START_RECORD(parse_start_time);
 						conn_io->bridge->parse(conn_io);
-						EV_STOP_RECORD(parse_start_time, const_logtag, "parse-time t:%lu ms", 1200);
+						EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, const_logtag, "parse-time t:%lu ms", 1200);
 
 						EV_START_RECORD(send_start_time);
 						if (payload.buffer.length() == 0) {
@@ -528,12 +528,15 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 						quiche_h3_send_response(conn_io->http3, conn_io->conn, s, headers, header_size + conn_io->http_response->headers.size(), false);
 						GX_DELETE_ARY(headers);
 
+						EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, const_logtag, "q-send_response t:%lu ms", 50);
+
 						// payload
 						conn_io->total_sent_bytes = 0;	// reset the total bytes sent over network
 						ssize_t bytes_to_send = payload.buffer.length();
 						if (bytes_to_send < SEND_CHUNK_SIZE) {	// if small chunk then try issue in one go.
 							ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, s, reinterpret_cast<const uint8_t*>(payload.buffer.c_str()), bytes_to_send, true);
 							if (sent < 0) {
+								DEBUG_PRINT_ERROR(const_logtag, "HTTP response send failure. quiche_h3_send_body returned %d", sent);
 								break;
 							}
 							conn_io->total_sent_bytes += sent;
@@ -551,7 +554,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 							}
 						}
 
-						EV_STOP_RECORD(send_start_time, const_logtag, "send-time t:%lu ms", 30);
+						EV_PRINT_IF_ELAPSED_AND_CLEAR(send_start_time, const_logtag, "q-send_body t:%lu ms", 30);
 #if LOG_LEVEL >= LOG_LEVEL_4
 						DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-sent HTTP response over %" PRId64 " with body %s\n\t%zd bytes - crc: %lx", s, payload.buffer.c_str(), payload.get_size(), payload.get_crc_value());
 #endif
@@ -849,6 +852,10 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		3);
 	//
 
+	qtimer_sceduler router_hb_scheduler;
+	router_hb_scheduler.set_ev_lopp(mainloop);
+	qtimer* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
+
 	on_run_started();
 	ev_loop(mainloop, 0);
 
@@ -879,6 +886,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	on_run_end();
 
+	router_hb_scheduler.cancel_and_destroy_timer(router_hb_timer);
 	close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
 
 	ev_loop_destroy(mainloop);
@@ -936,4 +944,35 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	GX_DELETE(logger);
 	GX_DELETE(stats_logger);
 	return 0;
+}
+
+qtimer* qh3server::router_hb_loop(qtimer_sceduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
+	float router_hb_interval_in_sec = get_router_hb_interval_in_sec();
+	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "router_hb_interval_in_sec timer %5.1f", router_hb_interval_in_sec);
+	const char* const_logtag = logtag.c_str();
+	qtimer* router_hb_timer = router_hb_scheduler.schedule_repeat_timer(
+		[this, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
+			int new_timer_val = get_router_hb_interval_in_sec();
+			float diff = new_timer_val - timer.delay;
+			if (GX_ABS(diff) > 1.0f) {
+				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "router_hb_timer updated from %5.1f to %d", timer.delay, new_timer_val);
+				timer.update_delay(new_timer_val);
+			}
+			const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+			qstring command_center_feedback_port_str = qstring::format_string("%d", command_center_feedback_port);
+			struct addrinfo* cmd_center_feedback_address;
+			if (getaddrinfo(host.c_str(), command_center_feedback_port_str.c_str(), &hints, &cmd_center_feedback_address) != 0) {
+				DEBUG_PRINT_ERROR(const_logtag, "failed to resolve host - port[%s]", command_center_feedback_port_str.c_str());
+				return;
+			}
+			DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "Sending heartbeat to %s:%s", host.c_str(), command_center_feedback_port_str.c_str());
+			qstring hb_cmd = qstring::format_string("hb-%s", port_id.c_str());
+			ssize_t sent = sendto(sock, hb_cmd.c_str(), hb_cmd.length(), 0, cmd_center_feedback_address->ai_addr, cmd_center_feedback_address->ai_addrlen);
+			if (sent != (ssize_t) hb_cmd.length()) {
+				DEBUG_PRINT_ERROR(const_logtag, "ERROR sending hb event to command center !!!");
+			}
+			freeaddrinfo(cmd_center_feedback_address);
+		},
+		router_hb_interval_in_sec);
+	return router_hb_timer;
 }

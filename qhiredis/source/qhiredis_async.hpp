@@ -45,6 +45,7 @@ class qhiredis_async {
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port;
 	interface_qhiredis_async* interface = nullptr;
+    bool connected = false;
 };
 
 #endif /* qhiredis_async_hpp */

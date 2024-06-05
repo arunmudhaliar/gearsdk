@@ -48,6 +48,10 @@ bool http3_command_server::is_log_quiche() {
 	return false;
 }
 
+float http3_command_server::get_router_hb_interval_in_sec() {
+	return DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS;
+}
+
 void http3_command_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
 }
@@ -221,7 +225,7 @@ void http3_command_server::command_feedback_recv_cb(EV_P_ ev_io* w, int revents)
 		}
 
 		qstring cmd(buf_r, read);
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "RECEIVED cmd feedback from client - %s !!!", cmd.c_str());
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "RECEIVED cmd feedback from client - %s !!!", cmd.c_str());
 		bridge->cmd_feedback_from_client((struct sockaddr*) &peer_addr, cmd.c_str());
 	}
 }
