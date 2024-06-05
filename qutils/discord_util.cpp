@@ -19,9 +19,9 @@
 
 #define DISCORD_WEB_HOOK "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4"
 qstring discord_util::current_web_hook = DISCORD_WEB_HOOK;
-pthread_once_t discord_util::init_once = PTHREAD_ONCE_INIT;
+//pthread_once_t discord_util::init_once = PTHREAD_ONCE_INIT;
 std::atomic<bool> discord_util::inited = false;
-pthread_mutex_t webhook_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t discord_util::webhook_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void discord_util::initialize_webhook_url() {
     set_web_hook(DISCORD_WEB_HOOK);

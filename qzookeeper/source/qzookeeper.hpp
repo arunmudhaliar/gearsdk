@@ -34,6 +34,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <map>
+#include <atomic>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
