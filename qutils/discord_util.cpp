@@ -53,17 +53,17 @@ int discord_util::send(const qstring& msg) {
 		/* Send a message with this webhook */
 		bot.execute_webhook_sync(wh, dpp::message(msg.c_str()));
 	} catch (const dpp::rest_exception& e) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught exception: %s", e.what());
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught exception: %s, msg: %s", e.what(), msg.c_str());
 		// Implement retry logic here, respecting the Retry-After header
 	} catch (const std::system_error& e) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s", e.what());
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::system_error: %s, msg: %s", e.what(), msg.c_str());
 		// Implement specific handling logic for std::system_error here
 		// This could be related to thread join issues or other system-level errors
 	} catch (const std::exception& e) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::exception: %s", e.what());
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught std::exception: %s, msg: %s", e.what(), msg.c_str());
 		// Handle other std::exception derived exceptions
 	} catch (...) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught an unknown exception");
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Caught an unknown exception. msg: %s", msg.c_str());
 		// Handle any non-standard exceptions
 	}
 	return 0;
