@@ -14,8 +14,6 @@
 
 #include <atomic>
 
-#define SAMPLE_SERVER_SALT "lkfm7q3a"
-
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_sample_client"
 

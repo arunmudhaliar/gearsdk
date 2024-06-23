@@ -16,7 +16,6 @@
 #include "../../servercommon/source/qmongo/qmongo.hpp"
 #include "qh3server.hpp"
 
-#define SAMPLE_SERVER_SALT "lkfm7q3a"
 #define DEFAULT_USER_TOKEN_EXPIRY_TIME 300	// in seconds
 
 #undef __LOGTAG__
@@ -46,7 +45,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 
    public:
 	http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
-	~http3_sample_server();
+	virtual ~http3_sample_server();
 
 	void test_mongo_db();
 
