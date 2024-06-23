@@ -631,26 +631,15 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
 		return;
 	}
 
-	// find the route
-	route* found = nullptr;
-	for (auto r : routes) {
-		if (r->host == host && r->port == port) {
-			found = r;
-			break;
-		}
-	}
+	// find the route in active list
+	route* found = is_in_active_routes(host, port);
 
-	// check if its in unresponsive list
+	// if not found, check if its in unresponsive list
 	if (found == nullptr) {
-		for (auto r : unresponsive_routes) {
-			if (r->host == host && r->port == port) {
-				found = r;
-				break;
-			}
-		}
+		found = is_in_unresponsive_routes(host, port);
 		if (found) {
-			remove_from_unresponsive_routes(found);
-			push_to_routes(found);
+			// remove and push to routes. make the route active.
+			push_to_routes(remove_from_unresponsive_routes(found));
 		}
 	}
 
@@ -729,6 +718,7 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& 
 			}
 			expired.clear();
 
+#if DESTROY_ROUTES_ON_URESPONSIVE_LIST
 			// check and remove unresponsive routes
 			for (auto r : unresponsive_routes) {
 				ev_tstamp elapsed = now - r->last_hb_received_time;
@@ -746,8 +736,8 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& 
 					DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "Not found in inactive route list !!!");
 				}
 			}
-			//
-
+		//
+#endif
 			// check for cmd center
 			if (command_route) {
 				ev_tstamp elapsed = now - command_route->last_hb_received_time;
@@ -758,11 +748,29 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& 
 	return timer;
 }
 
+route* qh3simple_router::is_in_active_routes(const qstring& host, const qstring& port) const {
+	for (auto r : routes) {
+		if (r->host == host && r->port == port) {
+			return r;
+		}
+	}
+	return nullptr;
+}
+
+route* qh3simple_router::is_in_unresponsive_routes(const qstring& host, const qstring& port) const {
+	for (auto r : unresponsive_routes) {
+		if (r->host == host && r->port == port) {
+			return r;
+		}
+	}
+	return nullptr;
+}
+
 route* qh3simple_router::remove_from_active_routes(route* r) {
 	size_t oldSz = routes.size();
 	routes.erase(std::remove(routes.begin(), routes.end(), r), routes.end());
 	if (oldSz != routes.size()) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from active router list", r->host.c_str(), r->port.c_str());
+		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from ACTIVE list", r->host.c_str(), r->port.c_str());
 		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
 		hiredis->delete_hash_field(hash_key, qstring::format_string("server-%s", r->port.c_str()));
 		return r;
@@ -774,7 +782,7 @@ route* qh3simple_router::remove_from_unresponsive_routes(route* r) {
 	size_t oldSz = unresponsive_routes.size();
 	unresponsive_routes.erase(std::remove(unresponsive_routes.begin(), unresponsive_routes.end(), r), unresponsive_routes.end());
 	if (oldSz != unresponsive_routes.size()) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from router", r->host.c_str(), r->port.c_str());
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from UNRESPONSIVE list", r->host.c_str(), r->port.c_str());
 		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
 		hiredis->delete_hash_field(hash_key, qstring::format_string("server-%s", r->port.c_str()));
 		return r;
@@ -787,11 +795,15 @@ void qh3simple_router::push_to_unresponsive_routes(route* r) {
 		return;
 	}
 	unresponsive_routes.push_back(r);
+	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Pushed route %s:%s to UNRESPONSIVE list.", r->host.c_str(), r->port.c_str());
 }
 
 void qh3simple_router::push_to_routes(route* r) {
 	if (r == nullptr || std::find(routes.begin(), routes.end(), r) != routes.end()) {
 		return;
 	}
+	DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "Re-pushed route %s:%s to ACTIVE list", r->host.c_str(), r->port.c_str());
+	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+	hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
 	routes.push_back(r);
 }

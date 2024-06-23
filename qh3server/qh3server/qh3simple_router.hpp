@@ -54,6 +54,8 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 	static int is_port_available(const qstring& host, int port_number);
 
 	bool is_route_available(const route* r);
+	route* is_in_active_routes(const qstring& host, const qstring& port) const;
+	route* is_in_unresponsive_routes(const qstring& host, const qstring& port) const;
 	qtimer* check_and_remove_unresponsive_routes(qtimer_sceduler& scheduler);
 	route* remove_from_active_routes(route* r);
 	route* remove_from_unresponsive_routes(route* r);
