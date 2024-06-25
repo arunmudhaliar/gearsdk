@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
+		555EB08F2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
 		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
 		556AB6102AF50A8900D688DB /* libmongoc-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB60F2AF50A8900D688DB /* libmongoc-static-1.0.a */; };
@@ -50,6 +51,7 @@
 /* Begin PBXFileReference section */
 		1763DC0B2BC8175300F71F07 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos_arm64/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAA2B97ADB800BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router_extended.cpp; sourceTree = "<group>"; };
 		556AB5C82AF01D0500D688DB /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		556AB5C92AF01D0500D688DB /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
 		556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_server.cpp; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */,
 				556AB5CD2AF0308800D688DB /* http3_sample_server.hpp */,
 				5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */,
+				555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */,
 				5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */,
 				5594E2352B3FCCC200E47984 /* qh3simple_router_structs.h */,
 				5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */,
@@ -318,6 +321,7 @@
 				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
 				5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */,
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
+				555EB08F2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */,
 			);

@@ -37,6 +37,7 @@ void causeSegmentationFault() {
 #include "../../common/sdktypes.hpp"
 #include "../../qutils/discord_util.hpp"
 #include "../../servercommon/source/servercommon.hpp"
+#include "http3_command_server.hpp"
 #include "http3_sample_server.hpp"
 #include "qh3simple_router.hpp"
 
@@ -88,8 +89,8 @@ int main(int argc, const char* argv[]) {
 	//    redis_port, zk_uri); server.run(host, port, rootDir, nullptr, 4010, 0);   // port return not used, so passing 0
 
 	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005);
-	qh3simple_router router(config);
-	router.run();
+	http3_sample_router router(config);
+	router.run<http3_command_server, http3_sample_server>();
 
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
 	sleep(5);

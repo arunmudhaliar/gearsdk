@@ -9,12 +9,13 @@
 #ifndef qh3simple_router_hpp
 #define qh3simple_router_hpp
 
+#include "../../networkcommon/source/serverconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
-#include "http3_command_server.hpp"
-#include "http3_sample_server.hpp"
 #include "qh3simple_router_structs.h"
+
+#include <qh3client_helper.hpp>
 
 #define MAX_ROUTES 16
 
@@ -30,6 +31,7 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
    public:
 	qh3simple_router(const server_config_in& config);
 	virtual ~qh3simple_router();
+	template <typename U, typename V>
 	int run();
 
 	const std::vector<route*>& get_routes() override final { return routes; }
@@ -46,8 +48,11 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 	int sock_return = -1;
 
 	// qh3
+	template <typename U, typename V>
 	route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config);
+	template <typename U, typename V>
 	int spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result);
+	template <typename U, typename V>
 	static void* spawn_qh3server_internal(void* data);
 
 	static int next_available_port(const qstring& host, port_range& range, int& index);	 // index starts with 0
@@ -81,7 +86,11 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 	serverconfig* zkconfig = nullptr;
 };
 
+#include "qh3simple_router_extended.cpp"
+
 class http3_sample_router : public qh3simple_router {
    public:
+	http3_sample_router(const server_config_in& config) : qh3simple_router(config) {}
+	~http3_sample_router() {}
 };
 #endif /* qh3simple_router_hpp */
