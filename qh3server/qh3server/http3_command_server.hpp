@@ -38,6 +38,7 @@ class http3_command_server : public qh3server {
 	http3_command_server(const qstring& redis_url, uint16_t redis_port, bridge_command_center* bridge, qstring router_port);
 	~http3_command_server();
 	static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
+	static inline const char* get_server_name() { return "http3_command_server"; }
 
    private:
 	void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);

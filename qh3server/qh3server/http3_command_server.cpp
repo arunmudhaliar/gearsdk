@@ -62,13 +62,13 @@ void http3_command_server::parse(struct conn_io_qh3* conn_io) {
 	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
 	if (path_header == nullptr) {
 		DEBUG_PRINT_ERROR(const_logtag, "path_header == null, returning. !!!");
-		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_command_server", "", port_id_cstr, "path_not_found");
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", get_server_name(), "", port_id_cstr, "path_not_found");
 		return;
 	}
 
 	if (path_header->value.length() <= 1) {
 		DEBUG_PRINT_WARN(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", "http3_command_server", path_header->value.c_str(), port_id_cstr, "short_path");
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", get_server_name(), path_header->value.c_str(), port_id_cstr, "short_path");
 		return;
 	}
 
@@ -97,7 +97,7 @@ void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header
 							   "validation not possible !!!",
 							   path_header->value.c_str());
 	}
-	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 	ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
 }
 
@@ -115,7 +115,7 @@ void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_hea
 							   "validation not possible !!!",
 							   path_header->value.c_str());
 	}
-	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 	send_shutdown_to_all();
 	conn_io->http_response->set_payload(qstring::format_string("{ %d-shutdown-all }", getpid()));
 }
@@ -127,7 +127,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 	if (has_crc_header) {
 		bool validate = conn_io->http_request->validate();
 		if (!validate) {
-			qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", "http3_command_server", path_header->value.c_str(), port_id_cstr, "crc_fail");
+			qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "crc_fail");
 		}
 		assert(validate);
 	} else {
@@ -142,7 +142,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 	construct_response_whoami(payload);
 	conn_io->http_response->set_payload(payload);
 	qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
-	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", "http3_command_server", has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
+	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
 void http3_command_server::construct_response_whoami(qstring& response_string) {

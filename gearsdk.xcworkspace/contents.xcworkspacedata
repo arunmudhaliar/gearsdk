@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:qh3sampleserver/qh3sampleserver.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:qutils/qutils.xcodeproj">
    </FileRef>
    <FileRef

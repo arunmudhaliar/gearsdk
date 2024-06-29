@@ -1,0 +1,469 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		555EB0CA2C2F0B5F001F1B21 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB0C92C2F0B5F001F1B21 /* main.cpp */; };
+		555EB0F62C2F0E92001F1B21 /* libqh3server-st.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0F52C2F0E92001F1B21 /* libqh3server-st.a */; };
+		555EB0F82C2F0FB9001F1B21 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0F72C2F0FB9001F1B21 /* libcommon.a */; };
+		555EB0FA2C2F1007001F1B21 /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0F92C2F1007001F1B21 /* libqhiredis.a */; };
+		555EB0FC2C2F100F001F1B21 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0FB2C2F100F001F1B21 /* libqutils.a */; };
+		555EB0FE2C2F1016001F1B21 /* libqzookeeper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0FD2C2F1016001F1B21 /* libqzookeeper.a */; };
+		555EB1002C2F101A001F1B21 /* libservercommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0FF2C2F101A001F1B21 /* libservercommon.a */; };
+		555EB1022C30380A001F1B21 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1012C30380A001F1B21 /* libdpp.dylib */; };
+		555EB1032C30380A001F1B21 /* libdpp.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555EB1012C30380A001F1B21 /* libdpp.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		555EB1062C30383D001F1B21 /* libbson-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1052C303836001F1B21 /* libbson-static-1.0.a */; };
+		555EB1082C303874001F1B21 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1072C30386A001F1B21 /* libcurl.tbd */; };
+		555EB10A2C30389F001F1B21 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1092C30389C001F1B21 /* libev.a */; };
+		555EB10C2C3038A9001F1B21 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB10B2C3038A4001F1B21 /* libquiche.a */; };
+		555EB10E2C3038CF001F1B21 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB10D2C3038CF001F1B21 /* CoreFoundation.framework */; };
+		555EB1102C3038E5001F1B21 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB10F2C3038E5001F1B21 /* Security.framework */; };
+		555EB1122C30390F001F1B21 /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1112C30390B001F1B21 /* libhiredis.a */; };
+		555EB1142C303960001F1B21 /* libmongoc-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1132C30395C001F1B21 /* libmongoc-static-1.0.a */; };
+		555EB1162C303987001F1B21 /* libsasl2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1152C303981001F1B21 /* libsasl2.tbd */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		555EB0C42C2F0B5F001F1B21 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		555EB1042C30380A001F1B21 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555EB1032C30380A001F1B21 /* libdpp.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		555EB0C62C2F0B5F001F1B21 /* qh3sampleserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3sampleserver; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0C92C2F0B5F001F1B21 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		555EB0F52C2F0E92001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0F72C2F0FB9001F1B21 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0F92C2F1007001F1B21 /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0FB2C2F100F001F1B21 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0FD2C2F1016001F1B21 /* libqzookeeper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqzookeeper.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB0FF2C2F101A001F1B21 /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1012C30380A001F1B21 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos_x86_64/libdpp.dylib; sourceTree = "<group>"; };
+		555EB1052C303836001F1B21 /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos_x86_64/libbson-static-1.0.a"; sourceTree = "<group>"; };
+		555EB1072C30386A001F1B21 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		555EB1092C30389C001F1B21 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos_x86_64/libev.a; sourceTree = "<group>"; };
+		555EB10B2C3038A4001F1B21 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_x86_64/libquiche.a; sourceTree = "<group>"; };
+		555EB10D2C3038CF001F1B21 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		555EB10F2C3038E5001F1B21 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		555EB1112C30390B001F1B21 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos_x86_64/libhiredis.a; sourceTree = "<group>"; };
+		555EB1132C30395C001F1B21 /* libmongoc-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmongoc-static-1.0.a"; path = "../servercommon/libs/macos_x86_64/libmongoc-static-1.0.a"; sourceTree = "<group>"; };
+		555EB1152C303981001F1B21 /* libsasl2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsasl2.tbd; path = usr/lib/libsasl2.tbd; sourceTree = SDKROOT; };
+		555EB1172C303AC8001F1B21 /* qh3sampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3sampleserver.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		555EB0C32C2F0B5F001F1B21 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB1162C303987001F1B21 /* libsasl2.tbd in Frameworks */,
+				555EB1142C303960001F1B21 /* libmongoc-static-1.0.a in Frameworks */,
+				555EB0FA2C2F1007001F1B21 /* libqhiredis.a in Frameworks */,
+				555EB1002C2F101A001F1B21 /* libservercommon.a in Frameworks */,
+				555EB1082C303874001F1B21 /* libcurl.tbd in Frameworks */,
+				555EB1022C30380A001F1B21 /* libdpp.dylib in Frameworks */,
+				555EB1122C30390F001F1B21 /* libhiredis.a in Frameworks */,
+				555EB0F82C2F0FB9001F1B21 /* libcommon.a in Frameworks */,
+				555EB1102C3038E5001F1B21 /* Security.framework in Frameworks */,
+				555EB0F62C2F0E92001F1B21 /* libqh3server-st.a in Frameworks */,
+				555EB10A2C30389F001F1B21 /* libev.a in Frameworks */,
+				555EB1062C30383D001F1B21 /* libbson-static-1.0.a in Frameworks */,
+				555EB10E2C3038CF001F1B21 /* CoreFoundation.framework in Frameworks */,
+				555EB0FC2C2F100F001F1B21 /* libqutils.a in Frameworks */,
+				555EB0FE2C2F1016001F1B21 /* libqzookeeper.a in Frameworks */,
+				555EB10C2C3038A9001F1B21 /* libquiche.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		555EB0BD2C2F0B5F001F1B21 = {
+			isa = PBXGroup;
+			children = (
+				555EB0C82C2F0B5F001F1B21 /* qh3sampleserver */,
+				555EB0C72C2F0B5F001F1B21 /* Products */,
+				555EB0F42C2F0E92001F1B21 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		555EB0C72C2F0B5F001F1B21 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				555EB0C62C2F0B5F001F1B21 /* qh3sampleserver */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		555EB0C82C2F0B5F001F1B21 /* qh3sampleserver */ = {
+			isa = PBXGroup;
+			children = (
+				555EB1172C303AC8001F1B21 /* qh3sampleserver.entitlements */,
+				555EB0C92C2F0B5F001F1B21 /* main.cpp */,
+			);
+			path = qh3sampleserver;
+			sourceTree = "<group>";
+		};
+		555EB0F42C2F0E92001F1B21 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				555EB1152C303981001F1B21 /* libsasl2.tbd */,
+				555EB1132C30395C001F1B21 /* libmongoc-static-1.0.a */,
+				555EB1112C30390B001F1B21 /* libhiredis.a */,
+				555EB10F2C3038E5001F1B21 /* Security.framework */,
+				555EB10D2C3038CF001F1B21 /* CoreFoundation.framework */,
+				555EB10B2C3038A4001F1B21 /* libquiche.a */,
+				555EB1092C30389C001F1B21 /* libev.a */,
+				555EB1072C30386A001F1B21 /* libcurl.tbd */,
+				555EB1052C303836001F1B21 /* libbson-static-1.0.a */,
+				555EB1012C30380A001F1B21 /* libdpp.dylib */,
+				555EB0FF2C2F101A001F1B21 /* libservercommon.a */,
+				555EB0FD2C2F1016001F1B21 /* libqzookeeper.a */,
+				555EB0FB2C2F100F001F1B21 /* libqutils.a */,
+				555EB0F92C2F1007001F1B21 /* libqhiredis.a */,
+				555EB0F72C2F0FB9001F1B21 /* libcommon.a */,
+				555EB0F52C2F0E92001F1B21 /* libqh3server-st.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		555EB0C52C2F0B5F001F1B21 /* qh3sampleserver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555EB0CD2C2F0B5F001F1B21 /* Build configuration list for PBXNativeTarget "qh3sampleserver" */;
+			buildPhases = (
+				555EB0C22C2F0B5F001F1B21 /* Sources */,
+				555EB0C32C2F0B5F001F1B21 /* Frameworks */,
+				555EB0C42C2F0B5F001F1B21 /* CopyFiles */,
+				555EB1042C30380A001F1B21 /* Embed Libraries */,
+				555EB1182C303B56001F1B21 /* ShellScript */,
+				555EB1192C303BA5001F1B21 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qh3sampleserver;
+			productName = qh3sampleserver;
+			productReference = 555EB0C62C2F0B5F001F1B21 /* qh3sampleserver */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		555EB0BE2C2F0B5F001F1B21 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					555EB0C52C2F0B5F001F1B21 = {
+						CreatedOnToolsVersion = 13.4;
+					};
+				};
+			};
+			buildConfigurationList = 555EB0C12C2F0B5F001F1B21 /* Build configuration list for PBXProject "qh3sampleserver" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 555EB0BD2C2F0B5F001F1B21;
+			productRefGroup = 555EB0C72C2F0B5F001F1B21 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				555EB0C52C2F0B5F001F1B21 /* qh3sampleserver */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		555EB1182C303B56001F1B21 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Copy the configs directory\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# Create the destination directory if it does not exist\n# if [ ! -d \"$DST_DIR\" ]; then\n#   mkdir -p \"$DST_DIR\"\n# fi\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+			showEnvVarsInLog = 0;
+		};
+		555EB1192C303BA5001F1B21 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		555EB0C22C2F0B5F001F1B21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB0CA2C2F0B5F001F1B21 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		555EB0CB2C2F0B5F001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		555EB0CC2C2F0B5F001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		555EB0CE2C2F0B5F001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qh3sampleserver/qh3sampleserver.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+					"LOG_LEVEL=3",
+					"FORK_QH3_SERVER=0",
+					THREADED,
+					"ENABLE_ZK=1",
+					"DEV_BUILD=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../servercommon/libs/macos\"",
+					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
+				);
+				OTHER_LDFLAGS = "-lresolv";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		555EB0CF2C2F0B5F001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qh3sampleserver/qh3sampleserver.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"LOG_LEVEL=3",
+					"FORK_QH3_SERVER=1",
+					THREADED,
+					"ENABLE_ZK=1",
+					"PROD_BUILD=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../servercommon/libs/macos\"",
+					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
+				);
+				OTHER_LDFLAGS = "-lresolv";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		555EB0C12C2F0B5F001F1B21 /* Build configuration list for PBXProject "qh3sampleserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB0CB2C2F0B5F001F1B21 /* Debug */,
+				555EB0CC2C2F0B5F001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		555EB0CD2C2F0B5F001F1B21 /* Build configuration list for PBXNativeTarget "qh3sampleserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB0CE2C2F0B5F001F1B21 /* Debug */,
+				555EB0CF2C2F0B5F001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 555EB0BE2C2F0B5F001F1B21 /* Project object */;
+}

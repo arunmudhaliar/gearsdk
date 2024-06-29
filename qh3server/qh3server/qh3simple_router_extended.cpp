@@ -382,12 +382,12 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	fs::path& rootDir = config->rootDir;
 	qstring& zk_uri = config->zk_uri;
 	if (config->command_server) {
-		PTHREAD_NAME("http3_command_server");
+		PTHREAD_NAME(U::get_server_name());
 		U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
 		new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
 		GX_DELETE(new_server);
 	} else {
-		PTHREAD_NAME("http3_sample_server");
+		PTHREAD_NAME(V::get_server_name());
 		V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
 		new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
 		GX_DELETE(new_server);

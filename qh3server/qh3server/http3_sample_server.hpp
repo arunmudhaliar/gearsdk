@@ -48,6 +48,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	virtual ~http3_sample_server();
 
 	void test_mongo_db();
+	static inline const char* get_server_name() { return "http3_sample_server"; }
 
    private:
 	int validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
