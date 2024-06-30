@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		555EB1352C318EB0001F1B21 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB1342C318EB0001F1B21 /* main.cpp */; };
+		555EB13E2C318FBC001F1B21 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB13D2C318FBC001F1B21 /* CoreFoundation.framework */; };
+		555EB1402C318FD1001F1B21 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB13F2C318FD1001F1B21 /* libcommon.a */; };
+		555EB1422C318FDC001F1B21 /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1412C318FDC001F1B21 /* libnetworkcommon.a */; };
+		555EB1442C318FE7001F1B21 /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1432C318FE7001F1B21 /* libqhiredis.a */; };
+		555EB1462C318FF1001F1B21 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1452C318FF1001F1B21 /* libqutils.a */; };
+		555EB1482C319035001F1B21 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1472C31902E001F1B21 /* libcurl.tbd */; };
+		555EB14A2C319049001F1B21 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1492C319049001F1B21 /* libdpp.dylib */; };
+		555EB14E2C319070001F1B21 /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB14D2C31906D001F1B21 /* libev.a */; };
+		555EB1502C319078001F1B21 /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB14F2C319075001F1B21 /* libquiche.a */; };
+		555EB1522C31909E001F1B21 /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1512C31909B001F1B21 /* libz.a */; };
+		555EB1542C31912E001F1B21 /* libqserver-st.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1532C31912E001F1B21 /* libqserver-st.a */; };
+		555EB1562C319255001F1B21 /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1552C319255001F1B21 /* libhiredis.a */; };
+		555EB15A2C3198E5001F1B21 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB1582C3198CC001F1B21 /* cert.key */; };
+		555EB15B2C3198E5001F1B21 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB1592C3198CC001F1B21 /* cert.crt */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		555EB12F2C318EB0001F1B21 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				555EB15A2C3198E5001F1B21 /* cert.key in CopyFiles */,
+				555EB15B2C3198E5001F1B21 /* cert.crt in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		555EB1312C318EB0001F1B21 /* qsampleserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qsampleserver; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1342C318EB0001F1B21 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		555EB13B2C318F4A001F1B21 /* qsampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qsampleserver.entitlements; sourceTree = "<group>"; };
+		555EB13D2C318FBC001F1B21 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		555EB13F2C318FD1001F1B21 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1412C318FDC001F1B21 /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1432C318FE7001F1B21 /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1452C318FF1001F1B21 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1472C31902E001F1B21 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		555EB1492C319049001F1B21 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos_x86_64/libdpp.dylib; sourceTree = "<group>"; };
+		555EB14D2C31906D001F1B21 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos_x86_64/libev.a; sourceTree = "<group>"; };
+		555EB14F2C319075001F1B21 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_x86_64/libquiche.a; sourceTree = "<group>"; };
+		555EB1512C31909B001F1B21 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos_x86_64/libz.a; sourceTree = "<group>"; };
+		555EB1532C31912E001F1B21 /* libqserver-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libqserver-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		555EB1552C319255001F1B21 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos_x86_64/libhiredis.a; sourceTree = "<group>"; };
+		555EB1582C3198CC001F1B21 /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
+		555EB1592C3198CC001F1B21 /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		555EB12E2C318EB0001F1B21 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB1522C31909E001F1B21 /* libz.a in Frameworks */,
+				555EB14E2C319070001F1B21 /* libev.a in Frameworks */,
+				555EB1442C318FE7001F1B21 /* libqhiredis.a in Frameworks */,
+				555EB1402C318FD1001F1B21 /* libcommon.a in Frameworks */,
+				555EB14A2C319049001F1B21 /* libdpp.dylib in Frameworks */,
+				555EB1502C319078001F1B21 /* libquiche.a in Frameworks */,
+				555EB1482C319035001F1B21 /* libcurl.tbd in Frameworks */,
+				555EB1422C318FDC001F1B21 /* libnetworkcommon.a in Frameworks */,
+				555EB1462C318FF1001F1B21 /* libqutils.a in Frameworks */,
+				555EB1542C31912E001F1B21 /* libqserver-st.a in Frameworks */,
+				555EB13E2C318FBC001F1B21 /* CoreFoundation.framework in Frameworks */,
+				555EB1562C319255001F1B21 /* libhiredis.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		555EB1282C318EB0001F1B21 = {
+			isa = PBXGroup;
+			children = (
+				555EB1572C3198CC001F1B21 /* certs */,
+				555EB1332C318EB0001F1B21 /* qsampleserver */,
+				555EB1322C318EB0001F1B21 /* Products */,
+				555EB13C2C318FBC001F1B21 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		555EB1322C318EB0001F1B21 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				555EB1312C318EB0001F1B21 /* qsampleserver */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		555EB1332C318EB0001F1B21 /* qsampleserver */ = {
+			isa = PBXGroup;
+			children = (
+				555EB13B2C318F4A001F1B21 /* qsampleserver.entitlements */,
+				555EB1342C318EB0001F1B21 /* main.cpp */,
+			);
+			path = qsampleserver;
+			sourceTree = "<group>";
+		};
+		555EB13C2C318FBC001F1B21 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				555EB1552C319255001F1B21 /* libhiredis.a */,
+				555EB1532C31912E001F1B21 /* libqserver-st.a */,
+				555EB1512C31909B001F1B21 /* libz.a */,
+				555EB14F2C319075001F1B21 /* libquiche.a */,
+				555EB14D2C31906D001F1B21 /* libev.a */,
+				555EB1492C319049001F1B21 /* libdpp.dylib */,
+				555EB1472C31902E001F1B21 /* libcurl.tbd */,
+				555EB1452C318FF1001F1B21 /* libqutils.a */,
+				555EB1432C318FE7001F1B21 /* libqhiredis.a */,
+				555EB1412C318FDC001F1B21 /* libnetworkcommon.a */,
+				555EB13F2C318FD1001F1B21 /* libcommon.a */,
+				555EB13D2C318FBC001F1B21 /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		555EB1572C3198CC001F1B21 /* certs */ = {
+			isa = PBXGroup;
+			children = (
+				555EB1582C3198CC001F1B21 /* cert.key */,
+				555EB1592C3198CC001F1B21 /* cert.crt */,
+			);
+			path = certs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		555EB1302C318EB0001F1B21 /* qsampleserver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555EB1382C318EB0001F1B21 /* Build configuration list for PBXNativeTarget "qsampleserver" */;
+			buildPhases = (
+				555EB12D2C318EB0001F1B21 /* Sources */,
+				555EB12E2C318EB0001F1B21 /* Frameworks */,
+				555EB12F2C318EB0001F1B21 /* CopyFiles */,
+				555EB15C2C319906001F1B21 /* ShellScript */,
+				555EB15D2C31991F001F1B21 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = qsampleserver;
+			productName = qsampleserver;
+			productReference = 555EB1312C318EB0001F1B21 /* qsampleserver */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		555EB1292C318EB0001F1B21 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					555EB1302C318EB0001F1B21 = {
+						CreatedOnToolsVersion = 13.4;
+					};
+				};
+			};
+			buildConfigurationList = 555EB12C2C318EB0001F1B21 /* Build configuration list for PBXProject "qsampleserver" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 555EB1282C318EB0001F1B21;
+			productRefGroup = 555EB1322C318EB0001F1B21 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				555EB1302C318EB0001F1B21 /* qsampleserver */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		555EB15C2C319906001F1B21 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+		};
+		555EB15D2C31991F001F1B21 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		555EB12D2C318EB0001F1B21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB1352C318EB0001F1B21 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		555EB1362C318EB0001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		555EB1372C318EB0001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		555EB1392C318EB0001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qsampleserver/qsampleserver.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		555EB13A2C318EB0001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = qsampleserver/qsampleserver.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		555EB12C2C318EB0001F1B21 /* Build configuration list for PBXProject "qsampleserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB1362C318EB0001F1B21 /* Debug */,
+				555EB1372C318EB0001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		555EB1382C318EB0001F1B21 /* Build configuration list for PBXNativeTarget "qsampleserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB1392C318EB0001F1B21 /* Debug */,
+				555EB13A2C318EB0001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 555EB1292C318EB0001F1B21 /* Project object */;
+}
