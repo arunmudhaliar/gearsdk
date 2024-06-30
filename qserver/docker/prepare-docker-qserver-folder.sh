@@ -1,61 +1,54 @@
-cd ../../
-rm -rf ./docker-server
+#!/bin/bash
 
-mkdir ./docker-server
-cp -r ./common ./docker-server/common
-cp -r ./networkcommon/ ./docker-server/networkcommon
-cp -r ./servercommon/ ./docker-server/servercommon
-cp -r ./qhiredis/ ./docker-server/qhiredis
-cp -r ./qutils/ ./docker-server/qutils
-cp -r ./qserver/ ./docker-server/qserver
-cp ./qserver/docker/Dockerfile ./docker-server/Dockerfile
-cp ./qserver/docker/make_qserver.sh ./docker-server/make_qserver.sh
-cp ./qserver/docker/run_qserver.sh ./docker-server/run_qserver.sh
+# Define variables for directories
+SERVER="qserver"
+BASE_DIR="../../"
+DOCKER_DIR="./docker-$SERVER"
+COMMON_DIR="./common"
+NETWORK_COMMON_DIR="./networkcommon"
+SERVER_COMMON_DIR="./servercommon"
+QHIREDIS_DIR="./qhiredis"
+QUTILS_DIR="./qutils"
+QSERVER_DIR="./$SERVER"
+QSERVER_DOCKER_DIR="$QSERVER_DIR/docker"
 
-# docker-server
-rm -rf -- ./docker-server/**/*.o
-rm -rf -- ./docker-server/**/**/*.o
-rm -rf -- ./docker-server/**/**/**/*.o
-rm -rf -- ./docker-server/**/**/**/**/*.o
+# Move to the base directory
+cd $BASE_DIR
 
-rm -rf -- ./docker-server/**/.DS_Store
-rm -rf -- ./docker-server/**/**/.DS_Store
-rm -rf -- ./docker-server/**/**/**/.DS_Store
-rm -rf -- ./docker-server/**/**/**/**/.DS_Store
+# Remove the old directory if it exists
+rm -rf $DOCKER_DIR
 
-rm -rf -- ./docker-server/**/DerivedData
-rm -rf -- ./docker-server/**/**/DerivedData
-rm -rf -- ./docker-server/**/**/**/DerivedData
-rm -rf -- ./docker-server/**/**/**/**/DerivedData
+# Create a new directory
+mkdir $DOCKER_DIR
 
-rm -rf -- ./docker-server/**/*.xcodeproj
-rm -rf -- ./docker-server/**/**/*.xcodeproj
-rm -rf -- ./docker-server/**/**/**/*.xcodeproj
-rm -rf -- ./docker-server/**/**/**/**/*.xcodeproj
+# Copy necessary files and directories
+cp -r $COMMON_DIR $DOCKER_DIR/common
+cp -r $NETWORK_COMMON_DIR $DOCKER_DIR/networkcommon
+cp -r $SERVER_COMMON_DIR $DOCKER_DIR/servercommon
+cp -r $QHIREDIS_DIR $DOCKER_DIR/qhiredis
+cp -r $QUTILS_DIR $DOCKER_DIR/qutils
+cp -r $QSERVER_DIR $DOCKER_DIR/$SERVER
+cp $QSERVER_DOCKER_DIR/Dockerfile $DOCKER_DIR/Dockerfile
+cp $QSERVER_DOCKER_DIR/make_$SERVER.sh $DOCKER_DIR/make_$SERVER.sh
+cp $QSERVER_DOCKER_DIR/run_$SERVER.sh $DOCKER_DIR/run_$SERVER.sh
 
-rm -rf ./docker-server/networkcommon/libs/macos
-rm -rf ./docker-server/qhiredis/libs/macos
-rm -rf ./docker-server/qutils/libs/macos
-rm -rf ./docker-server/qserver/docker
-rm -rf ./docker-server/qserver/*.dSYM
-rm -rf ./docker-server/qserver/qserver-app
+# Clean up object files and macOS specific files
+find $DOCKER_DIR -name '*.o' -exec rm -rf {} +
+find $DOCKER_DIR -name '.DS_Store' -exec rm -rf {} +
+find $DOCKER_DIR -name 'DerivedData' -exec rm -rf {} +
+find $DOCKER_DIR -name '*.xcodeproj' -exec rm -rf {} +
 
-# build
-echo "use 'sudo docker build -t qserver-exp .' to build the docker"
-# sudo docker build -t qserver-exp .
+# Remove macOS specific directories
+rm -rf $DOCKER_DIR/networkcommon/libs/macos
+rm -rf $DOCKER_DIR/qhiredis/libs/macos
+rm -rf $DOCKER_DIR/qutils/libs/macos
+rm -rf $DOCKER_DIR/$SERVER/docker
+rm -rf $DOCKER_DIR/$SERVER/*.dSYM
+rm -rf $DOCKER_DIR/$SERVER/$SERVER-app
 
-# run
-echo "use 'sudo docker run --name qserver-container -d qserver-exp' to run the docker"
-# sudo docker run --name qserver-container -d qserver-exp
-
-# stop
-echo "use 'sudo docker stop qserver-container' to stop the docker"
-# sudo docker stop qserver-container
-
-# restart
-echo "use 'sudo docker restart qserver-container' to re-start the docker"
-# sudo docker restart qserver-container
-
-# REMOVE
-echo "use 'sudo docker rm --force qserver-container' to REMOVE the docker"
-# sudo docker rm --force qserver-container
+# Instructions for building and running the Docker container
+echo "use 'sudo docker build -t $SERVER-exp .' to build the docker"
+echo "use 'sudo docker run --name $SERVER-container -d $SERVER-exp' to run the docker"
+echo "use 'sudo docker stop $SERVER-container' to stop the docker"
+echo "use 'sudo docker restart $SERVER-container' to restart the docker"
+echo "use 'sudo docker rm --force $SERVER-container' to remove the docker"

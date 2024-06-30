@@ -91,3 +91,4 @@ qh3sampleserver/stats
 libqh3server.a
 qh3sampleserver-app
 docker-qh3sampleserver
+docker-qserver
