@@ -92,3 +92,7 @@ libqh3server.a
 qh3sampleserver-app
 docker-qh3sampleserver
 docker-qserver
+qsampleserver/glogs
+libqserver.a
+qsampleserver-app
+docker-qsampleserver
