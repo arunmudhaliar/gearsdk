@@ -86,3 +86,8 @@ qh3server/configs
 macos
 qunityplugin/qunityplugin_unity_proj/qunitysdk/source/libs
 *.stacks
+qh3sampleserver/logs
+qh3sampleserver/stats
+libqh3server.a
+qh3sampleserver-app
+docker-qh3sampleserver

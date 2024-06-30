@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Define variables for the directories
-SERVER="qh3server"
+SERVER="qh3sampleserver"
 DOCKER_DIR="./docker-$SERVER"
+QH3_SERVER_DIR="./qh3server"
 SERVER_DIR="./$SERVER"
 
 # Move to the appropriate directory
@@ -18,6 +19,7 @@ mkdir $DOCKER_DIR
 cp -r ./common $DOCKER_DIR/common
 cp -r ./configs $DOCKER_DIR/configs
 cp -r ./networkcommon/ $DOCKER_DIR/networkcommon
+cp -r $QH3_SERVER_DIR/ $DOCKER_DIR/qh3server
 cp -r $SERVER_DIR/ $DOCKER_DIR/$SERVER
 cp -r ./qh3client/ $DOCKER_DIR/qh3client
 cp -r ./qhiredis/ $DOCKER_DIR/qhiredis
@@ -51,6 +53,7 @@ rm -rf $DOCKER_DIR/qstats-crawler/libs/macos
 rm -rf $DOCKER_DIR/servercommon/libs/macos
 rm -rf $DOCKER_DIR/qzookeeper/libs/macos
 rm -rf $DOCKER_DIR/qutils/libs/macos
+rm -rf $DOCKER_DIR/qh3server/docker
 rm -rf $DOCKER_DIR/$SERVER/docker
 rm -rf $DOCKER_DIR/$SERVER/*.dSYM
 rm -rf $DOCKER_DIR/$SERVER/$SERVER-app
