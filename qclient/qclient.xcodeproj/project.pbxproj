@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		555BA6F92C3AEE8900E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; };
+		555BA6FA2C3AEEAA00E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEE2B0AB4FB00D688DB /* libz.a */; };
 		557487402AE957ED00C0F6CA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574873F2AE957ED00C0F6CA /* main.cpp */; };
 		557487622AEB909800C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487612AEB909800C0F6CA /* libcommon.a */; };
@@ -22,6 +24,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		555BA6FB2C3AEEAA00E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA6FA2C3AEEAA00E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372A12AC2AB4A00F0095E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -34,6 +47,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		555BA6F82C3AEE8900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
 		556ABAEE2B0AB4FB00D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574873F2AE957ED00C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		557487612AEB909800C0F6CA /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				555BA6F92C3AEE8900E23A51 /* libev.4.dylib in Frameworks */,
 				5574F21C2B20EC1F007C93AA /* libnetworkcommon.a in Frameworks */,
 				557487622AEB909800C0F6CA /* libcommon.a in Frameworks */,
 				557487AA2AED542300C0F6CA /* libev.a in Frameworks */,
@@ -76,6 +91,7 @@
 		55853CE22AC32FF600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA6F82C3AEE8900E23A51 /* libev.4.dylib */,
 				5574F21B2B20EC1F007C93AA /* libnetworkcommon.a */,
 				556ABAEE2B0AB4FB00D688DB /* libz.a */,
 				557487A82AED541700C0F6CA /* libev.a */,
@@ -133,6 +149,7 @@
 				55B372A02AC2AB4A00F0095E /* Frameworks */,
 				55B372A12AC2AB4A00F0095E /* CopyFiles */,
 				5595E1242BB08B9600FA2618 /* ShellScript */,
+				555BA6FB2C3AEEAA00E23A51 /* Embed Libraries */,
 			);
 			buildRules = (
 			);

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		555BA7012C3AEF6900E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA7002C3AEF6900E23A51 /* libev.4.dylib */; };
+		555BA7022C3AEF6900E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA7002C3AEF6900E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		555EB1352C318EB0001F1B21 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB1342C318EB0001F1B21 /* main.cpp */; };
 		555EB13E2C318FBC001F1B21 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB13D2C318FBC001F1B21 /* CoreFoundation.framework */; };
 		555EB1402C318FD1001F1B21 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB13F2C318FD1001F1B21 /* libcommon.a */; };
@@ -25,6 +27,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		555BA7032C3AEF6900E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA7022C3AEF6900E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		555EB12F2C318EB0001F1B21 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -39,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		555BA7002C3AEF6900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
 		555EB1312C318EB0001F1B21 /* qsampleserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qsampleserver; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EB1342C318EB0001F1B21 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		555EB13B2C318F4A001F1B21 /* qsampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qsampleserver.entitlements; sourceTree = "<group>"; };
@@ -70,6 +84,7 @@
 				555EB14A2C319049001F1B21 /* libdpp.dylib in Frameworks */,
 				555EB1502C319078001F1B21 /* libquiche.a in Frameworks */,
 				555EB1482C319035001F1B21 /* libcurl.tbd in Frameworks */,
+				555BA7012C3AEF6900E23A51 /* libev.4.dylib in Frameworks */,
 				555EB1422C318FDC001F1B21 /* libnetworkcommon.a in Frameworks */,
 				555EB1462C318FF1001F1B21 /* libqutils.a in Frameworks */,
 				555EB1542C31912E001F1B21 /* libqserver-st.a in Frameworks */,
@@ -111,6 +126,7 @@
 		555EB13C2C318FBC001F1B21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA7002C3AEF6900E23A51 /* libev.4.dylib */,
 				555EB1552C319255001F1B21 /* libhiredis.a */,
 				555EB1532C31912E001F1B21 /* libqserver-st.a */,
 				555EB1512C31909B001F1B21 /* libz.a */,
@@ -148,6 +164,7 @@
 				555EB12F2C318EB0001F1B21 /* CopyFiles */,
 				555EB15C2C319906001F1B21 /* ShellScript */,
 				555EB15D2C31991F001F1B21 /* ShellScript */,
+				555BA7032C3AEF6900E23A51 /* Embed Libraries */,
 			);
 			buildRules = (
 			);

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; };
+		555BA6EE2C3AEC8000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */; };
 		556AB7002AF574B400D688DB /* libbson-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */; };
 		556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7012AF586C000D688DB /* qh3client_helper.cpp */; };
@@ -24,6 +26,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		555BA6EF2C3AEC8000E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA6EE2C3AEC8000E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55A4ADB02AEF82AA00BC4CED /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -36,6 +49,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
 		556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_client.cpp; sourceTree = "<group>"; };
 		556AB6C02AF5703D00D688DB /* http3_sample_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = http3_sample_client.hpp; sourceTree = "<group>"; };
 		556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos/libbson-static-1.0.a"; sourceTree = "<group>"; };
@@ -69,6 +83,7 @@
 				55A4ADD32AEFA56200BC4CED /* libnetworkcommon.a in Frameworks */,
 				55A4ADCE2AEFA54D00BC4CED /* libquiche.a in Frameworks */,
 				55A4ADD12AEFA55F00BC4CED /* libcommon.a in Frameworks */,
+				555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */,
 				55A4ADD52AEFA56B00BC4CED /* Security.framework in Frameworks */,
 				55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */,
 			);
@@ -115,6 +130,7 @@
 		55A4ADC92AEFA51900BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */,
 				556AB71D2B024A4600D688DB /* libz.a */,
 				556AB6FF2AF574A600D688DB /* libbson-static-1.0.a */,
 				55A4ADD42AEFA56B00BC4CED /* Security.framework */,
@@ -138,6 +154,7 @@
 				55A4ADAF2AEF82AA00BC4CED /* Frameworks */,
 				55A4ADB02AEF82AA00BC4CED /* CopyFiles */,
 				5595E1232BB08B7B00FA2618 /* ShellScript */,
+				555BA6EF2C3AEC8000E23A51 /* Embed Libraries */,
 			);
 			buildRules = (
 			);

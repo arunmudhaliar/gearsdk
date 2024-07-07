@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		555BA7052C3AEF9800E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA7042C3AEF9800E23A51 /* libev.4.dylib */; };
+		555BA7062C3AEF9800E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA7042C3AEF9800E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		555EB0CA2C2F0B5F001F1B21 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB0C92C2F0B5F001F1B21 /* main.cpp */; };
 		555EB0F62C2F0E92001F1B21 /* libqh3server-st.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0F52C2F0E92001F1B21 /* libqh3server-st.a */; };
 		555EB0F82C2F0FB9001F1B21 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB0F72C2F0FB9001F1B21 /* libcommon.a */; };
@@ -48,6 +50,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				555EB1032C30380A001F1B21 /* libdpp.dylib in Embed Libraries */,
+				555BA7062C3AEF9800E23A51 /* libev.4.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,6 +58,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		555BA7042C3AEF9800E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
 		555EB0C62C2F0B5F001F1B21 /* qh3sampleserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3sampleserver; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EB0C92C2F0B5F001F1B21 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		555EB0F52C2F0E92001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +90,7 @@
 				555EB1162C303987001F1B21 /* libsasl2.tbd in Frameworks */,
 				555EB1142C303960001F1B21 /* libmongoc-static-1.0.a in Frameworks */,
 				555EB0FA2C2F1007001F1B21 /* libqhiredis.a in Frameworks */,
+				555BA7052C3AEF9800E23A51 /* libev.4.dylib in Frameworks */,
 				555EB1002C2F101A001F1B21 /* libservercommon.a in Frameworks */,
 				555EB1082C303874001F1B21 /* libcurl.tbd in Frameworks */,
 				555EB1022C30380A001F1B21 /* libdpp.dylib in Frameworks */,
@@ -135,6 +140,7 @@
 		555EB0F42C2F0E92001F1B21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA7042C3AEF9800E23A51 /* libev.4.dylib */,
 				555EB1152C303981001F1B21 /* libsasl2.tbd */,
 				555EB1132C30395C001F1B21 /* libmongoc-static-1.0.a */,
 				555EB1112C30390B001F1B21 /* libhiredis.a */,
