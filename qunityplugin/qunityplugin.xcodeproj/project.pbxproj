@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55294FF92BD591440090816B /* libev.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55294FF82BD591440090816B /* libev.dylib */; };
 		55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55294FFA2BD5914D0090816B /* libquiche.a */; };
+		555BA7102C3B135800E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA70F2C3B135800E23A51 /* libev.4.dylib */; };
+		555BA7112C3B135800E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA70F2C3B135800E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55A72F5C2B779A1000064250 /* qnetworkclient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F5B2B779A1000064250 /* qnetworkclient.cpp */; };
 		55A9CD332B68266C006CAD14 /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD252B682140006CAD14 /* debug_new.cpp */; };
 		55A9CD342B68266F006CAD14 /* essentials.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A9CD232B682114006CAD14 /* essentials.cpp */; };
@@ -20,9 +21,24 @@
 		55A9CD3D2B6827D0006CAD14 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A9CD292B6821FB006CAD14 /* Security.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		555BA7122C3B135800E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA7112C3B135800E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		55294FF82BD591440090816B /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos_x86_64/libev.dylib; sourceTree = "<group>"; };
 		55294FFA2BD5914D0090816B /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_x86_64/libquiche.a; sourceTree = "<group>"; };
+		555BA70F2C3B135800E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
 		55A72F5B2B779A1000064250 /* qnetworkclient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = qnetworkclient.cpp; path = ../qclient/source/qnetworkclient.cpp; sourceTree = "<group>"; };
 		55A847B22B6178E800001308 /* qunitysdk.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qunitysdk.cpp; sourceTree = "<group>"; };
 		55A847B32B6178E800001308 /* qunitysdk.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qunitysdk.hpp; sourceTree = "<group>"; };
@@ -46,8 +62,8 @@
 			files = (
 				55A9CD3D2B6827D0006CAD14 /* Security.framework in Frameworks */,
 				55A9CD3C2B6827CA006CAD14 /* libz.1.1.3.tbd in Frameworks */,
-				55294FF92BD591440090816B /* libev.dylib in Frameworks */,
 				55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */,
+				555BA7102C3B135800E23A51 /* libev.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,6 +105,7 @@
 		55A847B62B617A6600001308 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA70F2C3B135800E23A51 /* libev.4.dylib */,
 				55294FFA2BD5914D0090816B /* libquiche.a */,
 				55A9CD392B6827AD006CAD14 /* libev.dylib */,
 				55294FF82BD591440090816B /* libev.dylib */,
@@ -120,6 +137,8 @@
 				55A9CD2B2B68263E006CAD14 /* Headers */,
 				55A9CD2C2B68263E006CAD14 /* Sources */,
 				55A9CD2D2B68263E006CAD14 /* Frameworks */,
+				555BA7122C3B135800E23A51 /* Embed Libraries */,
+				555BA7132C3B187300E23A51 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -161,6 +180,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		555BA7132C3B187300E23A51 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "install_name_tool -change /Users/amudaliar/Desktop/ev_mac_out/lib/libev.4.dylib @rpath/libev.4.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\ninstall_name_tool -change /Users/amudaliar/Documents/PROJECTS/PERSONAL/quiche/target/release/deps/libquiche.dylib @rpath/libquiche.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\notool -L ${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\n\n# Re-sign the binary\ncodesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\n\necho \"Modification and re-signing complete.\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55A9CD2C2B68263E006CAD14 /* Sources */ = {
@@ -310,9 +349,14 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+				);
+				OTHER_LDFLAGS = (
+					"-install_name",
+					"@rpath/libqunityplugin.dylib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -334,11 +378,16 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../common\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-install_name",
+					"@rpath/libqunityplugin.dylib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
