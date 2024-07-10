@@ -96,3 +96,6 @@ qsampleserver/glogs
 libqserver.a
 qsampleserver-app
 docker-qsampleserver
+qunitysdk.d
+libqunityplugin.dylib
+*.d
