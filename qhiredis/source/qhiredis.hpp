@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <functional>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qhiredis"

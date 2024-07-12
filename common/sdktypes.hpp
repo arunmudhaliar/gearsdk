@@ -30,7 +30,6 @@
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
 #elif PLATFORM == PLATFORM_LINUX
-#include <linux/limits.h>
 namespace fs = std::filesystem;
 #else
 namespace fs = std::__fs::filesystem;
@@ -67,7 +66,9 @@ namespace fs = std::__fs::filesystem;
 #if PLATFORM == PLATFORM_LINUX
 #include <linux/limits.h>
 #include <stdarg.h>
-#include <bits/stdc++.h>
+    #if defined(__GNUC__)
+        #include <bits/stdc++.h>
+    #endif
 #elif PLATFORM == PLATFORM_ANDROID
 #include <jni.h>
 #endif
