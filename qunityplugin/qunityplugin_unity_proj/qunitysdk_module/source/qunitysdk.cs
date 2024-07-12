@@ -135,6 +135,8 @@ public class qunitysdk : MonoBehaviour
     const string cp = "__Internal";
 #elif UNITY_ANDROID
     const string cp = "libqunityplugin.so";
+#elif UNITY_STANDALONE_LINUX
+    const string cp = "libqunityplugin.so";
 #endif
 
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]

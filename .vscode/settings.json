@@ -19,5 +19,6 @@
     },
     "search.exclude": {
         "**/*.o": true
-    }
+    },
+    "editor.formatOnSaveMode": "modifications"
 }
