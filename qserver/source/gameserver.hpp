@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  gameserver.hpp
 //  NetworkServer
 //
@@ -31,6 +32,9 @@ class game_room : public room {
 
 // MARK: -
 class gameserver : public roomserver {
+   public:
+	virtual ~gameserver() {}
+
    protected:
 	void on_network_server_init() override;
 	room* create_room(const msg_room_config* room_config_msg) override;

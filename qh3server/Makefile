@@ -14,7 +14,9 @@ $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
 $(NETWORK_COMMON_SRCDIR)/serverconfig.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
+$(QHIREDIS_SRCDIR)/qhiredis_async.cpp \
 $(SERVER_COMMON_SRCDIR)/qmongo/qmongo.cpp \
+$(SERVER_COMMON_SRCDIR)/servercommon.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
@@ -50,7 +52,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = $(ZK_SRCDIR)/libs/linux/libzookeeper_mt.a ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../servercommon/libs/linux/libmongoc-static-1.0.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libbson-static-1.0.a ../common/libs/linux/libz.a -lssl -lcrypto -lsasl2 -pthread -lrt -lzookeeper_mt -Wl,--no-as-needed -ldl -lsnappy -lzstd -ldpp -lresolv
+	LIBS = $(ZK_SRCDIR)/libs/linux/libzookeeper_mt.a ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../servercommon/libs/linux/libmongoc-static-1.0.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libbson-static-1.0.a ../common/libs/linux/libz.a -lssl -lcrypto -lsasl2 -pthread -lrt -lzookeeper_mt -Wl,--no-as-needed -ldl -lsnappy -lzstd -ldpp -lresolv -lcurl
 	LDFLAGS = -L$(ZK_SRCDIR)/libs/linux -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
@@ -66,9 +68,14 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../servercommon/libs/$(MACOS_LIB_DIR)/libmongoc-static-1.0.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -ldpp -lresolv -lsasl2
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../servercommon/libs/$(MACOS_LIB_DIR)/libmongoc-static-1.0.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -ldpp -lresolv -lsasl2 -lcurl
 	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.3
+	LDFLAGS += -mmacosx-version-min=12.3
+	LDFLAGS += -mmacosx-version-min=12.3
 endif
 
 EXE = qh3server-app

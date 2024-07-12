@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  http3_command_server.hpp
 //  qh3server
 //
@@ -29,12 +30,15 @@ class http3_command_server : public qh3server {
 	void on_run_started() override;
 	void on_run_end() override;
 
+	float get_router_hb_interval_in_sec() override;
+
 	qhiredis* hiredis = nullptr;
 
    public:
 	http3_command_server(const qstring& redis_url, uint16_t redis_port, bridge_command_center* bridge, qstring router_port);
 	~http3_command_server();
 	static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
+	static inline const char* get_server_name() { return "http3_command_server"; }
 
    private:
 	void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);

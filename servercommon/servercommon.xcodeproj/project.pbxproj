@@ -61,6 +61,8 @@
 		556AB6992AF50BFB00D688DB /* mongoc.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6472AF50BFB00D688DB /* mongoc.h */; };
 		556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6B72AF50C3500D688DB /* qmongo.cpp */; };
 		556AB6BA2AF50C3500D688DB /* qmongo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6B82AF50C3500D688DB /* qmongo.hpp */; };
+		5576DA7D2BED599D00B39413 /* servercommon.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5576DA7B2BED599D00B39413 /* servercommon.hpp */; };
+		5576DA7E2BED599D00B39413 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7C2BED599D00B39413 /* servercommon.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -119,6 +121,8 @@
 		556AB6472AF50BFB00D688DB /* mongoc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mongoc.h; sourceTree = "<group>"; };
 		556AB6B72AF50C3500D688DB /* qmongo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qmongo.cpp; sourceTree = "<group>"; };
 		556AB6B82AF50C3500D688DB /* qmongo.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qmongo.hpp; sourceTree = "<group>"; };
+		5576DA7B2BED599D00B39413 /* servercommon.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = servercommon.hpp; sourceTree = "<group>"; };
+		5576DA7C2BED599D00B39413 /* servercommon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = servercommon.cpp; sourceTree = "<group>"; };
 		55A72F612B7F1EF000064250 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
 		55A9CD0F2B6580BC006CAD14 /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -156,6 +160,8 @@
 			children = (
 				556AB6122AF50BFB00D688DB /* libmongoc-1.0 */,
 				556AB6B62AF50C2200D688DB /* qmongo */,
+				5576DA7B2BED599D00B39413 /* servercommon.hpp */,
+				5576DA7C2BED599D00B39413 /* servercommon.cpp */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -288,6 +294,7 @@
 				556AB6752AF50BFB00D688DB /* mongoc-matcher.h in Headers */,
 				556AB6712AF50BFB00D688DB /* mongoc-rand.h in Headers */,
 				556AB6662AF50BFB00D688DB /* mongoc-log.h in Headers */,
+				5576DA7D2BED599D00B39413 /* servercommon.hpp in Headers */,
 				556AB68A2AF50BFB00D688DB /* mongoc-read-prefs.h in Headers */,
 				556AB6902AF50BFB00D688DB /* mongoc-version-functions.h in Headers */,
 				556AB66B2AF50BFB00D688DB /* mongoc-ssl.h in Headers */,
@@ -366,6 +373,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				556AB6B92AF50C3500D688DB /* qmongo.cpp in Sources */,
+				5576DA7E2BED599D00B39413 /* servercommon.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3client_helper.hpp
 //  qh3client
 //
@@ -15,8 +16,6 @@
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3client_helper"
-
-typedef std::function<void(conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
 
 namespace client {
 class qh3client_helper {

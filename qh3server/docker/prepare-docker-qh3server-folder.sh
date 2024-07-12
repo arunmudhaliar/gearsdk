@@ -1,79 +1,63 @@
+#!/bin/bash
+
+# Define variables for the directories
+SERVER="qh3server"
+DOCKER_DIR="./docker-$SERVER"
+SERVER_DIR="./$SERVER"
+
+# Move to the appropriate directory
 cd ../../
-rm -rf ./docker-qh3server
 
-mkdir ./docker-qh3server
+# Remove the old directory if it exists
+rm -rf $DOCKER_DIR
 
-# qh3server files
-cp -r ./common ./docker-qh3server/common
-cp -r ./configs ./docker-qh3server/configs
-cp -r ./networkcommon/ ./docker-qh3server/networkcommon
-cp -r ./qh3server/ ./docker-qh3server/qh3server
-cp -r ./qh3client/ ./docker-qh3server/qh3client
-cp -r ./qhiredis/ ./docker-qh3server/qhiredis
-cp -r ./qstats-crawler/ ./docker-qh3server/qstats-crawler
-cp -r ./servercommon/ ./docker-qh3server/servercommon
-cp -r ./qzookeeper/ ./docker-qh3server/qzookeeper
-cp -r ./qutils/ ./docker-qh3server/qutils
-cp ./qh3server/docker/Dockerfile ./docker-qh3server/Dockerfile
-cp ./qh3server/docker/make_qh3server.sh ./docker-qh3server/make_qh3server.sh
-cp ./qh3server/docker/run_qh3server.sh ./docker-qh3server/run_qh3server.sh
+# Create a new directory
+mkdir $DOCKER_DIR
 
-# supervisor
-cp ./qh3server/docker/supervisord.conf ./docker-qh3server/supervisord.conf
+# Copy necessary files and directories
+cp -r ./common $DOCKER_DIR/common
+cp -r ./configs $DOCKER_DIR/configs
+cp -r ./networkcommon/ $DOCKER_DIR/networkcommon
+cp -r $SERVER_DIR/ $DOCKER_DIR/$SERVER
+cp -r ./qh3client/ $DOCKER_DIR/qh3client
+cp -r ./qhiredis/ $DOCKER_DIR/qhiredis
+cp -r ./qstats-crawler/ $DOCKER_DIR/qstats-crawler
+cp -r ./servercommon/ $DOCKER_DIR/servercommon
+cp -r ./qzookeeper/ $DOCKER_DIR/qzookeeper
+cp -r ./qutils/ $DOCKER_DIR/qutils
+cp $SERVER_DIR/docker/Dockerfile $DOCKER_DIR/Dockerfile
+cp $SERVER_DIR/docker/make_$SERVER.sh $DOCKER_DIR/make_$SERVER.sh
+cp $SERVER_DIR/docker/run_$SERVER.sh $DOCKER_DIR/run_$SERVER.sh
 
-# qstats-crawler files
-cp ./qstats-crawler/docker/make_qstats-crawler.sh ./docker-qh3server/make_qstats-crawler.sh
-cp ./qstats-crawler/docker/run_qstats-crawler.sh ./docker-qh3server/run_qstats-crawler.sh
-cp ./qstats-crawler/docker/make_postgresql.sh ./docker-qh3server/make_postgresql.sh
+# Copy supervisor configuration
+cp $SERVER_DIR/docker/supervisord.conf $DOCKER_DIR/supervisord.conf
 
-# docker-qh3server
-rm -rf -- ./docker-qh3server/**/*.o
-rm -rf -- ./docker-qh3server/**/**/*.o
-rm -rf -- ./docker-qh3server/**/**/**/*.o
-rm -rf -- ./docker-qh3server/**/**/**/**/*.o
+# Copy qstats-crawler files
+cp ./qstats-crawler/docker/make_qstats-crawler.sh $DOCKER_DIR/make_qstats-crawler.sh
+cp ./qstats-crawler/docker/run_qstats-crawler.sh $DOCKER_DIR/run_qstats-crawler.sh
+cp ./qstats-crawler/docker/make_postgresql.sh $DOCKER_DIR/make_postgresql.sh
 
-rm -rf -- ./docker-qh3server/**/.DS_Store
-rm -rf -- ./docker-qh3server/**/**/.DS_Store
-rm -rf -- ./docker-qh3server/**/**/**/.DS_Store
-rm -rf -- ./docker-qh3server/**/**/**/**/.DS_Store
+# Clean up object files and macOS specific files
+find $DOCKER_DIR -name '*.o' -exec rm -rf {} +
+find $DOCKER_DIR -name '.DS_Store' -exec rm -rf {} +
+find $DOCKER_DIR -name 'DerivedData' -exec rm -rf {} +
+find $DOCKER_DIR -name '*.xcodeproj' -exec rm -rf {} +
 
-rm -rf -- ./docker-qh3server/**/DerivedData
-rm -rf -- ./docker-qh3server/**/**/DerivedData
-rm -rf -- ./docker-qh3server/**/**/**/DerivedData
-rm -rf -- ./docker-qh3server/**/**/**/**/DerivedData
+# Remove macOS specific libraries
+rm -rf $DOCKER_DIR/networkcommon/libs/macos
+rm -rf $DOCKER_DIR/common/libs/macos
+rm -rf $DOCKER_DIR/qhiredis/libs/macos
+rm -rf $DOCKER_DIR/qstats-crawler/libs/macos
+rm -rf $DOCKER_DIR/servercommon/libs/macos
+rm -rf $DOCKER_DIR/qzookeeper/libs/macos
+rm -rf $DOCKER_DIR/qutils/libs/macos
+rm -rf $DOCKER_DIR/$SERVER/docker
+rm -rf $DOCKER_DIR/$SERVER/*.dSYM
+rm -rf $DOCKER_DIR/$SERVER/$SERVER-app
 
-rm -rf -- ./docker-qh3server/**/*.xcodeproj
-rm -rf -- ./docker-qh3server/**/**/*.xcodeproj
-rm -rf -- ./docker-qh3server/**/**/**/*.xcodeproj
-rm -rf -- ./docker-qh3server/**/**/**/**/*.xcodeproj
-
-rm -rf ./docker-qh3server/networkcommon/libs/macos
-rm -rf ./docker-qh3server/common/libs/macos
-rm -rf ./docker-qh3server/qhiredis/libs/macos
-rm -rf ./docker-qh3server/qstats-crawler/libs/macos
-rm -rf ./docker-qh3server/servercommon/libs/macos
-rm -rf ./docker-qh3server/qzookeeper/libs/macos
-rm -rf ./docker-qh3server/qutils/libs/macos
-rm -rf ./docker-qh3server/qh3server/docker
-rm -rf ./docker-qh3server/qh3server/*.dSYM
-rm -rf ./docker-qh3server/qh3server/qh3server-app
-
-# build
-echo "use 'sudo docker build -t qh3server-exp .' to build the docker"
-# sudo docker build -t qh3server.
-
-# run
-echo "use 'sudo docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp' to run the docker"
-# sudo docker run --publish 4004:4004/udp --name qh3server-container -d qh3server-exp
-
-# stop
-echo "use 'sudo docker stop qh3server-container' to stop the docker"
-# sudo docker stop qh3server-container
-
-# restart
-echo "use 'sudo docker restart qh3server-container' to re-start the docker"
-# sudo docker restart qh3server-container
-
-# REMOVE
-echo "use 'sudo docker rm --force qh3server-container' to REMOVE the docker"
-# sudo docker rm --force qh3server-container
+# Instructions for building and running the Docker container
+echo "use 'sudo docker build -t $SERVER-exp .' to build the docker"
+echo "use 'sudo docker run --publish 4004:4004/udp --name $SERVER-container -d $SERVER-exp' to run the docker"
+echo "use 'sudo docker stop $SERVER-container' to stop the docker"
+echo "use 'sudo docker restart $SERVER-container' to restart the docker"
+echo "use 'sudo docker rm --force $SERVER-container' to remove the docker"

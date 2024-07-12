@@ -9,6 +9,14 @@
 /* Begin PBXBuildFile section */
 		1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1796DF492BC8593900328EE7 /* libdpp.dylib */; };
 		55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAC2B97B03D00BE7723 /* libqutils.a */; };
+		555BA6F52C3AEE2000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; };
+		555BA6F62C3AEE2000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		555EB1222C318D82001F1B21 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7F2BED5FE700B39413 /* servercommon.cpp */; };
+		555EB1232C318D84001F1B21 /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2172B20EB53007C93AA /* debug_new.cpp */; };
+		555EB1242C318D90001F1B21 /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6B42AD84A3A00FAFE08 /* qnetworkserver.cpp */; };
+		555EB1252C318D95001F1B21 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
+		555EB1262C318D98001F1B21 /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
+		555EB1272C318D9C001F1B21 /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487A32AEC6BE000C0F6CA /* room.cpp */; };
 		556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEB2B0AB4A600D688DB /* libz.a */; };
 		557487492AEA47E100C0F6CA /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557487472AEA47E100C0F6CA /* roomserver.cpp */; };
 		557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 557487572AEB8E1A00C0F6CA /* libcommon.a */; };
@@ -19,6 +27,8 @@
 		5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574E6C12ADBB1CD00FAFE08 /* gameserver.cpp */; };
 		5574F2182B20EB53007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2172B20EB53007C93AA /* debug_new.cpp */; };
 		5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5574F2192B20EBC9007C93AA /* libnetworkcommon.a */; };
+		5576DA7A2BED541900B39413 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5576DA792BED541900B39413 /* libcurl.tbd */; };
+		5576DA802BED5FE700B39413 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7F2BED5FE700B39413 /* servercommon.cpp */; };
 		55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F672B8370CC00064250 /* libqhiredis.a */; };
 		55A72F6A2B83724C00064250 /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A72F692B83723D00064250 /* libhiredis.a */; };
 		55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55B372BB2AC2ABCD00F0095E /* main.cpp */; };
@@ -29,6 +39,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		555BA6F72C3AEE2000E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA6F62C3AEE2000E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372B62AC2ABCD00F0095E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -46,6 +67,8 @@
 		1796DF492BC8593900328EE7 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAC2B97B03D00BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../qutils/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
+		555BA6F42C3AEE2000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
+		555EB11E2C318D54001F1B21 /* libqserver-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqserver-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAEB2B0AB4A600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		557487472AEA47E100C0F6CA /* roomserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roomserver.cpp; sourceTree = "<group>"; };
@@ -61,6 +84,8 @@
 		5574E6C22ADBB1CD00FAFE08 /* gameserver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = gameserver.hpp; sourceTree = "<group>"; };
 		5574F2172B20EB53007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		5574F2192B20EBC9007C93AA /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		5576DA792BED541900B39413 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		5576DA7F2BED5FE700B39413 /* servercommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = servercommon.cpp; path = ../servercommon/source/servercommon.cpp; sourceTree = "<group>"; };
 		55A72F672B8370CC00064250 /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55A72F692B83723D00064250 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos/libhiredis.a; sourceTree = "<group>"; };
 		55A9CD3E2B701314006CAD14 /* qserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qserver.entitlements; sourceTree = "<group>"; };
@@ -76,16 +101,25 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		555EB11C2C318D54001F1B21 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372B52AC2ABCD00F0095E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA7A2BED541900B39413 /* libcurl.tbd in Frameworks */,
 				55A72F682B8370CC00064250 /* libqhiredis.a in Frameworks */,
 				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
 				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
 				55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
+				555BA6F52C3AEE2000E23A51 /* libev.4.dylib in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
 				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
 				1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */,
@@ -100,6 +134,8 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA6F42C3AEE2000E23A51 /* libev.4.dylib */,
+				5576DA792BED541900B39413 /* libcurl.tbd */,
 				1796DF492BC8593900328EE7 /* libdpp.dylib */,
 				55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */,
 				55384BAC2B97B03D00BE7723 /* libqutils.a */,
@@ -125,6 +161,7 @@
 			children = (
 				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,
+				5576DA7F2BED5FE700B39413 /* servercommon.cpp */,
 				55D1C6DB2AD32E8800470E01 /* certs */,
 				55B372BA2AC2ABCD00F0095E /* source */,
 				55B372B92AC2ABCD00F0095E /* Products */,
@@ -136,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				55B372B82AC2ABCD00F0095E /* qserver */,
+				555EB11E2C318D54001F1B21 /* libqserver-st.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -167,7 +205,34 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		555EB11A2C318D54001F1B21 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		555EB11D2C318D54001F1B21 /* qserver-st */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555EB1212C318D54001F1B21 /* Build configuration list for PBXNativeTarget "qserver-st" */;
+			buildPhases = (
+				555EB11A2C318D54001F1B21 /* Headers */,
+				555EB11B2C318D54001F1B21 /* Sources */,
+				555EB11C2C318D54001F1B21 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "qserver-st";
+			productName = "qserver-st";
+			productReference = 555EB11E2C318D54001F1B21 /* libqserver-st.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		55B372B72AC2ABCD00F0095E /* qserver */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55B372BF2AC2ABCD00F0095E /* Build configuration list for PBXNativeTarget "qserver" */;
@@ -177,6 +242,7 @@
 				55B372B62AC2ABCD00F0095E /* CopyFiles */,
 				555F45BE2BA63EFC0077ADEE /* ShellScript */,
 				5595E1252BB08BAB00FA2618 /* ShellScript */,
+				555BA6F72C3AEE2000E23A51 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -195,6 +261,9 @@
 			attributes = {
 				LastUpgradeCheck = 1340;
 				TargetAttributes = {
+					555EB11D2C318D54001F1B21 = {
+						CreatedOnToolsVersion = 13.4;
+					};
 					55B372B72AC2ABCD00F0095E = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -214,6 +283,7 @@
 			projectRoot = "";
 			targets = (
 				55B372B72AC2ABCD00F0095E /* qserver */,
+				555EB11D2C318D54001F1B21 /* qserver-st */,
 			);
 		};
 /* End PBXProject section */
@@ -256,10 +326,24 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		555EB11B2C318D54001F1B21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB1222C318D82001F1B21 /* servercommon.cpp in Sources */,
+				555EB1232C318D84001F1B21 /* debug_new.cpp in Sources */,
+				555EB1242C318D90001F1B21 /* qnetworkserver.cpp in Sources */,
+				555EB1252C318D95001F1B21 /* gameserver.cpp in Sources */,
+				555EB1262C318D98001F1B21 /* roomserver.cpp in Sources */,
+				555EB1272C318D9C001F1B21 /* room.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372B42AC2ABCD00F0095E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA802BED5FE700B39413 /* servercommon.cpp in Sources */,
 				55B372BC2AC2ABCD00F0095E /* main.cpp in Sources */,
 				5574E6C32ADBB1CD00FAFE08 /* gameserver.cpp in Sources */,
 				5574E6B62AD84A3A00FAFE08 /* qnetworkserver.cpp in Sources */,
@@ -272,6 +356,61 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		555EB11F2C318D54001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"LOG_LEVEL=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		555EB1202C318D54001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../qutils/libs/macos\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		55B372BD2AC2ABCD00F0095E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -447,6 +586,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		555EB1212C318D54001F1B21 /* Build configuration list for PBXNativeTarget "qserver-st" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB11F2C318D54001F1B21 /* Debug */,
+				555EB1202C318D54001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		55B372B32AC2ABCD00F0095E /* Build configuration list for PBXProject "qserver" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

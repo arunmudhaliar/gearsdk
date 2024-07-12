@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qnetworkclient.hpp
 //  networkclient
 //
@@ -8,23 +9,18 @@
 #ifndef qnetworkclient_hpp
 #define qnetworkclient_hpp
 
+extern "C" {
 #include <ev.h>
-#include <sstream>
-#include <stdio.h>
-#include <string>
+#include <fcntl.h>
+#include <quiche.h>
 #include <uthash.h>
-#include <vector>
-
 #if USE_PTHREAD
 #include <pthread.h>
 #endif
+}
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
-
-extern "C" {
-#include <quiche.h>
-}
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
@@ -47,7 +43,7 @@ struct qdata {
 class bridge_qcommand;
 class conn_io_client {
    private:
-	conn_io_client() {};
+	conn_io_client() {}
 
    public:
 	conn_io_client(bridge_qcommand* bridge, int id);
@@ -144,23 +140,23 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	CON_STATE state = STATE_OPEN;
 
    protected:
-	void flushegress(struct ev_loop* loop, conn_io_client* qconnection) override final;
-	int release_connection(struct ev_loop* loop, conn_io_client* qconnection) override final;
+	void flushegress(struct ev_loop* loop, conn_io_client* qconnection) final;
+	int release_connection(struct ev_loop* loop, conn_io_client* qconnection) final;
 	void onconnect(conn_io_client* qconnection) override;
 	void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override;
 	void onreleaseconnection(conn_io_client* qconnection) override;
 	void onclose(conn_io_client* qconnection) override;
-	inline struct ev_loop* getmainloop() override final { return mainloop; }
-	void event_connect(conn_io_client* qconnection) override final;
-	void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override final;
-	void event_close(conn_io_client* qconnection) override final;
+	inline struct ev_loop* getmainloop() final { return mainloop; }
+	void event_connect(conn_io_client* qconnection) final;
+	void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) final;
+	void event_close(conn_io_client* qconnection) final;
 
 #if USE_PTHREAD
-	qmutex* get_run_mutex() override final { return &run_mutex; }
-	qmutex* het_close_mutex() override final { return &close_mutex; }
-	qmutex* get_sendloop_mutex() override final { return &sendloop_mutex; }
+	qmutex* get_run_mutex() final { return &run_mutex; }
+	qmutex* het_close_mutex() final { return &close_mutex; }
+	qmutex* get_sendloop_mutex() final { return &sendloop_mutex; }
 
-	qmutex* get_send_mutex() override final { return &send_mutex; }
+	qmutex* get_send_mutex() final { return &send_mutex; }
 #endif
 	conn_io_client* qclient_connection = nullptr;
 
@@ -168,13 +164,13 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	qnetworkclient();
 	~qnetworkclient();
 
-	inline CON_STATE getstate() override final { return state; }
+	inline CON_STATE getstate() final { return state; }
 	inline bool isopen() { return state == STATE_OPEN; }
 	inline bool isclosed() { return state == STATE_CLOSE; }
 
-	int sendMessage(const qstring& buffer, bool flush) override final;
-	int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) override final;
-	int close() override final;
+	int sendMessage(const qstring& buffer, bool flush) final;
+	int sendMessage(const uint8_t* buffer, ssize_t size, bool flush) final;
+	int close() final;
 	bool is_runfinished();
 	int run(qstring host, qstring port);
 	void forcerelease();

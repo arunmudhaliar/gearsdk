@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  sdktypes.cpp
 //  common
 //
@@ -17,6 +18,7 @@
 using namespace gsdk;
 
 struct utsname device::device_details;
+char server::machine_public_ip[16] = "0.0.0.0";
 
 extern "C"
 {

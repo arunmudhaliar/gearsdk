@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qnetworkclient.cpp
 //  networkclient
 //
@@ -7,28 +8,15 @@
 
 #include "qnetworkclient.hpp"
 
-#include <algorithm>
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <netdb.h>
-#include <pthread.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-using namespace client;
+using client::conn_io_client;
+using client::qnetworkclient;
 
 int qnetworkclient::connectionID = 0;
 
 // MARK: - QConnection
-conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : bridge(bridge), id(id) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : id(id), bridge(bridge) {}
 
-conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id) : bridge(bridge), config(config), id(id) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, Config* config, int id) : id(id), bridge(bridge), config(config) {}
 
 conn_io_client::~conn_io_client() {
 	Release();
@@ -99,7 +87,7 @@ int conn_io_client::Connect(qstring host, qstring port) {
 	if (getsockname(sock, (struct sockaddr*) &local_addr, &local_addr_len) != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to get local address of socket");
 		return -1;
-	};
+	}
 
 	HASH_VALUE(scid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 
@@ -154,7 +142,7 @@ ssize_t conn_io_client::SendMessage(const char* buf, size_t buflen, bool fin) {
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-		ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*) buf, buflen, fin);
+		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, fin);
 		if (sent_len != (ssize_t) buflen) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
 			break;
@@ -176,6 +164,7 @@ void qnetworkclient::setstate(CON_STATE state) {
 }
 
 void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
+	UNUSED(argp);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", (char*) line);
 }
 
@@ -203,13 +192,13 @@ void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnecti
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) qconnection->egress_out, sent);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(qconnection->egress_out), sent);
 		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 	}
 
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
-	double t = (double) timeout_in_nanos / 1e9f;
+	double t = static_cast<double>(timeout_in_nanos) / 1e9;
 	qconnection->timer.repeat = t;
 	ev_timer_again(loop, &qconnection->timer);
 	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
@@ -240,6 +229,7 @@ void qnetworkclient::forcerelease() {
 }
 
 int qnetworkclient::release_connection(struct ev_loop* loop, conn_io_client* qconnection) {
+	UNUSED(loop);
 	int retVal = 0;
 	if (qconnection != nullptr) {
 		qconnection->Release();
@@ -269,7 +259,7 @@ int qnetworkclient::close() {
 			int conActive = qclient_connection->ConnectionActive();
 			if (conActive == 0) {
 				const uint8_t bye[] = "Bye\r\n";
-				qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata((uint8_t*) bye, sizeof(bye), true));
+				qclient_connection->sendBuffer.push_back(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(bye), sizeof(bye), true));
 			}
 		}
 	}
@@ -303,12 +293,12 @@ int qnetworkclient::sendMessage(const uint8_t* buffer, ssize_t size, bool flush)
 }
 
 int qnetworkclient::sendMessage(const qstring& buffer, bool flush) {
-	return sendMessage((uint8_t*) buffer.c_str(), buffer.length(), flush);
+	return sendMessage(reinterpret_cast<const uint8_t*>(buffer.c_str()), buffer.length(), flush);
 }
 
 void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(revents);
-	conn_io_client* qconnection_ = (conn_io_client*) w->data;
+	conn_io_client* qconnection_ = reinterpret_cast<conn_io_client*>(w->data);
 	if (qconnection_->conn == nullptr) {
 		return;
 	}
@@ -396,7 +386,9 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
-	conn_io_client* qconnection_ = (conn_io_client*) w->data;
+	UNUSED(loop);
+	UNUSED(revents);
+	conn_io_client* qconnection_ = reinterpret_cast<conn_io_client*>(w->data);
 #if USE_PTHREAD
 	// lock
 	DEBUG_ASSERT(__LOGTAG__, (qconnection_->bridge->get_sendloop_mutex()->tryLock(__FUNCTION__) == 0), __FUNCTION__);
@@ -422,7 +414,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 
 		for (auto it = successfullySent.cbegin(); it != successfullySent.cend(); it++) {
 			qdata* fd = *it;
-			int oldSz = (int) qconnection_->sendBuffer.size();
+			size_t oldSz = qconnection_->sendBuffer.size();
 			qconnection_->sendBuffer.erase(std::remove(qconnection_->sendBuffer.begin(), qconnection_->sendBuffer.end(), fd), qconnection_->sendBuffer.end());
 			if (oldSz != qconnection_->sendBuffer.size()) {
 				GX_DELETE(fd);
@@ -437,7 +429,8 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 }
 
 void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
-	conn_io_client* qconnection_ = (conn_io_client*) w->data;
+	UNUSED(revents);
+	conn_io_client* qconnection_ = reinterpret_cast<conn_io_client*>(w->data);
 	if (qconnection_->conn == nullptr) {
 		ev_break(EV_A_ EVBREAK_ONE);
 		return;
@@ -475,6 +468,7 @@ void qnetworkclient::onclose(conn_io_client* qconnection) {
 }
 
 void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+	UNUSED(qconnection);
 	uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
@@ -483,6 +477,7 @@ void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* q
 }
 
 void qnetworkclient::onreleaseconnection(conn_io_client* qconnection) {
+	UNUSED(qconnection);
 	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "Connection about to release !!!");
 }
 
@@ -503,7 +498,7 @@ qnetworkclient::~qnetworkclient() {
 }
 
 void* qnetworkclient::run_internal(void* data) {
-	RunConfig* runConfig = (RunConfig*) data;
+	RunConfig* runConfig = reinterpret_cast<RunConfig*>(data);
 	qstring host = runConfig->host;
 	qstring port = runConfig->port;
 	qnetworkclient* thiz = runConfig->thiz;
@@ -530,7 +525,7 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	}
 
-	quiche_config_set_application_protos(config, (uint8_t*) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
+	quiche_config_set_application_protos(config, reinterpret_cast<const uint8_t*>("\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9"), 38);
 
 	quiche_config_set_max_idle_timeout(config, 30000);
 	quiche_config_set_max_recv_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);
@@ -634,12 +629,12 @@ int qnetworkclient::run(qstring host, qstring port) {
 	runConfig.id = qnetworkclient::connectionID++;
 #if USE_PTHREAD
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
-	if (pthread_create(&run_thread_id, nullptr, qnetworkclient::run_internal, (void*) &runConfig) < 0) {
+	if (pthread_create(&run_thread_id, nullptr, qnetworkclient::run_internal, reinterpret_cast<void*>(&runConfig)) < 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
 		return -1;
 	}
 #else
-	qnetworkclient::run_internal((void*) &runConfig);
+	qnetworkclient::run_internal(reinterpret_cast<void*>(&runConfig));
 #endif
 	return 0;
 }

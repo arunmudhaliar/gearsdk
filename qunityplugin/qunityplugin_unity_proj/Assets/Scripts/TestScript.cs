@@ -30,9 +30,26 @@ public class TestScript : MonoBehaviour
     void Start()
     {
         Debug.Log("TestScript - Start");
+        Screen.fullScreen = false;
+        ShowStatusBar();
         previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
         server_ip.text = previous_valid_ip;
         qsocket_to_send_shutdown = new qunitysdk.qsocket();
+    }
+
+    public void ShowStatusBar()
+    {
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject window = activity.Call<AndroidJavaObject>("getWindow");
+
+            activity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
+            {
+                window.Call("clearFlags", 0x0400); // 0x0400 is the flag FLAG_FULLSCREEN.
+            }));
+        }
     }
 
     public static bool IsValidIPv4( string ipString ) {

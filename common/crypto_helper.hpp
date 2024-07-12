@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  crypto_helper.hpp
 //  common
 //

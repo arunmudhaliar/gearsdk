@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  gameclient.cpp
 //  networkclient
 //
@@ -9,6 +10,8 @@
 
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
+
+gameclient::~gameclient() {}
 
 void gameclient::onconnect(conn_io_client* qconnection) {
 	if (shutdown_client) {

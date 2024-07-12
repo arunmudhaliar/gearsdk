@@ -30,7 +30,6 @@
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
 #elif PLATFORM == PLATFORM_LINUX
-#include <linux/limits.h>
 namespace fs = std::filesystem;
 #else
 namespace fs = std::__fs::filesystem;
@@ -67,7 +66,9 @@ namespace fs = std::__fs::filesystem;
 #if PLATFORM == PLATFORM_LINUX
 #include <linux/limits.h>
 #include <stdarg.h>
-#include <bits/stdc++.h>
+    #if defined(__GNUC__)
+        #include <bits/stdc++.h>
+    #endif
 #elif PLATFORM == PLATFORM_ANDROID
 #include <jni.h>
 #endif
@@ -127,6 +128,11 @@ namespace gsdk {
 #if PLATFORM == PLATFORM_ANDROID
         static JavaVM* g_JavaVM;
 #endif
+    };
+
+    class server {
+    public:
+        static char machine_public_ip[16];
     };
 
     //https://stackoverflow.com/questions/7021725/how-to-convert-a-string-to-integer-in-c

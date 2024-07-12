@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  serverconfig.hpp
 //  networkcommon
 //
@@ -11,19 +12,18 @@
 #include "../../common/qstring.h"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qtextfile.hpp"
-
-#include <algorithm>
 #include <map>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
-#include <vector>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "serverconfig"
 
 class serverconfig {
+private:
+    serverconfig(){}
    public:
-	serverconfig();
+	serverconfig(interface_qzookeeper* interface);
 	~serverconfig();
 
 	void clear();
@@ -31,10 +31,13 @@ class serverconfig {
 	int get_config(const qstring& key, const qstring& default_value, qstring& result);
 	int get_int32(const qstring& key, const int32_t default_value);
 	qstring get_string(const qstring& key, const qstring& default_value);
-
+    
    private:
+    static void zk_value_change_listener(const qstring& path, const qstring& data, void* context);
 	void iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder);
-
+    bool try_update_value(const qstring& path, const qstring& data);
+    
 	std::map<qstring, qstring> configs;
+    interface_qzookeeper* zk_interface;
 };
 #endif /* serverconfig_hpp */

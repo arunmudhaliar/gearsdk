@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  gameclient.hpp
 //  networkclient
 //
@@ -13,6 +14,9 @@
 using namespace client;
 
 class gameclient : public qnetworkclient {
+   public:
+	virtual ~gameclient();
+
    protected:
 	void onconnect(conn_io_client* qconnection) override;
 

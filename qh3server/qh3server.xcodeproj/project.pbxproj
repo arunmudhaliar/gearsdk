@@ -8,6 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
+		555BA6F12C3AEDA600E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F02C3AEDA600E23A51 /* libev.4.dylib */; };
+		555BA6F22C3AEDA600E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F02C3AEDA600E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		555EB08F2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */; };
+		555EB0EA2C2F0D31001F1B21 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
+		555EB0EB2C2F0D34001F1B21 /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22F2B3FC9EB00E47984 /* qh3client_helper.cpp */; };
+		555EB0EC2C2F0D37001F1B21 /* qzookeeper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E26F2B489BEF00E47984 /* qzookeeper.cpp */; };
+		555EB0ED2C2F0D3B001F1B21 /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20E2B1F727B007C93AA /* debug_new.cpp */; };
+		555EB0EE2C2F0D40001F1B21 /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
+		555EB0EF2C2F0D46001F1B21 /* http3_command_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2212B3A309700E47984 /* http3_command_server.cpp */; };
+		555EB0F02C2F0D4D001F1B21 /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
+		555EB0F12C2F0D52001F1B21 /* qh3simple_router.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */; };
+		555EB0F22C2F0D55001F1B21 /* qh3simple_router_extended.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */; };
+		555EB0F32C2F0D59001F1B21 /* qh3simple_router_structs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */; };
 		556AB5EF2AF1B3C800D688DB /* libqhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5EE2AF1B3C800D688DB /* libqhiredis.a */; };
 		556AB5F32AF25B3500D688DB /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB5F22AF25B3500D688DB /* libhiredis.a */; };
 		556AB6102AF50A8900D688DB /* libmongoc-static-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB60F2AF50A8900D688DB /* libmongoc-static-1.0.a */; };
@@ -17,6 +30,7 @@
 		5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20E2B1F727B007C93AA /* debug_new.cpp */; };
 		5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD62AEFBA6300BC4CED /* qh3server.cpp */; };
 		5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */; };
+		5576DA782BED515E00B39413 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 5576DA772BED514D00B39413 /* libcurl.tbd */; };
 		5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */; };
 		5594E2232B3A309700E47984 /* http3_command_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2212B3A309700E47984 /* http3_command_server.cpp */; };
 		5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
@@ -35,6 +49,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		555BA6F32C3AEDA600E23A51 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				555BA6F22C3AEDA600E23A51 /* libev.4.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55A4AD9D2AEF825800BC4CED /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -49,6 +74,9 @@
 /* Begin PBXFileReference section */
 		1763DC0B2BC8175300F71F07 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos_arm64/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAA2B97ADB800BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		555BA6F02C3AEDA600E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
+		555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router_extended.cpp; sourceTree = "<group>"; };
+		555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556AB5C82AF01D0500D688DB /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		556AB5C92AF01D0500D688DB /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
 		556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_server.cpp; sourceTree = "<group>"; };
@@ -65,6 +93,7 @@
 		556ABAC12B0A784A00D688DB /* libpgcommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgcommon.a; path = ../servercommon/libs/macos/libpgcommon.a; sourceTree = "<group>"; };
 		556ABAC32B0A78FA00D688DB /* libpgport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpgport.a; path = ../servercommon/libs/macos/libpgport.a; sourceTree = "<group>"; };
 		5574F20E2B1F727B007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		5576DA772BED514D00B39413 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3simple_router.cpp; sourceTree = "<group>"; };
 		5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3simple_router.hpp; sourceTree = "<group>"; };
 		5594E2212B3A309700E47984 /* http3_command_server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = http3_command_server.cpp; sourceTree = "<group>"; };
@@ -94,12 +123,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		555EB0E42C2F0D0D001F1B21 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55A4AD9C2AEF825800BC4CED /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5576DA782BED515E00B39413 /* libcurl.tbd in Frameworks */,
 				55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
+				555BA6F12C3AEDA600E23A51 /* libev.4.dylib in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
 				55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
@@ -155,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				55A4AD9F2AEF825800BC4CED /* qh3server */,
+				555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,6 +211,7 @@
 				556AB5CC2AF0308800D688DB /* http3_sample_server.cpp */,
 				556AB5CD2AF0308800D688DB /* http3_sample_server.hpp */,
 				5593E1CD2B337E2B00D8E98B /* qh3simple_router.cpp */,
+				555EB08E2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp */,
 				5593E1CE2B337E2B00D8E98B /* qh3simple_router.hpp */,
 				5594E2352B3FCCC200E47984 /* qh3simple_router_structs.h */,
 				5594E2362B3FCD4200E47984 /* qh3simple_router_structs.cpp */,
@@ -182,6 +222,8 @@
 		55A4ADBC2AEF836400BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				555BA6F02C3AEDA600E23A51 /* libev.4.dylib */,
+				5576DA772BED514D00B39413 /* libcurl.tbd */,
 				1763DC0B2BC8175300F71F07 /* libdpp.dylib */,
 				55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */,
 				55384BAA2B97ADB800BE7723 /* libqutils.a */,
@@ -211,7 +253,34 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		555EB0E22C2F0D0D001F1B21 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		555EB0E52C2F0D0D001F1B21 /* qh3server-st */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 555EB0E92C2F0D0E001F1B21 /* Build configuration list for PBXNativeTarget "qh3server-st" */;
+			buildPhases = (
+				555EB0E22C2F0D0D001F1B21 /* Headers */,
+				555EB0E32C2F0D0D001F1B21 /* Sources */,
+				555EB0E42C2F0D0D001F1B21 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "qh3server-st";
+			productName = "qh3server-st";
+			productReference = 555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		55A4AD9E2AEF825800BC4CED /* qh3server */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55A4ADA62AEF825800BC4CED /* Build configuration list for PBXNativeTarget "qh3server" */;
@@ -221,6 +290,7 @@
 				55A4AD9D2AEF825800BC4CED /* CopyFiles */,
 				555F45BD2BA627F00077ADEE /* ShellScript */,
 				5595E1222BB08AA900FA2618 /* ShellScript */,
+				555BA6F32C3AEDA600E23A51 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -240,6 +310,9 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 1340;
 				TargetAttributes = {
+					555EB0E52C2F0D0D001F1B21 = {
+						CreatedOnToolsVersion = 13.4;
+					};
 					55A4AD9E2AEF825800BC4CED = {
 						CreatedOnToolsVersion = 13.4;
 					};
@@ -259,6 +332,7 @@
 			projectRoot = "";
 			targets = (
 				55A4AD9E2AEF825800BC4CED /* qh3server */,
+				555EB0E52C2F0D0D001F1B21 /* qh3server-st */,
 			);
 		};
 /* End PBXProject section */
@@ -302,6 +376,23 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		555EB0E32C2F0D0D001F1B21 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				555EB0EB2C2F0D34001F1B21 /* qh3client_helper.cpp in Sources */,
+				555EB0EA2C2F0D31001F1B21 /* qh3client.cpp in Sources */,
+				555EB0EC2C2F0D37001F1B21 /* qzookeeper.cpp in Sources */,
+				555EB0ED2C2F0D3B001F1B21 /* debug_new.cpp in Sources */,
+				555EB0EE2C2F0D40001F1B21 /* qh3server.cpp in Sources */,
+				555EB0EF2C2F0D46001F1B21 /* http3_command_server.cpp in Sources */,
+				555EB0F02C2F0D4D001F1B21 /* http3_sample_server.cpp in Sources */,
+				555EB0F12C2F0D52001F1B21 /* qh3simple_router.cpp in Sources */,
+				555EB0F22C2F0D55001F1B21 /* qh3simple_router_extended.cpp in Sources */,
+				555EB0F32C2F0D59001F1B21 /* qh3simple_router_structs.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55A4AD9B2AEF825800BC4CED /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -314,6 +405,7 @@
 				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
 				5594E2702B489BEF00E47984 /* qzookeeper.cpp in Sources */,
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
+				555EB08F2C2B0B5A001F1B21 /* qh3simple_router_extended.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3simple_router.cpp in Sources */,
 			);
@@ -322,6 +414,84 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		555EB0E72C2F0D0E001F1B21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+					"LOG_LEVEL=3",
+					"FORK_QH3_SERVER=0",
+					THREADED,
+					"ENABLE_ZK=1",
+					"DEV_BUILD=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../servercommon/libs/macos\"",
+					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		555EB0E82C2F0D0E001F1B21 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"LOG_LEVEL=3",
+					"FORK_QH3_SERVER=1",
+					THREADED,
+					"ENABLE_ZK=1",
+					"PROD_BUILD=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../qhiredis/hiredis\"",
+					"\"$(SRCROOT)/../servercommon/source/libmongoc-1.0\"",
+					"\"$(SRCROOT)/../common/libbson-1.0\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../qh3client/qh3client\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
+					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qutils\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
+					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
+					"\"$(SRCROOT)/../servercommon/libs/macos\"",
+					"\"$(SRCROOT)/../common/libs/macos\"",
+					"\"$(SRCROOT)/../qzookeeper/libs/macos\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		55A4ADA42AEF825800BC4CED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -522,6 +692,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		555EB0E92C2F0D0E001F1B21 /* Build configuration list for PBXNativeTarget "qh3server-st" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				555EB0E72C2F0D0E001F1B21 /* Debug */,
+				555EB0E82C2F0D0E001F1B21 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		55A4AD9A2AEF825700BC4CED /* Build configuration list for PBXProject "qh3server" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

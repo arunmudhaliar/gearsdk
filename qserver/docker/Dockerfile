@@ -5,6 +5,7 @@ WORKDIR /app
 COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qhiredis/ ./qhiredis
+COPY servercommon/ ./servercommon
 COPY qutils/ ./qutils
 COPY qserver/ ./qserver
 COPY make_qserver.sh ./
@@ -16,5 +17,6 @@ RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
 RUN apt install iproute2 -y
 RUN apt-get install zlib1g-dev -y
+RUN apt-get install libcurl4-openssl-dev -y
 RUN sh make_qserver.sh
 CMD [ "sh", "run_qserver.sh" ]

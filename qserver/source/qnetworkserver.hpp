@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qnetworkserver.hpp
 //  NetworkServer
 //
@@ -8,23 +9,17 @@
 #ifndef qnetworkserver_hpp
 #define qnetworkserver_hpp
 
+extern "C" {
+#include <ev.h>
+#include <quiche.h>
+#include <uthash.h>
+}
+
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
-
-#include <algorithm>
-#include <ev.h>
-#include <filesystem>
-#include <map>
-#include <stdio.h>
-#include <string>
-#include <uthash.h>
-
-extern "C" {
-#include <quiche.h>
-}
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkserver"
@@ -99,6 +94,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	static int runID;
 
    public:
+	virtual ~qnetworkserver() {}
 	int run(qstring host, qstring port, fs::path executablePath, const qstring& redis_ip, const uint16_t redis_port);
 	void broadcast_message(const qstring& buffer, bool flush);
 	void network_server_begin();
@@ -109,15 +105,15 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	virtual void on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
 	virtual void on_network_server_end() = 0;
-	void flush_egress(struct ev_loop* loop, conn_io* qconnection) override final;
-	void destroy_connection(struct ev_loop* loop, conn_io* qconnection) override final;
+	void flush_egress(struct ev_loop* loop, conn_io* qconnection) final;
+	void destroy_connection(struct ev_loop* loop, conn_io* qconnection) final;
 	void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override;
 	void onconnection_connect(conn_io* qconnection) override;
 	void onconnection_connected(conn_io* qconnection) override;
 	void onconnection_destroy(conn_io* qconnection) override;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
 
-	inline struct ev_loop* get_mainloop() override final { return mainloop; }
+	inline struct ev_loop* get_mainloop() final { return mainloop; }
 
 	void exit_services_gracefully();
 

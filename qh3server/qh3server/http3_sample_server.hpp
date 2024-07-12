@@ -16,7 +16,6 @@
 #include "../../servercommon/source/qmongo/qmongo.hpp"
 #include "qh3server.hpp"
 
-#define SAMPLE_SERVER_SALT "lkfm7q3a"
 #define DEFAULT_USER_TOKEN_EXPIRY_TIME 300	// in seconds
 
 #undef __LOGTAG__
@@ -32,6 +31,8 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	void on_run_started() override;
 	void on_run_end() override;
 
+	float get_router_hb_interval_in_sec() override;
+
 	// mongo callbacks
 	void on_mongo_connect() override final;
 	void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) override final;
@@ -44,9 +45,10 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 
    public:
 	http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
-	~http3_sample_server();
+	virtual ~http3_sample_server();
 
 	void test_mongo_db();
+	static inline const char* get_server_name() { return "http3_sample_server"; }
 
    private:
 	int validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
@@ -55,6 +57,10 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 	void parse_user_get(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 	void parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
+	void parse_get_gservers(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
+	void parse_ping(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
+
+	void get_gservers(res_msg_gservers& res_get_gservers);
 
 	qstring zk_uri;
 	message_parser msg_parser;

@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qnetworkserver.cpp
 //  NetworkServer
 //
@@ -58,7 +59,7 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 			continue;
 		}
 		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-		ssize_t sent_len = quiche_conn_stream_send(conn, s, (uint8_t*) buf, buflen, false);
+		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len != (ssize_t) buflen) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
 			break;
@@ -73,7 +74,7 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 	uint64_t next_s = last_stream_s;
 	while (!success && next_s < MAX_SEND_STREAM_TO_TRY) {
 		next_s = (next_s + 1) + (next_s % 2);
-		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, (uint8_t*) buf, buflen, false);
+		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len == (ssize_t) buflen) {
 			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
 			last_stream_s = next_s;
@@ -100,7 +101,7 @@ void conn_io::close() {
 	while (quiche_stream_iter_next(writable, &s)) {
 		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		const char* byez = "byez\n";
-		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, (uint8_t*) byez, 5, true);
+		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true);
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Close, sending 'byez'");
 		if (bye_sent_len != 5) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
@@ -220,7 +221,7 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_i
 	}
 	GX_DELETE_ARY(copybuf);
 
-	// TODO : Comment this for development.
+	// TODO(amudaliar) : Comment this for development.
 	/*
 	qstring ss = qstring::format_string("HELLO from server-%d", qconnection->itrmsg++);
 	qconnection->sendmessage(ss, true);
@@ -248,13 +249,13 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) qconnection->egress_out, sent);
+		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(qconnection->egress_out), sent);
 		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 	}
 
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
-	double t = (double) timeout_in_nanos / 1e9f;
+	double t = static_cast<double>(timeout_in_nanos) / 1e9;
 	qconnection->timer.repeat = t < 0.00001f ? 1.0f : t;
 	ev_timer_again(loop, &qconnection->timer);
 	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
@@ -279,7 +280,7 @@ void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 
 void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
-	conn_io* qconnection = (conn_io*) w->data;
+	conn_io* qconnection = reinterpret_cast<conn_io*>(w->data);
 	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", qconnection->cid_hash_val);
 	quiche_conn_on_timeout(qconnection->conn);
 	qconnection->bridge->flush_egress(loop, qconnection);
@@ -296,7 +297,6 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		qconnection->bridge->destroy_connection(loop, qconnection);
 		return;
 	} /*else {
-
 		// force close here
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Force close connection !!!");
 		qconnection->bridge->DestroyConnection(loop, qconnection);
@@ -369,7 +369,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conns->out, sent);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(conns->out), sent);
 				DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 				continue;
@@ -401,7 +401,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 				unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
-				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, (uint8_t*) conns->out, sent);
+				send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(conns->out), sent);
 				DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 				continue;
@@ -436,7 +436,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long recv_bytes_crc = crc32(0L, Z_NULL, 0);
-		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, (uint8_t*) conns->buf, done);
+		recv_bytes_crc = essentials::mod_crc32_z(recv_bytes_crc, reinterpret_cast<const uint8_t*>(conns->buf), done);
 		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "q-recv %zd bytes - crc: %lx", done, recv_bytes_crc);
 #endif
 
@@ -456,7 +456,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				}
 				if (fin) {
 					const char* resp = "byez\n";
-					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, (uint8_t*) resp, 5, true);
+					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, reinterpret_cast<const uint8_t*>(resp), 5, true);
 					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
 					if (bye_sent_len != 5) {
 						DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
@@ -524,7 +524,7 @@ void qnetworkserver::force_disconnect_all() {
 }
 
 void qnetworkserver::recv_cb(EV_P_ ev_io* w, int revents) {
-	qnetworkserver* server = (qnetworkserver*) w->data;
+	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
 	server->recv_cb_internal(loop, w, revents);
 }
 
@@ -536,7 +536,7 @@ void qnetworkserver::network_server_end() {
 	on_network_server_end();
 }
 void* qnetworkserver::run_internal(void* data) {
-	runserverconfig* runConfig = (runserverconfig*) data;
+	runserverconfig* runConfig = reinterpret_cast<runserverconfig*>(data);
 	qstring host = runConfig->host;
 	qstring port = runConfig->port;
 	qnetworkserver* thiz = runConfig->thiz;
@@ -559,7 +559,7 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&runConfig->pthread_returnValue);
 	}
 
-	thiz->hiredis->set_hash_value("gservers", "gameserver", qstring::format_string("%s:%s", host.c_str(), port.c_str()));
+	thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", port.c_str()), qstring::format_string("%s:%s", host.c_str(), port.c_str()));
 
 	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
@@ -650,7 +650,7 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&runConfig->pthread_returnValue);
 	}
 
-	quiche_config_set_application_protos(thiz->config, (uint8_t*) "\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9", 38);
+	quiche_config_set_application_protos(thiz->config, reinterpret_cast<const uint8_t*>("\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9"), 38);
 
 	quiche_config_set_max_idle_timeout(thiz->config, 30000);
 	quiche_config_set_max_recv_udp_payload_size(thiz->config, Q_MAX_DATAGRAM_SIZE);
@@ -783,7 +783,7 @@ int qnetworkserver::run(qstring host, qstring port, fs::path rootDir, const qstr
 	run_server_config.rootDir = rootDir;
 	run_server_config.id = qnetworkserver::runID++;
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
-	if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, (void*) &run_server_config) < 0) {
+	if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, reinterpret_cast<void*>(&run_server_config)) < 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
 		return -1;
 	}

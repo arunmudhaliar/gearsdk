@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  roommessage.cpp
 //  networkcommon
 //
@@ -77,7 +78,7 @@ void msg_room_match_request::serialize(rapidjson::Value& obj, rapidjson::Documen
 	obj.AddMember("room_config", room_config_obj, allocator);
     obj.AddMember("prev_cid_hash_val", Value().SetUint(prev_cid_hash_val), allocator);
     obj.AddMember("room_id", Value().SetInt(room_id), allocator);
-    obj.AddMember("pid", Value().SetString(pid.c_str(), (int)pid.length()), allocator);
+    obj.AddMember("pid", Value().SetString(pid.c_str(), (int)pid.length(), allocator), allocator);
 }
 bool msg_room_match_request::deserialize(rapidjson::Value& obj) {
 	if (!message_room_base::deserialize(obj)) {
@@ -127,7 +128,7 @@ DEFINE_MESSAGE_PRE_REQUISITES(msg_room_server_event_base)
 msg_room_server_event_base::msg_room_server_event_base(unsigned long type_string_crc) : message_room_base(type_string_crc) {}
 void msg_room_server_event_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_room_base::serialize(obj, allocator);
-    obj.AddMember("room_event", Value().SetString(room_event.c_str(), (unsigned int)room_event.length()), allocator);
+    obj.AddMember("room_event", Value().SetString(room_event.c_str(), (unsigned int)room_event.length(), allocator), allocator);
 }
 bool msg_room_server_event_base::deserialize(rapidjson::Value& obj) {
     if (!message_room_base::deserialize(obj)) {
@@ -147,7 +148,7 @@ bool msg_room_server_event_base::deserialize(rapidjson::Value& obj) {
 void room_player::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     obj.AddMember("hash", Value().SetUint(hash), allocator);
     obj.AddMember("flag", Value().SetBool(flag), allocator);
-    obj.AddMember("pid", Value().SetString(pid.c_str(), (int)pid.length()), allocator);
+    obj.AddMember("pid", Value().SetString(pid.c_str(), (int)pid.length(), allocator), allocator);
 }
 bool room_player::deserialize(rapidjson::Value& obj) {
     if (obj.HasMember("hash") && obj["hash"].IsUint()) {

@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qtextfilelogger.cpp
 //  networkcommon
 //
@@ -50,6 +51,9 @@ bool qlogfile::file_exists(const qstring& filename) {
 }
 
 void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs) {
+    essentials::get_all_files(path.parent_path(), files, ".log");
+    
+#if 0
 	unsigned int next_minor_counter_ = 0;
 	unsigned int next_major_version_ = 0;
 	fs::path current_logfile_path_;
@@ -83,6 +87,7 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, b
 			file_not_exist_counter++;
 		}
 	} while (file_not_exist_counter < INT_MAX - 1);
+#endif
 }
 
 int qlogfile::finalise_logfile() {

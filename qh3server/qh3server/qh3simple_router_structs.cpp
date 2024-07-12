@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  qh3simple_router_structs.cpp
 //  qh3server
 //
@@ -94,4 +95,8 @@ int route::close_bridge_socket() {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Bridge socket closure failed: %s", strerror(errno));
 	}
 	return result;
+}
+
+void route::refresh_hb_timestamp(struct ev_loop* loop) {
+	last_hb_received_time = ev_now(loop);
 }

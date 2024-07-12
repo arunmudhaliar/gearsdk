@@ -3,9 +3,10 @@
     "makefile.compileCommandsPath": "./qserver",
     "files.associations": {
         "*.pch": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "string": "cpp"
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "C_Cpp.formatting": "vcFormat",
     "files.exclude": {
         "**/.git": true,
@@ -18,5 +19,6 @@
     },
     "search.exclude": {
         "**/*.o": true
-    }
+    },
+    "editor.formatOnSaveMode": "modifications"
 }

@@ -1,4 +1,5 @@
 //
+//  Copyright 2024 homenet25
 //  roomserver.hpp
 //  roomserver
 //
@@ -25,6 +26,7 @@
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface {
    public:
+	virtual ~roomserver() {}
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
    protected:
