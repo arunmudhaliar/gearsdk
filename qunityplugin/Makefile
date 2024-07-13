@@ -27,7 +27,7 @@ CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections
 
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -ffunction-sections -fdata-sections
-RELEASE_CXXFLAGS += -fmessage-length=0  -std=gnu++1z -gmodules
+RELEASE_CXXFLAGS += -fmessage-length=0  -std=gnu++1z
 RELEASE_CXXFLAGS += -Werror=non-modular-include-in-framework-module -Wno-trigraphs -Os -fno-common -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Wunreachable-code 
 RELEASE_CXXFLAGS += -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function 
 RELEASE_CXXFLAGS += -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wint-conversion 
@@ -43,7 +43,7 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
 endif
 ifeq ($(UNAME), Darwin)
-    RELEASE_CXXFLAGS += -fmodules -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fmodules-prune-interval=86400 -fmodules-prune-after=345600
+    RELEASE_CXXFLAGS += -fmodules -gmodules -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fmodules-prune-interval=86400 -fmodules-prune-after=345600
     RELEASE_CXXFLAGS += -Wnon-modular-include-in-framework-module -fpascal-strings -Wdocumentation -Wquoted-include-in-framework-header -Wconditional-uninitialized -Wconstant-conversion
     RELEASE_CXXFLAGS += -Wbool-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -fasm-blocks -Winfinite-recursion -Wmove -Wcomma -Wblock-capture-autoreleasing -Wrange-loop-analysis -Wunguarded-availability
     ARCH := $(shell uname -m)
