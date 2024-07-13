@@ -62,6 +62,7 @@ mkdir ./qunitysdk/libs
 cd ./qunitysdk/libs
 ln -s ./../../../qunitysdk_module/libs/android ./android
 ln -s ./../../../qunitysdk_module/libs/macos_$arch ./macos
+ln -s ./../../../qunitysdk_module/libs/linux ./linux
 cd ../../../../../../
 # echo $(pwd)
 echo 'symlink script finished.'
