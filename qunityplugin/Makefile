@@ -28,11 +28,11 @@ CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -ffunction-sections -fdata-sections
 RELEASE_CXXFLAGS += -fmessage-length=0  -std=gnu++1z
-RELEASE_CXXFLAGS += -Werror=non-modular-include-in-framework-module -Wno-trigraphs -Os -fno-common -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Wunreachable-code 
-RELEASE_CXXFLAGS += -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function 
-RELEASE_CXXFLAGS += -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wint-conversion 
-RELEASE_CXXFLAGS += -Wenum-conversion -Wno-float-conversion -Wno-newline-eof -Wno-c++11-extensions -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof
-RELEASE_CXXFLAGS += -g -fvisibility-inlines-hidden -Wno-sign-conversion -Wstrict-prototypes -Wno-semicolon-before-method-body
+RELEASE_CXXFLAGS += -Wno-trigraphs -Os -fno-common -Wno-missing-field-initializers -Werror=return-type -Wunreachable-code 
+RELEASE_CXXFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function 
+RELEASE_CXXFLAGS += -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-conversion
+RELEASE_CXXFLAGS += -Wenum-conversion -Wno-float-conversion -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof
+RELEASE_CXXFLAGS += -g -fvisibility-inlines-hidden -Wno-sign-conversion
 # Platform-specific settings
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
@@ -43,6 +43,8 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
 endif
 ifeq ($(UNAME), Darwin)
+    RELEASE_CXXFLAGS += -Wstrict-prototypes -Wno-semicolon-before-method-body -Wno-c++11-extensions -Wno-newline-eof -Wno-four-char-constants -Wno-exit-time-destructors
+    RELEASE_CXXFLAGS += -Werror=non-modular-include-in-framework-module -Wno-missing-prototypes -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wint-conversion 
     RELEASE_CXXFLAGS += -fmodules -gmodules -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fmodules-prune-interval=86400 -fmodules-prune-after=345600
     RELEASE_CXXFLAGS += -Wnon-modular-include-in-framework-module -fpascal-strings -Wdocumentation -Wquoted-include-in-framework-header -Wconditional-uninitialized -Wconstant-conversion
     RELEASE_CXXFLAGS += -Wbool-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -fasm-blocks -Winfinite-recursion -Wmove -Wcomma -Wblock-capture-autoreleasing -Wrange-loop-analysis -Wunguarded-availability
