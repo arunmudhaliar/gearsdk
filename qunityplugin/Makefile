@@ -6,16 +6,27 @@ QH3_CLIENT_SRCDIR = ../qh3client/qh3client
 Q_CLIENT_SRCDIR = ../qclient/source
 SRCDIR = ./source
 
-# Source files
-SRCS = $(SRCDIR)/qunitysdk.cpp \
-       $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
-       $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
-       $(Q_CLIENT_SRCDIR)/qnetworkclient.cpp \
-       $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
-       $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
-       $(COMMON_SRCDIR)/sdktypes.cpp
+# Source files common to both debug and release builds
+SDK_SRCS = $(COMMON_SRCDIR)/sdktypes.cpp \
+    $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
+    $(Q_CLIENT_SRCDIR)/qnetworkclient.cpp \
+    $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
+    $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
+    $(SRCDIR)/qunitysdk.cpp
+
+# Source files specific to debug build
+DEBUG_SRCS = $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+
+# Combine all common source files
+SRCS = $(SDK_SRCS)
+
+# Combined source files for debug and release builds
+DEBUG_OBJS = $(SRCS:.cpp=.o) $(DEBUG_SRCS:.cpp=.o)
+RELEASE_OBJS = $(SRCS:.cpp=.o)
+
 C_SRCS =
 
+# Object files and dependencies
 OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 DEPS = ${OBJS:.o=.d}
 
@@ -88,14 +99,16 @@ clean:
 
 # Target dependencies
 debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
+debug: OBJS = $(DEBUG_OBJS)
 debug: $(LIB)
 
 release: CXXFLAGS += $(RELEASE_CXXFLAGS)
+release: OBJS = $(RELEASE_OBJS)
 release: $(LIB)
 	strip -x $(LIB)  # Strip local symbols to reduce file size
 
 $(LIB): $(OBJS)
-	$(CXX) $(DEBUG_LDFLAGS) -o $(LIB) $(OBJS) $(LIBS)
+	$(CXX) $(LDFLAGS) -o $(LIB) $(OBJS) $(LIBS)
 
 # Phony targets
 .PHONY: all clean debug release
