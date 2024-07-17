@@ -8,6 +8,7 @@ UNAME=$(uname)
 if [ "$UNAME" == "Linux" ]; then
     # Linux-specific actions if needed
     echo "Running on Linux"
+    chmod 755 libqunityplugin.so
 elif [ "$UNAME" == "Darwin" ]; then
     # macOS-specific actions
     echo "Running on macOS"
