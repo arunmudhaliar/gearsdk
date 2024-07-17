@@ -99,3 +99,4 @@ docker-qsampleserver
 qunitysdk.d
 libqunityplugin.dylib
 *.d
+qunityplugin/libqunityplugin.so
