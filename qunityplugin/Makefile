@@ -17,24 +17,15 @@ SDK_SRCS = $(COMMON_SRCDIR)/sdktypes.cpp \
 # Source files specific to debug build
 DEBUG_SRCS = $(COMMON_SRCDIR)/nvwa/debug_new.cpp
 
-# Combine all common source files
-SRCS = $(SDK_SRCS)
-
-# Combined source files for debug and release builds
-DEBUG_OBJS = $(SRCS:.cpp=.o) $(DEBUG_SRCS:.cpp=.o)
-RELEASE_OBJS = $(SRCS:.cpp=.o)
-
-C_SRCS =
-
-# Object files and dependencies
-OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
-DEPS = ${OBJS:.o=.d}
+# Build directories
+DEBUG_DIR = debug_build
+RELEASE_DIR = release_build
 
 # Includes and flags
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche"
 USER_DEFINES = -DLOG_LEVEL=2 -DTHREADED -DUSE_PTHREAD=1
-CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -MMD -MP -fPIC
-CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=default -W -Wall -MMD -MP -fPIC
+CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=default -fPIC
 
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -ffunction-sections -fdata-sections
@@ -44,6 +35,7 @@ RELEASE_CXXFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-missing-b
 RELEASE_CXXFLAGS += -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-conversion
 RELEASE_CXXFLAGS += -Wenum-conversion -Wno-float-conversion -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof
 RELEASE_CXXFLAGS += -g -fvisibility-inlines-hidden -Wno-sign-conversion
+
 # Platform-specific settings
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
@@ -75,40 +67,36 @@ DEBUG_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)
 RELEASE_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS) -Wl,-dead_strip
 
 # Targets
-LIB = libqunityplugin.$(LIB_EXT)
+DEBUG_LIB = $(DEBUG_DIR)/libqunityplugin.$(LIB_EXT)
+RELEASE_LIB = $(RELEASE_DIR)/libqunityplugin.$(LIB_EXT)
 CXX ?= clang++
 CC ?= clang
 
-# Compile C++ source files to object files and generate dependency files
-%.o: %.cpp Makefile
-	$(CXX) $(CXXFLAGS) -fvisibility=default -c $< -o $@
+# Compile and link debug
+debug: $(DEBUG_LIB)
 
-# Compile C source files to object files and generate dependency files
-%.o: %.c Makefile
-	$(CC) $(CXFLAGS) -c $< -o $@
+$(DEBUG_LIB): $(SDK_SRCS) $(DEBUG_SRCS) | $(DEBUG_DIR)
+	$(CXX) $(CXXFLAGS) $(DEBUG_CXXFLAGS) -o $@ $^ $(DEBUG_LDFLAGS) $(LIBS)
+
+# Compile and link release
+release: $(RELEASE_LIB)
+
+$(RELEASE_LIB): $(SDK_SRCS) | $(RELEASE_DIR)
+	$(CXX) $(CXXFLAGS) $(RELEASE_CXXFLAGS) -o $@ $^ $(RELEASE_LDFLAGS) $(LIBS)
+	strip -x $@  # Strip local symbols to reduce file size
+
+# Create directories if they do not exist
+$(DEBUG_DIR):
+	mkdir -p $(DEBUG_DIR)
+
+$(RELEASE_DIR):
+	mkdir -p $(RELEASE_DIR)
+
+# Clean target
+clean:
+	rm -rf $(DEBUG_DIR) $(RELEASE_DIR)
 
 # Default target
 all: debug
 
-# Clean target
-clean:
-	rm -f $(OBJS) $(DEPS) $(LIB)
-
-# Include dependency files
--include $(DEPS)
-
-# Target dependencies
-debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
-debug: OBJS = $(DEBUG_OBJS)
-debug: $(LIB)
-
-release: CXXFLAGS += $(RELEASE_CXXFLAGS)
-release: OBJS = $(RELEASE_OBJS)
-release: $(LIB)
-	strip -x $(LIB)  # Strip local symbols to reduce file size
-
-$(LIB): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $(LIB) $(OBJS) $(LIBS)
-
-# Phony targets
 .PHONY: all clean debug release
