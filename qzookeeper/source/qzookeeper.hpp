@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <map>
 #include <atomic>
+#include <mutex>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
@@ -76,6 +77,9 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	int retry_connection();
 	void close_zk(const int state);
 
+    const char* get_name() const;
+    const char* get_wname() const;
+    
 	static void watcher(zhandle_t* zzh, int type, int state, const char* path, void* context);
 	static void my_stat_completion(int rc, const struct Stat* stat, const void* data);
 	static void my_data_completion(int rc, const char* value, int value_len, const struct Stat* stat, const void* data);
@@ -110,5 +114,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
     qmutex reconnect_mutex;
     std::mutex watcher_gaurd_mutex;
     std::atomic<bool> retry_in_progress;
+    mutable std::timed_mutex nameMutex;
+    mutable std::timed_mutex wnameMutex;
 };
 #endif /* qzookeeper_hpp */

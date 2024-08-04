@@ -57,12 +57,32 @@ const char* qzookeeper::type2String(int state) {
 	return "UNKNOWN_EVENT_TYPE";
 }
 
+#include <chrono>
+
+const char* qzookeeper::get_name() const {
+    std::unique_lock<std::timed_mutex> lock(nameMutex, std::defer_lock);
+    if (lock.try_lock_for(std::chrono::milliseconds(100))) {
+        return name.c_str();
+    } else {
+        return __LOGTAG__;
+    }
+}
+
+const char* qzookeeper::get_wname() const {
+    std::unique_lock<std::timed_mutex> lock(wnameMutex, std::defer_lock);
+    if (lock.try_lock_for(std::chrono::milliseconds(100))) {
+        return wname.c_str();
+    } else {
+        return __LOGTAG__;
+    }
+}
+
 void qzookeeper::watcher(zhandle_t* zzh, int type, int state, const char* path, void* context) {
 	/* Be careful using zh here rather than zzh - as this may be mt code
 	 * the client lib may call the watcher before zookeeper_init returns */
 	qzookeeper* qzk = (qzookeeper*) context;
-    PTHREAD_NAME(qzk->wname.c_str());
-    const char* logtag = qzk->name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    PTHREAD_NAME(qzk->get_wname());
+    const char* logtag = qzk->get_name(); // its safe to read since no one going to write on this variable except constructor;
     
 	DEBUG_PRINT(LOG_LEVEL_0, logtag, "Watcher %s state = %s", type2String(type), state2String(state));
 	if (path && strlen(path) > 0) {
@@ -181,7 +201,7 @@ qzookeeper::qzookeeper(const qstring& name) :
 }
 
 qzookeeper::~qzookeeper() {
-    const char* logtag = name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
 	if (zh) {
 		zookeeper_close(zh);
 		zh = nullptr;
@@ -200,7 +220,7 @@ qzookeeper::~qzookeeper() {
 }
 
 int qzookeeper::connect(const qstring& url) {
-    const char* logtag = name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
 	connection_url = url;
 	connection_in_progress = true;
 	if (pthread_create(&zk_thread_id, nullptr, qzookeeper::connect_internal, (void*) this) < 0) {
@@ -219,7 +239,7 @@ int qzookeeper::connect(const qstring& url) {
 }
 
 int qzookeeper::retry_connection() {
-    const char* logtag = name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
 	if (zh) {
 		DEBUG_PRINT_ERROR(logtag, "qzookeeper retry_connection - already inited (thiz->zh != null)");
 		return -1;
@@ -243,7 +263,7 @@ int qzookeeper::retry_connection() {
 
 void* qzookeeper::connect_internal(void* data) {
 	qzookeeper* thiz = (qzookeeper*) data;
-    const char* logtag = thiz->name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = thiz->get_name(); // its safe to read since no one going to write on this variable except constructor;
     PTHREAD_NAME(logtag);
 	thiz->running = true;
 	thiz->connection_in_progress = true;
@@ -311,7 +331,7 @@ void* qzookeeper::connect_internal(void* data) {
 }
 
 void qzookeeper::shutdown() {
-    const char* logtag = name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
 	if (connection_check_timer) {
 		if (cancel_and_destroy_timer(connection_check_timer)) {
 			connection_check_timer = nullptr;
@@ -496,7 +516,7 @@ int qzookeeper::delete_path(const qstring& zk_path) {
 }
 
 void qzookeeper::close_zk(const int state) {
-    const char* logtag = name.c_str(); // its safe to read since no one going to write on this variable except constructor;
+    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
 	UNUSED(state);
     if (close_mutex.tryLock(__FUNCTION__) != 0) {
         DEBUG_PRINT_ERROR(logtag, "qzookeeper - close_zk acquire lock failed. returning !!!");
