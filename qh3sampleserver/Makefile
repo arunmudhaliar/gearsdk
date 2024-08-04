@@ -106,4 +106,9 @@ release: $(LIB) $(MAIN_OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(EXE) $(MAIN_OBJS) $(LIB) $(LIBS)
 
 $(LIB): $(OBJS)
+ifeq ($(UNAME), Linux)
+# libtool --mode=link $(CXX) -static -o $(LIB) $(OBJS)
 	ar rcs $(LIB) $(OBJS)
+else
+	libtool -static -o $(LIB) $(OBJS)
+endif
