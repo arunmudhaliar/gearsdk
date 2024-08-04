@@ -87,24 +87,26 @@ void http3_sample_server::on_run_end() {}
 void http3_sample_server::on_server_uninitialise() {
 	GX_DELETE(zkconfig);
 #if ENABLE_ZK
-	qzk->shutdown();
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
-	struct ev_loop* wait_loop = ev_loop_new();
-	qtimer_sceduler wait_scheduler;
-	wait_scheduler.set_ev_lopp(wait_loop);
-	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
-		[this, wait_loop](qtimer& timer) {
-			UNUSED(timer);
-			if (!qzk->is_running()) {
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qzk service finished !!!");
-				ev_break(wait_loop, EVBREAK_ONE);
-			}
-		},
-		3);
-	ev_run(wait_loop, 0);
-	wait_scheduler.cancel_and_destroy_timer(wait_timer);
-	ev_loop_destroy(wait_loop);
-	GX_DELETE(qzk);
+	if (qzk != nullptr) {
+		qzk->shutdown();
+		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
+		struct ev_loop* wait_loop = ev_loop_new();
+		qtimer_sceduler wait_scheduler;
+		wait_scheduler.set_ev_lopp(wait_loop);
+		qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
+			[this, wait_loop](qtimer& timer) {
+				UNUSED(timer);
+				if (!qzk->is_running()) {
+					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "qzk service finished !!!");
+					ev_break(wait_loop, EVBREAK_ONE);
+				}
+			},
+			3);
+		ev_run(wait_loop, 0);
+		wait_scheduler.cancel_and_destroy_timer(wait_timer);
+		ev_loop_destroy(wait_loop);
+		GX_DELETE(qzk);
+	}
 #endif
 }
 
