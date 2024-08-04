@@ -14,7 +14,7 @@
 
 http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {
 	mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
-	hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
+	hiredis = DEBUG_NEW qhiredis("server_hiredis", redis_ip, redis_port);
 }
 
 http3_sample_server::~http3_sample_server() {
@@ -23,10 +23,16 @@ http3_sample_server::~http3_sample_server() {
 	GX_DELETE(room_config_list);
 }
 
+void http3_sample_server::configchanged(const qstring& path, const qstring& data) {
+	if (path.compare("/qh3server/gserver/roomconfig") == 0) {
+		refresh_roomconfig_meta();
+	}
+}
+
 bool http3_sample_server::on_server_pre_init() {
 #if ENABLE_ZK
 	GX_DELETE(qzk);
-	qzk = DEBUG_NEW qzookeeper();
+	qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-%s", port_id.c_str()));
 	int zk_result = qzk->connect(zk_uri);
 	if (zk_result != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "zk failed to connect !!!, Exiting.");
@@ -35,20 +41,22 @@ bool http3_sample_server::on_server_pre_init() {
 	}
 
 	GX_DELETE(zkconfig);
-	zkconfig = DEBUG_NEW serverconfig(qzk);
-#if DEV_BUILD
-	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
-	zkconfig->load(config_path, qzk, "/qh3server");
-	zkconfig->load(config_path, qzk, "/qh3router");
-#elif PROD_BUILD
+	zkconfig = DEBUG_NEW serverconfig(qzk, this);
+#if PROD_BUILD
 	fs::path config_path(app_directory / "configs/prod/runtime-config.json");
-	zkconfig->load(config_path, qzk, "/qh3server");
-	zkconfig->load(config_path, qzk, "/qh3router");
 #else
 	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
-	zkconfig->load(config_path, qzk, "/qh3server");
-	zkconfig->load(config_path, qzk, "/qh3router");
 #endif
+	if (!zkconfig->load(config_path, qzk, "/qh3server")) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+		GX_DELETE(zkconfig);
+		return false;
+	}
+	if (!zkconfig->load(config_path, qzk, "/qh3router")) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+		GX_DELETE(zkconfig);
+		return false;
+	}
 #endif
 
 	if (mongo->connect() != 0) {
@@ -59,21 +67,24 @@ bool http3_sample_server::on_server_pre_init() {
 		return false;
 	}
 
-	//	msg_parser.register_message_type<rq_msg_user_get>();
-	//	msg_parser.register_message_type<msg_room_config_list>();
-	//	msg_parser.register_message_type<msg_room_config>();
+	refresh_roomconfig_meta();
+	return true;
+}
+
+void http3_sample_server::refresh_roomconfig_meta() {
 	qstring room_config_list_str(zkconfig->get_string("gserver/roomconfig", ""));
 	GX_DELETE(room_config_list);
 	room_config_list = msg_parser.parse<msg_room_config_list>(room_config_list_str.length(), (uint8_t*) room_config_list_str.c_str());
 	DEBUG_ASSERT(__LOGTAG__, (room_config_list != nullptr), "Invalid room configs !!!");
-	return true;
 }
 
 void http3_sample_server::on_run_started() {
 	hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), qstring::format_string("server-%s", port_id.c_str()), qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
 }
 
-void http3_sample_server::on_run_end() {
+void http3_sample_server::on_run_end() {}
+
+void http3_sample_server::on_server_uninitialise() {
 	GX_DELETE(zkconfig);
 #if ENABLE_ZK
 	qzk->shutdown();

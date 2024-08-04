@@ -143,12 +143,15 @@ class qh3server : public bridge_h3_connection {
 
 	qtimer* router_hb_loop(qtimer_sceduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port);
 
+	void stop_services_and_report(int sock, uint16_t command_center_feedback_port);
+
 	uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
 	uint8_t buf[65535];
 	routerinfo* relay_through_router_info = nullptr;  // only valid for servers else NULL
 
    protected:
 	virtual bool on_server_pre_init() = 0;
+	virtual void on_server_uninitialise() = 0;
 	virtual void on_run_started() = 0;
 	virtual void on_run_end() = 0;
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;

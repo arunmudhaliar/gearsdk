@@ -24,14 +24,15 @@ class discord_util {
 		discord_async_data() {};
 
 	   public:
-		discord_async_data(const qstring& msg) : msg(msg) {}
+		discord_async_data(const qstring& msg, uint64_t msg_id) : msg(msg), msg_id(msg_id) {}
 		pthread_t tid;
 		qstring msg;
+        uint64_t msg_id = 0;
 	};
 
     
 	static void set_web_hook(const qstring& web_hook);
-	static int send(const qstring& msg);
+	static int send(const qstring& msg, int retry_count = 0);
 	static void send_async(const qstring& msg);
 
    private:
@@ -42,6 +43,7 @@ class discord_util {
 	static void* send_async_internal(void* data);
     static qstring current_web_hook;
     static pthread_mutex_t webhook_mutex;
+    static uint64_t counter;
 };
 
 #endif /* discord_util_hpp */

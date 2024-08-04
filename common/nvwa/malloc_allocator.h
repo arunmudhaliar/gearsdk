@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2022 Wu Yongwei <wuyongwei at gmail dot com>
+ * Copyright (C) 2022-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -27,46 +27,50 @@
  */
 
 /**
- * @file  static_assert.h
+ * @file  malloc_allocator.h
  *
- * Template class to check validity duing compile time (adapted from Loki).
+ * An allocator that calls malloc/free instead of operator new/delete.
+ * It is necessary in the implementation of operator new/delete in order
+ * to avoid dead loops.
  *
- * @date  2022-04-04
+ * @date  2024-05-20
  */
 
-#ifndef STATIC_ASSERT
+#ifndef NVWA_MALLOC_ALLOCATOR_H
+#define NVWA_MALLOC_ALLOCATOR_H
 
-#include "c++_features.h"   // HAVE_CXX11_STATIC_ASSERT
-#include "_nvwa.h"          // NVWA_NAMESPACE_*
-
-#if HAVE_CXX11_STATIC_ASSERT
-
-#define STATIC_ASSERT(_Expr, _Msg) static_assert(_Expr, #_Msg)
-
-#else
-
-NVWA_NAMESPACE_BEGIN
-
-template <bool> struct compile_time_error;
-template <>     struct compile_time_error<true> {};
-
-#define STATIC_ASSERT(_Expr, _Msg) \
-    { \
-        NVWA::compile_time_error<((_Expr) != 0)> ERROR_##_Msg; \
-        (void)ERROR_##_Msg; \
-    }
-
-NVWA_NAMESPACE_END
-
-#endif // HAVE_CXX11_STATIC_ASSERT
+#include <stdlib.h>         // size_t/malloc/free
+#include <type_traits>      // std::true_type
+#include "_nvwa.h"          // NVWA macros
 
 NVWA_NAMESPACE_BEGIN
 
 template <typename T>
-struct always_false {
-    static const bool value = false;
+struct malloc_allocator {
+    typedef T value_type;
+    typedef std::true_type is_always_equal;
+    typedef std::true_type propagate_on_container_move_assignment;
+
+    malloc_allocator() = default;
+    template <typename U>
+    malloc_allocator(const malloc_allocator<U>&) {}
+
+    template <typename U>
+    struct rebind {
+        typedef malloc_allocator<U> other;
+    };
+
+    T* allocate(size_t n)
+    {
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
+        return static_cast<T*>(malloc(n * sizeof(T)));
+    }
+    void deallocate(T* p, size_t)
+    {
+        free(p);  // NOLINT false bugprone warnings
+    }
 };
 
 NVWA_NAMESPACE_END
 
-#endif // STATIC_ASSERT
+#endif // NVWA_MALLOC_ALLOCATOR_H

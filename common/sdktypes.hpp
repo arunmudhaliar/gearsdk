@@ -102,6 +102,14 @@ namespace fs = std::__fs::filesystem;
         DEBUG_PRINT2_INTERNAL(logLevel, tag, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
     } while (0)
 
+#if PLATFORM == PLATFORM_LINUX
+    #define PTHREAD_NAME(name) pthread_setname_np(pthread_self(), name)
+#elif PLATFORM == PLATFORM_MAC
+    #define PTHREAD_NAME(name) pthread_setname_np(name)
+#else
+    #define PTHREAD_NAME(name) pthread_setname_np(name)
+#endif
+
 #if PLATFORM == PLATFORM_ANDROID
 extern "C" DECLSPEC int init_gsdk(JavaVM* JavaVM);
 #else

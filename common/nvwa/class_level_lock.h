@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2021 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,7 +31,7 @@
  *
  * In essence Loki ClassLevelLockable re-engineered to use a fast_mutex class.
  *
- * @date  2013-03-04
+ * @date  2021-08-06
  */
 
 #ifndef NVWA_CLASS_LEVEL_LOCK_H
@@ -39,10 +39,6 @@
 
 #include "fast_mutex.h"         // nvwa::fast_mutex/_NOTHREADS
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
-
-#ifndef HAVE_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION
-#define HAVE_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION 1
-#endif
 
 NVWA_NAMESPACE_BEGIN
 
@@ -52,14 +48,12 @@ NVWA_NAMESPACE_BEGIN
      * single-threaded implementation.
      */
     template <class _Host, bool _RealLock = false>
-    class class_level_lock
-    {
+    class class_level_lock {
     public:
         /** Type that provides locking/unlocking semantics. */
-        class lock
-        {
+        class lock {
         public:
-            lock() {}
+            lock() = default;
         };
 
         typedef _Host volatile_type;
@@ -73,8 +67,7 @@ NVWA_NAMESPACE_BEGIN
      * See static_mem_pool.h for real usage.
      */
     template <class _Host, bool _RealLock = true>
-    class class_level_lock
-    {
+    class class_level_lock {
         static fast_mutex _S_mtx;
 
     public:
@@ -86,42 +79,39 @@ NVWA_NAMESPACE_BEGIN
         friend class lock;
 
         /** Type that provides locking/unlocking semantics. */
-        class lock
-        {
-            lock(const lock&);
-            lock& operator=(const lock&);
+        class lock {
         public:
             lock()
             {
-                if (_RealLock)
+                if (_RealLock) {
                     _S_mtx.lock();
+                }
             }
+            lock(const lock&) = delete;
+            lock& operator=(const lock&) = delete;
             ~lock()
             {
-                if (_RealLock)
+                if (_RealLock) {
                     _S_mtx.unlock();
+                }
             }
         };
 
         typedef volatile _Host volatile_type;
     };
 
-#   if HAVE_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION
     /** Partial specialization that makes null locking. */
     template <class _Host>
-    class class_level_lock<_Host, false>
-    {
+    class class_level_lock<_Host, false> {
     public:
         /** Type that provides locking/unlocking semantics. */
-        class lock
-        {
+        class lock {
         public:
-            lock() {}
+            lock() = default;
         };
 
         typedef _Host volatile_type;
     };
-#   endif // HAVE_CLASS_TEMPLATE_PARTIAL_SPECIALIZATION
 
     template <class _Host, bool _RealLock>
     fast_mutex class_level_lock<_Host, _RealLock>::_S_mtx;

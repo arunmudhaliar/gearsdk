@@ -30,7 +30,7 @@ typedef std::function<void(const char* key, const char* field, const char* value
 
 class qhiredis {
    public:
-	qhiredis(const qstring& redis_ip, uint16_t redis_port);
+	qhiredis(const qstring name, const qstring& redis_ip, uint16_t redis_port);
 	~qhiredis();
 
 #if 0
@@ -62,9 +62,12 @@ class qhiredis {
     void scan(const qstring& prefix_key, void* arg, type_redis_scan_iterator_key_field_value_cb callback);
     
    private:
+    int retry_connection();
+    
 	int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
 	static void iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_field_value_cb callback);
 	redisContext* context = nullptr;
+    const qstring name;
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port;
 };

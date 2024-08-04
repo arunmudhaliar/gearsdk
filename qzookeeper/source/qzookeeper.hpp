@@ -39,6 +39,9 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
 
+#define QZK_MAX_RETRIES_FOR_API 5
+#define QZK_RETRY_BASE_DELAY_MS 100
+
 typedef void(*type_qzk_value_changed)(const qstring& path, const qstring& data, void* context);
 
 class interface_qzookeeper {
@@ -49,7 +52,7 @@ public:
 
 class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
    public:
-	qzookeeper();
+	qzookeeper(const qstring& name);
     ~qzookeeper();
 
 	int connect(const qstring& url);
@@ -82,12 +85,16 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 
 	static void* connect_internal(void* data);
     
+    static int retry_with_backoff(std::function<int()> operation, int max_retries, int base_delay_ms);
+    
 	zhandle_t* zh = nullptr;
 	clientid_t myid;
 	const char* clientIdFile = nullptr;
 
 	pthread_t zk_thread_id;
 	qstring connection_url;
+    const qstring name;
+    const qstring wname;
 	std::atomic<bool> connection_in_progress;
 	std::atomic<bool> running;
 	struct ev_loop* mainloop = nullptr;
@@ -98,5 +105,10 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	int retry_count = 0;
 	qtimer* connection_check_timer = nullptr;
     std::map<type_qzk_value_changed, void*> value_change_callbacks;
+    std::vector<qstring> pending_config_updates;
+    qmutex close_mutex;
+    qmutex reconnect_mutex;
+    std::mutex watcher_gaurd_mutex;
+    std::atomic<bool> retry_in_progress;
 };
 #endif /* qzookeeper_hpp */

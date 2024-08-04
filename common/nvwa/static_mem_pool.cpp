@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2019 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,13 +31,13 @@
  *
  * Non-template and non-inline code for the `static' memory pool.
  *
- * @date  2013-03-01
+ * @date  2019-08-22
  */
 
+#include "static_mem_pool.h"    // nvwa::static_mem_pool_set
 #include <algorithm>            // std::for_each
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
 #include "cont_ptr_utils.h"     // nvwa::delete_object
-#include "static_mem_pool.h"    // nvwa::static_mem_pool_set
 
 NVWA_NAMESPACE_BEGIN
 
@@ -78,8 +78,7 @@ void static_mem_pool_set::recycle()
     container_type::iterator end = _M_memory_pool_set.end();
     for (container_type::iterator
             i  = _M_memory_pool_set.begin();
-            i != end; ++i)
-    {
+            i != end; ++i) {
         (*i)->recycle();
     }
 }

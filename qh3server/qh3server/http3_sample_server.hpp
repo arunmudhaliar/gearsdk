@@ -21,13 +21,14 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_sample_server"
 
-class http3_sample_server : public qh3server, interface_qmongo_connection {
+class http3_sample_server : public qh3server, interface_qmongo_connection, observer_serverconfig {
    protected:
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
 	void parse(struct conn_io_qh3* conn_io) override;
 	inline bool is_log_quiche() override;
 
 	bool on_server_pre_init() override;
+	void on_server_uninitialise() override;
 	void on_run_started() override;
 	void on_run_end() override;
 
@@ -36,6 +37,9 @@ class http3_sample_server : public qh3server, interface_qmongo_connection {
 	// mongo callbacks
 	void on_mongo_connect() override final;
 	void on_mongo_create_index_keys(const qstring& collection_name, bson_t* indexkey, mongoc_index_opt_t* opt) override final;
+
+	void refresh_roomconfig_meta();
+	void configchanged(const qstring& path, const qstring& data) override;
 
 	qmongo* mongo = nullptr;
 	qhiredis* hiredis = nullptr;

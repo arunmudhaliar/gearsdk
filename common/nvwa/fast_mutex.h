@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2015 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2020 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,14 +31,14 @@
  *
  * A fast mutex implementation for POSIX, Win32, and modern C++.
  *
- * @date  2015-05-19
+ * @date  2020-09-13
  */
 
 #ifndef NVWA_FAST_MUTEX_H
 #define NVWA_FAST_MUTEX_H
 
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
-#include "c++11.h"              // HAVE_CXX11_MUTEX
+#include "c++_features.h"       // HAVE_CXX11_MUTEX/_DELETED/_NULLPTR
 
 # if !defined(_NOTHREADS)
 #   if !defined(NVWA_USE_CXX11_MUTEX) && HAVE_CXX11_MUTEX != 0 && \
@@ -49,8 +49,8 @@
 //      Prefer using std::mutex on Windows to avoid the namespace
 //      pollution caused by <windows.h>.  However, MSVC has a re-entry
 //      issue with its std::mutex implementation, and std::mutex should
-//      not be used unless /MD or /MDd is used.  For more information,
-//      check out:
+//      not be used unless /MD or /MDd is used (unfixed as of Visual
+//      Studio 16.7 MSVC 19.27).  For more information, check out:
 //
 //        https://connect.microsoft.com/VisualStudio/feedback/details/776596/std-mutex-not-a-constexpr-with-mtd-compiler-flag
 //        http://stackoverflow.com/questions/14319344/stdmutex-lock-hangs-when-overriding-the-new-operator
@@ -146,17 +146,11 @@
 # if NVWA_USE_CXX11_MUTEX != 0
 #   include <mutex>
 NVWA_NAMESPACE_BEGIN
-/**
- * Macro alias to `volatile' semantics.  Here it is truly volatile since
- * it is in a multi-threaded (C++11) environment.
- */
-#   define __VOLATILE volatile
     /**
      * Class for non-reentrant fast mutexes.  This is the implementation
      * using the C++11 mutex.
      */
-    class fast_mutex
-    {
+    class fast_mutex {
         std::mutex _M_mtx_impl;
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
         bool _M_initialized;
@@ -164,6 +158,7 @@ NVWA_NAMESPACE_BEGIN
 #       ifdef _DEBUG
         bool _M_locked;
 #       endif
+
     public:
         fast_mutex()
 #       ifdef _DEBUG
@@ -184,8 +179,9 @@ NVWA_NAMESPACE_BEGIN
         void lock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
             _M_mtx_impl.lock();
 #       ifdef _DEBUG
@@ -196,8 +192,9 @@ NVWA_NAMESPACE_BEGIN
         void unlock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
 #       ifdef _DEBUG
             _FAST_MUTEX_ASSERT(_M_locked, "unlock(): not locked");
@@ -205,25 +202,20 @@ NVWA_NAMESPACE_BEGIN
 #       endif
             _M_mtx_impl.unlock();
         }
+
     private:
-        fast_mutex(const fast_mutex&);
-        fast_mutex& operator=(const fast_mutex&);
+        fast_mutex(const fast_mutex&) _DELETED;
+        fast_mutex& operator=(const fast_mutex&) _DELETED;
     };
 NVWA_NAMESPACE_END
 # elif defined(NVWA_PTHREADS)
 #   include <pthread.h>
 NVWA_NAMESPACE_BEGIN
-/**
- * Macro alias to `volatile' semantics.  Here it is truly volatile since
- * it is in a multi-threaded (POSIX threads) environment.
- */
-#   define __VOLATILE volatile
     /**
      * Class for non-reentrant fast mutexes.  This is the implementation
      * for POSIX threads.
      */
-    class fast_mutex
-    {
+    class fast_mutex {
         pthread_mutex_t _M_mtx_impl;
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
         bool _M_initialized;
@@ -231,13 +223,14 @@ NVWA_NAMESPACE_BEGIN
 #       ifdef _DEBUG
         bool _M_locked;
 #       endif
+
     public:
         fast_mutex()
 #       ifdef _DEBUG
             : _M_locked(false)
 #       endif
         {
-            ::pthread_mutex_init(&_M_mtx_impl, NULL);
+            ::pthread_mutex_init(&_M_mtx_impl, _NULLPTR);
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
             _M_initialized = true;
 #       endif
@@ -253,8 +246,9 @@ NVWA_NAMESPACE_BEGIN
         void lock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
             ::pthread_mutex_lock(&_M_mtx_impl);
 #       ifdef _DEBUG
@@ -270,8 +264,9 @@ NVWA_NAMESPACE_BEGIN
         void unlock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
 #       ifdef _DEBUG
             _FAST_MUTEX_ASSERT(_M_locked, "unlock(): not locked");
@@ -279,9 +274,10 @@ NVWA_NAMESPACE_BEGIN
 #       endif
             ::pthread_mutex_unlock(&_M_mtx_impl);
         }
+
     private:
-        fast_mutex(const fast_mutex&);
-        fast_mutex& operator=(const fast_mutex&);
+        fast_mutex(const fast_mutex&) _DELETED;
+        fast_mutex& operator=(const fast_mutex&) _DELETED;
     };
 NVWA_NAMESPACE_END
 # elif defined(NVWA_WIN32THREADS)
@@ -290,17 +286,11 @@ NVWA_NAMESPACE_END
 #   endif /* WIN32_LEAN_AND_MEAN */
 #   include <windows.h>
 NVWA_NAMESPACE_BEGIN
-/**
- * Macro alias to `volatile' semantics.  Here it is truly volatile since
- * it is in a multi-threaded (Win32 threads) environment.
- */
-#   define __VOLATILE volatile
     /**
      * Class for non-reentrant fast mutexes.  This is the implementation
      * for Win32 threads.
      */
-    class fast_mutex
-    {
+    class fast_mutex {
         CRITICAL_SECTION _M_mtx_impl;
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
         bool _M_initialized;
@@ -308,6 +298,7 @@ NVWA_NAMESPACE_BEGIN
 #       ifdef _DEBUG
         bool _M_locked;
 #       endif
+
     public:
         fast_mutex()
 #       ifdef _DEBUG
@@ -330,8 +321,9 @@ NVWA_NAMESPACE_BEGIN
         void lock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
             ::EnterCriticalSection(&_M_mtx_impl);
 #       ifdef _DEBUG
@@ -342,8 +334,9 @@ NVWA_NAMESPACE_BEGIN
         void unlock()
         {
 #       if _FAST_MUTEX_CHECK_INITIALIZATION
-            if (!_M_initialized)
+            if (!_M_initialized) {
                 return;
+            }
 #       endif
 #       ifdef _DEBUG
             _FAST_MUTEX_ASSERT(_M_locked, "unlock(): not locked");
@@ -351,27 +344,23 @@ NVWA_NAMESPACE_BEGIN
 #       endif
             ::LeaveCriticalSection(&_M_mtx_impl);
         }
+
     private:
-        fast_mutex(const fast_mutex&);
-        fast_mutex& operator=(const fast_mutex&);
+        fast_mutex(const fast_mutex&) _DELETED;
+        fast_mutex& operator=(const fast_mutex&) _DELETED;
     };
 NVWA_NAMESPACE_END
 # elif defined(NVWA_NOTHREADS)
 NVWA_NAMESPACE_BEGIN
-/**
- * Macro alias to `volatile' semantics.  Here it is not truly volatile
- * since it is in a single-threaded environment.
- */
-#   define __VOLATILE
     /**
      * Class for non-reentrant fast mutexes.  This is the null
      * implementation for single-threaded environments.
      */
-    class fast_mutex
-    {
+    class fast_mutex {
 #       ifdef _DEBUG
         bool _M_locked;
 #       endif
+
     public:
         fast_mutex()
 #       ifdef _DEBUG
@@ -397,18 +386,19 @@ NVWA_NAMESPACE_BEGIN
             _M_locked = false;
 #       endif
         }
+
     private:
-        fast_mutex(const fast_mutex&);
-        fast_mutex& operator=(const fast_mutex&);
+        fast_mutex(const fast_mutex&) _DELETED;
+        fast_mutex& operator=(const fast_mutex&) _DELETED;
     };
 NVWA_NAMESPACE_END
 # endif // Definition of class fast_mutex
 
 NVWA_NAMESPACE_BEGIN
 /** RAII lock class for fast_mutex. */
-class fast_mutex_autolock
-{
+class fast_mutex_autolock {
     fast_mutex& _M_mtx;
+
 public:
     explicit fast_mutex_autolock(fast_mutex& mtx) : _M_mtx(mtx)
     {
@@ -418,9 +408,10 @@ public:
     {
         _M_mtx.unlock();
     }
+
 private:
-    fast_mutex_autolock(const fast_mutex_autolock&);
-    fast_mutex_autolock& operator=(const fast_mutex_autolock&);
+    fast_mutex_autolock(const fast_mutex_autolock&) _DELETED;
+    fast_mutex_autolock& operator=(const fast_mutex_autolock&) _DELETED;
 };
 NVWA_NAMESPACE_END
 

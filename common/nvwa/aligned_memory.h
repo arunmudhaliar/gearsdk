@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2022 Wu Yongwei <wuyongwei at gmail dot com>
+ * Copyright (C) 2022 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -27,46 +27,24 @@
  */
 
 /**
- * @file  static_assert.h
+ * @file  aligned_memory.h
  *
- * Template class to check validity duing compile time (adapted from Loki).
+ * Header file for aligned memory allocation/deallocation.
  *
- * @date  2022-04-04
+ * @date  2022-01-03
  */
 
-#ifndef STATIC_ASSERT
+#ifndef NVWA_ALIGNED_MEMORY_H
+#define NVWA_ALIGNED_MEMORY_H
 
-#include "c++_features.h"   // HAVE_CXX11_STATIC_ASSERT
-#include "_nvwa.h"          // NVWA_NAMESPACE_*
-
-#if HAVE_CXX11_STATIC_ASSERT
-
-#define STATIC_ASSERT(_Expr, _Msg) static_assert(_Expr, #_Msg)
-
-#else
+#include <stddef.h>             // size_t
+#include "_nvwa.h"              // NVWA macros
 
 NVWA_NAMESPACE_BEGIN
 
-template <bool> struct compile_time_error;
-template <>     struct compile_time_error<true> {};
-
-#define STATIC_ASSERT(_Expr, _Msg) \
-    { \
-        NVWA::compile_time_error<((_Expr) != 0)> ERROR_##_Msg; \
-        (void)ERROR_##_Msg; \
-    }
+void* aligned_malloc(size_t size, size_t alignment);
+void aligned_free(void* ptr);
 
 NVWA_NAMESPACE_END
 
-#endif // HAVE_CXX11_STATIC_ASSERT
-
-NVWA_NAMESPACE_BEGIN
-
-template <typename T>
-struct always_false {
-    static const bool value = false;
-};
-
-NVWA_NAMESPACE_END
-
-#endif // STATIC_ASSERT
+#endif // NVWA_ALIGNED_MEMORY_H
