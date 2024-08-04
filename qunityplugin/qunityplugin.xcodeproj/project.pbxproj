@@ -371,7 +371,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = "USE_PTHREAD=1";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_PTHREAD=1",
+					"PROD_BUILD=1",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",

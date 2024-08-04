@@ -24,6 +24,7 @@ bool qsocket::connect(const char* host, const char* port, void* arg,
     this->cb_message = cb_message;
     this->cb_release_connection = cb_release_connection;
     this->cb_close = cb_close;
+    this->user_data = arg;
     if (run(host, port) != 0) {
         return false;
     }
@@ -34,7 +35,7 @@ void qsocket::onconnect(conn_io_client* qconnection) {
     if (cb_connect == nullptr) {
         return;
     }
-    cb_connect(guid_crc);
+    cb_connect(guid_crc, user_data);
 }
 void qsocket::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
     if (cb_message == nullptr) {
