@@ -148,5 +148,8 @@ qh3server
 dem-alerts
 https://bitbucket.org/quaideman/dem/src/master/
 
+gdocs
+https://arunmudhaliar.github.io/docs/
+
 *updated on 08-Feb-2024.*
 *formatted by https://pandao.github.io/editor.md/en.html*
