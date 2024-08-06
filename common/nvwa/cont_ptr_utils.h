@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2021 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -32,7 +32,7 @@
  * Utility functors for containers of pointers (adapted from Scott
  * Meyers' <em>Effective STL</em>).
  *
- * @date  2013-10-06
+ * @date  2021-08-06
  */
 
 #ifndef NVWA_CONT_PTR_UTILS_H
@@ -54,8 +54,7 @@ NVWA_NAMESPACE_BEGIN
  *           dereference());
  * @endcode
  */
-struct dereference
-{
+struct dereference {
     template <typename _Tp>
     const _Tp& operator()(const _Tp* ptr) const
     {
@@ -76,8 +75,7 @@ struct dereference
  * set<Object*, dereference_less> s;
  * @endcode
  */
-struct dereference_less
-{
+struct dereference_less {
     template <typename _Pointer>
     bool operator()(const _Pointer& ptr1, const _Pointer& ptr2) const
     {
@@ -95,8 +93,7 @@ struct dereference_less
  * for_each(l.begin(), l.end(), delete_object());
  * @endcode
  */
-struct delete_object
-{
+struct delete_object {
     template <typename _Tp>
     void operator()(_Tp* ptr) const
     {
@@ -115,11 +112,11 @@ struct delete_object
  * @endcode
  */
 template <typename _OutputStrm, typename _StringType = const char*>
-struct output_object
-{
+struct output_object {
     output_object(_OutputStrm& outs, const _StringType& sep)
         : _M_outs(outs), _M_sep(sep)
-    {}
+    {
+    }
 
     template <typename _Pointer>
     void operator()(const _Pointer& ptr) const

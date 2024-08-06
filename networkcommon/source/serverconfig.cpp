@@ -9,7 +9,7 @@
 #include "serverconfig.hpp"
 #include <rapidjson/error/en.h>	 // Include for GetParseError_En
 
-serverconfig::serverconfig(interface_qzookeeper* interface) : zk_interface(interface) {
+serverconfig::serverconfig(interface_qzookeeper* interface, observer_serverconfig* observer) : zk_interface(interface), config_change_observer(observer) {
     zk_interface->register_value_change_callback(serverconfig::zk_value_change_listener, this);
 }
 
@@ -22,13 +22,15 @@ void serverconfig::clear() {
 	configs.clear();
 }
 
-void serverconfig::load(const fs::path& path, qzookeeper* qzk, const qstring& zk_root_folder) {
+bool serverconfig::load(const fs::path& path, qzookeeper* qzk, const qstring& zk_root_folder) {
 	qstring buffer;
+    bool result = false;
 	if (qtextfile::get_content(path, buffer) == 0) {
-		iterate_and_load_keys(buffer, qzk, zk_root_folder);
+        result = iterate_and_load_keys(buffer, qzk, zk_root_folder);
 	} else {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "couldn't read zk config - %s", path.string().c_str());
 	}
+    return result;
 }
 
 int serverconfig::get_config(const qstring& key, const qstring& default_value, qstring& result) {
@@ -64,12 +66,12 @@ qstring serverconfig::get_string(const qstring& key, const qstring& default_valu
 	return itr->second;
 }
 
-void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder) {
+bool serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder) {
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse((char*) buffer.c_str(), buffer.length());
 	if (!ok) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "JSON parse error: %s (Offset: %d)", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
-		return;
+		return false;
 	}
 
 	std::map<qstring, std::vector<qstring>> config_keys;
@@ -77,12 +79,12 @@ void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", m.name.GetString());
 		if (!m.value.IsArray()) {
 			DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "root key(%s) must be an array !!!", m.name.GetString());
-			continue;
+            return false;
 		}
 		for (const auto& n : m.value.GetArray()) {
 			if (!n.IsString()) {
 				DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "value (%s) must be a string !!!", n.GetString());
-				continue;
+                return false;
 			}
             // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "keys %s", n.GetString());
 			config_keys[m.name.GetString()].push_back(n.GetString());
@@ -95,14 +97,19 @@ void serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 			qstring zk_key = qstring::format_string("%s/%s/%s", zk_root_folder.c_str(), kv.first.c_str(), c.c_str());
 			qstring zk_res;
 			int result = qzk->get_data(zk_key, zk_res);
+            if (result == ZNONODE) {
+//                DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Node does not exist (ZNONODE) for key %s. continuing...", zk_key.c_str());
+                continue;
+            }
 			if (result != 0) {
-				continue;
+                return false;
 			}
 			qstring mod_zk_key = qstring::format_string("%s/%s", kv.first.c_str(), c.c_str());
 			configs[mod_zk_key] = zk_res;
 		}
 	}
     // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d keys loaded", configs.size());
+    return true;
 }
 
 bool serverconfig::try_update_value(const qstring& path, const qstring& data) {
@@ -120,8 +127,11 @@ bool serverconfig::try_update_value(const qstring& path, const qstring& data) {
 }
 void serverconfig::zk_value_change_listener(const qstring& path, const qstring& data, void* context) {
     serverconfig* config = reinterpret_cast<serverconfig*>(context);
-    if (config->try_update_value(path, data)){
+    if (config->try_update_value(path, data)) {
         DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "config updated k:%s", path.c_str());
+        if (config->config_change_observer) {
+            config->config_change_observer->configchanged(path, data);
+        }
     } else {
         DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "config not found for k:%s", path.c_str());
     }

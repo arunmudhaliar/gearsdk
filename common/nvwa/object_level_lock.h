@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2021 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -34,7 +34,7 @@
  * href="http://www.awprofessional.com/articles/article.asp?p=25298">
  * "Multithreading and the C++ Type System"</a> for the ideas behind.
  *
- * @date  2013-03-01
+ * @date  2021-08-06
  */
 
 #ifndef NVWA_OBJECT_LEVEL_LOCK_H
@@ -51,24 +51,23 @@ NVWA_NAMESPACE_BEGIN
      * single-threaded implementation.
      */
     template <class _Host>
-    class object_level_lock
-    {
+    class object_level_lock {
     public:
         /** Type that provides locking/unlocking semantics. */
-        class lock
-        {
+        class lock {
 #   ifndef NDEBUG
             const object_level_lock& _M_host;
 #   endif
 
-            lock(const lock&);
-            lock& operator=(const lock&);
         public:
             explicit lock(const object_level_lock& host)
+            lock(const lock&) = delete;
+            lock& operator=(const lock&) = delete;
 #   ifndef NDEBUG
                 : _M_host(host)
 #   endif
-            {}
+            {
+            }
 #   ifndef NDEBUG
             // The purpose of this method is allow one to write code
             // like "assert(guard.get_locked_object() == this)" to
@@ -89,8 +88,7 @@ NVWA_NAMESPACE_BEGIN
      * multi-threaded implementation.
      */
     template <class _Host>
-    class object_level_lock
-    {
+    class object_level_lock {
         mutable fast_mutex _M_mtx;
 
     public:
@@ -102,17 +100,16 @@ NVWA_NAMESPACE_BEGIN
         friend class lock;
 
         /** Type that provides locking/unlocking semantics. */
-        class lock
-        {
+        class lock {
             const object_level_lock& _M_host;
 
-            lock(const lock&);
-            lock& operator=(const lock&);
         public:
             explicit lock(const object_level_lock& host) : _M_host(host)
             {
                 _M_host._M_mtx.lock();
             }
+            lock(const lock&) = delete;
+            lock& operator=(const lock&) = delete;
             ~lock()
             {
                 _M_host._M_mtx.unlock();

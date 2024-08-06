@@ -42,8 +42,8 @@ MAIN_OBJS = ${MAIN_SRCS:.cpp=.o}
 
 # Definitions and Flags
 USER_DEFINES = -DLOG_LEVEL=3
-CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall
-CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
+CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
@@ -99,4 +99,9 @@ release: $(LIB) $(MAIN_OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(EXE) $(MAIN_OBJS) $(LIB) $(LIBS)
 
 $(LIB): $(OBJS)
+ifeq ($(UNAME), Linux)
+# libtool --mode=link $(CXX) -static -o $(LIB) $(OBJS)
 	ar rcs $(LIB) $(OBJS)
+else
+	libtool -static -o $(LIB) $(OBJS)
+endif

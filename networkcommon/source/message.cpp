@@ -275,50 +275,59 @@ DEFINE_MESSAGE_PRE_REQUISITES(res_msg_gservers)
 res_msg_gservers::res_msg_gservers() : message_base() {}
 
 bool res_msg_gservers::deserialize(rapidjson::Value& obj) {
+    gservers.clear();
     if (!message_base::deserialize(obj)) {
         return false;
     }
-    if (!obj.IsArray())
+    
+    if (!obj.IsArray()) {
         return false;
+    }
 
-    gservers.clear();
     for (rapidjson::SizeType i = 0; i < obj.Size(); i++) {
-        const rapidjson::Value& group = obj[i];
-        // Iterate over the members of each group object
-        for (rapidjson::Value::ConstMemberIterator it = group.MemberBegin(); it != group.MemberEnd(); ++it) {
-            const qstring& key = it->name.GetString();
-            // Check if the value is an array
-            if (it->value.IsArray()) {
-                const rapidjson::Value& group_servers = it->value;
-                // Iterate over the servers array
-                for (rapidjson::SizeType j = 0; j < group_servers.Size(); j++) {
-                    const qstring& server = group_servers[j].GetString();
-                    gservers[key].push_back(server);
-                    //DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "g:%s, k:%s", key.c_str(), server.c_str());
+        const rapidjson::Value& serverObj = obj[i];
+        if (!serverObj.IsObject()) {
+            return false;
+        }
+
+        qstring addr;
+        if (serverObj.HasMember("addr") && serverObj["addr"].IsString()) {
+            addr = serverObj["addr"].GetString();
+        } else {
+            return false;
+        }
+
+        if (serverObj.HasMember("ports") && serverObj["ports"].IsArray()) {
+            const rapidjson::Value& portsArray = serverObj["ports"];
+            for (rapidjson::SizeType j = 0; j < portsArray.Size(); j++) {
+                if (portsArray[j].IsString()) {
+                    gservers[addr].push_back(portsArray[j].GetString());
+                } else {
+                    return false;
                 }
             }
+        } else {
+            return false;
         }
     }
+
     return true;
 }
 
 void res_msg_gservers::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
     message_base::serialize(obj, allocator);
     obj.SetArray();
-    for (auto kv : gservers) {
-        rapidjson::Value group(rapidjson::kObjectType);
-        rapidjson::Value group_servers(rapidjson::kArrayType);
-        for (auto g : kv.second) {
-            group_servers.PushBack(Value().SetString(g.c_str(), (uint32_t)g.length(), allocator), allocator);
-        }
+    for (const auto& kv : gservers) {
+        rapidjson::Value serverObj(rapidjson::kObjectType);
+        serverObj.SetObject();
+        serverObj.AddMember("addr", rapidjson::Value().SetString(kv.first.c_str(), (uint)kv.first.length(), allocator), allocator);
         
-        ssize_t key_len = kv.first.length();
-        char* dynamic_key = reinterpret_cast<char*>(allocator.Malloc(key_len+1));
-        memcpy(dynamic_key, kv.first.c_str(), key_len);
-        dynamic_key[key_len] = '\0';
-
-        group.AddMember(StringRef(dynamic_key, key_len), group_servers, allocator);
-        obj.PushBack(group, allocator);
+        rapidjson::Value portsArray(rapidjson::kArrayType);
+        for (const auto& port : kv.second) {
+            portsArray.PushBack(rapidjson::Value().SetString(port.c_str(), allocator), allocator);
+        }
+        serverObj.AddMember("ports", portsArray, allocator);
+        obj.PushBack(serverObj, allocator);
     }
 }
 

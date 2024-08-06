@@ -22,8 +22,8 @@ OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 
 USER_DEFINES = -DLOG_LEVEL=1
 
-CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall
-CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden
+CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
+CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 
 # Debug and Release specific flags are better placed in their respective build rules
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1

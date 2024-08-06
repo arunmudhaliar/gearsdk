@@ -20,7 +20,7 @@ using namespace client;
 
 http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
 	UNUSED(bridge);
-	hiredis = DEBUG_NEW qhiredis(redis_ip, redis_port);
+	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", redis_ip, redis_port);
 }
 
 http3_command_server::~http3_command_server() {
@@ -34,6 +34,8 @@ void http3_command_server::on_run_started() {
 bool http3_command_server::on_server_pre_init() {
 	return hiredis->connect_redis() == 0;
 }
+
+void http3_command_server::on_server_uninitialise() {}
 
 void http3_command_server::on_run_end() {}
 

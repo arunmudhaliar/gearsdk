@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2013-2015 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2013-2022 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,7 +31,7 @@
  *
  * Common definitions for preprocessing.
  *
- * @date  2015-10-28
+ * @date  2022-01-05
  */
 
 #ifndef NVWA_NVWA_H
@@ -108,5 +108,41 @@
 #define NVWA_WINDOWS 0
 #endif
 #endif // NVWA_WINDOWS
+
+#ifndef NVWA_CLANG
+#if defined(__clang__)
+#define NVWA_CLANG 1
+#else
+#define NVWA_CLANG 0
+#endif
+#endif // NVWA_CLANG
+
+#ifndef NVWA_GCC
+#if defined(__GNUC__) && !defined(__clang__)
+#define NVWA_GCC 1
+#else
+#define NVWA_GCC 0
+#endif
+#endif // NVWA_GCC
+
+#ifndef NVWA_APPLE_CLANG
+#if defined(__clang__) && defined(__apple_build_version__)
+#define NVWA_APPLE_CLANG 1
+#else
+#define NVWA_APPLE_CLANG 0
+#endif
+#endif // NVWA_APPLE_CLANG
+
+#ifndef NVWA_MSVC
+#if defined(_MSC_VER)
+#define NVWA_MSVC 1
+#else
+#define NVWA_MSVC 0
+#endif
+#endif // NVWA_MSVC
+
+#define NVWA_CONCAT(x, y)         x##y
+#define NVWA_PASTE(x, y)          NVWA_CONCAT(x, y)
+#define NVWA_UNIQUE_NAME(prefix)  NVWA_PASTE(prefix, __COUNTER__)
 
 #endif // NVWA_NVWA_H

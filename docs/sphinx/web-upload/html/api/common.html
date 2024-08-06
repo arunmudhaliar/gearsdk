@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>common &mdash; gearsdk 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="networkcommon" href="networkcommon.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gearsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#header-files">header files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#qstring">qstring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv47qstring"><code class="docutils literal notranslate"><span class="pre">qstring</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEv"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEPKc"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEKi"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEKl"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEPKci"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEPKc6size_t"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEPK7uint8_t6size_t"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring4copyERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring4copyEPKc"><code class="docutils literal notranslate"><span class="pre">qstring::copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring10run_printfEPKci"><code class="docutils literal notranslate"><span class="pre">qstring::run_printf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring8bin_copyEPK7uint8_t7ssize_t"><code class="docutils literal notranslate"><span class="pre">qstring::bin_copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring6formatEPKcz"><code class="docutils literal notranslate"><span class="pre">qstring::format()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring4findElRK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::find()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7replaceERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::replace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring5splitERK7qstringRNSt6vectorI7qstringEEb"><code class="docutils literal notranslate"><span class="pre">qstring::split()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringD0Ev"><code class="docutils literal notranslate"><span class="pre">qstring::~qstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring5c_strEv"><code class="docutils literal notranslate"><span class="pre">qstring::c_str()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring6lengthEv"><code class="docutils literal notranslate"><span class="pre">qstring::length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring7isemptyEv"><code class="docutils literal notranslate"><span class="pre">qstring::isempty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring5clearEv"><code class="docutils literal notranslate"><span class="pre">qstring::clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringaSERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator=()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringaSEPKc"><code class="docutils literal notranslate"><span class="pre">qstring::operator=()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringeqERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator==()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringneERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator!=()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstringltERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator&lt;()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring7compareERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::compare()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringplERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator+()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringpLERK7qstring"><code class="docutils literal notranslate"><span class="pre">qstring::operator+=()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstringpLEPKc"><code class="docutils literal notranslate"><span class="pre">qstring::operator+=()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK7qstring12get_utstringEv"><code class="docutils literal notranslate"><span class="pre">qstring::get_utstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring6createEPK7uint8_t6size_t"><code class="docutils literal notranslate"><span class="pre">qstring::create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring13format_stringEPKcz"><code class="docutils literal notranslate"><span class="pre">qstring::format_string()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring9ut_stringE"><code class="docutils literal notranslate"><span class="pre">qstring::ut_string</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#timer">timer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv45timer"><code class="docutils literal notranslate"><span class="pre">timer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer4initEv"><code class="docutils literal notranslate"><span class="pre">timer::init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer6updateEv"><code class="docutils literal notranslate"><span class="pre">timer::update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer6updateEf"><code class="docutils literal notranslate"><span class="pre">timer::update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer5resetEv"><code class="docutils literal notranslate"><span class="pre">timer::reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer10getDtinSecEv"><code class="docutils literal notranslate"><span class="pre">timer::getDtinSec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer15getDTinMilliSecEv"><code class="docutils literal notranslate"><span class="pre">timer::getDTinMilliSec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer6getFPSEv"><code class="docutils literal notranslate"><span class="pre">timer::getFPS()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer14getElapsedTimeEv"><code class="docutils literal notranslate"><span class="pre">timer::getElapsedTime()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer19getCurrentTimeInSecEv"><code class="docutils literal notranslate"><span class="pre">timer::getCurrentTimeInSec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer24getCurrentTimeInMilliSecEv"><code class="docutils literal notranslate"><span class="pre">timer::getCurrentTimeInMilliSec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer12setTimeScaleEf"><code class="docutils literal notranslate"><span class="pre">timer::setTimeScale()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer12getTimeScaleEv"><code class="docutils literal notranslate"><span class="pre">timer::getTimeScale()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer8timerFPSE"><code class="docutils literal notranslate"><span class="pre">timer::timerFPS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer12timerDTInSecE"><code class="docutils literal notranslate"><span class="pre">timer::timerDTInSec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer17timerDTInMilliSecE"><code class="docutils literal notranslate"><span class="pre">timer::timerDTInMilliSec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer21timerElapsedTimeInSecE"><code class="docutils literal notranslate"><span class="pre">timer::timerElapsedTimeInSec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer17timerPreviousTimeE"><code class="docutils literal notranslate"><span class="pre">timer::timerPreviousTime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer18timerAveragingTimeE"><code class="docutils literal notranslate"><span class="pre">timer::timerAveragingTime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer13timerLastTimeE"><code class="docutils literal notranslate"><span class="pre">timer::timerLastTime</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer15timerFrameCountE"><code class="docutils literal notranslate"><span class="pre">timer::timerFrameCount</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer14timerTimeScaleE"><code class="docutils literal notranslate"><span class="pre">timer::timerTimeScale</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utilities-types-macros">utilities, types &amp; macros</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv44gsdk"><code class="docutils literal notranslate"><span class="pre">gsdk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk25type_debug_warn_or_err_cbE"><code class="docutils literal notranslate"><span class="pre">gsdk::type_debug_warn_or_err_cb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk13str2int_errnoE"><code class="docutils literal notranslate"><span class="pre">gsdk::str2int_errno</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk6deviceE"><code class="docutils literal notranslate"><span class="pre">gsdk::device</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk6serverE"><code class="docutils literal notranslate"><span class="pre">gsdk::server</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networkcommon.html">networkcommon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="servercommon.html">servercommon</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gearsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">common</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/common.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="common">
+<h1>common<a class="headerlink" href="#common" title="Link to this heading"></a></h1>
+<p>This section provides documentation for the various components of the <cite>gearsdk</cite> project. Below, you will find detailed information about various header files used in the project.</p>
+<section id="header-files">
+<h2>header files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
+<p>The following header files are documented here:</p>
+<ol class="arabic simple">
+<li><p><cite>qstring.h</cite></p></li>
+<li><p><cite>timer.h</cite></p></li>
+<li><p><cite>sdktypes.hpp</cite></p></li>
+</ol>
+</section>
+<section id="qstring">
+<h2>qstring<a class="headerlink" href="#qstring" title="Link to this heading"></a></h2>
+<p>The <cite>qstring.h</cite> file contains the definition and implementation of the <cite>qstring</cite> class, which provides a string manipulation utility for the project.</p>
+<p>Header file for the qstring class. </p>
+<p>This file contains the declaration of the qstring class, which provides flexible string handling using UT_string.</p>
+<p><div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>UT_string</p>
+</div>
+<dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>Copyright (c) 2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure UT_string library is included and linked in your project.</p>
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv47qstring">
+<span id="_CPPv37qstring"></span><span id="_CPPv27qstring"></span><span class="target" id="dc/d1d/classqstring"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><a class="headerlink" href="#_CPPv47qstring" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qstring.h&gt;</em></div>
+<p>A class for flexible string handling using UT_string. </p>
+<p>Manages strings and provides various constructors, methods for string manipulation, and overloads for common operations. Utilizes the UT_string library for internal management.</p>
+<p><div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>UT_string </p>
+</div>
+</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure UT_string library is included and linked in your project.</p>
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEv">
+<span id="_CPPv3N7qstring7qstringEv"></span><span id="_CPPv2N7qstring7qstringEv"></span><span id="qstring::qstring"></span><span class="target" id="dc/d1d/classqstring_1a6e3e4e9ec52bc7d136e389084e7721a3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Default constructor. Initializes an empty qstring object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEPKc">
+<span id="_CPPv3N7qstring7qstringEPKc"></span><span id="_CPPv2N7qstring7qstringEPKc"></span><span id="qstring::qstring__cCP"></span><span class="target" id="dc/d1d/classqstring_1aaa9ca70a7953aefdbf96eb8bea84a31f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from a C-style string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – C-style string to initialize the qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEKi">
+<span id="_CPPv3N7qstring7qstringEKi"></span><span id="_CPPv2N7qstring7qstringEKi"></span><span id="qstring::qstring__iC"></span><span class="target" id="dc/d1d/classqstring_1a57e1b844f2e0c8ce39d543b04bd0d2cb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEKi" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from an integer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – Integer value to initialize the qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEKl">
+<span id="_CPPv3N7qstring7qstringEKl"></span><span id="_CPPv2N7qstring7qstringEKl"></span><span id="qstring::qstring__lC"></span><span class="target" id="dc/d1d/classqstring_1a6fa639e37a790cc3e1113c666074c483"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEKl" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from a long integer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – Long integer value to initialize the qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEPKci">
+<span id="_CPPv3N7qstring7qstringEPKci"></span><span id="_CPPv2N7qstring7qstringEPKci"></span><span id="qstring::qstring__cCP.i"></span><span class="target" id="dc/d1d/classqstring_1a329c8e4b78d24625973612bc77fd4807"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEPKci" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from a substring of a C-style string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> – C-style string. </p></li>
+<li><p><strong>len</strong> – Length of the substring. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEPKc6size_t">
+<span id="_CPPv3N7qstring7qstringEPKc6size_t"></span><span id="_CPPv2N7qstring7qstringEPKc6size_t"></span><span id="qstring::qstring__cCP.s"></span><span class="target" id="dc/d1d/classqstring_1afba71571b6056d67452346b131af094c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEPKc6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from a substring with size_t length. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> – C-style string. </p></li>
+<li><p><strong>len</strong> – Length of the substring. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringEPK7uint8_t6size_t">
+<span id="_CPPv3N7qstring7qstringEPK7uint8_t6size_t"></span><span id="_CPPv2N7qstring7qstringEPK7uint8_t6size_t"></span><span id="qstring::qstring__uint8_tCP.s"></span><span class="target" id="dc/d1d/classqstring_1ae67ca4a6112f9b106bd313d4fc39e852"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringEPK7uint8_t6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs from a binary buffer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> – Pointer to the binary data. </p></li>
+<li><p><strong>len</strong> – Length of the binary data. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7qstringERK7qstring">
+<span id="_CPPv3N7qstring7qstringERK7qstring"></span><span id="_CPPv2N7qstring7qstringERK7qstring"></span><span id="qstring::qstring__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1a9ec2025c29beb2260eaffa368d01f8c8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N7qstring7qstringERK7qstring" title="qstring::qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qstr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7qstringERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Copy constructor. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qstr</strong> – qstring object to copy from. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring4copyERK7qstring">
+<span id="_CPPv3N7qstring4copyERK7qstring"></span><span id="_CPPv2N7qstring4copyERK7qstring"></span><span id="qstring::copy__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1abaa9966ef2a3cb3e76e014d9943a3876"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">copy</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qstr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring4copyERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Copies content from another qstring object. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qstr</strong> – qstring object to copy from. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring4copyEPKc">
+<span id="_CPPv3N7qstring4copyEPKc"></span><span id="_CPPv2N7qstring4copyEPKc"></span><span id="qstring::copy__cCP"></span><span class="target" id="dc/d1d/classqstring_1a8bdab53805cf8aa591205a6183593a28"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">copy</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring4copyEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Copies content from a C-style string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – C-style string to copy from. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring10run_printfEPKci">
+<span id="_CPPv3N7qstring10run_printfEPKci"></span><span id="_CPPv2N7qstring10run_printfEPKci"></span><span id="qstring::run_printf__cCP.i"></span><span class="target" id="dc/d1d/classqstring_1ae7844d31fe617fa8f78638407625267a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">run_printf</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring10run_printfEPKci" title="Link to this definition"></a><br /></dt>
+<dd><p>Appends formatted content without clearing existing data. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> – C-style string. </p></li>
+<li><p><strong>len</strong> – Length of the content. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring8bin_copyEPK7uint8_t7ssize_t">
+<span id="_CPPv3N7qstring8bin_copyEPK7uint8_t7ssize_t"></span><span id="_CPPv2N7qstring8bin_copyEPK7uint8_t7ssize_t"></span><span id="qstring::bin_copy__uint8_tCP.ssize_t"></span><span class="target" id="dc/d1d/classqstring_1a41e7d127bdcedb59b799b5a4c570e29e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bin_copy</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buf</span></span>, <span class="n"><span class="pre">ssize_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring8bin_copyEPK7uint8_t7ssize_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Copies binary data into the qstring object. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buf</strong> – Pointer to the binary data. </p></li>
+<li><p><strong>len</strong> – Length of the binary data. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring6formatEPKcz">
+<span id="_CPPv3N7qstring6formatEPKcz"></span><span id="_CPPv2N7qstring6formatEPKcz"></span><span id="qstring::format__cCP.z"></span><span class="target" id="dc/d1d/classqstring_1a166d6bd8c5c3ecf58130ad5ddd8c003e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">format</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fmt</span></span>, <span class="p"><span class="pre">...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring6formatEPKcz" title="Link to this definition"></a><br /></dt>
+<dd><p>Formats the qstring with variable arguments. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fmt</strong> – Format string. </p></li>
+<li><p><strong>...</strong> – Variable arguments. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring4findElRK7qstring">
+<span id="_CPPv3NK7qstring4findElRK7qstring"></span><span id="_CPPv2NK7qstring4findElRK7qstring"></span><span id="qstring::find__l.qstringCRC"></span><span class="target" id="dc/d1d/classqstring_1a9be94755e41313200bd80f81d77f5acf"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">find</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">start_pos</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">sub_str</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring4findElRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Finds the position of a substring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_pos</strong> – Starting position for the search. </p></li>
+<li><p><strong>sub_str</strong> – Substring to find. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Position of the substring or -1 if not found. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring7replaceERK7qstringRK7qstring">
+<span id="_CPPv3N7qstring7replaceERK7qstringRK7qstring"></span><span id="_CPPv2N7qstring7replaceERK7qstringRK7qstring"></span><span id="qstring::replace__qstringCR.qstringCR"></span><span class="target" id="dc/d1d/classqstring_1a7f8983282bba7e9a141b96d06539e209"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">replace</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">sub_str</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring7replaceERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Replaces all occurrences of a substring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sub_str</strong> – Substring to replace. </p></li>
+<li><p><strong>str</strong> – Replacement string. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring5splitERK7qstringRNSt6vectorI7qstringEEb">
+<span id="_CPPv3NK7qstring5splitERK7qstringRNSt6vectorI7qstringEEb"></span><span id="_CPPv2NK7qstring5splitERK7qstringRNSt6vectorI7qstringEEb"></span><span id="qstring::split__qstringCR.std::vector:qstring:R.bC"></span><span class="target" id="dc/d1d/classqstring_1ae517bc371ab579f4b84d5dd8530fc340"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">split</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">sub_str</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">array</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">include_empty_string</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">true</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring5splitERK7qstringRNSt6vectorI7qstringEEb" title="Link to this definition"></a><br /></dt>
+<dd><p>Splits the string into substrings. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sub_str</strong> – Delimiter substring. </p></li>
+<li><p><strong>array</strong> – Vector to hold the resulting substrings. </p></li>
+<li><p><strong>include_empty_string</strong> – If true, includes empty substrings. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringD0Ev">
+<span id="_CPPv3N7qstringD0Ev"></span><span id="_CPPv2N7qstringD0Ev"></span><span id="qstring::~qstring"></span><span class="target" id="dc/d1d/classqstring_1a7d3ebadd9d58e93aeb3e8e66bd3d4206"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~qstring</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destructor. Frees the internal UT_string object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring5c_strEv">
+<span id="_CPPv3NK7qstring5c_strEv"></span><span id="_CPPv2NK7qstring5c_strEv"></span><span id="qstring::c_strC"></span><span class="target" id="dc/d1d/classqstring_1a92bcb24a82d79fb4c97c12d1d695d66a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">c_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring5c_strEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns a C-style string representation. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>C-style string. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring6lengthEv">
+<span id="_CPPv3NK7qstring6lengthEv"></span><span id="_CPPv2NK7qstring6lengthEv"></span><span id="qstring::lengthC"></span><span class="target" id="dc/d1d/classqstring_1a37926816727af2166337cbc3fa97ba3f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">length</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring6lengthEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns the length of the string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Length of the string. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring7isemptyEv">
+<span id="_CPPv3NK7qstring7isemptyEv"></span><span id="_CPPv2NK7qstring7isemptyEv"></span><span id="qstring::isemptyC"></span><span class="target" id="dc/d1d/classqstring_1aeb5694decc9e975272d06c3fbcb87185"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isempty</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring7isemptyEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Checks if the string is empty. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if empty, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring5clearEv">
+<span id="_CPPv3N7qstring5clearEv"></span><span id="_CPPv2N7qstring5clearEv"></span><span id="qstring::clear"></span><span class="target" id="dc/d1d/classqstring_1a0b9abedad09983bf68ab2726fef0e897"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clear</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring5clearEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Clears the content of the qstring object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringaSERK7qstring">
+<span id="_CPPv3N7qstringaSERK7qstring"></span><span id="_CPPv2N7qstringaSERK7qstring"></span><span id="qstring::assign-operator__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1a739c1c2330359bdcc4a75a7ab3445b68"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qstr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringaSERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Assigns content from another qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qstr</strong> – qstring object to assign from. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringaSEPKc">
+<span id="_CPPv3N7qstringaSEPKc"></span><span id="_CPPv2N7qstringaSEPKc"></span><span id="qstring::assign-operator__cCP"></span><span class="target" id="dc/d1d/classqstring_1a3f204fd5da31f1fb623bc23ea7e5e63e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringaSEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Assigns content from a C-style string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – C-style string to assign from. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringeqERK7qstring">
+<span id="_CPPv3N7qstringeqERK7qstring"></span><span id="_CPPv2N7qstringeqERK7qstring"></span><span id="qstring::eq-operator__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1a750c08b9a59fe32b9d5f7b8843712b41"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">==</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringeqERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Compares for equality with another qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – qstring object to compare with. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if equal, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringneERK7qstring">
+<span id="_CPPv3N7qstringneERK7qstring"></span><span id="_CPPv2N7qstringneERK7qstring"></span><span id="qstring::neq-operator__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1ae798c95fc6cce9155066ee13703d3654"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">!=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringneERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Compares for inequality with another qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – qstring object to compare with. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if not equal, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstringltERK7qstring">
+<span id="_CPPv3NK7qstringltERK7qstring"></span><span id="_CPPv2NK7qstringltERK7qstring"></span><span id="qstring::lt-operator__qstringCRC"></span><span class="target" id="dc/d1d/classqstring_1a6b1ed6c7069abae2db6b83d8fdcd35b2"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">&lt;</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">other</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstringltERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Compares if this qstring is less than another. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> – qstring object to compare with. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if less, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring7compareERK7qstring">
+<span id="_CPPv3NK7qstring7compareERK7qstring"></span><span id="_CPPv2NK7qstring7compareERK7qstring"></span><span id="qstring::compare__qstringCRC"></span><span class="target" id="dc/d1d/classqstring_1aff9514b06b981a0537959d3c4ad7ae1a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compare</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring7compareERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Compares with another qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – qstring object to compare with. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if equal, 1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringplERK7qstring">
+<span id="_CPPv3N7qstringplERK7qstring"></span><span id="_CPPv2N7qstringplERK7qstring"></span><span id="qstring::add-operator__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1aa2da26ec48f6ea9c3141594cf656dda6"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">+</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qstr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringplERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Concatenates and returns a new qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qstr</strong> – qstring object to concatenate. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New concatenated qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringpLERK7qstring">
+<span id="_CPPv3N7qstringpLERK7qstring"></span><span id="_CPPv2N7qstringpLERK7qstring"></span><span id="qstring::add-assign-operator__qstringCR"></span><span class="target" id="dc/d1d/classqstring_1ac90b92c1c6855452032a5ac9472a4d3e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">+=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qstr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringpLERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Appends another qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qstr</strong> – qstring object to append. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstringpLEPKc">
+<span id="_CPPv3N7qstringpLEPKc"></span><span id="_CPPv2N7qstringpLEPKc"></span><span id="qstring::add-assign-operator__cCP"></span><span class="target" id="dc/d1d/classqstring_1a365b6e049b41701ad305825264f8c565"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">+=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstringpLEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Appends a C-style string. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>str</strong> – C-style string to append. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK7qstring12get_utstringEv">
+<span id="_CPPv3NK7qstring12get_utstringEv"></span><span id="_CPPv2NK7qstring12get_utstringEv"></span><span id="qstring::get_utstringC"></span><span class="target" id="dc/d1d/classqstring_1a9d612092abd0ebb51dca70bdf5d71868"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">UT_string</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_utstring</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK7qstring12get_utstringEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns the internal UT_string object. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pointer to the internal UT_string. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring6createEPK7uint8_t6size_t">
+<span id="_CPPv3N7qstring6createEPK7uint8_t6size_t"></span><span id="_CPPv2N7qstring6createEPK7uint8_t6size_t"></span><span id="qstring::create__uint8_tCP.s"></span><span class="target" id="dc/d1d/classqstring_1ad8a38de28773456a03ca50e0efc03e42"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring6createEPK7uint8_t6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Static method to create a new qstring from a binary buffer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str</strong> – Pointer to the binary data. </p></li>
+<li><p><strong>len</strong> – Length of the binary data. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pointer to the newly created qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring13format_stringEPKcz">
+<span id="_CPPv3N7qstring13format_stringEPKcz"></span><span id="_CPPv2N7qstring13format_stringEPKcz"></span><span id="qstring::format_string__cCP.z"></span><span class="target" id="dc/d1d/classqstring_1a85b81a3640ea8d6c00094bc0c1610677"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">format_string</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fmt</span></span>, <span class="p"><span class="pre">...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7qstring13format_stringEPKcz" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates and returns a formatted qstring. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fmt</strong> – Format string. </p></li>
+<li><p><strong>...</strong> – Variable arguments. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Formatted qstring. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N7qstring9ut_stringE">
+<span id="_CPPv3N7qstring9ut_stringE"></span><span id="_CPPv2N7qstring9ut_stringE"></span><span id="qstring::ut_string__UT_stringP"></span><span class="target" id="dc/d1d/classqstring_1a0b93d04a374df347e78713e48ca079fe"></span><span class="n"><span class="pre">UT_string</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">ut_string</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N7qstring9ut_stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Internal string representation managed by UT_string. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+<section id="timer">
+<h2>timer<a class="headerlink" href="#timer" title="Link to this heading"></a></h2>
+<p>The <cite>timer.h</cite> file provides the <cite>timer</cite> class, which manages the timing and frame rate for the game.</p>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv45timer">
+<span id="_CPPv35timer"></span><span id="_CPPv25timer"></span><span class="target" id="d6/d88/classtimer"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timer</span></span></span><a class="headerlink" href="#_CPPv45timer" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;timer.h&gt;</em></div>
+<p>Manages the timing and frame rate for the game. </p>
+<p>This class provides functions to initialize, update, and reset the timer, as well as to retrieve various time-related values such as delta time, frame rate, and elapsed time. <dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>Copyright (c) 2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer4initEv">
+<span id="_CPPv3N5timer4initEv"></span><span id="_CPPv2N5timer4initEv"></span><span id="timer::init"></span><span class="target" id="d6/d88/classtimer_1acfe96f11854b123a474d296f0462f938"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer4initEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Initializes the timer. </p>
+<p>This function should be called when the game initializes. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer6updateEv">
+<span id="_CPPv3N5timer6updateEv"></span><span id="_CPPv2N5timer6updateEv"></span><span id="timer::update"></span><span class="target" id="d6/d88/classtimer_1aecc5bdd569d8ea8b1fc82754a9c75952"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer6updateEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Updates the timer variables for each frame. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer6updateEf">
+<span id="_CPPv3N5timer6updateEf"></span><span id="_CPPv2N5timer6updateEf"></span><span id="timer::update__float"></span><span class="target" id="d6/d88/classtimer_1a9f0b315f727115621f1540158a11eb25"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">targetFPS</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer6updateEf" title="Link to this definition"></a><br /></dt>
+<dd><p>Updates the timer variables for each frame with a target FPS. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>targetFPS</strong> – The target frames per second. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer5resetEv">
+<span id="_CPPv3N5timer5resetEv"></span><span id="_CPPv2N5timer5resetEv"></span><span id="timer::reset"></span><span class="target" id="d6/d88/classtimer_1a66fc54d1f33bd9d4bec5f8d563595c2e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reset</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer5resetEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Resets the timer variables. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer10getDtinSecEv">
+<span id="_CPPv3N5timer10getDtinSecEv"></span><span id="_CPPv2N5timer10getDtinSecEv"></span><span id="timer::getDtinSec"></span><span class="target" id="d6/d88/classtimer_1adb354636464f148285ec9c7d7e069f08"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getDtinSec</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer10getDtinSecEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the delta time in seconds. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The delta time in seconds. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer15getDTinMilliSecEv">
+<span id="_CPPv3N5timer15getDTinMilliSecEv"></span><span id="_CPPv2N5timer15getDTinMilliSecEv"></span><span id="timer::getDTinMilliSec"></span><span class="target" id="d6/d88/classtimer_1aeca6c419faf82aa73ca50fb6963a4ba2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getDTinMilliSec</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer15getDTinMilliSecEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the delta time in milliseconds. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The delta time in milliseconds. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer6getFPSEv">
+<span id="_CPPv3N5timer6getFPSEv"></span><span id="_CPPv2N5timer6getFPSEv"></span><span id="timer::getFPS"></span><span class="target" id="d6/d88/classtimer_1a64c590f78236d8fd753a5fd14c687136"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getFPS</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer6getFPSEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the current frames per second. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current frames per second. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer14getElapsedTimeEv">
+<span id="_CPPv3N5timer14getElapsedTimeEv"></span><span id="_CPPv2N5timer14getElapsedTimeEv"></span><span id="timer::getElapsedTime"></span><span class="target" id="d6/d88/classtimer_1a101d8fb4528027f946202ec4653aa5ad"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getElapsedTime</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer14getElapsedTimeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the elapsed time in seconds since the timer was initialized. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The elapsed time in seconds. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer19getCurrentTimeInSecEv">
+<span id="_CPPv3N5timer19getCurrentTimeInSecEv"></span><span id="_CPPv2N5timer19getCurrentTimeInSecEv"></span><span id="timer::getCurrentTimeInSec"></span><span class="target" id="d6/d88/classtimer_1ab3c6ba7a64b08d82bac2ec34aa21c9bf"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getCurrentTimeInSec</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer19getCurrentTimeInSecEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the current time in seconds. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current time in seconds. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer24getCurrentTimeInMilliSecEv">
+<span id="_CPPv3N5timer24getCurrentTimeInMilliSecEv"></span><span id="_CPPv2N5timer24getCurrentTimeInMilliSecEv"></span><span id="timer::getCurrentTimeInMilliSec"></span><span class="target" id="d6/d88/classtimer_1a92db4cee668c2314dd9a080112c5f7c0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getCurrentTimeInMilliSec</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer24getCurrentTimeInMilliSecEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the current time in milliseconds. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current time in milliseconds. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer12setTimeScaleEf">
+<span id="_CPPv3N5timer12setTimeScaleEf"></span><span id="_CPPv2N5timer12setTimeScaleEf"></span><span id="timer::setTimeScale__float"></span><span class="target" id="d6/d88/classtimer_1acce8b800931b7b3166962c2ff41d3286"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setTimeScale</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timescale</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer12setTimeScaleEf" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the global time scale for the engine. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timescale</strong> – The new time scale value. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer12getTimeScaleEv">
+<span id="_CPPv3N5timer12getTimeScaleEv"></span><span id="_CPPv2N5timer12getTimeScaleEv"></span><span id="timer::getTimeScale"></span><span class="target" id="d6/d88/classtimer_1a813dd89c3de9f882bbe25add8d766a28"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getTimeScale</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5timer12getTimeScaleEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the current global time scale. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current time scale value. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-attributes">Private Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer8timerFPSE">
+<span id="_CPPv3N5timer8timerFPSE"></span><span id="_CPPv2N5timer8timerFPSE"></span><span id="timer::timerFPS__float"></span><span class="target" id="d6/d88/classtimer_1a3cad010e836de9c2c8c8c244361a2eff"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerFPS</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer8timerFPSE" title="Link to this definition"></a><br /></dt>
+<dd><p>The current frames per second. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer12timerDTInSecE">
+<span id="_CPPv3N5timer12timerDTInSecE"></span><span id="_CPPv2N5timer12timerDTInSecE"></span><span id="timer::timerDTInSec__float"></span><span class="target" id="d6/d88/classtimer_1a0c5f1d465a7157262f7d936082b2bf31"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerDTInSec</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer12timerDTInSecE" title="Link to this definition"></a><br /></dt>
+<dd><p>The delta time in seconds. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer17timerDTInMilliSecE">
+<span id="_CPPv3N5timer17timerDTInMilliSecE"></span><span id="_CPPv2N5timer17timerDTInMilliSecE"></span><span id="timer::timerDTInMilliSec__i"></span><span class="target" id="d6/d88/classtimer_1a1818de0ebe9423894313b7b0ca231868"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerDTInMilliSec</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N5timer17timerDTInMilliSecE" title="Link to this definition"></a><br /></dt>
+<dd><p>The delta time in milliseconds. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer21timerElapsedTimeInSecE">
+<span id="_CPPv3N5timer21timerElapsedTimeInSecE"></span><span id="_CPPv2N5timer21timerElapsedTimeInSecE"></span><span id="timer::timerElapsedTimeInSec__float"></span><span class="target" id="d6/d88/classtimer_1a414fda12e51712eb2f38cc47bdc70b42"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerElapsedTimeInSec</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer21timerElapsedTimeInSecE" title="Link to this definition"></a><br /></dt>
+<dd><p>The elapsed time in seconds since the timer was initialized. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer17timerPreviousTimeE">
+<span id="_CPPv3N5timer17timerPreviousTimeE"></span><span id="_CPPv2N5timer17timerPreviousTimeE"></span><span id="timer::timerPreviousTime__double"></span><span class="target" id="d6/d88/classtimer_1a4224f472ca6f6f26eca8b323ae66648f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerPreviousTime</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer17timerPreviousTimeE" title="Link to this definition"></a><br /></dt>
+<dd><p>The previous time, used for internal calculations. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer18timerAveragingTimeE">
+<span id="_CPPv3N5timer18timerAveragingTimeE"></span><span id="_CPPv2N5timer18timerAveragingTimeE"></span><span id="timer::timerAveragingTime__float"></span><span class="target" id="d6/d88/classtimer_1a5d4d12447351846316fb042c9a6cc1be"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerAveragingTime</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.5f</span></span><a class="headerlink" href="#_CPPv4N5timer18timerAveragingTimeE" title="Link to this definition"></a><br /></dt>
+<dd><p>The time over which to average the frame rate. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer13timerLastTimeE">
+<span id="_CPPv3N5timer13timerLastTimeE"></span><span id="_CPPv2N5timer13timerLastTimeE"></span><span id="timer::timerLastTime__double"></span><span class="target" id="d6/d88/classtimer_1a0dde406d6eec56692c1cb939151f212c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerLastTime</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer13timerLastTimeE" title="Link to this definition"></a><br /></dt>
+<dd><p>The last recorded time, used for internal calculations. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer15timerFrameCountE">
+<span id="_CPPv3N5timer15timerFrameCountE"></span><span id="_CPPv2N5timer15timerFrameCountE"></span><span id="timer::timerFrameCount__i"></span><span class="target" id="d6/d88/classtimer_1ae8893c323b8cc7af0e438d528920bd48"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerFrameCount</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N5timer15timerFrameCountE" title="Link to this definition"></a><br /></dt>
+<dd><p>The frame count, used for calculating the frame rate. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5timer14timerTimeScaleE">
+<span id="_CPPv3N5timer14timerTimeScaleE"></span><span id="_CPPv2N5timer14timerTimeScaleE"></span><span id="timer::timerTimeScale__float"></span><span class="target" id="d6/d88/classtimer_1a7b6a354cb4434ad69e4042653dfad85a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timerTimeScale</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5timer14timerTimeScaleE" title="Link to this definition"></a><br /></dt>
+<dd><p>The global time scale for the engine. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+<section id="utilities-types-macros">
+<h2>utilities, types &amp; macros<a class="headerlink" href="#utilities-types-macros" title="Link to this heading"></a></h2>
+<p>The <cite>sdktypes.hpp</cite> file includes various type definitions used throughout the project.</p>
+<p>Contains platform-specific definitions, macros, and utility functions for the SDK. </p>
+<p>This header file defines platform macros, utility macros, and functions for logging, error handling, and platform-specific functionality.</p>
+<p>
+This header file defines platform macros, utility macros, and functions for logging, error handling, and platform-specific functionality. <dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>(c) [2023], [amudaliar] All rights reserved.</p>
+</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PLATFORM_MAC">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a0616db9ad835cb99d2ff40c8490e26d7"></span><span class="sig-name descname"><span class="n"><span class="pre">PLATFORM_MAC</span></span></span><a class="headerlink" href="#c.PLATFORM_MAC" title="Link to this definition"></a><br /></dt>
+<dd><p>Platform definitions </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PLATFORM_UNIX">
+<span class="target" id="d4/d73/sdktypes_8hpp_1affc7221af60296a2254e861682bbfedc"></span><span class="sig-name descname"><span class="n"><span class="pre">PLATFORM_UNIX</span></span></span><a class="headerlink" href="#c.PLATFORM_UNIX" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PLATFORM_ANDROID">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a5cee1c7e5378115e4d04a4fc87e40e9b"></span><span class="sig-name descname"><span class="n"><span class="pre">PLATFORM_ANDROID</span></span></span><a class="headerlink" href="#c.PLATFORM_ANDROID" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PLATFORM_LINUX">
+<span class="target" id="d4/d73/sdktypes_8hpp_1affcc3790504b838f9ce56a008cce0950"></span><span class="sig-name descname"><span class="n"><span class="pre">PLATFORM_LINUX</span></span></span><a class="headerlink" href="#c.PLATFORM_LINUX" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PLATFORM">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a1fa4f1561216be34f745f32aaa38d943"></span><span class="sig-name descname"><span class="n"><span class="pre">PLATFORM</span></span></span><a class="headerlink" href="#c.PLATFORM" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.DECLSPEC">
+<span class="target" id="d4/d73/sdktypes_8hpp_1aa4c7a931f4a968f818b2a1b10a432185"></span><span class="sig-name descname"><span class="n"><span class="pre">DECLSPEC</span></span></span><a class="headerlink" href="#c.DECLSPEC" title="Link to this definition"></a><br /></dt>
+<dd><p>Macro definitions </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.GSDK_UDP_DEFAULT_PORT">
+<span class="target" id="d4/d73/sdktypes_8hpp_1ace38c6a4672e5bef84318e6431c44b24"></span><span class="sig-name descname"><span class="n"><span class="pre">GSDK_UDP_DEFAULT_PORT</span></span></span><a class="headerlink" href="#c.GSDK_UDP_DEFAULT_PORT" title="Link to this definition"></a><br /></dt>
+<dd><p>Default UDP port for the SDK. </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.GX_DELETE">
+<span class="target" id="d4/d73/sdktypes_8hpp_1add942f910edf2efba10a42abc4ad9fdc"></span><span class="sig-name descname"><span class="n"><span class="pre">GX_DELETE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">x</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.GX_DELETE" title="Link to this definition"></a><br /></dt>
+<dd><p>Macro to safely delete a pointer </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.GX_DELETE_ARY">
+<span class="target" id="d4/d73/sdktypes_8hpp_1af06b7cefdebe22ef23319e2ca25ae60b"></span><span class="sig-name descname"><span class="n"><span class="pre">GX_DELETE_ARY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">x</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.GX_DELETE_ARY" title="Link to this definition"></a><br /></dt>
+<dd><p>Macro to safely delete an array of pointers </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.GX_ABS">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a5191c3c7898c0f19cc8fd6426a55b623"></span><span class="sig-name descname"><span class="n"><span class="pre">GX_ABS</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">v</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.GX_ABS" title="Link to this definition"></a><br /></dt>
+<dd><p>Macro to calculate absolute value </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.UNUSED">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a86d500a34c624c2cae56bc25a31b12f3"></span><span class="sig-name descname"><span class="n"><span class="pre">UNUSED</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">x</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.UNUSED" title="Link to this definition"></a><br /></dt>
+<dd><p>Macro to mark unused variables </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__DEFAULT_LOG_TAG__">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a7e9074005c1eaa3b5178823b65b3bcae"></span><span class="sig-name descname"><span class="n"><span class="pre">__DEFAULT_LOG_TAG__</span></span></span><a class="headerlink" href="#c.__DEFAULT_LOG_TAG__" title="Link to this definition"></a><br /></dt>
+<dd><p>Default log tag </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_0">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a074a8ea60bdc6f70633310672d753b39"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_0</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_0" title="Link to this definition"></a><br /></dt>
+<dd><p>Logging levels </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_1">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a0c3683c1b82e139df542d4e620f9bb8d"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_1</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_1" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_2">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a6b12b897533f4564670c79a6a7d7ce47"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_2</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_2" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_3">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a34319adc77d2511857497206f485af36"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_3</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_3" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_4">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a5b52b9ab9baf862a256812424499fbb2"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_4</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_4" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL_5">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a2ff93daeb77dd03f9b072db387965e44"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL_5</span></span></span><a class="headerlink" href="#c.LOG_LEVEL_5" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOG_LEVEL">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a0b87e0d3bf5853bcbb0b66a7c48fdc05"></span><span class="sig-name descname"><span class="n"><span class="pre">LOG_LEVEL</span></span></span><a class="headerlink" href="#c.LOG_LEVEL" title="Link to this definition"></a><br /></dt>
+<dd><p>Default log level. </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.LOGBUFFER_SIZE">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a2e75de3d470df65326791691c3039c70"></span><span class="sig-name descname"><span class="n"><span class="pre">LOGBUFFER_SIZE</span></span></span><a class="headerlink" href="#c.LOGBUFFER_SIZE" title="Link to this definition"></a><br /></dt>
+<dd><p>Size of the log buffer. </p>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.DEBUG_ASSERT">
+<span class="target" id="d4/d73/sdktypes_8hpp_1ad2d02c7ef35674f62218a5c44f565f27"></span><span class="sig-name descname"><span class="n"><span class="pre">DEBUG_ASSERT</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">tag</span></span>, <span class="n"><span class="pre">expr</span></span>, <span class="p"><span class="pre">...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.DEBUG_ASSERT" title="Link to this definition"></a><br /></dt>
+<dd><p>Asserts an expression and logs an error if the expression is false. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> – Log tag. </p></li>
+<li><p><strong>expr</strong> – Expression to be checked. </p></li>
+<li><p><strong>...</strong> – Additional formatting arguments. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__FILENAME__">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a5fccb4fc71e44089a1b1a77fc76c0b68"></span><span class="sig-name descname"><span class="n"><span class="pre">__FILENAME__</span></span></span><a class="headerlink" href="#c.__FILENAME__" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.DEBUG_PRINT2">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a2b9ea3ee5be902266efa4063e04de1df"></span><span class="sig-name descname"><span class="n"><span class="pre">DEBUG_PRINT2</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">logLevel</span></span>, <span class="n"><span class="pre">tag</span></span>, <span class="p"><span class="pre">...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.DEBUG_PRINT2" title="Link to this definition"></a><br /></dt>
+<dd><p>Prints debug information with line number and function name. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logLevel</strong> – Log level. </p></li>
+<li><p><strong>tag</strong> – Log tag. </p></li>
+<li><p><strong>...</strong> – Format string and arguments. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.PTHREAD_NAME">
+<span class="target" id="d4/d73/sdktypes_8hpp_1acdcceecb7dd367303f6b907d35aca11e"></span><span class="sig-name descname"><span class="n"><span class="pre">PTHREAD_NAME</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.PTHREAD_NAME" title="Link to this definition"></a><br /></dt>
+<dd><p>Set thread name. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1ac19681af2ce55b743d5aa170ddf22bb1"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">int</span> <span class="pre">init_gsdk</span> <span class="pre">()</span></span></dt>
+<dd><p>Initialize SDK for other platforms. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a77e67bc73bff9b2a0ec08af56583ab4c"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">print_common_info</span> <span class="pre">()</span></span></dt>
+<dd><p>Print common information. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a55b982a65c9303e8295046831ef5c5b0"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">int</span> <span class="pre">number_of_digits</span> <span class="pre">(unsigned</span> <span class="pre">int</span> <span class="pre">num)</span></span></dt>
+<dd><p>Get the number of digits in a number. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1aca144f62f687a26a826ed20a232e09d7"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_RAW</span> <span class="pre">(int</span> <span class="pre">logLevel,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Raw debug print. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1acd98149aca7ecf77752b765cdbd56cb2"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT</span> <span class="pre">(int</span> <span class="pre">logLevel,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Debug print with tag. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a87dd6a018994a5b2122e2fcae28f452b"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT2_INTERNAL</span> <span class="pre">(int</span> <span class="pre">logLevel,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*file,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*function,</span> <span class="pre">int</span> <span class="pre">line,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1abc332ba2ac9d2d81d152de36e2a8354b"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_WARN</span> <span class="pre">(int</span> <span class="pre">logLevel,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Warn with debug info. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a3c6b24f95bee30c49b84612b61906bcf"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_WARN_COND</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">bool</span> <span class="pre">condition,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Conditional warning. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a64b39a31e59a2d70bcbdd85473dc3bc7"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT_WARN</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a34adca506257f5767099597c972dbae5"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT_ERROR</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1aead1d5a2960c0709837b57ba0dfe0d32"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_ASSERT_INTERNAL</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*condition,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*file,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*function,</span> <span class="pre">int</span> <span class="pre">line,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a307cf451575393c5a7d5f6f09181b963"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT_IMPORTANT</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Print important debug info. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1ad4449893c42bcbeeff5a775e3d72ceeb"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT_IMPORTANT2</span> <span class="pre">(const</span> <span class="pre">char</span> <span class="pre">*tag,</span> <span class="pre">const</span> <span class="pre">char</span> <span class="pre">*format,...)</span></span></dt>
+<dd><p>Print important debug info. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a7a05018f3ef444fb5c86b0681727cbed"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">DEBUG_PRINT_scid</span> <span class="pre">(int</span> <span class="pre">logLevel,</span> <span class="pre">const</span> <span class="pre">uint8_t</span> <span class="pre">*scid,</span> <span class="pre">size_t</span> <span class="pre">scid_len)</span></span></dt>
+<dd><p>Print SCID information. </p>
+</dd></dl>
+
+</div>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv44gsdk">
+<span id="_CPPv34gsdk"></span><span id="_CPPv24gsdk"></span><span id="gsdk"></span><span class="target" id="d5/d89/namespacegsdk"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gsdk</span></span></span><a class="headerlink" href="#_CPPv44gsdk" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk25type_debug_warn_or_err_cbE">
+<span id="_CPPv3N4gsdk25type_debug_warn_or_err_cbE"></span><span id="_CPPv2N4gsdk25type_debug_warn_or_err_cbE"></span><span id="gsdk::type_debug_warn_or_err_cb"></span><span class="target" id="d4/d73/sdktypes_8hpp_1ad05c89fb7cb31598785bf2d1e43e3008"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">type_debug_warn_or_err_cb</span></span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv4N4gsdk25type_debug_warn_or_err_cbE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-enums">Enums</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk13str2int_errnoE">
+<span id="_CPPv3N4gsdk13str2int_errnoE"></span><span id="_CPPv2N4gsdk13str2int_errnoE"></span><span class="target" id="d4/d73/sdktypes_8hpp_1a952baa7da0653e338a17cdadf9404544"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">str2int_errno</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk13str2int_errnoE" title="Link to this definition"></a><br /></dt>
+<dd><p>Error codes for string-to-int conversion. </p>
+<p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk13str2int_errno15STR2INT_SUCCESSE">
+<span id="_CPPv3N4gsdk13str2int_errno15STR2INT_SUCCESSE"></span><span id="_CPPv2N4gsdk13str2int_errno15STR2INT_SUCCESSE"></span><span class="target" id="d4/d73/sdktypes_8hpp_1a952baa7da0653e338a17cdadf9404544a5dcda56a7411f2f2bdf971ef8e4991f1"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">STR2INT_SUCCESS</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk13str2int_errno15STR2INT_SUCCESSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk13str2int_errno16STR2INT_OVERFLOWE">
+<span id="_CPPv3N4gsdk13str2int_errno16STR2INT_OVERFLOWE"></span><span id="_CPPv2N4gsdk13str2int_errno16STR2INT_OVERFLOWE"></span><span class="target" id="d4/d73/sdktypes_8hpp_1a952baa7da0653e338a17cdadf9404544af99667fef5ed230a8109e959a445e568"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">STR2INT_OVERFLOW</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk13str2int_errno16STR2INT_OVERFLOWE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk13str2int_errno17STR2INT_UNDERFLOWE">
+<span id="_CPPv3N4gsdk13str2int_errno17STR2INT_UNDERFLOWE"></span><span id="_CPPv2N4gsdk13str2int_errno17STR2INT_UNDERFLOWE"></span><span class="target" id="d4/d73/sdktypes_8hpp_1a952baa7da0653e338a17cdadf9404544ae7562cfd64f9c8d645bf89d68dc77246"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">STR2INT_UNDERFLOW</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk13str2int_errno17STR2INT_UNDERFLOWE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk13str2int_errno21STR2INT_INCONVERTIBLEE">
+<span id="_CPPv3N4gsdk13str2int_errno21STR2INT_INCONVERTIBLEE"></span><span id="_CPPv2N4gsdk13str2int_errno21STR2INT_INCONVERTIBLEE"></span><span class="target" id="d4/d73/sdktypes_8hpp_1a952baa7da0653e338a17cdadf9404544a3e297d303cf0fb0d72b7bee62f92f32d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">STR2INT_INCONVERTIBLE</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk13str2int_errno21STR2INT_INCONVERTIBLEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a67c31fcc7364245ab33a8e2dfe38f177"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">set_warn_callback</span> <span class="pre">(type_debug_warn_or_err_cb</span> <span class="pre">cb)</span></span></dt>
+<dd><p>Set a callback function for warnings. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cb</strong> – Callback function. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a9dd05ee9aee5e25a91b06bd988d63e23"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">set_error_callback</span> <span class="pre">(type_debug_warn_or_err_cb</span> <span class="pre">cb)</span></span></dt>
+<dd><p>Set a callback function for errors. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cb</strong> – Callback function. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d73/sdktypes_8hpp_1a6a9cc487bb271d6ad1432d54177cc8b7"></span><span class="sig-name descname"><span class="pre">DECLSPEC</span> <span class="pre">void</span> <span class="pre">set_assert_callback</span> <span class="pre">(type_debug_warn_or_err_cb</span> <span class="pre">cb)</span></span></dt>
+<dd><p>Set a callback function for assertions. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cb</strong> – Callback function. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk6deviceE">
+<span id="_CPPv3N4gsdk6deviceE"></span><span id="_CPPv2N4gsdk6deviceE"></span><span id="gsdk::device"></span><span class="target" id="d5/d7e/classgsdk_1_1device"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">device</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk6deviceE" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;sdktypes.hpp&gt;</em></div>
+<p>Provides device-related information. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk6device14device_detailsE">
+<span id="_CPPv3N4gsdk6device14device_detailsE"></span><span id="_CPPv2N4gsdk6device14device_detailsE"></span><span id="gsdk::device::device_details__utsname"></span><span class="target" id="d5/d7e/classgsdk_1_1device_1afc5bfcb5e79dea5273c39351dc931112"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">utsname</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">device_details</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk6device14device_detailsE" title="Link to this definition"></a><br /></dt>
+<dd><p>Details about the device. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk6serverE">
+<span id="_CPPv3N4gsdk6serverE"></span><span id="_CPPv2N4gsdk6serverE"></span><span id="gsdk::server"></span><span class="target" id="d3/d9f/classgsdk_1_1server"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">server</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk6serverE" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;sdktypes.hpp&gt;</em></div>
+<p>Provides server-related information. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk6server17machine_public_ipE">
+<span id="_CPPv3N4gsdk6server17machine_public_ipE"></span><span id="_CPPv2N4gsdk6server17machine_public_ipE"></span><span id="gsdk::server::machine_public_ip__cA"></span><span class="target" id="d3/d9f/classgsdk_1_1server_1adc367be793ea5daf9d0f8b84d512d1ca"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">machine_public_ip</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">16</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;0.0.0.0&quot;</span></span><a class="headerlink" href="#_CPPv4N4gsdk6server17machine_public_ipE" title="Link to this definition"></a><br /></dt>
+<dd><p>Public IP address of the machine. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="networkcommon.html" class="btn btn-neutral float-right" title="networkcommon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, amudaliar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

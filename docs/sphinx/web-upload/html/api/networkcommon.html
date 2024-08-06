@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>networkcommon &mdash; gearsdk 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="qh3server" href="qh3server.html" />
+    <link rel="prev" title="common" href="common.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gearsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="common.html">common</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">networkcommon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv415qmutexcondition"><code class="docutils literal notranslate"><span class="pre">qmutexcondition</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition15qmutexconditionEv"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::qmutexcondition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexconditionD0Ev"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::~qmutexcondition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition4initERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition6signalEPKc"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::signal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition9broadcastEPKc"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::broadcast()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition13conditionWaitER6qmutexPKc"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::conditionWait()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition12tryInitIfNotEv"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::tryInitIfNot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition6initedE"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::inited</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition4condE"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::cond</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15qmutexcondition4nameE"><code class="docutils literal notranslate"><span class="pre">qmutexcondition::name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv46qmutex"><code class="docutils literal notranslate"><span class="pre">qmutex</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex6qmutexEv"><code class="docutils literal notranslate"><span class="pre">qmutex::qmutex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutexD0Ev"><code class="docutils literal notranslate"><span class="pre">qmutex::~qmutex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex4initERKNSt6stringE"><code class="docutils literal notranslate"><span class="pre">qmutex::init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex7tryLockEPKcPKc"><code class="docutils literal notranslate"><span class="pre">qmutex::tryLock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex6unLockEPKc"><code class="docutils literal notranslate"><span class="pre">qmutex::unLock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex16getMutexInternalEv"><code class="docutils literal notranslate"><span class="pre">qmutex::getMutexInternal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex15conditionalWaitEPKc"><code class="docutils literal notranslate"><span class="pre">qmutex::conditionalWait()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex5blockEPKc"><code class="docutils literal notranslate"><span class="pre">qmutex::block()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex7unBlockEPKc"><code class="docutils literal notranslate"><span class="pre">qmutex::unBlock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex12tryInitIfNotEv"><code class="docutils literal notranslate"><span class="pre">qmutex::tryInitIfNot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex6initedE"><code class="docutils literal notranslate"><span class="pre">qmutex::inited</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex9allowTaskE"><code class="docutils literal notranslate"><span class="pre">qmutex::allowTask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex5mutexE"><code class="docutils literal notranslate"><span class="pre">qmutex::mutex</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex4nameE"><code class="docutils literal notranslate"><span class="pre">qmutex::name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex9blockedByE"><code class="docutils literal notranslate"><span class="pre">qmutex::blockedBy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex8lockedByE"><code class="docutils literal notranslate"><span class="pre">qmutex::lockedBy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex9waitingATE"><code class="docutils literal notranslate"><span class="pre">qmutex::waitingAT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex11unblockedByE"><code class="docutils literal notranslate"><span class="pre">qmutex::unblockedBy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex9conditionE"><code class="docutils literal notranslate"><span class="pre">qmutex::condition</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex10blockCountE"><code class="docutils literal notranslate"><span class="pre">qmutex::blockCount</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex6wantedE"><code class="docutils literal notranslate"><span class="pre">qmutex::wanted</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N6qmutex8log_flagE"><code class="docutils literal notranslate"><span class="pre">qmutex::log_flag</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv410essentials"><code class="docutils literal notranslate"><span class="pre">essentials</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials15init_essentialsEv"><code class="docutils literal notranslate"><span class="pre">essentials::init_essentials()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials21resolve_cmd_line_argsEPKc7int32_tA_PKcRK7qstringjR7qstringR7qstringR7qstringRN2fs4pathER7qstringR8uint16_tR7qstring"><code class="docutils literal notranslate"><span class="pre">essentials::resolve_cmd_line_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials14get_time_localEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_local()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials23get_time_local_tostringEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_local_tostring()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials12get_time_utcEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_utc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials19get_time_utc_stringEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_utc_string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials21get_time_utc_readableEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_utc_readable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials30get_time_utc_postgresql_formatEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_time_utc_postgresql_format()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials11get_sysnameEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_sysname()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials15get_device_nameEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_device_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials15get_device_archEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_device_arch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials22get_device_release_strEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_device_release_str()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials15get_memory_infoERiRiRiRi"><code class="docutils literal notranslate"><span class="pre">essentials::get_memory_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials13get_total_ramEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_total_ram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials12get_used_memEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_used_mem()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials20get_process_used_memEv"><code class="docutils literal notranslate"><span class="pre">essentials::get_process_used_mem()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials21get_all_child_foldersERKN2fs4pathERNSt6vectorIN2fs4pathEEE"><code class="docutils literal notranslate"><span class="pre">essentials::get_all_child_folders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials13get_all_filesERKN2fs4pathERNSt6vectorIN2fs4pathEEERK7qstring"><code class="docutils literal notranslate"><span class="pre">essentials::get_all_files()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials7get_crcEPK7uint8_t7ssize_t"><code class="docutils literal notranslate"><span class="pre">essentials::get_crc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials16get_addr_storageER16sockaddr_storagePKcKi"><code class="docutils literal notranslate"><span class="pre">essentials::get_addr_storage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials11update_portEP8sockaddr8uint16_t"><code class="docutils literal notranslate"><span class="pre">essentials::update_port()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials11mod_crc32_zE5uLongPK5Bytef8z_size_t"><code class="docutils literal notranslate"><span class="pre">essentials::mod_crc32_z()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N10essentials15get_json_stringERN9rapidjson8DocumentER7qstring"><code class="docutils literal notranslate"><span class="pre">essentials::get_json_string()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv415conn_io_req_res"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_resD0Ev"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::~conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res11get_payloadEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::get_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res11set_payloadERK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::set_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res17append_to_payloadEPK7uint8_ti"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::append_to_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res13clear_payloadEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::clear_payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res17add_or_get_headerERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::add_or_get_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res10get_headerERK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::get_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res14is_postrequestEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::is_postrequest()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res8validateEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::validate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res14has_crc_headerEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::has_crc_header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res4dataE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7headersE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::headers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6createEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6createERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6createERK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6header"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7payload"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::conn_io_req_res()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerD0Ev"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::~header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header4nameE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header5valueE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::value</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header6createERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::create()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header6headerERK6header"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header6headerERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::header::header()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payload7payloadEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payload7payloadERK7qstring"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadD0Ev"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::~payload()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res7payload14get_crc_stringEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::get_crc_string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res7payload13get_crc_valueEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::get_crc_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4NK15conn_io_req_res7payload8get_sizeEv"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::get_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payload6bufferE"><code class="docutils literal notranslate"><span class="pre">conn_io_req_res::payload::buffer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#_CPPv48qaddress"><code class="docutils literal notranslate"><span class="pre">qaddress</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress8qaddressEv"><code class="docutils literal notranslate"><span class="pre">qaddress::qaddress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress8qaddressERK7qstring8uint16_t"><code class="docutils literal notranslate"><span class="pre">qaddress::qaddress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress8qaddressERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qaddress::qaddress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress8qaddressER8sockaddr"><code class="docutils literal notranslate"><span class="pre">qaddress::qaddress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress8qaddressEP8sockaddr"><code class="docutils literal notranslate"><span class="pre">qaddress::qaddress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress3setER8sockaddr"><code class="docutils literal notranslate"><span class="pre">qaddress::set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress3setERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qaddress::set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress9serialiseER7qstring"><code class="docutils literal notranslate"><span class="pre">qaddress::serialise()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress11deserialiseEPK7uint8_t7ssize_t"><code class="docutils literal notranslate"><span class="pre">qaddress::deserialise()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress4portE"><code class="docutils literal notranslate"><span class="pre">qaddress::port</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv4N8qaddress2ipE"><code class="docutils literal notranslate"><span class="pre">qaddress::ip</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="servercommon.html">servercommon</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gearsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">networkcommon</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/networkcommon.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="networkcommon">
+<h1>networkcommon<a class="headerlink" href="#networkcommon" title="Link to this heading"></a></h1>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__LOGTAG__">
+<span class="target" id="d1/d4c/essentials_8hpp_1a51a7b4cddb25f82f90871c021c988b9c"></span><span class="sig-name descname"><span class="n"><span class="pre">__LOGTAG__</span></span></span><a class="headerlink" href="#c.__LOGTAG__" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.EV_START_RECORD">
+<span class="target" id="d1/d4c/essentials_8hpp_1a7b50a5eb5192748ea1c4e8803d1dc1ab"></span><span class="sig-name descname"><span class="n"><span class="pre">EV_START_RECORD</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">timestamp_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.EV_START_RECORD" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.EV_PRINT_ELAPSED">
+<span class="target" id="d1/d4c/essentials_8hpp_1ae65b39468ac61b3f06f529fe40ec4ab6"></span><span class="sig-name descname"><span class="n"><span class="pre">EV_PRINT_ELAPSED</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">timestamp_</span></span>, <span class="n"><span class="pre">tag</span></span>, <span class="n"><span class="pre">formatted_msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.EV_PRINT_ELAPSED" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.EV_PRINT_ELAPSED_AND_CLEAR">
+<span class="target" id="d1/d4c/essentials_8hpp_1af04794c04daf91ee07657f2adbd74bf8"></span><span class="sig-name descname"><span class="n"><span class="pre">EV_PRINT_ELAPSED_AND_CLEAR</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">timestamp_</span></span>, <span class="n"><span class="pre">tag</span></span>, <span class="n"><span class="pre">formatted_msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.EV_PRINT_ELAPSED_AND_CLEAR" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.EV_PRINT_IF_ELAPSED">
+<span class="target" id="d1/d4c/essentials_8hpp_1a4a6d539d473a4bf4f254ac95019b467c"></span><span class="sig-name descname"><span class="n"><span class="pre">EV_PRINT_IF_ELAPSED</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">timestamp_</span></span>, <span class="n"><span class="pre">tag</span></span>, <span class="n"><span class="pre">formatted_msg</span></span>, <span class="n"><span class="pre">warn_after_ms</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.EV_PRINT_IF_ELAPSED" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.EV_PRINT_IF_ELAPSED_AND_CLEAR">
+<span class="target" id="d1/d4c/essentials_8hpp_1ac447215115b7586e84653b5d2dc01dfd"></span><span class="sig-name descname"><span class="n"><span class="pre">EV_PRINT_IF_ELAPSED_AND_CLEAR</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">timestamp_</span></span>, <span class="n"><span class="pre">tag</span></span>, <span class="n"><span class="pre">formatted_msg</span></span>, <span class="n"><span class="pre">warn_after_ms</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.EV_PRINT_IF_ELAPSED_AND_CLEAR" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv415qmutexcondition">
+<span id="_CPPv315qmutexcondition"></span><span id="_CPPv215qmutexcondition"></span><span id="qmutexcondition"></span><span class="target" id="db/d84/classqmutexcondition"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qmutexcondition</span></span></span><a class="headerlink" href="#_CPPv415qmutexcondition" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition15qmutexconditionEv">
+<span id="_CPPv3N15qmutexcondition15qmutexconditionEv"></span><span id="_CPPv2N15qmutexcondition15qmutexconditionEv"></span><span id="qmutexcondition::qmutexcondition"></span><span class="target" id="db/d84/classqmutexcondition_1a6164bf1f147e1c8c3adccdbe5e92c558"></span><span class="sig-name descname"><span class="n"><span class="pre">qmutexcondition</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition15qmutexconditionEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexconditionD0Ev">
+<span id="_CPPv3N15qmutexconditionD0Ev"></span><span id="_CPPv2N15qmutexconditionD0Ev"></span><span id="qmutexcondition::~qmutexcondition"></span><span class="target" id="db/d84/classqmutexcondition_1a6720ce1aaa230da05c4234d8d6708715"></span><span class="sig-name descname"><span class="n"><span class="pre">~qmutexcondition</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexconditionD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition4initERKNSt6stringE">
+<span id="_CPPv3N15qmutexcondition4initERKNSt6stringE"></span><span id="_CPPv2N15qmutexcondition4initERKNSt6stringE"></span><span id="qmutexcondition::init__ssCR"></span><span class="target" id="db/d84/classqmutexcondition_1a6d4482f9aa0ad8095c00d0c8bb0267d6"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition4initERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition6signalEPKc">
+<span id="_CPPv3N15qmutexcondition6signalEPKc"></span><span id="_CPPv2N15qmutexcondition6signalEPKc"></span><span id="qmutexcondition::signal__cCP"></span><span class="target" id="db/d84/classqmutexcondition_1ae45264fcbcdc58cbc5c463d5bc7496d4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">signal</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition6signalEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition9broadcastEPKc">
+<span id="_CPPv3N15qmutexcondition9broadcastEPKc"></span><span id="_CPPv2N15qmutexcondition9broadcastEPKc"></span><span id="qmutexcondition::broadcast__cCP"></span><span class="target" id="db/d84/classqmutexcondition_1a3c3e63a0ba4a68446edfe12f066d3053"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">broadcast</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition9broadcastEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition13conditionWaitER6qmutexPKc">
+<span id="_CPPv3N15qmutexcondition13conditionWaitER6qmutexPKc"></span><span id="_CPPv2N15qmutexcondition13conditionWaitER6qmutexPKc"></span><span id="qmutexcondition::conditionWait__qmutexR.cCP"></span><span class="target" id="db/d84/classqmutexcondition_1a7bcfd2ae3494f5093498678493eef3df"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conditionWait</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N15qmutexcondition13conditionWaitER6qmutexPKc" title="qmutexcondition::conditionWait::qmutex"><span class="n"><span class="pre">qmutex</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">qmutex</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition13conditionWaitER6qmutexPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition12tryInitIfNotEv">
+<span id="_CPPv3N15qmutexcondition12tryInitIfNotEv"></span><span id="_CPPv2N15qmutexcondition12tryInitIfNotEv"></span><span id="qmutexcondition::tryInitIfNot"></span><span class="target" id="db/d84/classqmutexcondition_1a77bad2099cfe0d53b310bb80cef1bbcd"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tryInitIfNot</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15qmutexcondition12tryInitIfNotEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition6initedE">
+<span id="_CPPv3N15qmutexcondition6initedE"></span><span id="_CPPv2N15qmutexcondition6initedE"></span><span id="qmutexcondition::inited__b"></span><span class="target" id="db/d84/classqmutexcondition_1a48677ad2c70a029d032df4b8c227b891"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">inited</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N15qmutexcondition6initedE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition4condE">
+<span id="_CPPv3N15qmutexcondition4condE"></span><span id="_CPPv2N15qmutexcondition4condE"></span><span id="qmutexcondition::cond__pthread_cond_t"></span><span class="target" id="db/d84/classqmutexcondition_1adeb2dd35886cb991f31ff3eec09d5b8a"></span><span class="n"><span class="pre">pthread_cond_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cond</span></span></span><a class="headerlink" href="#_CPPv4N15qmutexcondition4condE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15qmutexcondition4nameE">
+<span id="_CPPv3N15qmutexcondition4nameE"></span><span id="_CPPv2N15qmutexcondition4nameE"></span><span id="qmutexcondition::name__ss"></span><span class="target" id="db/d84/classqmutexcondition_1aa48a43f13e2b79d8e52f2e102aedf7da"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#_CPPv4N15qmutexcondition4nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv46qmutex">
+<span id="_CPPv36qmutex"></span><span id="_CPPv26qmutex"></span><span id="qmutex"></span><span class="target" id="d0/dcc/classqmutex"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qmutex</span></span></span><a class="headerlink" href="#_CPPv46qmutex" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex6qmutexEv">
+<span id="_CPPv3N6qmutex6qmutexEv"></span><span id="_CPPv2N6qmutex6qmutexEv"></span><span id="qmutex::qmutex"></span><span class="target" id="d0/dcc/classqmutex_1ad6dd78ea921cc205bf64ea3c3f7b2949"></span><span class="sig-name descname"><span class="n"><span class="pre">qmutex</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex6qmutexEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutexD0Ev">
+<span id="_CPPv3N6qmutexD0Ev"></span><span id="_CPPv2N6qmutexD0Ev"></span><span id="qmutex::~qmutex"></span><span class="target" id="d0/dcc/classqmutex_1a2c7e6feb9e87028cbd0e6b8d943d7260"></span><span class="sig-name descname"><span class="n"><span class="pre">~qmutex</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutexD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex4initERKNSt6stringE">
+<span id="_CPPv3N6qmutex4initERKNSt6stringE"></span><span id="_CPPv2N6qmutex4initERKNSt6stringE"></span><span id="qmutex::init__ssCR"></span><span class="target" id="d0/dcc/classqmutex_1af39abdf20225a1fe689e6f5e27b2a00c"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex4initERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex7tryLockEPKcPKc">
+<span id="_CPPv3N6qmutex7tryLockEPKcPKc"></span><span id="_CPPv2N6qmutex7tryLockEPKcPKc"></span><span id="qmutex::tryLock__cCP.cCP"></span><span class="target" id="d0/dcc/classqmutex_1a5f3d8b7f8e7efd2cf7f341d947a73c26"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tryLock</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">lockedBy</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex7tryLockEPKcPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex6unLockEPKc">
+<span id="_CPPv3N6qmutex6unLockEPKc"></span><span id="_CPPv2N6qmutex6unLockEPKc"></span><span id="qmutex::unLock__cCP"></span><span class="target" id="d0/dcc/classqmutex_1a8834f61f12b4316639029023b4f86620"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unLock</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex6unLockEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex16getMutexInternalEv">
+<span id="_CPPv3N6qmutex16getMutexInternalEv"></span><span id="_CPPv2N6qmutex16getMutexInternalEv"></span><span id="qmutex::getMutexInternal"></span><span class="target" id="d0/dcc/classqmutex_1a0ec521b9bae2f456c3694af9c5856a09"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">pthread_mutex_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">getMutexInternal</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex16getMutexInternalEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex15conditionalWaitEPKc">
+<span id="_CPPv3N6qmutex15conditionalWaitEPKc"></span><span id="_CPPv2N6qmutex15conditionalWaitEPKc"></span><span id="qmutex::conditionalWait__cCP"></span><span class="target" id="d0/dcc/classqmutex_1a230e465757381da1d0ecc321ba1b1fb6"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conditionalWait</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">waiting_at</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex15conditionalWaitEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex5blockEPKc">
+<span id="_CPPv3N6qmutex5blockEPKc"></span><span id="_CPPv2N6qmutex5blockEPKc"></span><span id="qmutex::block__cCP"></span><span class="target" id="d0/dcc/classqmutex_1ae7d53cacfbc0b7754c39b57c5f1d035d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">block</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">blockedBy</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex5blockEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex7unBlockEPKc">
+<span id="_CPPv3N6qmutex7unBlockEPKc"></span><span id="_CPPv2N6qmutex7unBlockEPKc"></span><span id="qmutex::unBlock__cCP"></span><span class="target" id="d0/dcc/classqmutex_1a4830b540ea086c9b5743d6e42fee4b29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unBlock</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">unblockedBy</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex7unBlockEPKc" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex12tryInitIfNotEv">
+<span id="_CPPv3N6qmutex12tryInitIfNotEv"></span><span id="_CPPv2N6qmutex12tryInitIfNotEv"></span><span id="qmutex::tryInitIfNot"></span><span class="target" id="d0/dcc/classqmutex_1aa368aece50a8073c2877a0f3bbc8cd59"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tryInitIfNot</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmutex12tryInitIfNotEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex6initedE">
+<span id="_CPPv3N6qmutex6initedE"></span><span id="_CPPv2N6qmutex6initedE"></span><span id="qmutex::inited__b"></span><span class="target" id="d0/dcc/classqmutex_1acdaaca69d8f6a2cca3865639172320a8"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">inited</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N6qmutex6initedE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex9allowTaskE">
+<span id="_CPPv3N6qmutex9allowTaskE"></span><span id="_CPPv2N6qmutex9allowTaskE"></span><span id="qmutex::allowTask__b"></span><span class="target" id="d0/dcc/classqmutex_1aa161ae17239036bf875e1a4a05684119"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allowTask</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">true</span></span><a class="headerlink" href="#_CPPv4N6qmutex9allowTaskE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex5mutexE">
+<span id="_CPPv3N6qmutex5mutexE"></span><span id="_CPPv2N6qmutex5mutexE"></span><span id="qmutex::mutex__pthread_mutex_t"></span><span class="target" id="d0/dcc/classqmutex_1aaecf8cf72fed4c94a4c1d956cd11b5e7"></span><span class="n"><span class="pre">pthread_mutex_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">mutex</span></span></span><a class="headerlink" href="#_CPPv4N6qmutex5mutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex4nameE">
+<span id="_CPPv3N6qmutex4nameE"></span><span id="_CPPv2N6qmutex4nameE"></span><span id="qmutex::name__ss"></span><span class="target" id="d0/dcc/classqmutex_1a57eec54cfbc3fdfa9e2d6af6b283895f"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#_CPPv4N6qmutex4nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex9blockedByE">
+<span id="_CPPv3N6qmutex9blockedByE"></span><span id="_CPPv2N6qmutex9blockedByE"></span><span id="qmutex::blockedBy__ss"></span><span class="target" id="d0/dcc/classqmutex_1ac256463619fc19c7c73298ba575da071"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blockedBy</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;none&quot;</span></span><a class="headerlink" href="#_CPPv4N6qmutex9blockedByE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex8lockedByE">
+<span id="_CPPv3N6qmutex8lockedByE"></span><span id="_CPPv2N6qmutex8lockedByE"></span><span id="qmutex::lockedBy__ss"></span><span class="target" id="d0/dcc/classqmutex_1a1e0a58c4df01277f6e62de99771806df"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lockedBy</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;none&quot;</span></span><a class="headerlink" href="#_CPPv4N6qmutex8lockedByE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex9waitingATE">
+<span id="_CPPv3N6qmutex9waitingATE"></span><span id="_CPPv2N6qmutex9waitingATE"></span><span id="qmutex::waitingAT__ss"></span><span class="target" id="d0/dcc/classqmutex_1aa6560ac561a0ef9123047c8215660a46"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">waitingAT</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;none&quot;</span></span><a class="headerlink" href="#_CPPv4N6qmutex9waitingATE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex11unblockedByE">
+<span id="_CPPv3N6qmutex11unblockedByE"></span><span id="_CPPv2N6qmutex11unblockedByE"></span><span id="qmutex::unblockedBy__ss"></span><span class="target" id="d0/dcc/classqmutex_1ad450e97e71a8943701f4031f850922ae"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unblockedBy</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;none&quot;</span></span><a class="headerlink" href="#_CPPv4N6qmutex11unblockedByE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex9conditionE">
+<span id="_CPPv3N6qmutex9conditionE"></span><span id="_CPPv2N6qmutex9conditionE"></span><span id="qmutex::condition__qmutexcondition"></span><span class="target" id="d0/dcc/classqmutex_1aa40172caf3e50690070f0267fd35c0a8"></span><a class="reference internal" href="#_CPPv415qmutexcondition" title="qmutexcondition"><span class="n"><span class="pre">qmutexcondition</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">condition</span></span></span><a class="headerlink" href="#_CPPv4N6qmutex9conditionE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex10blockCountE">
+<span id="_CPPv3N6qmutex10blockCountE"></span><span id="_CPPv2N6qmutex10blockCountE"></span><span id="qmutex::blockCount__l"></span><span class="target" id="d0/dcc/classqmutex_1ac8cd6013d9e356efa3d10e507eaceec2"></span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">blockCount</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N6qmutex10blockCountE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex6wantedE">
+<span id="_CPPv3N6qmutex6wantedE"></span><span id="_CPPv2N6qmutex6wantedE"></span><span id="qmutex::wanted__i"></span><span class="target" id="d0/dcc/classqmutex_1a741c0e80424ed6f54eebc35268d1baf5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">wanted</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N6qmutex6wantedE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-attributes">Private Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmutex8log_flagE">
+<span id="_CPPv3N6qmutex8log_flagE"></span><span id="_CPPv2N6qmutex8log_flagE"></span><span id="qmutex::log_flag__i"></span><span class="target" id="d0/dcc/classqmutex_1ae32797ff0693f0c8365d3a8fab272182"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">log_flag</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N6qmutex8log_flagE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv410essentials">
+<span id="_CPPv310essentials"></span><span id="_CPPv210essentials"></span><span id="essentials"></span><span class="target" id="d8/def/classessentials"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">essentials</span></span></span><a class="headerlink" href="#_CPPv410essentials" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials15init_essentialsEv">
+<span id="_CPPv3N10essentials15init_essentialsEv"></span><span id="_CPPv2N10essentials15init_essentialsEv"></span><span id="essentials::init_essentials"></span><span class="target" id="d8/def/classessentials_1a1d95d0cab74bc7bfef69b260ad02336d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init_essentials</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials15init_essentialsEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials21resolve_cmd_line_argsEPKc7int32_tA_PKcRK7qstringjR7qstringR7qstringR7qstringRN2fs4pathER7qstringR8uint16_tR7qstring">
+<span id="_CPPv3N10essentials21resolve_cmd_line_argsEPKc7int32_tA_PKcRK7qstringjR7qstringR7qstringR7qstringRN2fs4pathER7qstringR8uint16_tR7qstring"></span><span id="_CPPv2N10essentials21resolve_cmd_line_argsEPKc7int32_tA_PKcRK7qstringjR7qstringR7qstringR7qstringRN2fs4pathER7qstringR8uint16_tR7qstring"></span><span id="essentials::resolve_cmd_line_args__cCP.int32_t.cCPA.qstringCR.unsigned.qstringR.qstringR.qstringR.fs::pathR.qstringR.uint16_tR.qstringR"></span><span class="target" id="d8/def/classessentials_1a6bdad0c432172cd569d99be153e80a24"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">resolve_cmd_line_args</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">tag</span></span>, <span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">argc</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">argv</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">version_string_</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">version_code_</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">host</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">port</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">mongodb_uri</span></span>, <span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">path</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rootDir</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">redis_ip</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">redis_port</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">zk_uri</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials21resolve_cmd_line_argsEPKc7int32_tA_PKcRK7qstringjR7qstringR7qstringR7qstringRN2fs4pathER7qstringR8uint16_tR7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials14get_time_localEv">
+<span id="_CPPv3N10essentials14get_time_localEv"></span><span id="_CPPv2N10essentials14get_time_localEv"></span><span id="essentials::get_time_local"></span><span class="target" id="d8/def/classessentials_1add177fb02f00b4f93c2ca63c26df1578"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">time_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_local</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials14get_time_localEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials23get_time_local_tostringEv">
+<span id="_CPPv3N10essentials23get_time_local_tostringEv"></span><span id="_CPPv2N10essentials23get_time_local_tostringEv"></span><span id="essentials::get_time_local_tostring"></span><span class="target" id="d8/def/classessentials_1ac665559ccf329706d58b73bf343b8fb4"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_local_tostring</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials23get_time_local_tostringEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials12get_time_utcEv">
+<span id="_CPPv3N10essentials12get_time_utcEv"></span><span id="_CPPv2N10essentials12get_time_utcEv"></span><span id="essentials::get_time_utc"></span><span class="target" id="d8/def/classessentials_1afb3dc6f15ce14e9d52def9f956e7568c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">time_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_utc</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials12get_time_utcEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials19get_time_utc_stringEv">
+<span id="_CPPv3N10essentials19get_time_utc_stringEv"></span><span id="_CPPv2N10essentials19get_time_utc_stringEv"></span><span id="essentials::get_time_utc_string"></span><span class="target" id="d8/def/classessentials_1a28e4d988b2307a0153454ff7021d57ae"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_utc_string</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials19get_time_utc_stringEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials21get_time_utc_readableEv">
+<span id="_CPPv3N10essentials21get_time_utc_readableEv"></span><span id="_CPPv2N10essentials21get_time_utc_readableEv"></span><span id="essentials::get_time_utc_readable"></span><span class="target" id="d8/def/classessentials_1a1578d3e1cc0c541f8c82dadcccea87be"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_utc_readable</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials21get_time_utc_readableEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials30get_time_utc_postgresql_formatEv">
+<span id="_CPPv3N10essentials30get_time_utc_postgresql_formatEv"></span><span id="_CPPv2N10essentials30get_time_utc_postgresql_formatEv"></span><span id="essentials::get_time_utc_postgresql_format"></span><span class="target" id="d8/def/classessentials_1a03a9f9b1c3f45c28fef4aabf93127096"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_time_utc_postgresql_format</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials30get_time_utc_postgresql_formatEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials11get_sysnameEv">
+<span id="_CPPv3N10essentials11get_sysnameEv"></span><span id="_CPPv2N10essentials11get_sysnameEv"></span><span id="essentials::get_sysname"></span><span class="target" id="d8/def/classessentials_1abf5474b78094d33cdecf07cf632b2101"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_sysname</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials11get_sysnameEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials15get_device_nameEv">
+<span id="_CPPv3N10essentials15get_device_nameEv"></span><span id="_CPPv2N10essentials15get_device_nameEv"></span><span id="essentials::get_device_name"></span><span class="target" id="d8/def/classessentials_1ae017d5ecce0649614db4682e4f3c6605"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_device_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials15get_device_nameEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials15get_device_archEv">
+<span id="_CPPv3N10essentials15get_device_archEv"></span><span id="_CPPv2N10essentials15get_device_archEv"></span><span id="essentials::get_device_arch"></span><span class="target" id="d8/def/classessentials_1a38a369ee949b583f2d4f4dd9da13fbaa"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_device_arch</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials15get_device_archEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials22get_device_release_strEv">
+<span id="_CPPv3N10essentials22get_device_release_strEv"></span><span id="_CPPv2N10essentials22get_device_release_strEv"></span><span id="essentials::get_device_release_str"></span><span class="target" id="d8/def/classessentials_1a59a5478cec7ae83473f0434d25378e00"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_device_release_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials22get_device_release_strEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials15get_memory_infoERiRiRiRi">
+<span id="_CPPv3N10essentials15get_memory_infoERiRiRiRi"></span><span id="_CPPv2N10essentials15get_memory_infoERiRiRiRi"></span><span id="essentials::get_memory_info__iR.iR.iR.iR"></span><span class="target" id="d8/def/classessentials_1a007d11f367b64b3b04e45d9ea5eb71e3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_memory_info</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">currRealMem</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">peakRealMem</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">currVirtMem</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">peakVirtMem</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials15get_memory_infoERiRiRiRi" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials13get_total_ramEv">
+<span id="_CPPv3N10essentials13get_total_ramEv"></span><span id="_CPPv2N10essentials13get_total_ramEv"></span><span id="essentials::get_total_ram"></span><span class="target" id="d8/def/classessentials_1adfed852dcda01a75537de0f360d18f93"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_total_ram</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials13get_total_ramEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials12get_used_memEv">
+<span id="_CPPv3N10essentials12get_used_memEv"></span><span id="_CPPv2N10essentials12get_used_memEv"></span><span id="essentials::get_used_mem"></span><span class="target" id="d8/def/classessentials_1a2aabf2130245aa5916e943ccaeebfc17"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_used_mem</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials12get_used_memEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials20get_process_used_memEv">
+<span id="_CPPv3N10essentials20get_process_used_memEv"></span><span id="_CPPv2N10essentials20get_process_used_memEv"></span><span id="essentials::get_process_used_mem"></span><span class="target" id="d8/def/classessentials_1ad4b62f97791882f5c4c7e50eb703c115"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_process_used_mem</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials20get_process_used_memEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials21get_all_child_foldersERKN2fs4pathERNSt6vectorIN2fs4pathEEE">
+<span id="_CPPv3N10essentials21get_all_child_foldersERKN2fs4pathERNSt6vectorIN2fs4pathEEE"></span><span id="_CPPv2N10essentials21get_all_child_foldersERKN2fs4pathERNSt6vectorIN2fs4pathEEE"></span><span id="essentials::get_all_child_folders__fs::pathCR.std::vector:fs::path:R"></span><span class="target" id="d8/def/classessentials_1a738be83df18823288c91bac2a07f8c94"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_all_child_folders</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">path</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">folder_path</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">names</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials21get_all_child_foldersERKN2fs4pathERNSt6vectorIN2fs4pathEEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials13get_all_filesERKN2fs4pathERNSt6vectorIN2fs4pathEEERK7qstring">
+<span id="_CPPv3N10essentials13get_all_filesERKN2fs4pathERNSt6vectorIN2fs4pathEEERK7qstring"></span><span id="_CPPv2N10essentials13get_all_filesERKN2fs4pathERNSt6vectorIN2fs4pathEEERK7qstring"></span><span id="essentials::get_all_files__fs::pathCR.std::vector:fs::path:R.qstringCR"></span><span class="target" id="d8/def/classessentials_1aa88f7821ca235f7ae21a28e92fbea636"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_all_files</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">path</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">folder_path</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">names</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">extension</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;.log&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials13get_all_filesERKN2fs4pathERNSt6vectorIN2fs4pathEEERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials7get_crcEPK7uint8_t7ssize_t">
+<span id="_CPPv3N10essentials7get_crcEPK7uint8_t7ssize_t"></span><span id="_CPPv2N10essentials7get_crcEPK7uint8_t7ssize_t"></span><span id="essentials::get_crc__uint8_tCP.ssize_t"></span><span class="target" id="d8/def/classessentials_1a1aa3cdc095c2f835603c376206c5839d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_crc</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buffer</span></span>, <span class="n"><span class="pre">ssize_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials7get_crcEPK7uint8_t7ssize_t" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials16get_addr_storageER16sockaddr_storagePKcKi">
+<span id="_CPPv3N10essentials16get_addr_storageER16sockaddr_storagePKcKi"></span><span id="_CPPv2N10essentials16get_addr_storageER16sockaddr_storagePKcKi"></span><span id="essentials::get_addr_storage__sockaddr_storageR.cCP.iC"></span><span class="target" id="d8/def/classessentials_1a787050f15b46b77f243ec68e0315d966"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_addr_storage</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr_storage</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">storage</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">ip</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials16get_addr_storageER16sockaddr_storagePKcKi" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials11update_portEP8sockaddr8uint16_t">
+<span id="_CPPv3N10essentials11update_portEP8sockaddr8uint16_t"></span><span id="_CPPv2N10essentials11update_portEP8sockaddr8uint16_t"></span><span id="essentials::update_port__sockaddrP.uint16_t"></span><span class="target" id="d8/def/classessentials_1ab51289dc8dfc8279cfea4b448e1c2202"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_port</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sa</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">newPort</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials11update_portEP8sockaddr8uint16_t" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials11mod_crc32_zE5uLongPK5Bytef8z_size_t">
+<span id="_CPPv3N10essentials11mod_crc32_zE5uLongPK5Bytef8z_size_t"></span><span id="_CPPv2N10essentials11mod_crc32_zE5uLongPK5Bytef8z_size_t"></span><span id="essentials::mod_crc32_z__uLong.BytefCP.z_size_t"></span><span class="target" id="d8/def/classessentials_1a7293aa90659594ed423a1d0990b52604"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">uLong</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">mod_crc32_z</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uLong</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">adler</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Bytef</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buf</span></span>, <span class="n"><span class="pre">z_size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials11mod_crc32_zE5uLongPK5Bytef8z_size_t" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10essentials15get_json_stringERN9rapidjson8DocumentER7qstring">
+<span id="_CPPv3N10essentials15get_json_stringERN9rapidjson8DocumentER7qstring"></span><span id="_CPPv2N10essentials15get_json_stringERN9rapidjson8DocumentER7qstring"></span><span id="essentials::get_json_string__rapidjson::DocumentR.qstringR"></span><span class="target" id="d8/def/classessentials_1ac76defbec6fe2af6802f6b1ddf8fc00b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_json_string</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">rapidjson</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Document</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">obj</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10essentials15get_json_stringERN9rapidjson8DocumentER7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv415conn_io_req_res">
+<span id="_CPPv315conn_io_req_res"></span><span id="_CPPv215conn_io_req_res"></span><span id="conn_io_req_res"></span><span class="target" id="db/d08/structconn__io__req__res"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><a class="headerlink" href="#_CPPv415conn_io_req_res" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6headerE">
+<span id="_CPPv3N15conn_io_req_res6headerE"></span><span id="_CPPv2N15conn_io_req_res6headerE"></span><span id="conn_io_req_res::header"></span><span class="target" id="db/d08/structconn__io__req__res_1a25d3d6bd7fbde39da027fb0c216abea1"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv415conn_io_req_res" title="conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE" title="conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">header</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6headerE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7payloadE">
+<span id="_CPPv3N15conn_io_req_res7payloadE"></span><span id="_CPPv2N15conn_io_req_res7payloadE"></span><span id="conn_io_req_res::payload"></span><span class="target" id="db/d08/structconn__io__req__res_1aaa593b2cd138c0b14a20d28564d88ff1"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv415conn_io_req_res" title="conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE" title="conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7payloadE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_resD0Ev">
+<span id="_CPPv3N15conn_io_req_resD0Ev"></span><span id="_CPPv2N15conn_io_req_resD0Ev"></span><span id="conn_io_req_res::~conn_io_req_res"></span><span class="target" id="db/d08/structconn__io__req__res_1a9b2c48ffa51d9f93fab9deca5ca29ecc"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_resD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res11get_payloadEv">
+<span id="_CPPv3NK15conn_io_req_res11get_payloadEv"></span><span id="_CPPv2NK15conn_io_req_res11get_payloadEv"></span><span id="conn_io_req_res::get_payloadC"></span><span class="target" id="db/d08/structconn__io__req__res_1a84eefe578e2ebcb07424075fcf333adf"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE" title="conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_payload</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res11get_payloadEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res11set_payloadERK7qstring">
+<span id="_CPPv3N15conn_io_req_res11set_payloadERK7qstring"></span><span id="_CPPv2N15conn_io_req_res11set_payloadERK7qstring"></span><span id="conn_io_req_res::set_payload__qstringCR"></span><span class="target" id="db/d08/structconn__io__req__res_1af726fa3b5cc3a72e3c39b5c4194f9490"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE" title="conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">set_payload</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">payload_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res11set_payloadERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res17append_to_payloadEPK7uint8_ti">
+<span id="_CPPv3N15conn_io_req_res17append_to_payloadEPK7uint8_ti"></span><span id="_CPPv2N15conn_io_req_res17append_to_payloadEPK7uint8_ti"></span><span id="conn_io_req_res::append_to_payload__uint8_tCP.i"></span><span class="target" id="db/d08/structconn__io__req__res_1a19b86409d3602b6b166458dcba1bbfd0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE" title="conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">append_to_payload</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">str</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res17append_to_payloadEPK7uint8_ti" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res13clear_payloadEv">
+<span id="_CPPv3N15conn_io_req_res13clear_payloadEv"></span><span id="_CPPv2N15conn_io_req_res13clear_payloadEv"></span><span id="conn_io_req_res::clear_payload"></span><span class="target" id="db/d08/structconn__io__req__res_1af33990b8ca8e93c2ed88d5c8553eddd1"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clear_payload</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res13clear_payloadEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res17add_or_get_headerERK7qstringRK7qstring">
+<span id="_CPPv3N15conn_io_req_res17add_or_get_headerERK7qstringRK7qstring"></span><span id="_CPPv2N15conn_io_req_res17add_or_get_headerERK7qstringRK7qstring"></span><span id="conn_io_req_res::add_or_get_header__qstringCR.qstringCR"></span><span class="target" id="db/d08/structconn__io__req__res_1a6408aff036c498f62901e66cb6eae218"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE" title="conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">add_or_get_header</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name_</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res17add_or_get_headerERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res10get_headerERK7qstring">
+<span id="_CPPv3NK15conn_io_req_res10get_headerERK7qstring"></span><span id="_CPPv2NK15conn_io_req_res10get_headerERK7qstring"></span><span id="conn_io_req_res::get_header__qstringCRC"></span><span class="target" id="db/d08/structconn__io__req__res_1aa54d76dfdccd2832607183380718bd68"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE" title="conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_header</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name_</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res10get_headerERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res14is_postrequestEv">
+<span id="_CPPv3NK15conn_io_req_res14is_postrequestEv"></span><span id="_CPPv2NK15conn_io_req_res14is_postrequestEv"></span><span id="conn_io_req_res::is_postrequestC"></span><span class="target" id="db/d08/structconn__io__req__res_1a95e3f9d67d1ab5b1740178bc638791a7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_postrequest</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res14is_postrequestEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res8validateEv">
+<span id="_CPPv3N15conn_io_req_res8validateEv"></span><span id="_CPPv2N15conn_io_req_res8validateEv"></span><span id="conn_io_req_res::validate"></span><span class="target" id="db/d08/structconn__io__req__res_1a18755b01594a1fae48bd57ea756d085a"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">validate</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res8validateEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res14has_crc_headerEv">
+<span id="_CPPv3N15conn_io_req_res14has_crc_headerEv"></span><span id="_CPPv2N15conn_io_req_res14has_crc_headerEv"></span><span id="conn_io_req_res::has_crc_header"></span><span class="target" id="db/d08/structconn__io__req__res_1ab1b141dea214017dad3d271ce0fd58d5"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">has_crc_header</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res14has_crc_headerEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res4dataE">
+<span id="_CPPv3N15conn_io_req_res4dataE"></span><span id="_CPPv2N15conn_io_req_res4dataE"></span><span id="conn_io_req_res::data__payload"></span><span class="target" id="db/d08/structconn__io__req__res_1a6e53a070f590216c3dfda7d42e9e8f8f"></span><a class="reference internal" href="#_CPPv4N15conn_io_req_res7payloadE" title="conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res4dataE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7headersE">
+<span id="_CPPv3N15conn_io_req_res7headersE"></span><span id="_CPPv2N15conn_io_req_res7headersE"></span><span id="conn_io_req_res::headers__std::map:unsigned-l.headerP:"></span><span class="target" id="db/d08/structconn__io__req__res_1aa269e3aafaa7dd0e2974e9caa3a33c4a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE" title="conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">headers</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7headersE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6createEv">
+<span id="_CPPv3N15conn_io_req_res6createEv"></span><span id="_CPPv2N15conn_io_req_res6createEv"></span><span id="conn_io_req_res::create"></span><span class="target" id="db/d08/structconn__io__req__res_1addb886e9602ea4e3789ee353caf6a541"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv415conn_io_req_res" title="conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6createEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6createERK7qstringRK7qstring">
+<span id="_CPPv3N15conn_io_req_res6createERK7qstringRK7qstring"></span><span id="_CPPv2N15conn_io_req_res6createERK7qstringRK7qstring"></span><span id="conn_io_req_res::create__qstringCR.qstringCR"></span><span class="target" id="db/d08/structconn__io__req__res_1a70715c1d45ad7c5adf44563f2053ab79"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv415conn_io_req_res" title="conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">path</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">payload_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6createERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6createERK7qstring">
+<span id="_CPPv3N15conn_io_req_res6createERK7qstring"></span><span id="_CPPv2N15conn_io_req_res6createERK7qstring"></span><span id="conn_io_req_res::create__qstringCR"></span><span class="target" id="db/d08/structconn__io__req__res_1ad61840c0721dbc4ac6f6db12773c583b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv415conn_io_req_res" title="conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">path</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6createERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res15conn_io_req_resEv">
+<span id="_CPPv3N15conn_io_req_res15conn_io_req_resEv"></span><span id="_CPPv2N15conn_io_req_res15conn_io_req_resEv"></span><span id="conn_io_req_res::conn_io_req_res"></span><span class="target" id="db/d08/structconn__io__req__res_1a18c310843c157a3f29ad38af1f1ddccb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res15conn_io_req_resEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res">
+<span id="_CPPv3N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res"></span><span id="_CPPv2N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res"></span><span id="conn_io_req_res::conn_io_req_res__conn_io_req_resCR"></span><span class="target" id="db/d08/structconn__io__req__res_1afaa97272fc2fcb7e10c5a893b1b760c8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res" title="conn_io_req_res::conn_io_req_res"><span class="n"><span class="pre">conn_io_req_res</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK15conn_io_req_res" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res15conn_io_req_resERK6header">
+<span id="_CPPv3N15conn_io_req_res15conn_io_req_resERK6header"></span><span id="_CPPv2N15conn_io_req_res15conn_io_req_resERK6header"></span><span id="conn_io_req_res::conn_io_req_res__headerCR"></span><span class="target" id="db/d08/structconn__io__req__res_1a21a7bd29b37cf525777b58ab0127be73"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6header" title="conn_io_req_res::conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6header" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7payload">
+<span id="_CPPv3N15conn_io_req_res15conn_io_req_resERK6headerRK7payload"></span><span id="_CPPv2N15conn_io_req_res15conn_io_req_resERK6headerRK7payload"></span><span id="conn_io_req_res::conn_io_req_res__headerCR.payloadCR"></span><span class="target" id="db/d08/structconn__io__req__res_1a49f20c57ac45d2780602653fa5ea51ef"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7payload" title="conn_io_req_res::conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7payload" title="conn_io_req_res::conn_io_req_res::payload"><span class="n"><span class="pre">payload</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">payload</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7payload" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring">
+<span id="_CPPv3N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring"></span><span id="_CPPv2N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring"></span><span id="conn_io_req_res::conn_io_req_res__headerCR.qstringCR"></span><span class="target" id="db/d08/structconn__io__req__res_1a1a1fde56433ea21728defac03eb07d4e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">conn_io_req_res</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring" title="conn_io_req_res::conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">payload</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res15conn_io_req_resERK6headerRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="cpp struct">
+<dt class="sig sig-object cpp">
+<span class="target" id="d3/da3/structconn__io__req__res_1_1header"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">header</span></span></span><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6headerD0Ev">
+<span id="_CPPv3N15conn_io_req_res6headerD0Ev"></span><span id="_CPPv2N15conn_io_req_res6headerD0Ev"></span><span id="conn_io_req_res::header::~header"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1ab9ad2727a686a67afbe61fe5162a2928"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~header</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6headerD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6header4nameE">
+<span id="_CPPv3N15conn_io_req_res6header4nameE"></span><span id="_CPPv2N15conn_io_req_res6header4nameE"></span><span id="conn_io_req_res::header::name__qstring"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1abfcc03460d7a2f99bda94af0a33132be"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6header4nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6header5valueE">
+<span id="_CPPv3N15conn_io_req_res6header5valueE"></span><span id="_CPPv2N15conn_io_req_res6header5valueE"></span><span id="conn_io_req_res::header::value__qstring"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1af20257d1f71fef1c9cbcd033f7163458"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6header5valueE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6header6createERK7qstringRK7qstring">
+<span id="_CPPv3N15conn_io_req_res6header6createERK7qstringRK7qstring"></span><span id="_CPPv2N15conn_io_req_res6header6createERK7qstringRK7qstring"></span><span id="conn_io_req_res::header::create__qstringCR.qstringCR"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1ae0e6e1b2602d3c77a3d55244b721c6ae"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6headerE" title="conn_io_req_res::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6header6createERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6header6headerERK6header">
+<span id="_CPPv3N15conn_io_req_res6header6headerERK6header"></span><span id="_CPPv2N15conn_io_req_res6header6headerERK6header"></span><span id="conn_io_req_res::header::header__headerCR"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1a054a59b221102254cce1e450f12df1cf"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">header</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15conn_io_req_res6header6headerERK6header" title="conn_io_req_res::header::header"><span class="n"><span class="pre">header</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">header_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6header6headerERK6header" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res6header6headerERK7qstringRK7qstring">
+<span id="_CPPv3N15conn_io_req_res6header6headerERK7qstringRK7qstring"></span><span id="_CPPv2N15conn_io_req_res6header6headerERK7qstringRK7qstring"></span><span id="conn_io_req_res::header::header__qstringCR.qstringCR"></span><span class="target" id="d3/da3/structconn__io__req__res_1_1header_1a4138392c316f6483f41524b5b7b44c67"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">header</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name_</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res6header6headerERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp">
+<span class="target" id="d4/d34/structconn__io__req__res_1_1payload"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7payload7payloadEv">
+<span id="_CPPv3N15conn_io_req_res7payload7payloadEv"></span><span id="_CPPv2N15conn_io_req_res7payload7payloadEv"></span><span id="conn_io_req_res::payload::payload"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1a38227e9c57209a96e1999eb97dff3bb7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7payload7payloadEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7payload7payloadERK7qstring">
+<span id="_CPPv3N15conn_io_req_res7payload7payloadERK7qstring"></span><span id="_CPPv2N15conn_io_req_res7payload7payloadERK7qstring"></span><span id="conn_io_req_res::payload::payload__qstringCR"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1adf1c1fa1c976ad81bc4db0d7a686676f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">payload</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">buffer_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7payload7payloadERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7payloadD0Ev">
+<span id="_CPPv3N15conn_io_req_res7payloadD0Ev"></span><span id="_CPPv2N15conn_io_req_res7payloadD0Ev"></span><span id="conn_io_req_res::payload::~payload"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1afb9ea1a28c4eacce6b324ead1ef615f0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~payload</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7payloadD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res7payload14get_crc_stringEv">
+<span id="_CPPv3NK15conn_io_req_res7payload14get_crc_stringEv"></span><span id="_CPPv2NK15conn_io_req_res7payload14get_crc_stringEv"></span><span id="conn_io_req_res::payload::get_crc_stringC"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1a6541a520e897388d13776e2173c90372"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_crc_string</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res7payload14get_crc_stringEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res7payload13get_crc_valueEv">
+<span id="_CPPv3NK15conn_io_req_res7payload13get_crc_valueEv"></span><span id="_CPPv2NK15conn_io_req_res7payload13get_crc_valueEv"></span><span id="conn_io_req_res::payload::get_crc_valueC"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1a429fe2bf072ca58a41cc9c548f64e6f1"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_crc_value</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res7payload13get_crc_valueEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15conn_io_req_res7payload8get_sizeEv">
+<span id="_CPPv3NK15conn_io_req_res7payload8get_sizeEv"></span><span id="_CPPv2NK15conn_io_req_res7payload8get_sizeEv"></span><span id="conn_io_req_res::payload::get_sizeC"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1a7a14d9e3b074e6e0a1a07664b775699c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_size</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15conn_io_req_res7payload8get_sizeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15conn_io_req_res7payload6bufferE">
+<span id="_CPPv3N15conn_io_req_res7payload6bufferE"></span><span id="_CPPv2N15conn_io_req_res7payload6bufferE"></span><span id="conn_io_req_res::payload::buffer__qstring"></span><span class="target" id="d4/d34/structconn__io__req__res_1_1payload_1a3f6b1e3d0021956fc2c5fb9a1201b039"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">buffer</span></span></span><a class="headerlink" href="#_CPPv4N15conn_io_req_res7payload6bufferE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv48qaddress">
+<span id="_CPPv38qaddress"></span><span id="_CPPv28qaddress"></span><span id="qaddress"></span><span class="target" id="d2/dd4/structqaddress"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><a class="headerlink" href="#_CPPv48qaddress" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress8qaddressEv">
+<span id="_CPPv3N8qaddress8qaddressEv"></span><span id="_CPPv2N8qaddress8qaddressEv"></span><span id="qaddress::qaddress"></span><span class="target" id="d2/dd4/structqaddress_1ac3f743fb53ba34dc3b8196cec7f4e078"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress8qaddressEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress8qaddressERK7qstring8uint16_t">
+<span id="_CPPv3N8qaddress8qaddressERK7qstring8uint16_t"></span><span id="_CPPv2N8qaddress8qaddressERK7qstring8uint16_t"></span><span id="qaddress::qaddress__qstringCR.uint16_t"></span><span class="target" id="d2/dd4/structqaddress_1a4bae2ff391f9e0c2e0c396bf13609a30"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">ip_</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress8qaddressERK7qstring8uint16_t" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress8qaddressERK7qstringRK7qstring">
+<span id="_CPPv3N8qaddress8qaddressERK7qstringRK7qstring"></span><span id="_CPPv2N8qaddress8qaddressERK7qstringRK7qstring"></span><span id="qaddress::qaddress__qstringCR.qstringCR"></span><span class="target" id="d2/dd4/structqaddress_1a03ed7f75448e64099ba4171f4bdae12c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">ip_</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">port_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress8qaddressERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress8qaddressER8sockaddr">
+<span id="_CPPv3N8qaddress8qaddressER8sockaddr"></span><span id="_CPPv2N8qaddress8qaddressER8sockaddr"></span><span id="qaddress::qaddress__sockaddrR"></span><span class="target" id="d2/dd4/structqaddress_1aac7c9d07217d321c3083232ae6fd07ea"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress8qaddressER8sockaddr" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress8qaddressEP8sockaddr">
+<span id="_CPPv3N8qaddress8qaddressEP8sockaddr"></span><span id="_CPPv2N8qaddress8qaddressEP8sockaddr"></span><span id="qaddress::qaddress__sockaddrP"></span><span class="target" id="d2/dd4/structqaddress_1a174478961f97ce5162af7f02c9517397"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qaddress</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress8qaddressEP8sockaddr" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress3setER8sockaddr">
+<span id="_CPPv3N8qaddress3setER8sockaddr"></span><span id="_CPPv2N8qaddress3setER8sockaddr"></span><span id="qaddress::set__sockaddrR"></span><span class="target" id="d2/dd4/structqaddress_1a0784c5c5a14c4f2eac31a3ea9560f247"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">sockaddr</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">addr</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress3setER8sockaddr" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress3setERK7qstringRK7qstring">
+<span id="_CPPv3N8qaddress3setERK7qstringRK7qstring"></span><span id="_CPPv2N8qaddress3setERK7qstringRK7qstring"></span><span id="qaddress::set__qstringCR.qstringCR"></span><span class="target" id="d2/dd4/structqaddress_1a83c499ca447991a0113ff1b16ea8e61d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">ip_</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">port_</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress3setERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress9serialiseER7qstring">
+<span id="_CPPv3N8qaddress9serialiseER7qstring"></span><span id="_CPPv2N8qaddress9serialiseER7qstring"></span><span id="qaddress::serialise__qstringR"></span><span class="target" id="d2/dd4/structqaddress_1ae11b78419183a4fce8cee36628f97dfb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">serialise</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">buf</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress9serialiseER7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress11deserialiseEPK7uint8_t7ssize_t">
+<span id="_CPPv3N8qaddress11deserialiseEPK7uint8_t7ssize_t"></span><span id="_CPPv2N8qaddress11deserialiseEPK7uint8_t7ssize_t"></span><span id="qaddress::deserialise__uint8_tCP.ssize_t"></span><span class="target" id="d2/dd4/structqaddress_1afbff2b41e9835c3138c16b1c6f39ffa7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">deserialise</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">buf</span></span>, <span class="n"><span class="pre">ssize_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qaddress11deserialiseEPK7uint8_t7ssize_t" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress4portE">
+<span id="_CPPv3N8qaddress4portE"></span><span id="_CPPv2N8qaddress4portE"></span><span id="qaddress::port__uint16_t"></span><span class="target" id="d2/dd4/structqaddress_1afba15fa9a1fa7e1566e42703dc8534d6"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">port</span></span></span><a class="headerlink" href="#_CPPv4N8qaddress4portE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qaddress2ipE">
+<span id="_CPPv3N8qaddress2ipE"></span><span id="_CPPv2N8qaddress2ipE"></span><span id="qaddress::ip__qstring"></span><span class="target" id="d2/dd4/structqaddress_1a5a504db63bca7dc993ef83428b586637"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ip</span></span></span><a class="headerlink" href="#_CPPv4N8qaddress2ipE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="common.html" class="btn btn-neutral float-left" title="common" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="qh3server.html" class="btn btn-neutral float-right" title="qh3server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, amudaliar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

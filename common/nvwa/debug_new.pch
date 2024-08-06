@@ -1,8 +1,15 @@
 #pragma once
 
-#if defined(_DEBUG) || defined(DEBUG)
-#define _DEBUG_NEW_REDEFINE_NEW 0
-#include "debug_new.h"
+#if PROD_BUILD == 1
+    #define DEBUG_NEW new
+    #pragma message("PROD_BUILD : new not overriden.")
 #else
-#define DEBUG_NEW new
+    #if defined(_DEBUG) || defined(DEBUG)
+        #define _DEBUG_NEW_REDEFINE_NEW 0
+        #include "debug_new.h"
+        #pragma message("DEV_BUILD : new overriden.")
+    #else
+        #define DEBUG_NEW new
+        #pragma message("DEV_BUILD : new not overriden.")
+    #endif
 #endif

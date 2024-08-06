@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2014 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,19 +31,16 @@
  *
  * Header file for class bool_array (packed boolean array).
  *
- * @date  2014-11-29
+ * @date  2024-05-20
  */
 
 #ifndef NVWA_BOOL_ARRAY_H
 #define NVWA_BOOL_ARRAY_H
 
 #include <assert.h>             // assert
-#include <stdlib.h>             // exit/free/NULL
-#include <new>                  // std::bad_alloc
+#include <iosfwd>               // std::ostream fwd declaration
 #include <stdexcept>            // std::out_of_range
-#include <string>               // for exception constructors
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
-#include "c++11.h"              // _NOEXCEPT/_NULLPTR
 
 NVWA_NAMESPACE_BEGIN
 
@@ -66,12 +63,11 @@ NVWA_NAMESPACE_BEGIN
  *     the \c vector&lt;bool&gt; implementations of MSVC 7.1 and
  *     GCC 4.3 have performance similar to that of \c bool_array).
  */
-class bool_array
-{
+class bool_array {
 public:
 #if (defined(__x86_64) || defined(__ia64) || defined(__ppc64__) || \
      defined(_WIN64) || defined(_M_IA64)) && \
-    !(defined(_LP64) || defined(__lp64))
+    !(defined(_LP64) || defined(__lp64) || defined(_ILP32))
     /** Type of array indices. */
     typedef unsigned long long  size_type;
 #else
@@ -80,16 +76,15 @@ public:
 #endif
 
 private:
-    /** Private definition of byte to avoid polluting the global namespace. */
+    /** Private definition of byte. */
     typedef unsigned char       byte;
 
     /** Class to represent a reference to an array element. */
     template <typename _Byte_type>
-    class _Element
-    {
+    class _Element {
     public:
         _Element(_Byte_type* ptr, size_type pos);
-        bool operator=(bool value);
+        bool operator=(bool value);  // NOLINT
         operator bool() const;
     private:
         _Byte_type* _M_byte_ptr;
@@ -101,14 +96,10 @@ public:
     typedef _Element<byte> reference;              ///< Type of reference
     typedef _Element<const byte> const_reference;  ///< Type of const reference
 
-#if defined(_MSC_VER) && _MSC_VER < 1300
-    enum { npos = (size_type)-1  /**< Constant representing `not found' */ };
-#else
     /** Constant representing `not found'. */
-    static const size_type npos = (size_type)-1;
-#endif
+    static constexpr auto npos = size_type(-1);
 
-    bool_array() _NOEXCEPT;
+    bool_array() noexcept;
     explicit bool_array(size_type size);
     bool_array(const void* ptr, size_type size);
     ~bool_array();
@@ -116,8 +107,8 @@ public:
     bool_array(const bool_array& rhs);
     bool_array& operator=(const bool_array& rhs);
 
-    bool create(size_type size) _NOEXCEPT;
-    void initialize(bool value) _NOEXCEPT;
+    bool create(size_type size) noexcept;
+    void initialize(bool value) noexcept;
 
     reference operator[](size_type pos);
     const_reference operator[](size_type pos) const;
@@ -126,15 +117,15 @@ public:
     void reset(size_type pos);
     void set(size_type pos);
 
-    size_type size() const _NOEXCEPT;
-    size_type count() const _NOEXCEPT;
+    size_type size() const noexcept;
+    size_type count() const noexcept;
     size_type count(size_type begin, size_type end = npos) const;
     size_type find(bool value, size_type offset = 0) const;
     size_type find(bool value, size_type offset, size_type count) const;
     size_type find_until(bool value, size_type begin, size_type end) const;
 
-    void flip() _NOEXCEPT;
-    void swap(bool_array& rhs) _NOEXCEPT;
+    void flip() noexcept;
+    void swap(bool_array& rhs) noexcept;
     void merge_and(const bool_array& rhs,
                    size_type begin = 0,
                    size_type end = npos,
@@ -147,13 +138,13 @@ public:
 
     static size_t get_num_bytes_from_bits(size_type num_bits);
 
+    friend std::ostream& operator<<(std::ostream& os, const bool_array& ba);
+
 private:
     byte get_8bits(size_type offset, size_type end) const;
 
-    byte*           _M_byte_ptr;
-    size_type       _M_length;
-    static byte     _S_bit_count[256];
-    static byte     _S_bit_ordinal[256];
+    byte*      _M_byte_ptr{};
+    size_type  _M_length{};
 };
 
 
@@ -169,10 +160,8 @@ template <typename _Byte_type>
 inline bool_array::_Element<_Byte_type>::_Element(
         _Byte_type* ptr,
         size_type pos)
+    : _M_byte_ptr(ptr), _M_byte_pos(pos / 8), _M_bit_pos(pos % 8)
 {
-    _M_byte_ptr = ptr;
-    _M_byte_pos = (size_t)(pos / 8);
-    _M_bit_pos  = (size_t)(pos % 8);
 }
 
 /**
@@ -181,13 +170,14 @@ inline bool_array::_Element<_Byte_type>::_Element(
  * @param value  the new boolean value
  * @return       the assigned boolean value
  */
-template <typename _Byte_type>
-inline bool bool_array::_Element<_Byte_type>::operator=(bool value)
+template <typename _Byte_type>  // NOLINT
+inline bool bool_array::_Element<_Byte_type>::operator=(bool value)  // NOLINT
 {
-    if (value)
+    if (value) {
         *(_M_byte_ptr + _M_byte_pos) |= 1 << _M_bit_pos;
-    else
+    } else {
         *(_M_byte_ptr + _M_byte_pos) &= ~(1 << _M_bit_pos);
+    }
     return value;
 }
 
@@ -199,23 +189,20 @@ inline bool bool_array::_Element<_Byte_type>::operator=(bool value)
 template <typename _Byte_type>
 inline bool_array::_Element<_Byte_type>::operator bool() const
 {
-    return *(_M_byte_ptr + _M_byte_pos) & (1 << _M_bit_pos) ? true : false;
+    return bool(*(_M_byte_ptr + _M_byte_pos) & (1 << _M_bit_pos));
 }
 
 /**
  * Constructs an empty bool_array.
  */
-inline bool_array::bool_array() _NOEXCEPT : _M_byte_ptr(_NULLPTR), _M_length(0)
-{
-}
+inline bool_array::bool_array() noexcept = default;
 
 /**
  * Destroys the bool_array and releases memory.
  */
 inline bool_array::~bool_array()
 {
-    if (_M_byte_ptr != _NULLPTR)
-        free(_M_byte_ptr);
+    delete[] _M_byte_ptr;
 }
 
 /**
@@ -253,12 +240,12 @@ inline bool_array::const_reference bool_array::operator[](size_type pos) const
  */
 inline bool bool_array::at(size_type pos) const
 {
-    size_t byte_pos, bit_pos;
-    if (pos >= _M_length)
+    if (pos >= _M_length) {
         throw std::out_of_range("invalid bool_array position");
-    byte_pos = (size_t)(pos / 8);
-    bit_pos  = (size_t)(pos % 8);
-    return *(_M_byte_ptr + byte_pos) & (1 << bit_pos) ? true : false;
+    }
+    size_t byte_pos = pos / 8;
+    size_t bit_pos  = pos % 8;
+    return bool(*(_M_byte_ptr + byte_pos) & (1 << bit_pos));
 }
 
 /**
@@ -269,11 +256,11 @@ inline bool bool_array::at(size_type pos) const
  */
 inline void bool_array::reset(size_type pos)
 {
-    size_t byte_pos, bit_pos;
-    if (pos >= _M_length)
+    if (pos >= _M_length) {
         throw std::out_of_range("invalid bool_array position");
-    byte_pos = (size_t)(pos / 8);
-    bit_pos  = (size_t)(pos % 8);
+    }
+    size_t byte_pos = pos / 8;
+    size_t bit_pos  = pos % 8;
     *(_M_byte_ptr + byte_pos) &= ~(1 << bit_pos);
 }
 
@@ -285,11 +272,11 @@ inline void bool_array::reset(size_type pos)
  */
 inline void bool_array::set(size_type pos)
 {
-    size_t byte_pos, bit_pos;
-    if (pos >= _M_length)
+    if (pos >= _M_length) {
         throw std::out_of_range("invalid bool_array position");
-    byte_pos = (size_t)(pos / 8);
-    bit_pos  = (size_t)(pos % 8);
+    }
+    size_t byte_pos = pos / 8;
+    size_t bit_pos  = pos % 8;
     *(_M_byte_ptr + byte_pos) |= 1 << bit_pos;
 }
 
@@ -298,13 +285,13 @@ inline void bool_array::set(size_type pos)
  *
  * @return  the number of bits of the bool_array
  */
-inline bool_array::size_type bool_array::size() const _NOEXCEPT
+inline bool_array::size_type bool_array::size() const noexcept
 {
     return _M_length;
 }
 
 /**
- * Searches for the specified boolean value.  This function seaches from
+ * Searches for the specified boolean value.  This function searches from
  * the specified position (default to beginning) to the end.
  *
  * @param offset  the position at which the search is to begin
@@ -346,7 +333,7 @@ inline bool_array::size_type bool_array::find(
  */
 inline size_t bool_array::get_num_bytes_from_bits(size_type num_bits)
 {
-    return (size_t)((num_bits + 7) / 8);
+    return (num_bits + 7) / 8;
 }
 
 /**
@@ -355,7 +342,7 @@ inline size_t bool_array::get_num_bytes_from_bits(size_type num_bits)
  * @param lhs  the first bool_array to exchange
  * @param rhs  the second bool_array to exchange
  */
-inline void swap(bool_array& lhs, bool_array& rhs) _NOEXCEPT
+inline void swap(bool_array& lhs, bool_array& rhs) noexcept
 {
     lhs.swap(rhs);
 }

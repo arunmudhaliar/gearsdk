@@ -550,7 +550,7 @@ void* qnetworkserver::run_internal(void* data) {
 	}
 
 	GX_DELETE(thiz->hiredis);
-	thiz->hiredis = DEBUG_NEW qhiredis(runConfig->redis_ip, runConfig->redis_port);
+	thiz->hiredis = DEBUG_NEW qhiredis("qserver_hiredis", runConfig->redis_ip, runConfig->redis_port);
 	if (thiz->hiredis->connect_redis() != 0) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
 		GX_DELETE(thiz->hiredis);
