@@ -2,6 +2,10 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -49,7 +53,6 @@ html_theme_options = {
     # Other options
     'body_max_width': None,  # None or a string like '800px' or '90%'
     'sidebarwidth': '300px',  # Default is 240px
-    'fixed_sidebar': True,  # Ensures the sidebar stays fixed while scrolling
 }
 
 html_static_path = ['_static']
