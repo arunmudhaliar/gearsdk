@@ -148,8 +148,5 @@ qh3server
 dem-alerts
 https://bitbucket.org/quaideman/dem/src/master/
 
-docs
-https://github.com/arunmudhaliar/gearsdk/blob/refactor-retry-mechanism-for-zk-and-redis/docs/sphinx/web-upload/html/index.html
-
 *updated on 08-Feb-2024.*
 *formatted by https://pandao.github.io/editor.md/en.html*

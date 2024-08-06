@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Common &mdash; gearsdk 0.1 documentation</title>
+  <title>common &mdash; gearsdk 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -29,7 +29,7 @@
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
           
@@ -46,9 +46,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Common</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#header-files">Header Files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#qstring-header">qstring Header</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#header-files">header files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#qstring">qstring</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv47qstring"><code class="docutils literal notranslate"><span class="pre">qstring</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEv"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N7qstring7qstringEPKc"><code class="docutils literal notranslate"><span class="pre">qstring::qstring()</span></code></a></li>
@@ -88,7 +88,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#timer-header">timer Header</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#timer">timer</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv45timer"><code class="docutils literal notranslate"><span class="pre">timer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer4initEv"><code class="docutils literal notranslate"><span class="pre">timer::init()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N5timer6updateEv"><code class="docutils literal notranslate"><span class="pre">timer::update()</span></code></a></li>
@@ -115,7 +115,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#sdk-types-header">SDK Types Header</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#utilities-types-macros">utilities, types &amp; macros</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#_CPPv44gsdk"><code class="docutils literal notranslate"><span class="pre">gsdk</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk25type_debug_warn_or_err_cbE"><code class="docutils literal notranslate"><span class="pre">gsdk::type_debug_warn_or_err_cb</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk13str2int_errnoE"><code class="docutils literal notranslate"><span class="pre">gsdk::str2int_errno</span></code></a></li>
@@ -129,13 +129,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="networkcommon.html">networkcommon</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="servercommon.html">servercommon</a></li>
 </ul>
 
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">gearsdk</a>
       </nav>
@@ -146,7 +149,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
-      <li class="breadcrumb-item active">Common</li>
+      <li class="breadcrumb-item active">common</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/api/common.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -157,10 +160,10 @@
            <div itemprop="articleBody">
              
   <section id="common">
-<h1>Common<a class="headerlink" href="#common" title="Link to this heading"></a></h1>
+<h1>common<a class="headerlink" href="#common" title="Link to this heading"></a></h1>
 <p>This section provides documentation for the various components of the <cite>gearsdk</cite> project. Below, you will find detailed information about various header files used in the project.</p>
 <section id="header-files">
-<h2>Header Files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
+<h2>header files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
 <p>The following header files are documented here:</p>
 <ol class="arabic simple">
 <li><p><cite>qstring.h</cite></p></li>
@@ -168,12 +171,29 @@
 <li><p><cite>sdktypes.hpp</cite></p></li>
 </ol>
 </section>
-<section id="qstring-header">
-<h2>qstring Header<a class="headerlink" href="#qstring-header" title="Link to this heading"></a></h2>
+<section id="qstring">
+<h2>qstring<a class="headerlink" href="#qstring" title="Link to this heading"></a></h2>
 <p>The <cite>qstring.h</cite> file contains the definition and implementation of the <cite>qstring</cite> class, which provides a string manipulation utility for the project.</p>
+<p>Header file for the qstring class. </p>
+<p>This file contains the declaration of the qstring class, which provides flexible string handling using UT_string.</p>
+<p><div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>UT_string</p>
+</div>
+<dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>Copyright (c) 2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ensure UT_string library is included and linked in your project.</p>
+</div>
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv47qstring">
-<span id="_CPPv37qstring"></span><span id="_CPPv27qstring"></span><span id="qstring"></span><span class="target" id="dc/d1d/classqstring"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><a class="headerlink" href="#_CPPv47qstring" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv37qstring"></span><span id="_CPPv27qstring"></span><span class="target" id="dc/d1d/classqstring"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qstring</span></span></span><a class="headerlink" href="#_CPPv47qstring" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;qstring.h&gt;</em></div>
 <p>A class for flexible string handling using UT_string. </p>
@@ -611,16 +631,22 @@
 </dd></dl>
 
 </section>
-<section id="timer-header">
-<h2>timer Header<a class="headerlink" href="#timer-header" title="Link to this heading"></a></h2>
+<section id="timer">
+<h2>timer<a class="headerlink" href="#timer" title="Link to this heading"></a></h2>
 <p>The <cite>timer.h</cite> file provides the <cite>timer</cite> class, which manages the timing and frame rate for the game.</p>
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv45timer">
-<span id="_CPPv35timer"></span><span id="_CPPv25timer"></span><span id="timer"></span><span class="target" id="d6/d88/classtimer"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timer</span></span></span><a class="headerlink" href="#_CPPv45timer" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv35timer"></span><span id="_CPPv25timer"></span><span class="target" id="d6/d88/classtimer"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timer</span></span></span><a class="headerlink" href="#_CPPv45timer" title="Link to this definition"></a><br /></dt>
 <dd><div class="docutils container">
 <em>#include &lt;timer.h&gt;</em></div>
 <p>Manages the timing and frame rate for the game. </p>
-<p>This class provides functions to initialize, update, and reset the timer, as well as to retrieve various time-related values such as delta time, frame rate, and elapsed time. </p>
+<p>This class provides functions to initialize, update, and reset the timer, as well as to retrieve various time-related values such as delta time, frame rate, and elapsed time. <dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>Copyright (c) 2024 homenet25 </p>
+</dd>
+</dl>
+</p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
 <dl class="cpp function">
@@ -802,11 +828,19 @@
 </dd></dl>
 
 </section>
-<section id="sdk-types-header">
-<h2>SDK Types Header<a class="headerlink" href="#sdk-types-header" title="Link to this heading"></a></h2>
+<section id="utilities-types-macros">
+<h2>utilities, types &amp; macros<a class="headerlink" href="#utilities-types-macros" title="Link to this heading"></a></h2>
 <p>The <cite>sdktypes.hpp</cite> file includes various type definitions used throughout the project.</p>
 <p>Contains platform-specific definitions, macros, and utility functions for the SDK. </p>
-<p>This header file defines platform macros, utility macros, and functions for logging, error handling, and platform-specific functionality. </p>
+<p>This header file defines platform macros, utility macros, and functions for logging, error handling, and platform-specific functionality.</p>
+<p>
+This header file defines platform macros, utility macros, and functions for logging, error handling, and platform-specific functionality. <dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>(c) [2023], [amudaliar] All rights reserved.</p>
+</dd>
+</dl>
+</p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
 <dl class="cpp macro">

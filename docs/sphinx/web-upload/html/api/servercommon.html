@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>servercommon &mdash; gearsdk 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="qzookeeper" href="qzookeeper.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gearsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="common.html">common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networkcommon.html">networkcommon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">servercommon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#header-files">header files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">servercommon</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv44gsdk"><code class="docutils literal notranslate"><span class="pre">gsdk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N4gsdk12servercommonE"><code class="docutils literal notranslate"><span class="pre">gsdk::servercommon</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#qmongo">qmongo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv427interface_qmongo_connection"><code class="docutils literal notranslate"><span class="pre">interface_qmongo_connection</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N27interface_qmongo_connection16on_mongo_connectEv"><code class="docutils literal notranslate"><span class="pre">interface_qmongo_connection::on_mongo_connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t"><code class="docutils literal notranslate"><span class="pre">interface_qmongo_connection::on_mongo_create_index_keys()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv46qmongo"><code class="docutils literal notranslate"><span class="pre">qmongo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qmongo::qmongo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongoD0Ev"><code class="docutils literal notranslate"><span class="pre">qmongo::~qmongo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo7cleanupEv"><code class="docutils literal notranslate"><span class="pre">qmongo::cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo6insertERK7qstringR6bson_t"><code class="docutils literal notranslate"><span class="pre">qmongo::insert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo6updateERK7qstringR6bson_tR6bson_t"><code class="docutils literal notranslate"><span class="pre">qmongo::update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo4findERK7qstringR6bson_t"><code class="docutils literal notranslate"><span class="pre">qmongo::find()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo14get_collectionERK7qstring"><code class="docutils literal notranslate"><span class="pre">qmongo::get_collection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo7connectEv"><code class="docutils literal notranslate"><span class="pre">qmongo::connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo6qmongoEv"><code class="docutils literal notranslate"><span class="pre">qmongo::qmongo()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo7connectERK7qstringRK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qmongo::connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring"><code class="docutils literal notranslate"><span class="pre">qmongo::create_client_index_if_not()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo3uriE"><code class="docutils literal notranslate"><span class="pre">qmongo::uri</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo6clientE"><code class="docutils literal notranslate"><span class="pre">qmongo::client</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo8databaseE"><code class="docutils literal notranslate"><span class="pre">qmongo::database</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo11collectionsE"><code class="docutils literal notranslate"><span class="pre">qmongo::collections</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo9interfaceE"><code class="docutils literal notranslate"><span class="pre">qmongo::interface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo8app_nameE"><code class="docutils literal notranslate"><span class="pre">qmongo::app_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo7db_nameE"><code class="docutils literal notranslate"><span class="pre">qmongo::db_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N6qmongo10uri_stringE"><code class="docutils literal notranslate"><span class="pre">qmongo::uri_string</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gearsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">servercommon</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/servercommon.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="servercommon">
+<h1>servercommon<a class="headerlink" href="#servercommon" title="Link to this heading"></a></h1>
+<p>This section provides documentation for the various components of the <cite>gearsdk</cite> project. Below, you will find detailed information about various header files used in the project.</p>
+<section id="header-files">
+<h2>header files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
+<p>The following header files are documented here:</p>
+<ol class="arabic simple">
+<li><p><cite>servercommon.hpp</cite></p></li>
+<li><p><cite>qmongo.hpp</cite></p></li>
+</ol>
+</section>
+<section id="id1">
+<h2>servercommon<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>The <cite>servercommon.hpp</cite> file contains the definition and implementation of the <cite>servercommon</cite> class, which provides common functionality for the server side of the project.</p>
+<p>This file contains the declaration of the server common module, which provides functionality for initializing the server common module, updating the public IP address, and a callback function for writing public IP address using cURL. </p>
+<p><dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Date</strong></dt><dd><p>2024 </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv44gsdk">
+<span id="_CPPv34gsdk"></span><span id="_CPPv24gsdk"></span><span id="gsdk"></span><span class="target" id="d5/d89/namespacegsdk"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">gsdk</span></span></span><br /></dt>
+<dd><dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk12servercommonE">
+<span id="_CPPv3N4gsdk12servercommonE"></span><span id="_CPPv2N4gsdk12servercommonE"></span><span id="gsdk::servercommon"></span><span class="target" id="d2/d5f/namespacegsdk_1_1servercommon"></span><span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">servercommon</span></span></span><a class="headerlink" href="#_CPPv4N4gsdk12servercommonE" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk12servercommon18init_server_commonEv">
+<span id="_CPPv3N4gsdk12servercommon18init_server_commonEv"></span><span id="_CPPv2N4gsdk12servercommon18init_server_commonEv"></span><span id="gsdk::servercommon::init_server_common"></span><span class="target" id="dd/d94/servercommon_8hpp_1a10af00eff482be1081b9efe342603e33"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init_server_common</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N4gsdk12servercommon18init_server_commonEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Initializes the server common module. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk12servercommon16update_public_ipEv">
+<span id="_CPPv3N4gsdk12servercommon16update_public_ipEv"></span><span id="_CPPv2N4gsdk12servercommon16update_public_ipEv"></span><span id="gsdk::servercommon::update_public_ip"></span><span class="target" id="dd/d94/servercommon_8hpp_1a9ded0b3c64a2bef443d65d64183f9850"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update_public_ip</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N4gsdk12servercommon16update_public_ipEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Updates the public IP address. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N4gsdk12servercommon27curl_write_cb_get_public_ipEPv6size_t6size_tPv">
+<span id="_CPPv3N4gsdk12servercommon27curl_write_cb_get_public_ipEPv6size_t6size_tPv"></span><span id="_CPPv2N4gsdk12servercommon27curl_write_cb_get_public_ipEPv6size_t6size_tPv"></span><span id="gsdk::servercommon::curl_write_cb_get_public_ip__voidP.s.s.voidP"></span><span class="target" id="dd/d94/servercommon_8hpp_1a2d78980fd1f2a4ef9fd80fc09ce1112a"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">curl_write_cb_get_public_ip</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">contents</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">size</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">nmemb</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">userp</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N4gsdk12servercommon27curl_write_cb_get_public_ipEPv6size_t6size_tPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for writing public IP address using cURL. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contents</strong> – Pointer to the received data. </p></li>
+<li><p><strong>size</strong> – Size of each element. </p></li>
+<li><p><strong>nmemb</strong> – Number of elements. </p></li>
+<li><p><strong>userp</strong> – Pointer to user data. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bytes written. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="qmongo">
+<h2>qmongo<a class="headerlink" href="#qmongo" title="Link to this heading"></a></h2>
+<p>The <cite>qmongo.hpp</cite> file provides the <cite>qmongo</cite> class, which manages the connection and interaction with a MongoDB database.</p>
+<p>This file contains the declaration of the qmongo class and the <a class="reference internal" href="#db/d55/classinterface__qmongo__connection"><span class="std std-ref">interface_qmongo_connection</span></a> class. </p>
+<p>The qmongo class provides a way to interact with MongoDB using the qmongo library. It allows inserting, updating, and finding documents in a collection, as well as connecting to the MongoDB server.</p>
+<p>The <a class="reference internal" href="#db/d55/classinterface__qmongo__connection"><span class="std std-ref">interface_qmongo_connection</span></a> class is an interface for handling qmongo connection events. It defines two pure virtual functions: on_mongo_connect() and on_mongo_create_index_keys().</p>
+<p><dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Date</strong></dt><dd><p>2023 </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__LOGTAG__">
+<span class="target" id="db/dfc/qmongo_8hpp_1a51a7b4cddb25f82f90871c021c988b9c"></span><span class="sig-name descname"><span class="n"><span class="pre">__LOGTAG__</span></span></span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv427interface_qmongo_connection">
+<span id="_CPPv327interface_qmongo_connection"></span><span id="_CPPv227interface_qmongo_connection"></span><span id="interface_qmongo_connection"></span><span class="target" id="db/d55/classinterface__qmongo__connection"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">interface_qmongo_connection</span></span></span><a class="headerlink" href="#_CPPv427interface_qmongo_connection" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qmongo.hpp&gt;</em></div>
+<p>The interface for handling qmongo connection events. </p>
+<p>Subclassed by http3_sample_server</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N27interface_qmongo_connection16on_mongo_connectEv">
+<span id="_CPPv3N27interface_qmongo_connection16on_mongo_connectEv"></span><span id="_CPPv2N27interface_qmongo_connection16on_mongo_connectEv"></span><span id="interface_qmongo_connection::on_mongo_connect"></span><span class="target" id="db/d55/classinterface__qmongo__connection_1a6edd15439090d22728fa21449b91851b"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_mongo_connect</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N27interface_qmongo_connection16on_mongo_connectEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Called when the connection to MongoDB is established. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t">
+<span id="_CPPv3N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t"></span><span id="_CPPv2N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t"></span><span id="interface_qmongo_connection::on_mongo_create_index_keys__qstringCR.bson_tP.mongoc_index_opt_tP"></span><span class="target" id="db/d55/classinterface__qmongo__connection_1a8fa89f431422ed88a1d8413004a742aa"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_mongo_create_index_keys</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span>, <span class="n"><span class="pre">bson_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">indexkey</span></span>, <span class="n"><span class="pre">mongoc_index_opt_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">opt</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Called when creating index keys for a collection. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection_name</strong> – The name of the collection. </p></li>
+<li><p><strong>indexkey</strong> – The BSON index key. </p></li>
+<li><p><strong>opt</strong> – The index options. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv46qmongo">
+<span id="_CPPv36qmongo"></span><span id="_CPPv26qmongo"></span><span class="target" id="d8/dff/classqmongo"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qmongo</span></span></span><a class="headerlink" href="#_CPPv46qmongo" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qmongo.hpp&gt;</em></div>
+<p>A class for interacting with MongoDB using the qmongo library. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring">
+<span id="_CPPv3N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring"></span><span id="_CPPv2N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring"></span><span id="qmongo::qmongo__interface_qmongo_connectionP.qstringCR.qstringCR.qstringCR"></span><span class="target" id="d8/dff/classqmongo_1a5a798d68bf2e55ff5681ca9218e9b188"></span><span class="sig-name descname"><span class="n"><span class="pre">qmongo</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv427interface_qmongo_connection" title="interface_qmongo_connection"><span class="n"><span class="pre">interface_qmongo_connection</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">interfce</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">app_name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">db_name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">uri_string</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;mongodb://localhost:27017&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs a qmongo object. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interfce</strong> – The interface for handling qmongo connection events. </p></li>
+<li><p><strong>app_name</strong> – The name of the application. </p></li>
+<li><p><strong>db_name</strong> – The name of the database. </p></li>
+<li><p><strong>uri_string</strong> – The MongoDB connection URI string. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongoD0Ev">
+<span id="_CPPv3N6qmongoD0Ev"></span><span id="_CPPv2N6qmongoD0Ev"></span><span id="qmongo::~qmongo"></span><span class="target" id="d8/dff/classqmongo_1a4737c1e6dead4e61b87a1c6a93bea31a"></span><span class="sig-name descname"><span class="n"><span class="pre">~qmongo</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongoD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destroys the qmongo object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo7cleanupEv">
+<span id="_CPPv3N6qmongo7cleanupEv"></span><span id="_CPPv2N6qmongo7cleanupEv"></span><span id="qmongo::cleanup"></span><span class="target" id="d8/dff/classqmongo_1a040a8fdb2d0c069425ced7e22b9a17e2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cleanup</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo7cleanupEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Cleans up the qmongo object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo6insertERK7qstringR6bson_t">
+<span id="_CPPv3N6qmongo6insertERK7qstringR6bson_t"></span><span id="_CPPv2N6qmongo6insertERK7qstringR6bson_t"></span><span id="qmongo::insert__qstringCR.bson_tR"></span><span class="target" id="d8/dff/classqmongo_1a0674f893518ba6857acb78c24828eb23"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">insert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span>, <span class="n"><span class="pre">bson_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">query</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo6insertERK7qstringR6bson_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Inserts a document into the specified collection. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection_name</strong> – The name of the collection. </p></li>
+<li><p><strong>query</strong> – The BSON query document. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the insert operation. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo6updateERK7qstringR6bson_tR6bson_t">
+<span id="_CPPv3N6qmongo6updateERK7qstringR6bson_tR6bson_t"></span><span id="_CPPv2N6qmongo6updateERK7qstringR6bson_tR6bson_t"></span><span id="qmongo::update__qstringCR.bson_tR.bson_tR"></span><span class="target" id="d8/dff/classqmongo_1a37522636aa5a059e2eace9704c2c8451"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">update</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span>, <span class="n"><span class="pre">bson_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">query</span></span>, <span class="n"><span class="pre">bson_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">update</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo6updateERK7qstringR6bson_tR6bson_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Updates documents in the specified collection that match the query. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection_name</strong> – The name of the collection. </p></li>
+<li><p><strong>query</strong> – The BSON query document. </p></li>
+<li><p><strong>update</strong> – The BSON update document. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the update operation. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo4findERK7qstringR6bson_t">
+<span id="_CPPv3N6qmongo4findERK7qstringR6bson_t"></span><span id="_CPPv2N6qmongo4findERK7qstringR6bson_t"></span><span id="qmongo::find__qstringCR.bson_tR"></span><span class="target" id="d8/dff/classqmongo_1aec58e8336e3fa605f0ab541adac3c05d"></span><span class="n"><span class="pre">mongoc_cursor_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">find</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span>, <span class="n"><span class="pre">bson_t</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">query</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo4findERK7qstringR6bson_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Finds documents in the specified collection that match the query. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection_name</strong> – The name of the collection. </p></li>
+<li><p><strong>query</strong> – The BSON query document. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A cursor to iterate over the result set. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo14get_collectionERK7qstring">
+<span id="_CPPv3N6qmongo14get_collectionERK7qstring"></span><span id="_CPPv2N6qmongo14get_collectionERK7qstring"></span><span id="qmongo::get_collection__qstringCR"></span><span class="target" id="d8/dff/classqmongo_1a632ea3e2823ddb3c393bda6bf9c34e88"></span><span class="n"><span class="pre">mongoc_collection_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_collection</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo14get_collectionERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the specified collection. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>collection_name</strong> – The name of the collection. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mongoc_collection_t object representing the collection. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo7connectEv">
+<span id="_CPPv3N6qmongo7connectEv"></span><span id="_CPPv2N6qmongo7connectEv"></span><span id="qmongo::connect"></span><span class="target" id="d8/dff/classqmongo_1a62f353ee6cfecfd89d8410e3a98b3f1a"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo7connectEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Connects to the MongoDB server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The result of the connection operation. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo6qmongoEv">
+<span id="_CPPv3N6qmongo6qmongoEv"></span><span id="_CPPv2N6qmongo6qmongoEv"></span><span id="qmongo::qmongo"></span><span class="target" id="d8/dff/classqmongo_1a1a81c3f92a3423c54c08ba762e24d950"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qmongo</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo6qmongoEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo7connectERK7qstringRK7qstringRK7qstring">
+<span id="_CPPv3N6qmongo7connectERK7qstringRK7qstringRK7qstring"></span><span id="_CPPv2N6qmongo7connectERK7qstringRK7qstringRK7qstring"></span><span id="qmongo::connect__qstringCR.qstringCR.qstringCR"></span><span class="target" id="d8/dff/classqmongo_1a35d5f1781e8788d8d367d26c9f2d70b6"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">app_name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">db_name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">uri_string</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo7connectERK7qstringRK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Connects to the MongoDB server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>app_name</strong> – The name of the application. </p></li>
+<li><p><strong>db_name</strong> – The name of the database. </p></li>
+<li><p><strong>uri_string</strong> – The MongoDB connection URI string. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the connection operation. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring">
+<span id="_CPPv3N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring"></span><span id="_CPPv2N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring"></span><span id="qmongo::create_client_index_if_not__mongoc_collection_tP.qstringCR"></span><span class="target" id="d8/dff/classqmongo_1ade905da05aa97520e7dd42f983f72fe7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">create_client_index_if_not</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">mongoc_collection_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">collection</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">collection_name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates an index for the specified collection if it does not exist. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection</strong> – The mongoc_collection_t object representing the collection. </p></li>
+<li><p><strong>collection_name</strong> – The name of the collection. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the index creation operation. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo3uriE">
+<span id="_CPPv3N6qmongo3uriE"></span><span id="_CPPv2N6qmongo3uriE"></span><span id="qmongo::uri__mongoc_uri_tP"></span><span class="target" id="d8/dff/classqmongo_1a11fbc6d1e7b5cb8bf291c9fa33de98cc"></span><span class="n"><span class="pre">mongoc_uri_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">uri</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N6qmongo3uriE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo6clientE">
+<span id="_CPPv3N6qmongo6clientE"></span><span id="_CPPv2N6qmongo6clientE"></span><span id="qmongo::client__mongoc_client_tP"></span><span class="target" id="d8/dff/classqmongo_1a151699bcc1b0c0eea446661f7a62a74c"></span><span class="n"><span class="pre">mongoc_client_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">client</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N6qmongo6clientE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo8databaseE">
+<span id="_CPPv3N6qmongo8databaseE"></span><span id="_CPPv2N6qmongo8databaseE"></span><span id="qmongo::database__mongoc_database_tP"></span><span class="target" id="d8/dff/classqmongo_1adc2b26df072985cf943ed51ba7e63a0f"></span><span class="n"><span class="pre">mongoc_database_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">database</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N6qmongo8databaseE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo11collectionsE">
+<span id="_CPPv3N6qmongo11collectionsE"></span><span id="_CPPv2N6qmongo11collectionsE"></span><span id="qmongo::collections__std::map:unsigned-l.mongoc_collection_tP:"></span><span class="target" id="d8/dff/classqmongo_1a88d3a553d5d5106ff8e54ca71855e14e"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">mongoc_collection_t</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">collections</span></span></span><a class="headerlink" href="#_CPPv4N6qmongo11collectionsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo9interfaceE">
+<span id="_CPPv3N6qmongo9interfaceE"></span><span id="_CPPv2N6qmongo9interfaceE"></span><span id="qmongo::interface__interface_qmongo_connectionP"></span><span class="target" id="d8/dff/classqmongo_1a55d53c7b0368748aa999ea9a23915900"></span><a class="reference internal" href="#_CPPv427interface_qmongo_connection" title="interface_qmongo_connection"><span class="n"><span class="pre">interface_qmongo_connection</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">interface</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N6qmongo9interfaceE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo8app_nameE">
+<span id="_CPPv3N6qmongo8app_nameE"></span><span id="_CPPv2N6qmongo8app_nameE"></span><span id="qmongo::app_name__qstring"></span><span class="target" id="d8/dff/classqmongo_1a9e5a01307ccd2d375538cd0ca81e87cd"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">app_name</span></span></span><a class="headerlink" href="#_CPPv4N6qmongo8app_nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo7db_nameE">
+<span id="_CPPv3N6qmongo7db_nameE"></span><span id="_CPPv2N6qmongo7db_nameE"></span><span id="qmongo::db_name__qstring"></span><span class="target" id="d8/dff/classqmongo_1afaf6d4ba69fbbb7a1e8d0c6e5e4f1807"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">db_name</span></span></span><a class="headerlink" href="#_CPPv4N6qmongo7db_nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N6qmongo10uri_stringE">
+<span id="_CPPv3N6qmongo10uri_stringE"></span><span id="_CPPv2N6qmongo10uri_stringE"></span><span id="qmongo::uri_string__qstring"></span><span class="target" id="d8/dff/classqmongo_1aa1188bc429dca3a3a494c386c978b5bc"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">uri_string</span></span></span><a class="headerlink" href="#_CPPv4N6qmongo10uri_stringE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="qzookeeper.html" class="btn btn-neutral float-left" title="qzookeeper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, amudaliar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

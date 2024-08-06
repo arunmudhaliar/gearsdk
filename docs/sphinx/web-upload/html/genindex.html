@@ -26,7 +26,7 @@
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
 
           
           
@@ -43,16 +43,19 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/common.html">common</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/networkcommon.html">networkcommon</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/servercommon.html">servercommon</a></li>
 </ul>
 
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">gearsdk</a>
       </nav>
@@ -81,6 +84,7 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
@@ -101,7 +105,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#c.__FILENAME__">__FILENAME__ (C macro)</a>
 </li>
-      <li><a href="api/networkcommon.html#c.__LOGTAG__">__LOGTAG__ (C macro)</a>, <a href="api/qh3server.html#c.__LOGTAG__">[1]</a>
+      <li><a href="api/networkcommon.html#c.__LOGTAG__">__LOGTAG__ (C macro)</a>, <a href="api/qh3server.html#c.__LOGTAG__">[1]</a>, <a href="api/qhiredis.html#c.__LOGTAG__">[2]</a>, <a href="api/qhiredis.html#c.__LOGTAG__">[3]</a>, <a href="api/qzookeeper.html#c.__LOGTAG__">[4]</a>, <a href="api/servercommon.html#c.__LOGTAG__">[5]</a>
 </li>
   </ul></td>
 </tr></table>
@@ -355,7 +359,7 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/common.html#_CPPv44gsdk">gsdk (C++ type)</a>
+      <li><a href="api/common.html#_CPPv44gsdk">gsdk (C++ type)</a>, <a href="api/servercommon.html#_CPPv44gsdk">[1]</a>
 </li>
       <li><a href="api/common.html#_CPPv4N4gsdk6deviceE">gsdk::device (C++ class)</a>
 </li>
@@ -365,12 +369,20 @@
 </li>
       <li><a href="api/common.html#_CPPv4N4gsdk6server17machine_public_ipE">gsdk::server::machine_public_ip (C++ member)</a>
 </li>
+      <li><a href="api/servercommon.html#_CPPv4N4gsdk12servercommonE">gsdk::servercommon (C++ type)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N4gsdk12servercommon27curl_write_cb_get_public_ipEPv6size_t6size_tPv">gsdk::servercommon::curl_write_cb_get_public_ip (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N4gsdk12servercommon18init_server_commonEv">gsdk::servercommon::init_server_common (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N4gsdk12servercommon16update_public_ipEv">gsdk::servercommon::update_public_ip (C++ function)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#_CPPv4N4gsdk13str2int_errnoE">gsdk::str2int_errno (C++ enum)</a>
 </li>
       <li><a href="api/common.html#_CPPv4N4gsdk13str2int_errno21STR2INT_INCONVERTIBLEE">gsdk::str2int_errno::STR2INT_INCONVERTIBLE (C++ enumerator)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#_CPPv4N4gsdk13str2int_errno16STR2INT_OVERFLOWE">gsdk::str2int_errno::STR2INT_OVERFLOW (C++ enumerator)</a>
 </li>
       <li><a href="api/common.html#_CPPv4N4gsdk13str2int_errno15STR2INT_SUCCESSE">gsdk::str2int_errno::STR2INT_SUCCESS (C++ enumerator)</a>
@@ -386,6 +398,30 @@
       <li><a href="api/common.html#c.GX_DELETE">GX_DELETE (C macro)</a>
 </li>
       <li><a href="api/common.html#c.GX_DELETE_ARY">GX_DELETE_ARY (C macro)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/qhiredis.html#_CPPv424interface_qhiredis_async">interface_qhiredis_async (C++ class)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring">interface_qhiredis_async::on_qhiredis_async_key_expired (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv427interface_qmongo_connection">interface_qmongo_connection (C++ class)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N27interface_qmongo_connection16on_mongo_connectEv">interface_qmongo_connection::on_mongo_connect (C++ function)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/servercommon.html#_CPPv4N27interface_qmongo_connection26on_mongo_create_index_keysERK7qstringP6bson_tP18mongoc_index_opt_t">interface_qmongo_connection::on_mongo_create_index_keys (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv420interface_qzookeeper">interface_qzookeeper (C++ class)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv">interface_qzookeeper::register_value_change_callback (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv">interface_qzookeeper::unregister_value_change_callback (C++ function)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -555,6 +591,116 @@
 </li>
       <li><a href="api/qh3server.html#_CPPv4N9qh3serverD0Ev">qh3server::~qh3server (C++ function)</a>
 </li>
+      <li><a href="api/qhiredis.html#_CPPv48qhiredis">qhiredis (C++ class)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis13connect_redisEb">qhiredis::connect_redis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis22connect_redis_internalERK7qstring8uint16_tb">qhiredis::connect_redis_internal (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis7contextE">qhiredis::context (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis4decrERK7qstringRx">qhiredis::decr (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis7decr_byERK7qstringKiRx">qhiredis::decr_by (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis17delete_hash_fieldERK7qstringRK7qstring">qhiredis::delete_hash_field (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis10delete_keyERK7qstring">qhiredis::delete_key (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis16disconnect_redisEv">qhiredis::disconnect_redis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis10expire_keyERK7qstringi">qhiredis::expire_key (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring">qhiredis::get_hash_value (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis9get_valueERK7qstringR7qstring">qhiredis::get_value (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis4incrERK7qstringRx">qhiredis::incr (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis7incr_byERK7qstringKiRx">qhiredis::incr_by (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb">qhiredis::iterate_hash (C++ function)</a>, <a href="api/qhiredis.html#_CPPv4N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb">[1]</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis4nameE">qhiredis::name (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t">qhiredis::qhiredis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis8redis_ipE">qhiredis::redis_ip (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis10redis_portE">qhiredis::redis_port (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis16retry_connectionEv">qhiredis::retry_connection (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb">qhiredis::scan (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring">qhiredis::set_hash_value (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstring">qhiredis::set_value (C++ function)</a>, <a href="api/qhiredis.html#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstringi">[1]</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N8qhiredisD0Ev">qhiredis::~qhiredis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv414qhiredis_async">qhiredis_async (C++ class)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async13async_contextE">qhiredis_async::async_context (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async19connect_async_redisEP7ev_loop">qhiredis_async::connect_async_redis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async9connectedE">qhiredis_async::connected (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async22disconnect_async_redisEv">qhiredis_async::disconnect_async_redis (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async9interfaceE">qhiredis_async::interface (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti">qhiredis_async::on_connect_cb (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti">qhiredis_async::on_disconnect_cb (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv">qhiredis_async::on_message_cb (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async">qhiredis_async::qhiredis_async (C++ function)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async8redis_ipE">qhiredis_async::redis_ip (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_async10redis_portE">qhiredis_async::redis_port (C++ member)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv4N14qhiredis_asyncD0Ev">qhiredis_async::~qhiredis_async (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv46qmongo">qmongo (C++ class)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo8app_nameE">qmongo::app_name (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo7cleanupEv">qmongo::cleanup (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo6clientE">qmongo::client (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo11collectionsE">qmongo::collections (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo7connectERK7qstringRK7qstringRK7qstring">qmongo::connect (C++ function)</a>, <a href="api/servercommon.html#_CPPv4N6qmongo7connectEv">[1]</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo26create_client_index_if_notEP19mongoc_collection_tRK7qstring">qmongo::create_client_index_if_not (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo8databaseE">qmongo::database (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo7db_nameE">qmongo::db_name (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo4findERK7qstringR6bson_t">qmongo::find (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo14get_collectionERK7qstring">qmongo::get_collection (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo6insertERK7qstringR6bson_t">qmongo::insert (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo9interfaceE">qmongo::interface (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo6qmongoEP27interface_qmongo_connectionRK7qstringRK7qstringRK7qstring">qmongo::qmongo (C++ function)</a>, <a href="api/servercommon.html#_CPPv4N6qmongo6qmongoEv">[1]</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo6updateERK7qstringR6bson_tR6bson_t">qmongo::update (C++ function)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo3uriE">qmongo::uri (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongo10uri_stringE">qmongo::uri_string (C++ member)</a>
+</li>
+      <li><a href="api/servercommon.html#_CPPv4N6qmongoD0Ev">qmongo::~qmongo (C++ function)</a>
+</li>
       <li><a href="api/networkcommon.html#_CPPv46qmutex">qmutex (C++ class)</a>
 </li>
       <li><a href="api/networkcommon.html#_CPPv4N6qmutex9allowTaskE">qmutex::allowTask (C++ member)</a>
@@ -675,6 +821,114 @@
 </li>
       <li><a href="api/common.html#_CPPv4N7qstringD0Ev">qstring::~qstring (C++ function)</a>
 </li>
+      <li><a href="api/qzookeeper.html#c.QZK_MAX_RETRIES_FOR_API">QZK_MAX_RETRIES_FOR_API (C macro)</a>
+</li>
+      <li><a href="api/qzookeeper.html#c.QZK_RETRY_BASE_DELAY_MS">QZK_RETRY_BASE_DELAY_MS (C macro)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv410qzookeeper">qzookeeper (C++ class)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring">qzookeeper::broadcast_value_change_to_all (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper12clientIdFileE">qzookeeper::clientIdFile (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper11close_mutexE">qzookeeper::close_mutex (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8close_zkEKi">qzookeeper::close_zk (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper7connectERK7qstring">qzookeeper::connect (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper16connect_internalEPv">qzookeeper::connect_internal (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper22connection_check_timerE">qzookeeper::connection_check_timer (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper22connection_in_progressE">qzookeeper::connection_in_progress (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper16connection_stateE">qzookeeper::connection_state (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper14connection_urlE">qzookeeper::connection_url (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper11delete_pathERK7qstring">qzookeeper::delete_path (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8dumpStatEPK4Stat">qzookeeper::dumpStat (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper20get_connection_stateEv">qzookeeper::get_connection_state (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring">qzookeeper::get_data (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4NK10qzookeeper8get_nameEv">qzookeeper::get_name (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper10get_resultE">qzookeeper::get_result (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4NK10qzookeeper9get_wnameEv">qzookeeper::get_wname (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper10is_runningEv">qzookeeper::is_running (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper12is_zk_activeEv">qzookeeper::is_zk_active (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8mainloopE">qzookeeper::mainloop (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper10millisleepEi">qzookeeper::millisleep (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper18my_data_completionEiPKciPK4StatPKv">qzookeeper::my_data_completion (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper18my_stat_completionEiPK4StatPKv">qzookeeper::my_stat_completion (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper18my_void_completionEiPKv">qzookeeper::my_void_completion (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper4myidE">qzookeeper::myid (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper4nameE">qzookeeper::name (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper9nameMutexE">qzookeeper::nameMutex (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper14op_in_progressE">qzookeeper::op_in_progress (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper9op_resultE">qzookeeper::op_result (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper22pending_config_updatesE">qzookeeper::pending_config_updates (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper10qzookeeperERK7qstring">qzookeeper::qzookeeper (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper15reconnect_mutexE">qzookeeper::reconnect_mutex (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv">qzookeeper::register_value_change_callback (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper16retry_connectionEv">qzookeeper::retry_connection (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper11retry_countE">qzookeeper::retry_count (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper17retry_in_progressE">qzookeeper::retry_in_progress (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii">qzookeeper::retry_with_backoff (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper7runningE">qzookeeper::running (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8set_dataERK7qstringRK7qstring">qzookeeper::set_data (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper8shutdownEv">qzookeeper::shutdown (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper12state2StringEi">qzookeeper::state2String (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper11type2StringEi">qzookeeper::type2String (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv">qzookeeper::unregister_value_change_callback (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper22value_change_callbacksE">qzookeeper::value_change_callbacks (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper7watcherEP9zhandle_tiiPKcPv">qzookeeper::watcher (C++ function)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper19watcher_gaurd_mutexE">qzookeeper::watcher_gaurd_mutex (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper5wnameE">qzookeeper::wname (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper10wnameMutexE">qzookeeper::wnameMutex (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper2zhE">qzookeeper::zh (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeper12zk_thread_idE">qzookeeper::zk_thread_id (C++ member)</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv4N10qzookeeperD0Ev">qzookeeper::~qzookeeper (C++ function)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -731,12 +985,12 @@
 </li>
       <li><a href="api/common.html#_CPPv4N5timer5resetEv">timer::reset (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#_CPPv4N5timer12setTimeScaleEf">timer::setTimeScale (C++ function)</a>
 </li>
       <li><a href="api/common.html#_CPPv4N5timer18timerAveragingTimeE">timer::timerAveragingTime (C++ member)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#_CPPv4N5timer17timerDTInMilliSecE">timer::timerDTInMilliSec (C++ member)</a>
 </li>
       <li><a href="api/common.html#_CPPv4N5timer12timerDTInSecE">timer::timerDTInSec (C++ member)</a>
@@ -754,6 +1008,12 @@
       <li><a href="api/common.html#_CPPv4N5timer14timerTimeScaleE">timer::timerTimeScale (C++ member)</a>
 </li>
       <li><a href="api/common.html#_CPPv4N5timer6updateEf">timer::update (C++ function)</a>, <a href="api/common.html#_CPPv4N5timer6updateEv">[1]</a>
+</li>
+      <li><a href="api/qzookeeper.html#_CPPv422type_qzk_value_changed">type_qzk_value_changed (C++ type)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv439type_redis_hash_iterator_field_value_cb">type_redis_hash_iterator_field_value_cb (C++ type)</a>
+</li>
+      <li><a href="api/qhiredis.html#_CPPv443type_redis_scan_iterator_key_field_value_cb">type_redis_scan_iterator_key_field_value_cb (C++ type)</a>
 </li>
   </ul></td>
 </tr></table>
