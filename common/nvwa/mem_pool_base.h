@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,7 +31,7 @@
  *
  * Header file for the memory pool base.
  *
- * @date  2013-10-06
+ * @date  2024-05-20
  */
 
 #ifndef NVWA_MEM_POOL_BASE_H
@@ -39,14 +39,14 @@
 
 #include <stddef.h>             // size_t
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
+#include "c++_features.h"       // _DELETE
 
 NVWA_NAMESPACE_BEGIN
 
 /**
  * Base class for memory pools.
  */
-class mem_pool_base
-{
+class mem_pool_base {
 public:
     virtual ~mem_pool_base();
     virtual void recycle() = 0;
@@ -54,10 +54,13 @@ public:
     static void dealloc_sys(void* ptr);
 
     /** Structure to store the next available memory block. */
-    struct _Block_list
-    {
+    struct _Block_list {
         _Block_list* _M_next;   ///< Pointer to the next memory block
     };
+
+private:
+    mem_pool_base(const mem_pool_base&) _DELETED;
+    mem_pool_base& operator=(const mem_pool_base&) _DELETED;
 };
 
 NVWA_NAMESPACE_END

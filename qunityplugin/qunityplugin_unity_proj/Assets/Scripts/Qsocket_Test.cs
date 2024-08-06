@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +21,8 @@ public class Qsocket_Test : MonoBehaviour
     }
 
     public void On_Btn_QSocketConnect() {
-        qsocket.connect(server_ip, "4000", IntPtr.Zero);
+        IntPtr instancePtr = (IntPtr)GCHandle.Alloc(this, GCHandleType.Normal);
+        qsocket.connect(server_ip, "4000", instancePtr);
         qsocket.OnConnect = onconnect;
         qsocket.OnMessage = onmessage;
         qsocket.OnReleaseConnection = onreleaseconnection;
@@ -39,8 +41,20 @@ public class Qsocket_Test : MonoBehaviour
         Debug.Log($"[{pid}] - {msg}");
     }
 
-    protected void onconnect( qunitysdk.qsocket qs ) {
+    private static object FromIntPtr( IntPtr ptr ) {
+        GCHandle handle = GCHandle.FromIntPtr(ptr);
+        return handle.Target;
+    }
+
+    public static void FreeHandle( IntPtr ptr ) {
+        GCHandle handle = GCHandle.FromIntPtr(ptr);
+        handle.Free();
+    }
+
+    protected void onconnect( qunitysdk.qsocket qs, IntPtr user_data ) {
         LogMessage("qsocket connected");
+        Qsocket_Test thiz = (Qsocket_Test)FromIntPtr(user_data);
+        LogMessage($"server ip from arg {thiz.server_ip}");
         msg_room_match_request msg_room_config_packet = new msg_room_match_request(pid);
         msg_room_config_packet.room_config = new msg_room_config();
         string payload = JsonUtility.ToJson(msg_room_config_packet);
@@ -48,6 +62,7 @@ public class Qsocket_Test : MonoBehaviour
         qs.sendMessage(payload, true);
         send_btn.interactable = true;
         close_btn.interactable = true;
+        FreeHandle(user_data);
     }
 
     protected void onmessage( qunitysdk.qsocket qs, ulong recv_len, string msg ) {

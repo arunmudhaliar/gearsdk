@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2016-2017 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2016-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,63 +22,72 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
 /**
  * @file  mmap_line_reader.h
  *
- * Header file for mmap_line_reader, an easy-to-use line-based file reader.
- * It is implemented with the POSIX mmap API.
+ * Header file for mmap_line_reader and mmap_line_reader_sv, easy-to-use
+ * line-based file readers.  It is implemented with memory-mapped file APIs.
  *
- * @date  2017-03-23
+ * @date  2024-04-29
  */
 
 #ifndef NVWA_MMAP_LINE_READER_H
 #define NVWA_MMAP_LINE_READER_H
 
 #include <assert.h>             // assert
-#include <unistd.h>             // off_t
-#include <iterator>             // std::input_iterator_tag
-#include <string>               // std::string
+#include <stddef.h>             // ptrdiff_t/size_t
+#include <iterator>             // std::forward_iterator_tag
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
-#include "c++11.h"              // _NULLPTR
+#include "c++_features.h"       // HAVE_CXX17_STRING_VIEW
+#include "mmap_reader_base.h"   // nvwa::mmap_reader_base
+
+#include <string>               // std::string
+#if HAVE_CXX17_STRING_VIEW
+#include <string_view>          // std::string_view
+#endif
 
 NVWA_NAMESPACE_BEGIN
 
-/** Class to allow iteration over all lines of a mmappable file. */
-class mmap_line_reader
-{
+/** Class template to allow iteration over all lines of a mmappable file. */
+template <typename _Tp>
+class basic_mmap_line_reader : private mmap_reader_base {
 public:
     /** Iterator that contains the line content. */
-    class iterator  // implements InputIterator
-    {
+    class iterator {  // implements ForwardIterator
     public:
-        typedef int                     difference_type;
-        typedef std::string             value_type;
-        typedef value_type*             pointer_type;
-        typedef value_type&             reference;
-        typedef std::input_iterator_tag iterator_category;
+        typedef _Tp                       value_type;
+        typedef const value_type*         pointer;
+        typedef const value_type&         reference;
+        typedef ptrdiff_t                 difference_type;
+        typedef std::forward_iterator_tag iterator_category;
 
-        iterator() : _M_reader(_NULLPTR) {}
-        explicit iterator(mmap_line_reader* reader)
-            : _M_reader(reader) , _M_offset(0) {}
-
-        reference operator*()
+        iterator() = default;
+        explicit iterator(basic_mmap_line_reader* reader)
+            : _M_reader(reader)
         {
-            assert(_M_reader != _NULLPTR);
+            ++*this;
+        }
+
+        reference operator*() const noexcept
+        {
+            assert(_M_reader != nullptr);
             return _M_line;
         }
-        value_type* operator->()
+        pointer operator->() const noexcept
         {
-            assert(_M_reader != _NULLPTR);
+            assert(_M_reader != nullptr);
             return &_M_line;
         }
         iterator& operator++()
         {
-            if (!_M_reader->read(_M_line, _M_offset))
-                _M_reader = _NULLPTR;
+            if (!_M_reader->read(_M_line, _M_offset)) {
+                _M_reader = nullptr;
+                _M_offset = 0;
+            }
             return *this;
         }
         iterator operator++(int)
@@ -88,52 +97,130 @@ public:
             return temp;
         }
 
-        bool operator==(const iterator& rhs) const
+        bool operator==(const iterator& rhs) const noexcept
         {
-            return _M_reader == rhs._M_reader;
+            return _M_reader == rhs._M_reader && _M_offset == rhs._M_offset;
         }
-        bool operator!=(const iterator& rhs) const
+        bool operator!=(const iterator& rhs) const noexcept
         {
             return !operator==(rhs);
         }
 
     private:
-        mmap_line_reader* _M_reader;
-        off_t             _M_offset;
-        std::string       _M_line;
+        basic_mmap_line_reader* _M_reader{};
+        size_t                  _M_offset{};
+        value_type              _M_line;
     };
 
     /** Enumeration of whether the delimiter should be stripped. */
-    enum strip_type
-    {
+    enum strip_type {
         strip_delimiter,     ///< The delimiter should be stripped
         no_strip_delimiter,  ///< The delimiter should be retained
     };
 
-    explicit mmap_line_reader(const char* path, char delimiter = '\n',
-                              strip_type strip = strip_delimiter);
-    explicit mmap_line_reader(int fd, char delimiter = '\n',
-                              strip_type strip = strip_delimiter);
-    ~mmap_line_reader();
+    basic_mmap_line_reader() = default;
+    explicit basic_mmap_line_reader(const char* path,
+                                    char        delimiter = '\n',
+                                    strip_type  strip = strip_delimiter)
+        : mmap_reader_base(path),
+          _M_delimiter(delimiter),
+          _M_strip_delimiter(strip == strip_delimiter)
+    {
+    }
+#if NVWA_WINDOWS
+    explicit basic_mmap_line_reader(const wchar_t* path,
+                                    char           delimiter = '\n',
+                                    strip_type     strip = strip_delimiter)
+        : mmap_reader_base(path),
+          _M_delimiter(delimiter),
+          _M_strip_delimiter(strip == strip_delimiter)
+    {
+    }
+#endif
+#if NVWA_UNIX
+    explicit basic_mmap_line_reader(int        fd,
+                                    char       delimiter = '\n',
+                                    strip_type strip = strip_delimiter)
+        : mmap_reader_base(fd),
+          _M_delimiter(delimiter),
+          _M_strip_delimiter(strip == strip_delimiter)
+    {
+    }
+#endif
 
-    iterator begin() { return iterator(this); }
-    iterator end() const { return iterator(); }
+    using mmap_reader_base::open;
+    using mmap_reader_base::close;
+    using mmap_reader_base::is_open;
 
-    bool read(std::string& output, off_t& offset);
+    void set_delimiter(char delimiter, strip_type strip = strip_delimiter)
+    {
+        _M_delimiter = delimiter;
+        _M_strip_delimiter = strip == strip_delimiter;
+    }
+
+    iterator begin()
+    {
+        return iterator(this);
+    }
+    iterator end() const noexcept
+    {
+        return {};
+    }
+
+    bool read(_Tp& output, size_t& offset);
 
 private:
-    mmap_line_reader(const mmap_line_reader&) _DELETED;
-    mmap_line_reader& operator=(const mmap_line_reader&) _DELETED;
-
-    void initialize();
-
-    int   _M_fd;
-    char  _M_delimiter;
-    bool  _M_strip_delimiter;
-    char* _M_mmap_ptr;
-    off_t _M_size;
+    char  _M_delimiter{'\n'};
+    bool  _M_strip_delimiter{true};
 };
 
+/**
+ * Reads content from the mmaped file.
+ *
+ * @param[out]    output  object to receive the line
+ * @param[in,out] offset  offset of reading pos on entry; end offset on exit
+ * @return                \c true if line content is returned; \c false
+ *                        otherwise
+ */
+template <typename _Tp>
+bool basic_mmap_line_reader<_Tp>::read(_Tp& output, size_t& offset)
+{
+    if (offset == size()) {
+        return false;
+    }
+
+    size_t pos = offset;
+    bool found_delimiter = false;
+    while (pos < size()) {
+        char ch = data()[pos++];
+        if (ch == _M_delimiter) {
+            found_delimiter = true;
+            break;
+        }
+    }
+
+    output = _Tp(data() + offset,
+                 pos - offset - (found_delimiter && _M_strip_delimiter));
+    offset = pos;
+    return true;
+}
+
+typedef basic_mmap_line_reader<std::string>      mmap_line_reader;
+#if HAVE_CXX17_STRING_VIEW
+typedef basic_mmap_line_reader<std::string_view> mmap_line_reader_sv;
+#endif
+
 NVWA_NAMESPACE_END
+
+#if HAVE_CXX20_RANGES
+#include <ranges>
+
+template <>
+inline constexpr bool std::ranges::enable_view<NVWA::mmap_line_reader> =
+    true;
+template <>
+inline constexpr bool std::ranges::enable_view<NVWA::mmap_line_reader_sv> =
+    true;
+#endif
 
 #endif // NVWA_MMAP_LINE_READER_H

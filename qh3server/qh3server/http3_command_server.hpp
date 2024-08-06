@@ -27,6 +27,7 @@ class http3_command_server : public qh3server {
 	inline bool is_log_quiche() override;
 
 	bool on_server_pre_init() override;
+	void on_server_uninitialise() override;
 	void on_run_started() override;
 	void on_run_end() override;
 

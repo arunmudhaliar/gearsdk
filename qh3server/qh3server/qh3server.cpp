@@ -772,6 +772,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	if (!on_server_pre_init()) {
 		DEBUG_PRINT_ERROR(const_logtag, "on_server_pre_init failed !!!, Exiting.");
+		on_server_uninitialise();
+		stop_services_and_report(sock, command_center_feedback_port);
 		GX_DELETE(stats_logger);
 		GX_DELETE(logger);
 		close(sock);
@@ -885,6 +887,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	//
 
 	on_run_end();
+	on_server_uninitialise();
 
 	router_hb_scheduler.cancel_and_destroy_timer(router_hb_timer);
 	close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
@@ -899,12 +902,23 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	get_stats_loggeer()->end_session();
 	get_file_logger()->end_session();
 
+	stop_services_and_report(sock, command_center_feedback_port);
+
+	close(sock);
+	GX_DELETE(relay_through_router_info);
+	GX_DELETE(logger);
+	GX_DELETE(stats_logger);
+	return 0;
+}
+
+void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedback_port) {
+	const char* const_logtag = logtag.c_str();
 	DEBUG_PRINT_IMPORTANT(const_logtag, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_sceduler wait_scheduler;
 	wait_scheduler.set_ev_lopp(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
-		[this, wait_loop, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
+		[this, wait_loop, const_logtag, sock, command_center_feedback_port](qtimer& timer) {
 			UNUSED(timer);
 			int service_shutdown_cnt = 0;
 			if (get_stats_loggeer()->config.finished) {
@@ -919,11 +933,11 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 				const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 				qstring command_center_feedback_port_str = qstring::format_string("%d", command_center_feedback_port);
 				struct addrinfo* cmd_center_feedback_address;
-				if (getaddrinfo(host.c_str(), command_center_feedback_port_str.c_str(), &hints, &cmd_center_feedback_address) != 0) {
+				if (getaddrinfo(host_id.c_str(), command_center_feedback_port_str.c_str(), &hints, &cmd_center_feedback_address) != 0) {
 					DEBUG_PRINT_ERROR(const_logtag, "failed to resolve host - port[%s]", command_center_feedback_port_str.c_str());
 					return;
 				}
-				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Sending shutdown-ack to %s:%s", host.c_str(), command_center_feedback_port_str.c_str());
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Sending shutdown-ack to %s:%s", host_id.c_str(), command_center_feedback_port_str.c_str());
 				qstring shut_cmd = qstring::format_string("shut-ack-%s", port_id.c_str());
 				ssize_t sent = sendto(sock, shut_cmd.c_str(), shut_cmd.length(), 0, cmd_center_feedback_address->ai_addr, cmd_center_feedback_address->ai_addrlen);
 				if (sent != (ssize_t) shut_cmd.length()) {
@@ -938,12 +952,6 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	ev_run(wait_loop, 0);
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);
-
-	close(sock);
-	GX_DELETE(relay_through_router_info);
-	GX_DELETE(logger);
-	GX_DELETE(stats_logger);
-	return 0;
 }
 
 qtimer* qh3server::router_hb_loop(qtimer_sceduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {

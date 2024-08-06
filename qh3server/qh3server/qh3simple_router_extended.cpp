@@ -14,6 +14,7 @@
 using namespace client;
 template <typename U, typename V>
 int qh3simple_router::run() {
+	PTHREAD_NAME(qstring::format_string("router-%s", config.port.c_str()).c_str());
 	// router object needs to be inited first, since this info is needed by child
 	// qh3server child process
 	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
@@ -176,7 +177,7 @@ int qh3simple_router::run() {
 
 #if ENABLE_ZK
 		GX_DELETE(qzk);
-		qzk = DEBUG_NEW qzookeeper();
+		qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-router-%s", config.port.c_str()));
 		int zk_result = qzk->connect(config.zk_uri);
 		if (zk_result != 0) {
 			freeaddrinfo(router);
@@ -191,21 +192,21 @@ int qh3simple_router::run() {
 		}
 
 		GX_DELETE(zkconfig);
-		zkconfig = DEBUG_NEW serverconfig(qzk);
-#if DEV_BUILD
-		fs::path config_path(config.rootDir / "configs/dev/runtime-config.json");
-		zkconfig->load(config_path, qzk, "/qh3router");
-#elif PROD_BUILD
+		zkconfig = DEBUG_NEW serverconfig(qzk, nullptr);
+#if PROD_BUILD
 		fs::path config_path(config.rootDir / "configs/prod/runtime-config.json");
-		zkconfig->load(config_path, qzk, "/qh3router");
 #else
 		fs::path config_path(config.rootDir / "configs/dev/runtime-config.json");
-		zkconfig->load(config_path, qzk, "/qh3router");
 #endif
+		if (!zkconfig->load(config_path, qzk, "/qh3router")) {
+			DEBUG_PRINT_ERROR(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+			GX_DELETE(zkconfig);
+			return false;
+		}
 #endif
 
 		GX_DELETE(hiredis);
-		hiredis = DEBUG_NEW qhiredis(config.redis_ip, config.redis_port);
+		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port);
 		if (hiredis->connect_redis() != 0) {
 			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create redis connection !!!");
 			freeaddrinfo(router);

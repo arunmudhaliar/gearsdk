@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2015 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,22 +31,44 @@
  *
  * Header file for checking leaks caused by unmatched new/delete.
  *
- * @date  2015-10-25
+ * @date  2024-05-20
  */
 
 #ifndef NVWA_DEBUG_NEW_H
 #define NVWA_DEBUG_NEW_H
 
-#include <new>                  // size_t/std::bad_alloc
+#ifdef NVWA_MEMORY_TRACE_H
+#error "debug_new is incompatible with memory_trace."
+#endif
+
+#include <new>                  // std::align_val_t
+#include <stddef.h>             // size_t
 #include <stdio.h>              // FILE
-#include "_nvwa.h"              // NVWA_NAMESPACE_*
-#include "c++11.h"              // _NOEXCEPT
+#include "_nvwa.h"              // NVWA macros
+#include "c++_features.h"       // NVWA_USES_CXX17
+
+#if NVWA_USES_CXX17 && (NVWA_UNIX || NVWA_WIN32)
+#define NVWA_SUPPORTS_ALIGNED_NEW 1
+#else
+#define NVWA_SUPPORTS_ALIGNED_NEW 0
+#endif
 
 /* Special allocation/deallocation functions in the global scope */
 void* operator new(size_t size, const char* file, int line);
 void* operator new[](size_t size, const char* file, int line);
-void operator delete(void* ptr, const char* file, int line) _NOEXCEPT;
-void operator delete[](void* ptr, const char* file, int line) _NOEXCEPT;
+void operator delete(void* ptr, const char* file, int line) noexcept;
+void operator delete[](void* ptr, const char* file, int line) noexcept;
+
+#if NVWA_SUPPORTS_ALIGNED_NEW
+void* operator new(size_t size, std::align_val_t align_val,
+                   const char* file, int line);
+void* operator new[](size_t size, std::align_val_t align_val,
+                     const char* file, int line);
+void operator delete(void* ptr, std::align_val_t align_val,
+                     const char* file, int line) noexcept;
+void operator delete[](void* ptr, std::align_val_t align_val,
+                       const char* file, int line) noexcept;
+#endif
 
 NVWA_NAMESPACE_BEGIN
 
@@ -88,6 +110,10 @@ NVWA_NAMESPACE_BEGIN
  * versions (no file/line information for allocations).  Define it
  * to \c 2 to revert to the old behaviour that records file and line
  * information directly on the call to <code>operator new</code>.
+ *
+ * Do notice that type 2 works better with aligned new-expressions
+ * introduced in C++17, assuming you do not use placement new (like
+ * `<code>new(std::nothrow) SomeThing</code>').
  */
 #ifndef _DEBUG_NEW_TYPE
 #define _DEBUG_NEW_TYPE 1
@@ -120,6 +146,8 @@ typedef bool (*leak_whitelist_callback_t)(char const* file, int line,
 /* Prototypes */
 int check_leaks();
 int check_mem_corruption();
+size_t get_current_mem_alloc();
+size_t get_total_mem_alloc_cnt();
 
 /* Control variables */
 extern bool new_autocheck_flag; // default to true: call check_leaks() on exit
@@ -161,18 +189,20 @@ extern leak_whitelist_callback_t leak_whitelist_callback;    // default to null
  *
  * The idea comes from <a href="http://groups.google.com/group/comp.lang.c++.moderated/browse_thread/thread/7089382e3bc1c489/85f9107a1dc79ee9?#85f9107a1dc79ee9">Greg Herlihy's post</a> in comp.lang.c++.moderated.
  */
-class debug_new_recorder
-{
+class debug_new_recorder {
     const char* _M_file;
     const int   _M_line;
     void _M_process(void* ptr);
+
 public:
     /**
      * Constructor to remember the call context.  The information will
      * be used in debug_new_recorder::operator->*.
      */
     debug_new_recorder(const char* file, int line)
-        : _M_file(file), _M_line(line) {}
+        : _M_file(file), _M_line(line)
+    {
+    }
     /**
      * Operator to write the context information to memory.
      * <code>operator->*</code> is chosen because it has the right
@@ -180,10 +210,14 @@ public:
      * tell the special usage more quickly.
      */
     template <class _Tp> _Tp* operator->*(_Tp* ptr)
-    { _M_process(ptr); return ptr; }
-private:
-    debug_new_recorder(const debug_new_recorder&);
-    debug_new_recorder& operator=(const debug_new_recorder&);
+    {
+        _M_process(ptr);
+        return ptr;
+    }
+
+    ~debug_new_recorder() = default;
+    debug_new_recorder(const debug_new_recorder&) = delete;
+    debug_new_recorder& operator=(const debug_new_recorder&) = delete;
 };
 
 /**
@@ -192,12 +226,14 @@ private:
  * This technique is learnt from <em>The C++ Programming Language</em> by
  * Bjarne Stroustup.
  */
-class debug_new_counter
-{
+class debug_new_counter {
     static int _S_count;
+
 public:
     debug_new_counter();
     ~debug_new_counter();
+    debug_new_counter(const debug_new_counter&) = delete;
+    debug_new_counter& operator=(const debug_new_counter&) = delete;
 };
 /** Counting object for each file including debug_new.h. */
 static debug_new_counter __debug_new_count;

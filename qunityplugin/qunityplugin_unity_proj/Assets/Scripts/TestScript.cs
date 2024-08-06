@@ -191,7 +191,7 @@ public class TestScript : MonoBehaviour
     public void ShutDown_QServer() {
         qsocket_to_send_shutdown.connect(previous_valid_ip, "4000", IntPtr.Zero);
 
-        qsocket_to_send_shutdown.OnConnect = ( qunitysdk.qsocket qs ) => {
+        qsocket_to_send_shutdown.OnConnect = ( qunitysdk.qsocket qs, IntPtr user_data ) => {
             Debug.Log("shutdown socket : connect");
             msg_room_server_shutdown msg_room_server_shutdown_packet = new msg_room_server_shutdown();
             string payload = JsonUtility.ToJson(msg_room_server_shutdown_packet);

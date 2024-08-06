@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2015 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2019 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,13 +31,14 @@
  *
  * Function to get a high-resolution timer for Win32/Cygwin/Unix.
  *
- * @date  2015-09-20
+ * @date  2019-10-10
  */
 
 #ifndef NVWA_PCTIMER_H
 #define NVWA_PCTIMER_H
 
 #include "_nvwa.h"              // NVWA_NAMESPACE_*/NVWA_WINDOWS
+#include "c++_features.h"       // _NULLPTR
 
 #if NVWA_WINDOWS
 
@@ -64,8 +65,7 @@ __inline pctimer_t pctimer(void)
     static LARGE_INTEGER pcount, pcfreq;
     static int initflag;
 
-    if (!initflag)
-    {
+    if (!initflag) {
         QueryPerformanceFrequency(&pcfreq);
         initflag++;
     }
@@ -87,7 +87,7 @@ typedef double pctimer_t;
 __inline pctimer_t pctimer(void)
 {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, _NULLPTR);
     return (double)tv.tv_sec + (double)tv.tv_usec / 1000000;
 }
 

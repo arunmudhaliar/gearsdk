@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2014-2016 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2014-2024 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -32,15 +32,17 @@
  * Utility templates for functional programming style.  Using this file
  * requires a C++14-compliant compiler.
  *
- * @date  2016-11-06
+ * @date  2024-04-29
  */
 
 #ifndef NVWA_FUNCTIONAL_H
 #define NVWA_FUNCTIONAL_H
 
-#include <functional>           // std::function
+#include <cassert>              // assert
+#include <functional>           // std::function/ref
 #include <iterator>             // std::begin/iterator_traits
 #include <memory>               // std::allocator
+#include <new>                  // placement new
 #include <stdexcept>            // std::logic_error
 #include <string>               // std::string
 #include <tuple>                // std::tuple
@@ -48,6 +50,7 @@
 #include <utility>              // std::declval/forward/move/index_sequence
 #include <vector>               // std::vector
 #include "_nvwa.h"              // NVWA_NAMESPACE_*
+#include "c++_features.h"       // NVWA_CXX11_REQUIRES
 
 NVWA_NAMESPACE_BEGIN
 
@@ -56,8 +59,7 @@ namespace detail {
 // Struct to check whether _T1 has a suitable reserve member function
 // and _T2 has a suitable size member function.
 template <class _T1, class _T2>
-struct can_reserve
-{
+struct can_reserve {
     struct good { char dummy; };
     struct bad { char dummy[2]; };
     template <class _Up, void   (_Up::*)(size_t)> struct _SFINAE1 {};
@@ -90,7 +92,8 @@ template <typename _Fn, class _Tuple, std::size_t... _I>
 constexpr auto tuple_fmap_impl(_Fn&& f, _Tuple&& t,
                                std::index_sequence<_I...>)
 {
-    return std::make_tuple(f(std::get<_I>(std::forward<_Tuple>(t)))...);
+    return std::make_tuple(
+        std::forward<_Fn>(f)(std::get<_I>(std::forward<_Tuple>(t)))...);
 }
 
 // Applies the function to the given value and the indexed element of
@@ -112,7 +115,7 @@ constexpr _Rs tuple_reduce_impl(_Fn&& f, _Rs&& value, _Tuple&& t,
     return tuple_reduce_impl(std::forward<_Fn>(f),
                              f(std::forward<_Rs>(value), std::get<_I>(t)),
                              std::forward<_Tuple>(t),
-                             std::index_sequence<_J...>());
+                             std::index_sequence<_J...>{});
 }
 
 // Applies the function with the indexed elements of the tuple as
@@ -121,79 +124,90 @@ template <typename _Fn, class _Tuple, std::size_t... _I>
 constexpr decltype(auto) tuple_apply_impl(_Fn&& f, _Tuple&& t,
                                           std::index_sequence<_I...>)
 {
-    return f(std::get<_I>(std::forward<_Tuple>(t))...);
+    return std::forward<_Fn>(f)(std::get<_I>(std::forward<_Tuple>(t))...);
 }
+
+// Y combinator as presented by Yegor Derevenets in P0200R0
+// <url:http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0200r0.html>
+template <typename _Fn>
+class y_combinator_result {
+public:
+    template <typename _Tp,
+              NVWA_CXX11_REQUIRES(
+                  !std::is_same_v<std::decay_t<_Tp>, y_combinator_result>)>
+    explicit y_combinator_result(_Tp&& f) : _M_fn(std::forward<_Tp>(f))
+    {
+    }
+
+    template <typename... _Targs>
+    decltype(auto) operator()(_Targs&&... args) const
+    {
+        return _M_fn(std::ref(*this), std::forward<_Targs>(args)...);
+    }
+
+private:
+    _Fn _M_fn;
+};
 
 // Struct to wrap a function for self-reference.
 template <typename _Fn>
-struct self_ref_func
-{
+struct self_ref_func {
     std::function<_Fn(self_ref_func)> fn;
 };
 
 // Struct to wrap data, which may or may not be a reference.
 template <typename _Tp,
-          bool _Deep_copy = std::is_rvalue_reference<_Tp>{} ||
-                            (std::is_lvalue_reference<_Tp>{} &&
+          bool _Deep_copy = (std::is_lvalue_reference<_Tp>{} &&
                              std::is_const<std::remove_reference_t<_Tp>>{})>
-struct safe_wrapper
-{
-    safe_wrapper(_Tp&& x) : value(std::forward<_Tp>(x)) {}
+struct safe_wrapper {
+    static_assert(!std::is_rvalue_reference<_Tp>{},
+                  "It is dangerous to save an rvalue!");
+    explicit safe_wrapper(_Tp&& x) : value(std::forward<_Tp>(x)) {}
     _Tp get() const { return value; }
     _Tp value;
 };
 
 // Partial specialization that copies the object used by the reference.
 template <typename _Tp>
-struct safe_wrapper<_Tp, true>
-{
-    safe_wrapper(_Tp&& x) : value(std::forward<_Tp>(x)) {}
-    template <typename _Up = _Tp>
-    std::enable_if_t<std::is_rvalue_reference<_Up>{}, std::decay_t<_Tp>>
-    get() const
+struct safe_wrapper<_Tp, true> {
+    template <typename _Up,
+              NVWA_CXX11_REQUIRES(
+                  !std::is_same_v<std::decay_t<_Up>, safe_wrapper>)>
+    explicit safe_wrapper(_Up&& x) : value(std::forward<_Up>(x))
     {
-        return value;
     }
-    template <typename _Up = _Tp>
-    std::enable_if_t<!std::is_rvalue_reference<_Up>{}, _Tp>
-    get() const
+    _Tp get() const
     {
         return value;
     }
     std::decay_t<_Tp> value;
 };
 
-// Declaration of curry, to be specialized below.  The code is based on
-// Julian Becker's StackOverflow answer at <url:http://tinyurl.com/cxx-curry>.
+// Declaration of curry, to be specialized below.
 template <typename _Fn>
 struct curry;
 
 // Termination of currying, which returns the original function.
 template <typename _Rs, typename _Tp>
-struct curry<std::function<_Rs(_Tp)>>
-{
-    typedef std::function<_Rs(_Tp)> type;
-
-    static type make(type f)
+struct curry<_Rs(_Tp)> {
+    template <typename _Fn>
+    static auto make(_Fn&& f)
     {
-        return f;
+        return std::forward<_Fn>(f);
     }
 };
 
 // Recursion template to curry functions with more than one parameter.
 template <typename _Rs, typename _Tp, typename... _Targs>
-struct curry<std::function<_Rs(_Tp, _Targs...)>>
-{
-    typedef typename curry<std::function<_Rs(_Targs...)>>::type remaining_type;
-    typedef std::function<remaining_type(_Tp)> type;
-
-    static type make(std::function<_Rs(_Tp, _Targs...)> f)
+struct curry<_Rs(_Tp, _Targs...)> {
+    template <typename _Fn>
+    static auto make(_Fn&& f)
     {
-        return [f](_Tp&& x)
+        return [f = std::forward<_Fn>(f)](_Tp x)
         {   // Use wrapper to ensure reference types are correctly captured.
-            return curry<std::function<_Rs(_Targs...)>>::make(
+            return curry<_Rs(_Targs...)>::make(
                 [f, w = safe_wrapper<_Tp>(std::forward<_Tp>(x))](
-                        _Targs&&... args) -> decltype(auto)
+                        _Targs... args) -> decltype(auto)
                 {
                     return f(w.get(), std::forward<_Targs>(args)...);
                 });
@@ -224,11 +238,112 @@ void adl_swap(_Tp& lhs, _Tp& rhs) noexcept(noexcept(swap(lhs, rhs)));
 } /* namespace detail */
 
 /** Class for bad optional access exception. */
-class bad_optional_access : public std::logic_error
-{
+class bad_optional_access : public std::logic_error {
 public:
     bad_optional_access()
-        : std::logic_error("optional has no valid value now") {}
+        : std::logic_error("optional has no valid value now")
+    {
+    }
+};
+
+template <typename _Tp, bool = std::is_trivially_destructible<_Tp>::value>
+class optional_base;
+
+template <typename _Tp>
+class optional_base<_Tp, false> {
+public:
+    typedef _Tp value_type;
+
+    constexpr optional_base() noexcept : _M_dummy() {}
+    constexpr explicit optional_base(const _Tp& x)
+        : _M_value(x), _M_engaged(true)
+    {
+    }
+    constexpr explicit optional_base(_Tp&& x) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : _M_value(std::move(x)), _M_engaged(true)
+    {
+    }
+    constexpr optional_base(const optional_base& rhs)
+        : _M_engaged(rhs._M_engaged)
+    {
+        if (rhs._M_engaged) {
+            new(&_M_value) _Tp(rhs._M_value);
+        }
+    }
+    constexpr optional_base(optional_base&& rhs) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : _M_engaged(rhs._M_engaged)
+    {
+        if (rhs._M_engaged) {
+            new(&_M_value) _Tp(std::move(rhs._M_value));
+            rhs.reset();
+        }
+    }
+    ~optional_base()
+    {
+        if (_M_engaged) {
+            _M_value.~_Tp();
+        }
+    }
+    void reset() noexcept
+    {
+        if (_M_engaged) {
+            _M_value.~_Tp();
+            _M_engaged = false;
+        }
+    }
+
+protected:
+    union {
+        char       _M_dummy;
+        value_type _M_value;
+    };
+    bool _M_engaged{};
+};
+
+template <typename _Tp>
+class optional_base<_Tp, true> {
+public:
+    typedef _Tp value_type;
+
+    constexpr optional_base() noexcept : _M_dummy() {}
+    constexpr explicit optional_base(const _Tp& x)
+        : _M_value(x), _M_engaged(true)
+    {
+    }
+    constexpr explicit optional_base(_Tp&& x) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : _M_value(std::move(x)), _M_engaged(true)
+    {
+    }
+    constexpr optional_base(const optional_base& rhs)
+        : _M_engaged(rhs._M_engaged)
+    {
+        if (rhs._M_engaged) {
+            new(&_M_value) _Tp(rhs._M_value);
+        }
+    }
+    constexpr optional_base(optional_base&& rhs) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : _M_engaged(rhs._M_engaged)
+    {
+        if (rhs._M_engaged) {
+            new(&_M_value) _Tp(std::move(rhs._M_value));
+            rhs.reset();
+        }
+    }
+    void reset() noexcept
+    {
+        _M_engaged = false;
+    }
+
+protected:
+    union {
+        char       _M_dummy;
+        value_type _M_value;
+    };
+    bool _M_engaged{};
 };
 
 /**
@@ -239,158 +354,141 @@ public:
  * @param _Tp  the optional type to store
  */
 template <typename _Tp>
-class optional
-{
-public:
+class optional : private optional_base<_Tp> {
     static_assert(std::is_nothrow_destructible<_Tp>::value,
                   "optional type must be nothrow destructible");
 
-    optional() noexcept : _M_pointer(nullptr) {}
-    optional(const optional& rhs)
-    {
-        if (rhs._M_pointer)
-            _M_pointer = new(_M_value) _Tp(*rhs);
-        else
-            _M_pointer = nullptr;
-    }
-    optional(optional&& rhs) noexcept(
-        std::is_nothrow_move_constructible<_Tp>::value)
-    {
-        if (rhs._M_pointer)
-            _M_pointer = new(_M_value) _Tp(std::move(*rhs));
-        else
-            _M_pointer = nullptr;
-    }
-    optional(const _Tp& x)
-    {
-        _M_pointer = new(_M_value) _Tp(x);
-    }
-    optional(_Tp&& x) noexcept(
-        std::is_nothrow_move_constructible<_Tp>::value)
-    {
-        _M_pointer = new(_M_value) _Tp(std::move(x));
-    }
-    ~optional() noexcept
-    {
-        if (_M_pointer)
-            destroy(_M_pointer);
-    }
+    using optional_base<_Tp>::_M_value;
+    using optional_base<_Tp>::_M_engaged;
 
+public:
+    using optional_base<_Tp>::reset;
+
+    constexpr optional() noexcept = default;
+    constexpr optional(const optional& rhs) : optional_base<_Tp>(rhs) {}
+    constexpr optional(optional&& rhs) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : optional_base<_Tp>(std::move(rhs))
+    {
+    }
+    constexpr optional(const _Tp& x) : optional_base<_Tp>(x) {}
+    constexpr optional(_Tp&& x) noexcept(
+        std::is_nothrow_move_constructible<_Tp>::value)
+        : optional_base<_Tp>(std::move(x))
+    {
+    }
     optional& operator=(const optional& rhs)
     {
-        if (has_value() && rhs.has_value())
-            *_M_pointer = *rhs._M_pointer;
-        else
-        {
-            optional temp(rhs);
-            swap(temp);
-        }
+        using std::swap;
+        optional temp(rhs);
+        swap(*this, temp);
         return *this;
     }
     optional& operator=(optional&& rhs) noexcept(
         std::is_nothrow_move_assignable<_Tp>::value &&
         std::is_nothrow_move_constructible<_Tp>::value)
     {
-        if (has_value() && rhs.has_value())
-            *_M_pointer = std::move(*rhs._M_pointer);
-        else
-        {
-            optional temp(std::move(rhs));
-            swap(temp);
-        }
+        using std::swap;
+        optional temp(std::move(rhs));
+        swap(*this, temp);
         return *this;
     }
 
     constexpr _Tp* operator->()
     {
-        return _M_pointer;
+        assert(_M_engaged);
+        return &_M_value;
     }
     constexpr const _Tp* operator->() const
     {
-        return _M_pointer;
+        assert(_M_engaged);
+        return &_M_value;
     }
     constexpr _Tp& operator*() &
     {
-        return *_M_pointer;
+        assert(_M_engaged);
+        return _M_value;
     }
     constexpr const _Tp& operator*() const&
     {
-        return *_M_pointer;
+        assert(_M_engaged);
+        return _M_value;
     }
     constexpr _Tp&& operator*() &&
     {
-        return std::move(*_M_pointer);
+        assert(_M_engaged);
+        return std::move(_M_value);
     }
 
-    bool has_value() const noexcept { return _M_pointer != nullptr; }
-
-    _Tp& value() &
+    constexpr explicit operator bool() const noexcept
     {
-        if (!_M_pointer)
+        return _M_engaged;
+    }
+
+    constexpr bool has_value() const noexcept
+    {
+        return _M_engaged;
+    }
+
+    constexpr _Tp& value() &
+    {
+        if (_M_engaged) {
+            return _M_value;
+        } else {
             throw bad_optional_access();
-        return *_M_pointer;
-    }
-    const _Tp& value() const&
-    {
-        if (!_M_pointer)
-            throw bad_optional_access();
-        return *_M_pointer;
-    }
-    _Tp&& value() &&
-    {
-        if (!_M_pointer)
-            throw bad_optional_access();
-        return std::move(*_M_pointer);
-    }
-
-    template <typename _Up>
-    _Tp value_or(_Up&& default_value) const&
-    {
-        if (_M_pointer)
-            return operator*();
-        else
-            return default_value;
-    }
-    template <typename _Up>
-    _Tp value_or(_Up&& default_value) &&
-    {
-        if (_M_pointer)
-            return operator*();
-        else
-            return default_value;
-    }
-
-    void reset() noexcept
-    {
-        if (_M_pointer)
-        {
-            destroy(_M_pointer);
-            _M_pointer = nullptr;
         }
     }
+    constexpr const _Tp& value() const&
+    {
+        if (_M_engaged) {
+            return _M_value;
+        } else {
+            throw bad_optional_access();
+        }
+    }
+    constexpr _Tp&& value() &&
+    {
+        if (_M_engaged) {
+            return std::move(_M_value);
+        } else {
+            throw bad_optional_access();
+        }
+    }
+
+    template <typename _Up>
+    constexpr _Tp value_or(_Up&& default_value) const&
+    {
+        if (_M_engaged) {
+            return _M_value;
+        } else {
+            return _Tp(std::forward<_Up>(default_value));
+        }
+    }
+    template <typename _Up>
+    constexpr _Tp value_or(_Up&& default_value) &&
+    {
+        if (_M_engaged) {
+            return std::move(_M_value);
+        } else {
+            return _Tp(std::forward<_Up>(default_value));
+        }
+    }
+
     void swap(optional& rhs) noexcept(
         std::is_nothrow_move_constructible<_Tp>::value &&
         noexcept(detail::adl_swap(std::declval<_Tp&>(),
                                   std::declval<_Tp&>())))
     {
         using std::swap;
-        if (has_value())
-        {
-            if (rhs.has_value())
-                swap(*_M_pointer, *rhs);
-            else
-            {
-                rhs._M_pointer =
-                    new (rhs._M_value) _Tp(std::move(*_M_pointer));
-                reset();
+        if (has_value()) {
+            if (rhs.has_value()) {
+                swap(_M_value, rhs._M_value);
+            } else {
+                new(&rhs) optional(std::move(*this));
             }
-        }
-        else
-        {
-            if (rhs.has_value())
-            {
-                _M_pointer = new(_M_value) _Tp(std::move(*rhs));
-                rhs.reset();
+        } else {
+            if (rhs.has_value()) {
+                new(this) optional(std::move(rhs));
             }
         }
     }
@@ -398,23 +496,9 @@ public:
     void emplace(_Targs&&... args)
     {
         reset();
-        _M_pointer = new(_M_value) _Tp(args...);
+        new (&_M_value) _Tp(std::forward<_Targs>(args)...);
+        _M_engaged = true;
     }
-
-private:
-    void destroy(_Tp* ptr) noexcept
-    {
-        _M_destroy(ptr, std::is_trivially_destructible<_Tp>());
-    }
-    void _M_destroy(_Tp*, std::true_type)
-    {}
-    void _M_destroy(_Tp* ptr, std::false_type)
-    {
-        ptr->~_Tp();
-    }
-
-    _Tp* _M_pointer;
-    char _M_value[sizeof(_Tp)];
 };
 
 template <typename _Tp>
@@ -457,11 +541,12 @@ auto lift_optional(_Fn&& f)
         typedef std::decay_t<decltype(
             f(std::forward<decltype(args)>(args).value()...))>
             result_type;
-        if (has_value(args...))
+        if (has_value(args...)) {
             return optional<result_type>(
                 f(std::forward<decltype(args)>(args).value()...));
-        else
-            return optional<result_type>();
+        } else {
+            return optional<result_type>{};
+        }
     };
 }
 
@@ -476,22 +561,24 @@ auto lift_optional(_Fn&& f)
  *              is invalid) or contains the output of \a f
  */
 template <typename _Fn, typename... _Opt>
-constexpr auto apply(_Fn&& f, _Opt&&... args) -> decltype(
-    has_value(args...),
-    optional<
-        std::decay_t<decltype(f(std::forward<_Opt>(args).value()...))>>())
+constexpr auto apply(_Fn&& f, _Opt&&... args)
+    -> decltype(has_value(args...),
+                optional<std::decay_t<decltype(std::forward<_Fn>(f)(
+                    std::forward<_Opt>(args).value()...))>>{})
 {
-    typedef std::decay_t<decltype(f(std::forward<_Opt>(args).value()...))>
+    typedef std::decay_t<decltype(
+        std::forward<_Fn>(f)(std::forward<_Opt>(args).value()...))>
         result_type;
-    if (has_value(args...))
+    if (has_value(args...)) {
         return optional<result_type>(
-            f(std::forward<_Opt>(args).value()...));
-    else
-        return optional<result_type>();
+            std::forward<_Fn>(f)(std::forward<_Opt>(args).value()...));
+    } else {
+        return optional<result_type>{};
+    }
 }
 
 /**
- * Applies the function with all elements of the typle as arguments.  It
+ * Applies the function with all elements of the tuple as arguments.  It
  * is exactly like the C++17 std::apply.
  *
  * @param f  the function to apply
@@ -504,13 +591,13 @@ constexpr auto apply(_Fn&& f, _Tuple&& t)
         std::forward<_Fn>(f),
         std::forward<_Tuple>(t),
         std::make_index_sequence<
-            std::tuple_size<std::decay_t<_Tuple>>::value>()))
+            std::tuple_size<std::decay_t<_Tuple>>::value>{}))
 {
     return detail::tuple_apply_impl(
         std::forward<_Fn>(f),
         std::forward<_Tuple>(t),
         std::make_index_sequence<
-            std::tuple_size<std::decay_t<_Tuple>>::value>());
+            std::tuple_size<std::decay_t<_Tuple>>::value>{});
 }
 
 /**
@@ -522,7 +609,7 @@ constexpr auto apply(_Fn&& f, _Tuple&& t)
  * @return      pair of results of function invocation
  */
 template <typename _Fn, typename _T1, typename _T2>
-constexpr auto fmap(_Fn&& f, const std::pair<_T1, _T2>& args)
+constexpr auto fmap(_Fn f, const std::pair<_T1, _T2>& args)
 {
     return std::make_pair(f(args.first), f(args.second));
 }
@@ -536,10 +623,10 @@ constexpr auto fmap(_Fn&& f, const std::pair<_T1, _T2>& args)
  * @return      tuple of results of function invocation
  */
 template <typename _Fn, typename... _Targs>
-constexpr auto fmap(_Fn&& f, const std::tuple<_Targs...>& args)
+constexpr auto fmap(_Fn f, const std::tuple<_Targs...>& args)
 {
-    return detail::tuple_fmap_impl(std::forward<_Fn>(f), args,
-                                   std::index_sequence_for<_Targs...>());
+    return detail::tuple_fmap_impl(f, args,
+                                   std::index_sequence_for<_Targs...>{});
 }
 
 /**
@@ -559,11 +646,11 @@ constexpr auto fmap(_Fn&& f, const std::tuple<_Targs...>& args)
 template <template <typename, typename> class _OutCont = std::vector,
           template <typename> class _Alloc = std::allocator,
           typename _Fn, class _Rng>
-constexpr auto fmap(_Fn&& f, _Rng&& inputs) -> decltype(
+auto fmap(_Fn f, _Rng&& inputs) -> decltype(
     detail::adl_begin(inputs), detail::adl_end(inputs),
     _OutCont<
         std::decay_t<decltype(f(*detail::adl_begin(inputs)))>,
-        _Alloc<std::decay_t<decltype(f(*detail::adl_begin(inputs)))>>>())
+        _Alloc<std::decay_t<decltype(f(*detail::adl_begin(inputs)))>>>{})
 {
     typedef std::decay_t<decltype(f(*detail::adl_begin(inputs)))>
         result_type;
@@ -571,9 +658,10 @@ constexpr auto fmap(_Fn&& f, _Rng&& inputs) -> decltype(
     detail::try_reserve(
         result, inputs,
         std::integral_constant<
-            bool, detail::can_reserve<decltype(result), _Rng>::value>());
-    for (auto& item : inputs)
-        result.push_back(f(item));
+            bool, detail::can_reserve<decltype(result), _Rng>::value>{});
+    for (auto&& item : inputs) {
+        result.push_back(f(std::forward<decltype(item)>(item)));
+    }
     return result;
 }
 
@@ -587,14 +675,10 @@ constexpr auto fmap(_Fn&& f, _Rng&& inputs) -> decltype(
  *               one argument of the type of the elements in \a args.
  */
 template <typename _Rs, typename _Fn, typename... _Targs>
-constexpr auto reduce(_Fn&& f,
-                      const std::tuple<_Targs...>& args,
-                      _Rs&& value)
+constexpr auto reduce(_Fn f, const std::tuple<_Targs...>& args, _Rs&& value)
 {
-    return detail::tuple_reduce_impl(std::forward<_Fn>(f),
-                                     std::forward<_Rs>(value),
-                                     args,
-                                     std::index_sequence_for<_Targs...>());
+    return detail::tuple_reduce_impl(f, std::forward<_Rs>(value), args,
+                                     std::index_sequence_for<_Targs...>{});
 }
 
 /**
@@ -610,11 +694,12 @@ constexpr auto reduce(_Fn&& f,
  *                support iteration.
  */
 template <typename _Fn, class _Rng>
-constexpr auto reduce(_Fn&& f, _Rng&& inputs)
+constexpr auto reduce(_Fn f, _Rng&& inputs)
 {
-    auto result = typename detail::value_type<_Rng>();
-    for (auto& item : inputs)
-        result = f(result, item);
+    auto result = typename detail::value_type<_Rng>{};
+    for (auto&& item : inputs) {
+        result = f(result, std::forward<decltype(item)>(item));
+    }
     return result;
 }
 
@@ -635,16 +720,17 @@ constexpr auto reduce(_Fn&& f, _Rng&& inputs)
  *               and the input range shall support iteration.
  */
 template <typename _Rs, typename _Fn, typename _Iter>
-constexpr _Rs&& reduce(_Fn&& f, _Rs&& value, _Iter begin, _Iter end)
+constexpr _Rs reduce(_Fn&& f, _Rs&& value, _Iter begin, _Iter end)
 {
     // Recursion (instead of iteration) is used in this function, as
     // _Rs may be a reference type and a result of this type cannot
     // be assigned to (like the implementation of reduce above).
-    if (begin == end)
+    if (begin == end) {
         return std::forward<_Rs>(value);
+    }
     _Iter current = begin;
-    decltype(auto) reduced_once = f(std::forward<_Rs>(value), *current);
-    return reduce(std::forward<_Fn>(f), reduced_once, ++begin, end);
+    return reduce(std::forward<_Fn>(f),
+                  f(std::forward<_Rs>(value), *current), ++begin, end);
 }
 
 /**
@@ -665,6 +751,11 @@ constexpr _Rs&& reduce(_Fn&& f, _Rs&& value, _Iter begin, _Iter end)
  * nvwa::reduce(print, container_of_my_type, std::cout);
  * @endcode
  *
+ * But this decision also makes it impossible to simply pass, say, an
+ * integer lvalue as \a initval for common operations like addition.
+ * You would then have to use something like \c std::accumulate or
+ * \c std::reduce.
+ *
  * @param f        the function to apply
  * @param inputs   the input range
  * @param initval  initial value for the cumulative calculation @pre
@@ -674,7 +765,9 @@ constexpr _Rs&& reduce(_Fn&& f, _Rs&& value, _Iter begin, _Iter end)
  */
 template <typename _Rs, typename _Fn, class _Rng>
 constexpr auto reduce(_Fn&& f, _Rng&& inputs, _Rs&& initval)
-    -> decltype(f(initval, *detail::adl_begin(inputs)))
+    -> decltype(detail::adl_begin(inputs), detail::adl_end(inputs),
+                reduce(std::forward<_Fn>(f), std::forward<_Rs>(initval),
+                       detail::begin(inputs), detail::end(inputs)))
 {
     using std::begin;
     using std::end;
@@ -711,7 +804,7 @@ constexpr auto wrap_args_as_tuple(_Fn&& f)
 {
     return [f = std::forward<_Fn>(f)](_Tuple&& t) -> decltype(auto)
     {
-        return apply(f, std::forward<_Tuple>(t));
+        return NVWA::apply(f, std::forward<_Tuple>(t));
     };
 }
 
@@ -734,7 +827,7 @@ constexpr _Tp pipeline(_Tp&& data)
 template <typename _Tp, typename _Fn, typename... _Fargs>
 constexpr decltype(auto) pipeline(_Tp&& data, _Fn&& f, _Fargs&&... args)
 {
-    return pipeline(f(std::forward<_Tp>(data)),
+    return pipeline(std::forward<_Fn>(f)(std::forward<_Tp>(data)),
                     std::forward<_Fargs>(args)...);
 }
 
@@ -743,7 +836,7 @@ constexpr decltype(auto) pipeline(_Tp&& data, _Fn&& f, _Fargs&&... args)
  *
  * @return      the forwarding function
  */
-auto compose()
+inline auto compose()
 {
     return [](auto&& x) -> decltype(auto)
     {
@@ -758,9 +851,9 @@ auto compose()
  * @return   the function object that composes the passed function
  */
 template <typename _Fn>
-auto compose(_Fn f)
+auto compose(_Fn&& f)
 {
-    return [f](auto&&... x) -> decltype(auto)
+    return [f = std::forward<_Fn>(f)](auto&&... x) -> decltype(auto)
     {
         return f(std::forward<decltype(x)>(x)...);
     };
@@ -774,12 +867,29 @@ auto compose(_Fn f)
  * @return      the function object that composes the passed functions
  */
 template <typename _Fn, typename... _Fargs>
-auto compose(_Fn f, _Fargs... args)
+auto compose(_Fn&& f, _Fargs&&... args)
 {
-    return [f, args...](auto&&... x) -> decltype(auto)
-    {
-        return f(compose(args...)(std::forward<decltype(x)>(x)...));
+    // Can't store all functions with pefect forwarding easily.  See
+    //   http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0780r0.html
+    return [f = std::forward<_Fn>(f),
+            args...](auto&&... x) -> decltype(auto) {
+        return f(
+            compose(std::move(args)...)(std::forward<decltype(x)>(x)...));
     };
+}
+
+/**
+ * Generates the fixed point using the solution by Yegor Derevenets.
+ * This function takes a non-curried function of two or more parameters.
+ *
+ * @param f  the second-order function to combine with
+ * @return   the fixed point
+ */
+template <typename _Fn>
+auto fix_fast(_Fn&& f)
+{
+    return detail::y_combinator_result<std::decay_t<_Fn>>(
+        std::forward<_Fn>(f));
 }
 
 /**
@@ -835,7 +945,7 @@ std::function<_Rs(_Tp)> fix_curry(
     typedef detail::self_ref_func<fn_1st_ord>  fn_self_ref;
 
     fn_self_ref r = {
-        [f](fn_self_ref x)
+        [f = std::move(f)](fn_self_ref x)
         {   // λx.f (λy.(x x) y)
             return f(fn_1st_ord([x](_Tp&& y)
                                 {
@@ -859,7 +969,7 @@ std::function<_Rs(_Tp)> fix_curry(
 template <typename _Rs, typename... _Targs>
 auto make_curry(std::function<_Rs(_Targs...)> f)
 {
-    return detail::curry<std::function<_Rs(_Targs...)>>::make(std::move(f));
+    return detail::curry<_Rs(_Targs...)>::make(std::move(f));
 }
 
 /**
@@ -875,12 +985,12 @@ auto make_curry(std::function<_Rs(_Targs...)> f)
 template <typename _Rs, typename... _Targs>
 auto make_curry(_Rs(*f)(_Targs...))
 {
-    return detail::curry<std::function<_Rs(_Targs...)>>::make(f);
+    return detail::curry<_Rs(_Targs...)>::make(f);
 }
 
 /**
  * Makes a curried function.  The returned function takes one argument
- * at a time, and return a function that takes the next argument until
+ * at a time, and returns a function that takes the next argument until
  * all arguments are exhausted, in which case it returns the final
  * result.  This overload takes a generic function object, and the
  * function type must be specified when this function template is
@@ -892,8 +1002,7 @@ auto make_curry(_Rs(*f)(_Targs...))
 template <typename _FnType, typename _Fn>
 auto make_curry(_Fn&& f)
 {
-    return detail::curry<std::function<_FnType>>::make(
-        std::forward<_Fn>(f));
+    return detail::curry<_FnType>::make(std::forward<_Fn>(f));
 }
 
 NVWA_NAMESPACE_END

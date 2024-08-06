@@ -2,7 +2,7 @@
 // vim:tabstop=4:shiftwidth=4:expandtab:
 
 /*
- * Copyright (C) 2004-2013 Wu Yongwei <adah at users dot sourceforge dot net>
+ * Copyright (C) 2004-2022 Wu Yongwei <wuyongwei at gmail dot com>
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any
@@ -22,7 +22,7 @@
  *    distribution.
  *
  * This file is part of Stones of Nvwa:
- *      http://sourceforge.net/projects/nvwa
+ *      https://github.com/adah1972/nvwa
  *
  */
 
@@ -31,12 +31,13 @@
  *
  * Template class to check validity duing compile time (adapted from Loki).
  *
- * @date  2013-09-07
+ * @date  2022-04-04
  */
 
 #ifndef STATIC_ASSERT
 
-#include "c++11.h"
+#include "c++_features.h"   // HAVE_CXX11_STATIC_ASSERT
+#include "_nvwa.h"          // NVWA_NAMESPACE_*
 
 #if HAVE_CXX11_STATIC_ASSERT
 
@@ -44,19 +45,28 @@
 
 #else
 
-namespace nvwa {
+NVWA_NAMESPACE_BEGIN
 
 template <bool> struct compile_time_error;
 template <>     struct compile_time_error<true> {};
 
 #define STATIC_ASSERT(_Expr, _Msg) \
     { \
-        nvwa::compile_time_error<((_Expr) != 0)> ERROR_##_Msg; \
+        NVWA::compile_time_error<((_Expr) != 0)> ERROR_##_Msg; \
         (void)ERROR_##_Msg; \
     }
 
-}
+NVWA_NAMESPACE_END
 
 #endif // HAVE_CXX11_STATIC_ASSERT
+
+NVWA_NAMESPACE_BEGIN
+
+template <typename T>
+struct always_false {
+    static const bool value = false;
+};
+
+NVWA_NAMESPACE_END
 
 #endif // STATIC_ASSERT

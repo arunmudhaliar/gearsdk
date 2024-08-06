@@ -47,14 +47,6 @@
     EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);                             \
     timestamp_ = timer::getCurrentTimeInMilliSec()
 
-#if PLATFORM == PLATFORM_LINUX
-#define PTHREAD_NAME(name) pthread_setname_np(pthread_self(), name)
-#elif PLATFORM == PLATFORM_MAC
-#define PTHREAD_NAME(name) pthread_setname_np(name)
-#else
-#define PTHREAD_NAME(name) pthread_setname_np(name)
-#endif
-
 class qmutex;
 class qmutexcondition {
    public:

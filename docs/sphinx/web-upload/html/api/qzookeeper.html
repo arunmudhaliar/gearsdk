@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qzookeeper &mdash; gearsdk 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="servercommon" href="servercommon.html" />
+    <link rel="prev" title="qhiredis" href="qhiredis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gearsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="common.html">common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networkcommon.html">networkcommon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qhiredis.html">qhiredis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">qzookeeper</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#header-files">header files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">qzookeeper</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv422type_qzk_value_changed"><code class="docutils literal notranslate"><span class="pre">type_qzk_value_changed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv420interface_qzookeeper"><code class="docutils literal notranslate"><span class="pre">interface_qzookeeper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"><code class="docutils literal notranslate"><span class="pre">interface_qzookeeper::register_value_change_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"><code class="docutils literal notranslate"><span class="pre">interface_qzookeeper::unregister_value_change_callback()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv410qzookeeper"><code class="docutils literal notranslate"><span class="pre">qzookeeper</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper10qzookeeperERK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::qzookeeper()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeperD0Ev"><code class="docutils literal notranslate"><span class="pre">qzookeeper::~qzookeeper()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper7connectERK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8shutdownEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::shutdown()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper10is_runningEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::is_running()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper12is_zk_activeEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::is_zk_active()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper20get_connection_stateEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::get_connection_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::get_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8set_dataERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::set_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper11delete_pathERK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::delete_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::register_value_change_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::unregister_value_change_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qzookeeper::broadcast_value_change_to_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper12state2StringEi"><code class="docutils literal notranslate"><span class="pre">qzookeeper::state2String()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper11type2StringEi"><code class="docutils literal notranslate"><span class="pre">qzookeeper::type2String()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper16retry_connectionEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::retry_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8close_zkEKi"><code class="docutils literal notranslate"><span class="pre">qzookeeper::close_zk()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK10qzookeeper8get_nameEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::get_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4NK10qzookeeper9get_wnameEv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::get_wname()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper2zhE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::zh</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper4myidE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::myid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper12clientIdFileE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::clientIdFile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper12zk_thread_idE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::zk_thread_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper14connection_urlE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connection_url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper4nameE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper5wnameE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::wname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper22connection_in_progressE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connection_in_progress</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper7runningE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::running</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8mainloopE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::mainloop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper14op_in_progressE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::op_in_progress</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper9op_resultE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::op_result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper10get_resultE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::get_result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper16connection_stateE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connection_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper11retry_countE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::retry_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper22connection_check_timerE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connection_check_timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper22value_change_callbacksE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::value_change_callbacks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper22pending_config_updatesE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::pending_config_updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper11close_mutexE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::close_mutex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper15reconnect_mutexE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::reconnect_mutex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper19watcher_gaurd_mutexE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::watcher_gaurd_mutex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper17retry_in_progressE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::retry_in_progress</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper9nameMutexE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::nameMutex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper10wnameMutexE"><code class="docutils literal notranslate"><span class="pre">qzookeeper::wnameMutex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper7watcherEP9zhandle_tiiPKcPv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::watcher()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper18my_stat_completionEiPK4StatPKv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::my_stat_completion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper18my_data_completionEiPKciPK4StatPKv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::my_data_completion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper18my_void_completionEiPKv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::my_void_completion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper8dumpStatEPK4Stat"><code class="docutils literal notranslate"><span class="pre">qzookeeper::dumpStat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper10millisleepEi"><code class="docutils literal notranslate"><span class="pre">qzookeeper::millisleep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper16connect_internalEPv"><code class="docutils literal notranslate"><span class="pre">qzookeeper::connect_internal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii"><code class="docutils literal notranslate"><span class="pre">qzookeeper::retry_with_backoff()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="servercommon.html">servercommon</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gearsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">qzookeeper</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/qzookeeper.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="qzookeeper">
+<h1>qzookeeper<a class="headerlink" href="#qzookeeper" title="Link to this heading"></a></h1>
+<p>This section provides documentation for the various components of the <cite>gearsdk</cite> project. Below, you will find detailed information about various header files used in the project.</p>
+<section id="header-files">
+<h2>header files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
+<p>The following header files are documented here:</p>
+<ol class="arabic simple">
+<li><p><cite>qzookeeper.hpp</cite></p></li>
+</ol>
+</section>
+<section id="id1">
+<h2>qzookeeper<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>The <cite>qzookeeper.hpp</cite> file contains the definition and implementation of the <cite>qzookeeper</cite> class, which provides common functionality for the server side of the project.</p>
+<p>This file contains the declaration of the qzookeeper class and its associated interfaces. </p>
+<p>The qzookeeper class provides a C++ wrapper for the ZooKeeper C API. It allows connecting to a ZooKeeper server, retrieving and setting data, deleting paths, and registering value change callbacks.</p>
+<p>The qzookeeper class implements the <a class="reference internal" href="#d9/d65/classinterface__qzookeeper"><span class="std std-ref">interface_qzookeeper</span></a> interface, which defines the methods for registering and unregistering value change callbacks.</p>
+<p>The qzookeeper class also inherits from the qtimer_sceduler class, which provides functionality for scheduling timer events.</p>
+<p><dl class="simple">
+<dt><strong>Copyright</strong></dt><dd><p>2024 homenet25 </p>
+</dd>
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Date</strong></dt><dd><p>05/01/24 </p>
+</dd>
+</dl>
+</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This file is part of the qzookeeper library. </p>
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__LOGTAG__">
+<span class="target" id="df/d9c/qzookeeper_8hpp_1a51a7b4cddb25f82f90871c021c988b9c"></span><span class="sig-name descname"><span class="n"><span class="pre">__LOGTAG__</span></span></span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.QZK_MAX_RETRIES_FOR_API">
+<span class="target" id="df/d9c/qzookeeper_8hpp_1afb53019883ff2fe219432e3f89ab1005"></span><span class="sig-name descname"><span class="n"><span class="pre">QZK_MAX_RETRIES_FOR_API</span></span></span><a class="headerlink" href="#c.QZK_MAX_RETRIES_FOR_API" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.QZK_RETRY_BASE_DELAY_MS">
+<span class="target" id="df/d9c/qzookeeper_8hpp_1aa447a350def9372b8e271e5b09862859"></span><span class="sig-name descname"><span class="n"><span class="pre">QZK_RETRY_BASE_DELAY_MS</span></span></span><a class="headerlink" href="#c.QZK_RETRY_BASE_DELAY_MS" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv422type_qzk_value_changed">
+<span id="_CPPv322type_qzk_value_changed"></span><span id="_CPPv222type_qzk_value_changed"></span><span id="type_qzk_value_changed"></span><span class="target" id="df/d9c/qzookeeper_8hpp_1a701ee20c6c475ece9112e9d5c4a6f663"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">type_qzk_value_changed</span></span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv422type_qzk_value_changed" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv420interface_qzookeeper">
+<span id="_CPPv320interface_qzookeeper"></span><span id="_CPPv220interface_qzookeeper"></span><span id="interface_qzookeeper"></span><span class="target" id="d9/d65/classinterface__qzookeeper"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">interface_qzookeeper</span></span></span><a class="headerlink" href="#_CPPv420interface_qzookeeper" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qzookeeper.hpp&gt;</em></div>
+<p>The <a class="reference internal" href="#d9/d65/classinterface__qzookeeper"><span class="std std-ref">interface_qzookeeper</span></a> class represents an interface for interacting with a ZooKeeper client. </p>
+<p>This class provides methods for registering and unregistering value change callbacks. </p>
+<p>Subclassed by <a class="reference internal" href="#d8/dff/classqzookeeper"><span class="std std-ref">qzookeeper</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv">
+<span id="_CPPv3N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"></span><span id="_CPPv2N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"></span><span id="interface_qzookeeper::register_value_change_callback__type_qzk_value_changed.voidP"></span><span class="target" id="d9/d65/classinterface__qzookeeper_1a748aa8decc1240552e1aa315d3f490ec"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">register_value_change_callback</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv422type_qzk_value_changed" title="type_qzk_value_changed"><span class="n"><span class="pre">type_qzk_value_changed</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N20interface_qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Registers a callback function to be called when a value changes in the ZooKeeper client. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback</strong> – The callback function to be registered. </p></li>
+<li><p><strong>context</strong> – A pointer to user-defined context data that will be passed to the callback function. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv">
+<span id="_CPPv3N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"></span><span id="_CPPv2N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"></span><span id="interface_qzookeeper::unregister_value_change_callback__type_qzk_value_changed.voidP"></span><span class="target" id="d9/d65/classinterface__qzookeeper_1af855bcf09182caa81abac1a958a9c71d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unregister_value_change_callback</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv422type_qzk_value_changed" title="type_qzk_value_changed"><span class="n"><span class="pre">type_qzk_value_changed</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N20interface_qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Unregisters a previously registered value change callback function. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback</strong> – The callback function to be unregistered. </p></li>
+<li><p><strong>context</strong> – A pointer to the user-defined context data that was passed to the callback function. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv410qzookeeper">
+<span id="_CPPv310qzookeeper"></span><span id="_CPPv210qzookeeper"></span><span class="target" id="d8/dff/classqzookeeper"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qzookeeper</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">qtimer_sceduler</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv420interface_qzookeeper" title="interface_qzookeeper"><span class="n"><span class="pre">interface_qzookeeper</span></span></a><a class="headerlink" href="#_CPPv410qzookeeper" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper10qzookeeperERK7qstring">
+<span id="_CPPv3N10qzookeeper10qzookeeperERK7qstring"></span><span id="_CPPv2N10qzookeeper10qzookeeperERK7qstring"></span><span id="qzookeeper::qzookeeper__qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1a25af63c47a5188bf56c98934d232fc99"></span><span class="sig-name descname"><span class="n"><span class="pre">qzookeeper</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper10qzookeeperERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeperD0Ev">
+<span id="_CPPv3N10qzookeeperD0Ev"></span><span id="_CPPv2N10qzookeeperD0Ev"></span><span id="qzookeeper::~qzookeeper"></span><span class="target" id="d8/dff/classqzookeeper_1ac54d13bad27a0397ed42480a42a7158b"></span><span class="sig-name descname"><span class="n"><span class="pre">~qzookeeper</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeperD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper7connectERK7qstring">
+<span id="_CPPv3N10qzookeeper7connectERK7qstring"></span><span id="_CPPv2N10qzookeeper7connectERK7qstring"></span><span id="qzookeeper::connect__qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1ab098fee10adb5f6c758b495d70a4d447"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">url</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper7connectERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Establishes a connection to the specified URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>url</strong> – The URL to connect to. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An integer representing the connection status. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8shutdownEv">
+<span id="_CPPv3N10qzookeeper8shutdownEv"></span><span id="_CPPv2N10qzookeeper8shutdownEv"></span><span id="qzookeeper::shutdown"></span><span class="target" id="d8/dff/classqzookeeper_1a77bd323f84e1373ddbe0788b778f078d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">shutdown</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper8shutdownEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Shuts down the ZooKeeper client. </p>
+<p>This function is used to gracefully shut down the ZooKeeper client and release any resources held by it. After calling this function, the client will no longer be able to perform any operations. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper10is_runningEv">
+<span id="_CPPv3N10qzookeeper10is_runningEv"></span><span id="_CPPv2N10qzookeeper10is_runningEv"></span><span id="qzookeeper::is_running"></span><span class="target" id="d8/dff/classqzookeeper_1aa4545ed57b1eabd40b4ffac06a4b35ef"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_running</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper10is_runningEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Checks if the ZooKeeper instance is currently running. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>true if the ZooKeeper instance is running, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper12is_zk_activeEv">
+<span id="_CPPv3N10qzookeeper12is_zk_activeEv"></span><span id="_CPPv2N10qzookeeper12is_zk_activeEv"></span><span id="qzookeeper::is_zk_active"></span><span class="target" id="d8/dff/classqzookeeper_1af54b32490c65043e8a7b79437da20680"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">is_zk_active</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper12is_zk_activeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Check if the ZooKeeper connection is active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>true if the ZooKeeper connection is active, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper20get_connection_stateEv">
+<span id="_CPPv3N10qzookeeper20get_connection_stateEv"></span><span id="_CPPv2N10qzookeeper20get_connection_stateEv"></span><span id="qzookeeper::get_connection_state"></span><span class="target" id="d8/dff/classqzookeeper_1abe61c13fe083e1bbe047d91cca207445"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_connection_state</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper20get_connection_stateEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring">
+<span id="_CPPv3N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring"></span><span id="_CPPv2N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring"></span><span id="qzookeeper::get_data__qstringCR.qstringR.qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1a7929a06f6eabd127f422fa7fb0db8045"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_data</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">zk_path</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">result</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">default_value</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;{}&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper8get_dataERK7qstringR7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieves the data associated with the specified ZooKeeper path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zk_path</strong> – The path of the ZooKeeper node. </p></li>
+<li><p><strong>result</strong> – A reference to a qstring object to store the retrieved data. </p></li>
+<li><p><strong>default_value</strong> – The default value to be returned if the specified path does not exist. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An integer value indicating the result of the operation. Zero indicates success, while a non-zero value indicates an error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8set_dataERK7qstringRK7qstring">
+<span id="_CPPv3N10qzookeeper8set_dataERK7qstringRK7qstring"></span><span id="_CPPv2N10qzookeeper8set_dataERK7qstringRK7qstring"></span><span id="qzookeeper::set_data__qstringCR.qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1a1a7d62fb1679bd28ac82be5ae01552d8"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_data</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">zk_path</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper8set_dataERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the data for a given ZooKeeper path. </p>
+<p>This function sets the data for the specified ZooKeeper path with the provided data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zk_path</strong> – The path of the ZooKeeper node. </p></li>
+<li><p><strong>data</strong> – The data to be set for the ZooKeeper node. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An integer value indicating the success or failure of the operation. Returns 0 on success, and a negative value on failure. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper11delete_pathERK7qstring">
+<span id="_CPPv3N10qzookeeper11delete_pathERK7qstring"></span><span id="_CPPv2N10qzookeeper11delete_pathERK7qstring"></span><span id="qzookeeper::delete_path__qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1a3f2dc478f62ee688d25fa68ddc55f3b6"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">delete_path</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">zk_path</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper11delete_pathERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Deletes the specified path in the ZooKeeper server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>zk_path</strong> – The path to be deleted. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns 0 if the path is successfully deleted, otherwise returns an error code. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv">
+<span id="_CPPv3N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"></span><span id="_CPPv2N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv"></span><span id="qzookeeper::register_value_change_callback__type_qzk_value_changed.voidP"></span><span class="target" id="d8/dff/classqzookeeper_1a3de86139632f66d02f236c8a9cea5c1c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">register_value_change_callback</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv422type_qzk_value_changed" title="type_qzk_value_changed"><span class="n"><span class="pre">type_qzk_value_changed</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">final</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper30register_value_change_callbackE22type_qzk_value_changedPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Registers a callback function to be called when the value changes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback</strong> – The callback function to be called when the value changes. </p></li>
+<li><p><strong>context</strong> – A pointer to user-defined context data that will be passed to the callback function. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv">
+<span id="_CPPv3N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"></span><span id="_CPPv2N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv"></span><span id="qzookeeper::unregister_value_change_callback__type_qzk_value_changed.voidP"></span><span class="target" id="d8/dff/classqzookeeper_1ad75a4e628f1d58a57ddae33708d9f924"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unregister_value_change_callback</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv422type_qzk_value_changed" title="type_qzk_value_changed"><span class="n"><span class="pre">type_qzk_value_changed</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">final</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper32unregister_value_change_callbackE22type_qzk_value_changedPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Unregisters a value change callback.</p>
+<p>This function is used to unregister a previously registered value change callback. The callback function and the context associated with it must match the ones used during registration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback</strong> – The callback function to unregister. </p></li>
+<li><p><strong>context</strong> – The context associated with the callback function. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring">
+<span id="_CPPv3N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring"></span><span id="_CPPv2N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring"></span><span id="qzookeeper::broadcast_value_change_to_all__qstringCR.qstringCR"></span><span class="target" id="d8/dff/classqzookeeper_1af3bcbf74d691f44128aae49818d6e0b3"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">broadcast_value_change_to_all</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">path</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper29broadcast_value_change_to_allERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Broadcasts a value change to all connected clients. </p>
+<p>This function sends a value change notification to all clients connected to the ZooKeeper server. The value change is associated with the specified <code class="docutils literal notranslate"><span class="pre">path</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – The path associated with the value change. </p></li>
+<li><p><strong>data</strong> – The new data to be associated with the value change. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper12state2StringEi">
+<span id="_CPPv3N10qzookeeper12state2StringEi"></span><span id="_CPPv2N10qzookeeper12state2StringEi"></span><span id="qzookeeper::state2String__i"></span><span class="target" id="d8/dff/classqzookeeper_1afcaac979080f0e82f9f65badc867fe73"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">state2String</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">state</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper12state2StringEi" title="Link to this definition"></a><br /></dt>
+<dd><p>Converts the given state value to its corresponding string representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> – The state value to convert. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The string representation of the state value. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper11type2StringEi">
+<span id="_CPPv3N10qzookeeper11type2StringEi"></span><span id="_CPPv2N10qzookeeper11type2StringEi"></span><span id="qzookeeper::type2String__i"></span><span class="target" id="d8/dff/classqzookeeper_1aede24243c2eb6aba0a382b12c333d929"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">type2String</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">state</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper11type2StringEi" title="Link to this definition"></a><br /></dt>
+<dd><p>Converts the given state value to its corresponding string representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> – The state value to convert. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The string representation of the state value. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper16retry_connectionEv">
+<span id="_CPPv3N10qzookeeper16retry_connectionEv"></span><span id="_CPPv2N10qzookeeper16retry_connectionEv"></span><span id="qzookeeper::retry_connection"></span><span class="target" id="d8/dff/classqzookeeper_1a4201787f58b4632b3cf70b647058ac25"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">retry_connection</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper16retry_connectionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Retries the connection to the ZooKeeper server. </p>
+<p>This function attempts to reconnect to the ZooKeeper server in case the connection was lost or failed. It implements a retry mechanism to ensure a successful connection is established.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An integer value indicating the result of the connection retry attempt. A value of 0 indicates a successful connection, while a non-zero value indicates a failure to establish a connection. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8close_zkEKi">
+<span id="_CPPv3N10qzookeeper8close_zkEKi"></span><span id="_CPPv2N10qzookeeper8close_zkEKi"></span><span id="qzookeeper::close_zk__iC"></span><span class="target" id="d8/dff/classqzookeeper_1a467723bfad3d7fdcbe626f3cbe2d7e5f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">close_zk</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">state</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper8close_zkEKi" title="Link to this definition"></a><br /></dt>
+<dd><p>Closes the ZooKeeper connection. </p>
+<p>This function closes the ZooKeeper connection and releases any resources associated with it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> – The state of the ZooKeeper connection. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK10qzookeeper8get_nameEv">
+<span id="_CPPv3NK10qzookeeper8get_nameEv"></span><span id="_CPPv2NK10qzookeeper8get_nameEv"></span><span id="qzookeeper::get_nameC"></span><span class="target" id="d8/dff/classqzookeeper_1add0903d06bae6e222816371368776d2a"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK10qzookeeper8get_nameEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK10qzookeeper9get_wnameEv">
+<span id="_CPPv3NK10qzookeeper9get_wnameEv"></span><span id="_CPPv2NK10qzookeeper9get_wnameEv"></span><span id="qzookeeper::get_wnameC"></span><span class="target" id="d8/dff/classqzookeeper_1a0a22b09c0d5d7b77963dff5f42a62010"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">get_wname</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK10qzookeeper9get_wnameEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper2zhE">
+<span id="_CPPv3N10qzookeeper2zhE"></span><span id="_CPPv2N10qzookeeper2zhE"></span><span id="qzookeeper::zh__zhandle_tP"></span><span class="target" id="d8/dff/classqzookeeper_1ae00ea95139ea737d6bb0503df36be5ac"></span><span class="n"><span class="pre">zhandle_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">zh</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper2zhE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper4myidE">
+<span id="_CPPv3N10qzookeeper4myidE"></span><span id="_CPPv2N10qzookeeper4myidE"></span><span id="qzookeeper::myid__clientid_t"></span><span class="target" id="d8/dff/classqzookeeper_1aee0e5ee1f1eb79a51b803fac58d4ecea"></span><span class="n"><span class="pre">clientid_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">myid</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper4myidE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper12clientIdFileE">
+<span id="_CPPv3N10qzookeeper12clientIdFileE"></span><span id="_CPPv2N10qzookeeper12clientIdFileE"></span><span id="qzookeeper::clientIdFile__cCP"></span><span class="target" id="d8/dff/classqzookeeper_1af022c0df0221235936c9f90175343418"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">clientIdFile</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper12clientIdFileE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper12zk_thread_idE">
+<span id="_CPPv3N10qzookeeper12zk_thread_idE"></span><span id="_CPPv2N10qzookeeper12zk_thread_idE"></span><span id="qzookeeper::zk_thread_id__pthread_t"></span><span class="target" id="d8/dff/classqzookeeper_1aefb12fc980f957b9686b3031b69bc33a"></span><span class="n"><span class="pre">pthread_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zk_thread_id</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper12zk_thread_idE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper14connection_urlE">
+<span id="_CPPv3N10qzookeeper14connection_urlE"></span><span id="_CPPv2N10qzookeeper14connection_urlE"></span><span id="qzookeeper::connection_url__qstring"></span><span class="target" id="d8/dff/classqzookeeper_1a5d791d994a4912874c3e761825d123c7"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connection_url</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper14connection_urlE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper4nameE">
+<span id="_CPPv3N10qzookeeper4nameE"></span><span id="_CPPv2N10qzookeeper4nameE"></span><span id="qzookeeper::name__qstringC"></span><span class="target" id="d8/dff/classqzookeeper_1adc1f521252e5a83519706f04ef72cc18"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper4nameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper5wnameE">
+<span id="_CPPv3N10qzookeeper5wnameE"></span><span id="_CPPv2N10qzookeeper5wnameE"></span><span id="qzookeeper::wname__qstringC"></span><span class="target" id="d8/dff/classqzookeeper_1a68087813e4db8680d42921d4a69459db"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">wname</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper5wnameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper22connection_in_progressE">
+<span id="_CPPv3N10qzookeeper22connection_in_progressE"></span><span id="_CPPv2N10qzookeeper22connection_in_progressE"></span><span id="qzookeeper::connection_in_progress__std::atomic:b:"></span><span class="target" id="d8/dff/classqzookeeper_1af58cda7795f91d5471ae808ae4c1cc1d"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">atomic</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connection_in_progress</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper22connection_in_progressE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper7runningE">
+<span id="_CPPv3N10qzookeeper7runningE"></span><span id="_CPPv2N10qzookeeper7runningE"></span><span id="qzookeeper::running__std::atomic:b:"></span><span class="target" id="d8/dff/classqzookeeper_1a166ea43a02ec884bfaa6a0e4ce8b41a0"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">atomic</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">running</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper7runningE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8mainloopE">
+<span id="_CPPv3N10qzookeeper8mainloopE"></span><span id="_CPPv2N10qzookeeper8mainloopE"></span><span id="qzookeeper::mainloop__ev_loopP"></span><span class="target" id="d8/dff/classqzookeeper_1abdac191c7093b69bfc44e9b74467cefb"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">ev_loop</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">mainloop</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper8mainloopE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper14op_in_progressE">
+<span id="_CPPv3N10qzookeeper14op_in_progressE"></span><span id="_CPPv2N10qzookeeper14op_in_progressE"></span><span id="qzookeeper::op_in_progress__std::atomic:b:"></span><span class="target" id="d8/dff/classqzookeeper_1a9042fd740ae71387e8b0c1742f268bb1"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">atomic</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">op_in_progress</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper14op_in_progressE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper9op_resultE">
+<span id="_CPPv3N10qzookeeper9op_resultE"></span><span id="_CPPv2N10qzookeeper9op_resultE"></span><span id="qzookeeper::op_result__std::atomic:i:"></span><span class="target" id="d8/dff/classqzookeeper_1a8deddb27d34a931d2cb14c70a4460506"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">atomic</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">op_result</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper9op_resultE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper10get_resultE">
+<span id="_CPPv3N10qzookeeper10get_resultE"></span><span id="_CPPv2N10qzookeeper10get_resultE"></span><span id="qzookeeper::get_result__qstring"></span><span class="target" id="d8/dff/classqzookeeper_1a857bd3f7796e1acb2ee0c0ca38cfadab"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_result</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper10get_resultE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper16connection_stateE">
+<span id="_CPPv3N10qzookeeper16connection_stateE"></span><span id="_CPPv2N10qzookeeper16connection_stateE"></span><span id="qzookeeper::connection_state__i"></span><span class="target" id="d8/dff/classqzookeeper_1a98b216355cccf038ad0f97d9c1c6ac50"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connection_state</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="o"><span class="pre">-</span></span><span class="m"><span class="pre">1</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper16connection_stateE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper11retry_countE">
+<span id="_CPPv3N10qzookeeper11retry_countE"></span><span id="_CPPv2N10qzookeeper11retry_countE"></span><span id="qzookeeper::retry_count__i"></span><span class="target" id="d8/dff/classqzookeeper_1ad030fae8d9c0ec753f18b3d3c9ea6f5e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">retry_count</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper11retry_countE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper22connection_check_timerE">
+<span id="_CPPv3N10qzookeeper22connection_check_timerE"></span><span id="_CPPv2N10qzookeeper22connection_check_timerE"></span><span id="qzookeeper::connection_check_timer__qtimerP"></span><span class="target" id="d8/dff/classqzookeeper_1a071e781075dd2f91fb58f1971d8ac619"></span><span class="n"><span class="pre">qtimer</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">connection_check_timer</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N10qzookeeper22connection_check_timerE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper22value_change_callbacksE">
+<span id="_CPPv3N10qzookeeper22value_change_callbacksE"></span><span id="_CPPv2N10qzookeeper22value_change_callbacksE"></span><span id="qzookeeper::value_change_callbacks__std::map:type_qzk_value_changed.voidP:"></span><span class="target" id="d8/dff/classqzookeeper_1a77143d9048848b77080775c749ac105c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv422type_qzk_value_changed" title="type_qzk_value_changed"><span class="n"><span class="pre">type_qzk_value_changed</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value_change_callbacks</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper22value_change_callbacksE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper22pending_config_updatesE">
+<span id="_CPPv3N10qzookeeper22pending_config_updatesE"></span><span id="_CPPv2N10qzookeeper22pending_config_updatesE"></span><span id="qzookeeper::pending_config_updates__std::vector:qstring:"></span><span class="target" id="d8/dff/classqzookeeper_1a129cf33c93f47b51a781177e66e7f136"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pending_config_updates</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper22pending_config_updatesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper11close_mutexE">
+<span id="_CPPv3N10qzookeeper11close_mutexE"></span><span id="_CPPv2N10qzookeeper11close_mutexE"></span><span id="qzookeeper::close_mutex__qmutex"></span><span class="target" id="d8/dff/classqzookeeper_1a0b2b52ced27fc6a65b6d7643718778b1"></span><a class="reference internal" href="networkcommon.html#_CPPv46qmutex" title="qmutex"><span class="n"><span class="pre">qmutex</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">close_mutex</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper11close_mutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper15reconnect_mutexE">
+<span id="_CPPv3N10qzookeeper15reconnect_mutexE"></span><span id="_CPPv2N10qzookeeper15reconnect_mutexE"></span><span id="qzookeeper::reconnect_mutex__qmutex"></span><span class="target" id="d8/dff/classqzookeeper_1ad0f2002d933cc3e679881ca798566225"></span><a class="reference internal" href="networkcommon.html#_CPPv46qmutex" title="qmutex"><span class="n"><span class="pre">qmutex</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reconnect_mutex</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper15reconnect_mutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper19watcher_gaurd_mutexE">
+<span id="_CPPv3N10qzookeeper19watcher_gaurd_mutexE"></span><span id="_CPPv2N10qzookeeper19watcher_gaurd_mutexE"></span><span id="qzookeeper::watcher_gaurd_mutex__std::mutex"></span><span class="target" id="d8/dff/classqzookeeper_1a876b993eb88f6c3c76d01737b9d3d470"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">watcher_gaurd_mutex</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper19watcher_gaurd_mutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper17retry_in_progressE">
+<span id="_CPPv3N10qzookeeper17retry_in_progressE"></span><span id="_CPPv2N10qzookeeper17retry_in_progressE"></span><span id="qzookeeper::retry_in_progress__std::atomic:b:"></span><span class="target" id="d8/dff/classqzookeeper_1a963e57b7229b3a1c00fb84b2e5867a55"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">atomic</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">retry_in_progress</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper17retry_in_progressE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper9nameMutexE">
+<span id="_CPPv3N10qzookeeper9nameMutexE"></span><span id="_CPPv2N10qzookeeper9nameMutexE"></span><span id="qzookeeper::nameMutex__std::timed_mutex"></span><span class="target" id="d8/dff/classqzookeeper_1a7d535e1ee410b545febc03398bc22e73"></span><span class="k"><span class="pre">mutable</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">timed_mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">nameMutex</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper9nameMutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper10wnameMutexE">
+<span id="_CPPv3N10qzookeeper10wnameMutexE"></span><span id="_CPPv2N10qzookeeper10wnameMutexE"></span><span id="qzookeeper::wnameMutex__std::timed_mutex"></span><span class="target" id="d8/dff/classqzookeeper_1a2929c2106b47cd2072a8da01b087d494"></span><span class="k"><span class="pre">mutable</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">timed_mutex</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">wnameMutex</span></span></span><a class="headerlink" href="#_CPPv4N10qzookeeper10wnameMutexE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-functions">Private Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper7watcherEP9zhandle_tiiPKcPv">
+<span id="_CPPv3N10qzookeeper7watcherEP9zhandle_tiiPKcPv"></span><span id="_CPPv2N10qzookeeper7watcherEP9zhandle_tiiPKcPv"></span><span id="qzookeeper::watcher__zhandle_tP.i.i.cCP.voidP"></span><span class="target" id="d8/dff/classqzookeeper_1a635959df9f09050cccc5ccf598704a6a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">watcher</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">zhandle_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">zzh</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">type</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">state</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">path</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper7watcherEP9zhandle_tiiPKcPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for handling ZooKeeper events. </p>
+<p>This function is called when a ZooKeeper event occurs, such as a change in connection state or a node change.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zzh</strong> – The ZooKeeper handle. </p></li>
+<li><p><strong>type</strong> – The type of the event. </p></li>
+<li><p><strong>state</strong> – The state of the ZooKeeper connection. </p></li>
+<li><p><strong>path</strong> – The path of the node associated with the event. </p></li>
+<li><p><strong>context</strong> – The user-defined context data. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper18my_stat_completionEiPK4StatPKv">
+<span id="_CPPv3N10qzookeeper18my_stat_completionEiPK4StatPKv"></span><span id="_CPPv2N10qzookeeper18my_stat_completionEiPK4StatPKv"></span><span id="qzookeeper::my_stat_completion__i.StatCP.voidCP"></span><span class="target" id="d8/dff/classqzookeeper_1aedebd77acd9ef02a6c62d226505ade47"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">my_stat_completion</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">rc</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">Stat</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">stat</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper18my_stat_completionEiPK4StatPKv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper18my_data_completionEiPKciPK4StatPKv">
+<span id="_CPPv3N10qzookeeper18my_data_completionEiPKciPK4StatPKv"></span><span id="_CPPv2N10qzookeeper18my_data_completionEiPKciPK4StatPKv"></span><span id="qzookeeper::my_data_completion__i.cCP.i.StatCP.voidCP"></span><span class="target" id="d8/dff/classqzookeeper_1a12b1f72816d150338a21795c5013fca1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">my_data_completion</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">rc</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">value</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value_len</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">Stat</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">stat</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper18my_data_completionEiPKciPK4StatPKv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper18my_void_completionEiPKv">
+<span id="_CPPv3N10qzookeeper18my_void_completionEiPKv"></span><span id="_CPPv2N10qzookeeper18my_void_completionEiPKv"></span><span id="qzookeeper::my_void_completion__i.voidCP"></span><span class="target" id="d8/dff/classqzookeeper_1a673571b57d91f38f9a1151a00fc888b5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">my_void_completion</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">rc</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper18my_void_completionEiPKv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper8dumpStatEPK4Stat">
+<span id="_CPPv3N10qzookeeper8dumpStatEPK4Stat"></span><span id="_CPPv2N10qzookeeper8dumpStatEPK4Stat"></span><span id="qzookeeper::dumpStat__StatCP"></span><span class="target" id="d8/dff/classqzookeeper_1aa7f9e78f39863240a2492237ad4eee66"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dumpStat</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">Stat</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">stat</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper8dumpStatEPK4Stat" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper10millisleepEi">
+<span id="_CPPv3N10qzookeeper10millisleepEi"></span><span id="_CPPv2N10qzookeeper10millisleepEi"></span><span id="qzookeeper::millisleep__i"></span><span class="target" id="d8/dff/classqzookeeper_1ae3698f57cd4624f28d121f9b2725a30f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">millisleep</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">ms</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper10millisleepEi" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper16connect_internalEPv">
+<span id="_CPPv3N10qzookeeper16connect_internalEPv"></span><span id="_CPPv2N10qzookeeper16connect_internalEPv"></span><span id="qzookeeper::connect_internal__voidP"></span><span class="target" id="d8/dff/classqzookeeper_1ac14fbc6db42a1b1797b2b66f119ca32c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">connect_internal</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper16connect_internalEPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Establishes a connection to the ZooKeeper server. </p>
+<p>This function is responsible for establishing a connection to the ZooKeeper server. It is a static member function and should be called using the class name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> – A pointer to the data needed for establishing the connection. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A void pointer representing the connection object. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii">
+<span id="_CPPv3N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii"></span><span id="_CPPv2N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii"></span><span class="target" id="d8/dff/classqzookeeper_1a0287ffabb4ea32031f30fc45e86a255b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">retry_with_backoff</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">operation</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">max_retries</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">base_delay_ms</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N10qzookeeper18retry_with_backoffENSt8functionIFivEEEii" title="Link to this definition"></a><br /></dt>
+<dd><p>Retries an operation with backoff.</p>
+<p>This function retries the specified operation with exponential backoff. The operation is invoked using the provided <code class="docutils literal notranslate"><span class="pre">operation</span></code> function object. The maximum number of retries and the base delay between retries are specified by the <code class="docutils literal notranslate"><span class="pre">max_retries</span></code> and <code class="docutils literal notranslate"><span class="pre">base_delay_ms</span></code> parameters, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>operation</strong> – The operation to be retried. This should be a function object that takes no arguments and returns an integer result. </p></li>
+<li><p><strong>max_retries</strong> – The maximum number of retries to attempt. </p></li>
+<li><p><strong>base_delay_ms</strong> – The base delay in milliseconds between retries. The actual delay increases exponentially with each retry. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the operation if it succeeds within the specified number of retries, or an error code if all retries fail. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="qhiredis.html" class="btn btn-neutral float-left" title="qhiredis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="servercommon.html" class="btn btn-neutral float-right" title="servercommon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, amudaliar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

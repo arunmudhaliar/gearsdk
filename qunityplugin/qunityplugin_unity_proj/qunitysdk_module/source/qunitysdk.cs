@@ -11,7 +11,7 @@ public class qunitysdk : MonoBehaviour
 
     // qsocket
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qsocket_onconnect(ulong guid_crc);
+    public delegate void type_qsocket_onconnect(ulong guid_crc, IntPtr user_data);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void type_qsocket_onmessage( ulong guid_crc, ulong recvLen, IntPtr buf);
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -20,7 +20,7 @@ public class qunitysdk : MonoBehaviour
     public delegate void type_qsocket_onclose( ulong guid_crc );
 
     public abstract class mqsocket {
-        abstract protected void onconnect();
+        abstract protected void onconnect(IntPtr user_data);
         abstract protected void onmessage( ulong recv_len, string buf );
         abstract protected void onreleaseconnection();
         abstract protected void onclose();
@@ -29,7 +29,7 @@ public class qunitysdk : MonoBehaviour
         public Guid guid { get; private set; }
         public ulong guid_crc = 0;
 
-        public Action<qsocket> OnConnect;
+        public Action<qsocket, IntPtr> OnConnect;
         public Action<qsocket, ulong, string> OnMessage;
         public Action<qsocket> OnReleaseConnection;
         public Action<qsocket> OnClose;
@@ -41,8 +41,8 @@ public class qunitysdk : MonoBehaviour
             Debug.Log("qsocket guid_crc - " + guid_crc);
         }
 
-        protected override void onconnect() {
-            OnConnect(this);
+        protected override void onconnect(IntPtr user_data) {
+            OnConnect(this, user_data);
         }
 
         protected override void onmessage( ulong recv_len, string buf ) {
@@ -58,12 +58,12 @@ public class qunitysdk : MonoBehaviour
         }
 
         [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onconnect))]
-        private static void global_onconnect( ulong guid_crc ) {
+        private static void global_onconnect( ulong guid_crc, IntPtr user_data ) {
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
                     return;
                 }
-                qunitysdk.sockets[guid_crc].onconnect();
+                qunitysdk.sockets[guid_crc].onconnect(user_data);
             });
         }
         [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onmessage))]

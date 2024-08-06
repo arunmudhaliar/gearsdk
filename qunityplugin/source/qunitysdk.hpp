@@ -29,7 +29,7 @@ public:
     qsocket(type_qsocket_destroy_qsocket cb);
     virtual ~qsocket();
     
-    typedef void (*type_qsocket_onconnect)(unsigned long guid_crc);
+    typedef void (*type_qsocket_onconnect)(unsigned long guid_crc, void*);
     typedef void (*type_qsocket_onmessage)(unsigned long guid_crc, unsigned long recv_len, uint8_t* buf);
     typedef void (*type_qsocket_onreleaseconnection)(unsigned long guid_crc);
     typedef void (*type_qsocket_onclose)(unsigned long guid_crc);
@@ -53,6 +53,7 @@ private:
     type_qsocket_onclose cb_close = nullptr;
     type_qsocket_destroy_qsocket cb_destroy_qsocket = nullptr;
     unsigned long guid_crc = 0;
+    void* user_data = nullptr;
 };
 
 std::map<unsigned long, qsocket*> qsockets;

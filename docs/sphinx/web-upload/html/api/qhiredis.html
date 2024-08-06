@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qhiredis &mdash; gearsdk 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="qzookeeper" href="qzookeeper.html" />
+    <link rel="prev" title="qh3server" href="qh3server.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gearsdk
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="common.html">common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networkcommon.html">networkcommon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qh3server.html">qh3server</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">qhiredis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#header-files">header files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">qhiredis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv439type_redis_hash_iterator_field_value_cb"><code class="docutils literal notranslate"><span class="pre">type_redis_hash_iterator_field_value_cb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv443type_redis_scan_iterator_key_field_value_cb"><code class="docutils literal notranslate"><span class="pre">type_redis_scan_iterator_key_field_value_cb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv48qhiredis"><code class="docutils literal notranslate"><span class="pre">qhiredis</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t"><code class="docutils literal notranslate"><span class="pre">qhiredis::qhiredis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredisD0Ev"><code class="docutils literal notranslate"><span class="pre">qhiredis::~qhiredis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis13connect_redisEb"><code class="docutils literal notranslate"><span class="pre">qhiredis::connect_redis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis16disconnect_redisEv"><code class="docutils literal notranslate"><span class="pre">qhiredis::disconnect_redis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::set_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstringi"><code class="docutils literal notranslate"><span class="pre">qhiredis::set_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis9get_valueERK7qstringR7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::get_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::set_hash_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::get_hash_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis17delete_hash_fieldERK7qstringRK7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::delete_hash_field()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis4incrERK7qstringRx"><code class="docutils literal notranslate"><span class="pre">qhiredis::incr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis4decrERK7qstringRx"><code class="docutils literal notranslate"><span class="pre">qhiredis::decr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis7incr_byERK7qstringKiRx"><code class="docutils literal notranslate"><span class="pre">qhiredis::incr_by()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis7decr_byERK7qstringKiRx"><code class="docutils literal notranslate"><span class="pre">qhiredis::decr_by()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis10expire_keyERK7qstringi"><code class="docutils literal notranslate"><span class="pre">qhiredis::expire_key()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb"><code class="docutils literal notranslate"><span class="pre">qhiredis::iterate_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis10delete_keyERK7qstring"><code class="docutils literal notranslate"><span class="pre">qhiredis::delete_key()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb"><code class="docutils literal notranslate"><span class="pre">qhiredis::scan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis16retry_connectionEv"><code class="docutils literal notranslate"><span class="pre">qhiredis::retry_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis22connect_redis_internalERK7qstring8uint16_tb"><code class="docutils literal notranslate"><span class="pre">qhiredis::connect_redis_internal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis7contextE"><code class="docutils literal notranslate"><span class="pre">qhiredis::context</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis4nameE"><code class="docutils literal notranslate"><span class="pre">qhiredis::name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis8redis_ipE"><code class="docutils literal notranslate"><span class="pre">qhiredis::redis_ip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis10redis_portE"><code class="docutils literal notranslate"><span class="pre">qhiredis::redis_port</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb"><code class="docutils literal notranslate"><span class="pre">qhiredis::iterate_hash()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#qhiredis-async">qhiredis_async</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv424interface_qhiredis_async"><code class="docutils literal notranslate"><span class="pre">interface_qhiredis_async</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring"><code class="docutils literal notranslate"><span class="pre">interface_qhiredis_async::on_qhiredis_async_key_expired()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv414qhiredis_async"><code class="docutils literal notranslate"><span class="pre">qhiredis_async</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::qhiredis_async()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_asyncD0Ev"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::~qhiredis_async()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async19connect_async_redisEP7ev_loop"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::connect_async_redis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async22disconnect_async_redisEv"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::disconnect_async_redis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async13async_contextE"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::async_context</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async8redis_ipE"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::redis_ip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async10redis_portE"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::redis_port</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async9interfaceE"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::interface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async9connectedE"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::connected</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::on_connect_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::on_disconnect_cb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv"><code class="docutils literal notranslate"><span class="pre">qhiredis_async::on_message_cb()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qzookeeper.html">qzookeeper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="servercommon.html">servercommon</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gearsdk</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="api.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">qhiredis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/qhiredis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="qhiredis">
+<h1>qhiredis<a class="headerlink" href="#qhiredis" title="Link to this heading"></a></h1>
+<p>This section provides documentation for the various components of the <cite>gearsdk</cite> project. Below, you will find detailed information about various header files used in the project.</p>
+<section id="header-files">
+<h2>header files<a class="headerlink" href="#header-files" title="Link to this heading"></a></h2>
+<p>The following header files are documented here:</p>
+<ol class="arabic simple">
+<li><p><cite>qhiredis.hpp</cite></p></li>
+<li><p><cite>qhiredis_async.hpp</cite></p></li>
+</ol>
+</section>
+<section id="id1">
+<h2>qhiredis<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>The <cite>qhiredis.hpp</cite> file contains the definition and implementation of the <cite>qhiredis</cite> class, which provides common functionality for the server side of the project.</p>
+<p>This file contains the declaration of the <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> class, which provides a C++ wrapper for the hiredis library. </p>
+<p>The <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> class allows connecting to a Redis server, performing various operations like setting and getting values, working with hash fields, incrementing and decrementing values, and more. It also provides iterators for iterating over hash fields and scanning keys with a specific prefix. The class uses the hiredis library for interacting with Redis.</p>
+<p><dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Date</strong></dt><dd><p>2023 </p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>2024 homenet25 </p>
+</dd>
+</dl>
+</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This file includes other headers and defines some types and macros specific to the qhiredis project. It also contains commented-out code that can be used for testing or as an example.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For more information on Redis, refer to the official Redis documentation: <a class="reference external" href="https://redis.io/documentation">https://redis.io/documentation</a> For more information on the hiredis library, refer to the hiredis GitHub repository: <a class="reference external" href="https://github.com/redis/hiredis">https://github.com/redis/hiredis</a></p>
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp" id="c.__LOGTAG__">
+<span class="target" id="de/dc0/qhiredis_8hpp_1a51a7b4cddb25f82f90871c021c988b9c"></span><span class="sig-name descname"><span class="n"><span class="pre">__LOGTAG__</span></span></span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv439type_redis_hash_iterator_field_value_cb">
+<span id="_CPPv339type_redis_hash_iterator_field_value_cb"></span><span id="_CPPv239type_redis_hash_iterator_field_value_cb"></span><span id="type_redis_hash_iterator_field_value_cb"></span><span class="target" id="de/dc0/qhiredis_8hpp_1a343928c39e1850983a1f71ccbe700e0d"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type_redis_hash_iterator_field_value_cb</span></span></span><a class="headerlink" href="#_CPPv439type_redis_hash_iterator_field_value_cb" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function type for iterating over hash fields. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Param field<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The field name. </p>
+</dd>
+<dt class="field-even">Param value<span class="colon">:</span></dt>
+<dd class="field-even"><p>The field value. </p>
+</dd>
+<dt class="field-odd">Param arg<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Additional argument passed to the callback function. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv443type_redis_scan_iterator_key_field_value_cb">
+<span id="_CPPv343type_redis_scan_iterator_key_field_value_cb"></span><span id="_CPPv243type_redis_scan_iterator_key_field_value_cb"></span><span id="type_redis_scan_iterator_key_field_value_cb"></span><span class="target" id="de/dc0/qhiredis_8hpp_1a25dbc9d9f74afac6ce90bfbd1095808f"></span><span class="k"><span class="pre">typedef</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type_redis_scan_iterator_key_field_value_cb</span></span></span><a class="headerlink" href="#_CPPv443type_redis_scan_iterator_key_field_value_cb" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function type for scanning keys with a specific prefix. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Param key<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The key name. </p>
+</dd>
+<dt class="field-even">Param field<span class="colon">:</span></dt>
+<dd class="field-even"><p>The field name. </p>
+</dd>
+<dt class="field-odd">Param value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The field value. </p>
+</dd>
+<dt class="field-even">Param arg<span class="colon">:</span></dt>
+<dd class="field-even"><p>Additional argument passed to the callback function. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv48qhiredis">
+<span id="_CPPv38qhiredis"></span><span id="_CPPv28qhiredis"></span><span class="target" id="d3/dd2/classqhiredis"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qhiredis</span></span></span><a class="headerlink" href="#_CPPv48qhiredis" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qhiredis.hpp&gt;</em></div>
+<p>Provides a C++ wrapper for the hiredis library. </p>
+<p>The <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> class allows connecting to a Redis server, performing various operations like setting and getting values, working with hash fields, incrementing and decrementing values, and more. It also provides iterators for iterating over hash fields and scanning keys with a specific prefix. The class uses the hiredis library for interacting with Redis. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t">
+<span id="_CPPv3N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t"></span><span id="_CPPv2N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t"></span><span id="qhiredis::qhiredis__qstringC.qstringCR.uint16_t"></span><span class="target" id="d3/dd2/classqhiredis_1aa9a1936e0eb399f79916f34347298415"></span><span class="sig-name descname"><span class="n"><span class="pre">qhiredis</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">redis_ip</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">redis_port</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis8qhiredisEK7qstringRK7qstring8uint16_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructs a <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> object. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> object. </p></li>
+<li><p><strong>redis_ip</strong> – The IP address of the Redis server. </p></li>
+<li><p><strong>redis_port</strong> – The port number of the Redis server. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredisD0Ev">
+<span id="_CPPv3N8qhiredisD0Ev"></span><span id="_CPPv2N8qhiredisD0Ev"></span><span id="qhiredis::~qhiredis"></span><span class="target" id="d3/dd2/classqhiredis_1aaf00b641a0fb9b0c29d966a7ad9ab054"></span><span class="sig-name descname"><span class="n"><span class="pre">~qhiredis</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredisD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destroys the <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> object. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis13connect_redisEb">
+<span id="_CPPv3N8qhiredis13connect_redisEb"></span><span id="_CPPv2N8qhiredis13connect_redisEb"></span><span id="qhiredis::connect_redis__b"></span><span class="target" id="d3/dd2/classqhiredis_1a0dcb7ed48acaf65e91b9120a0279d5dc"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect_redis</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">unix_socket</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis13connect_redisEb" title="Link to this definition"></a><br /></dt>
+<dd><p>Connects to the Redis server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>unix_socket</strong> – Flag indicating whether to use a Unix socket for connection. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the connection is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis16disconnect_redisEv">
+<span id="_CPPv3N8qhiredis16disconnect_redisEv"></span><span id="_CPPv2N8qhiredis16disconnect_redisEv"></span><span id="qhiredis::disconnect_redis"></span><span class="target" id="d3/dd2/classqhiredis_1adaaf7273a545f858a67ea3ea019e9a74"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">disconnect_redis</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis16disconnect_redisEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Disconnects from the Redis server. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis9set_valueERK7qstringRK7qstring">
+<span id="_CPPv3N8qhiredis9set_valueERK7qstringRK7qstring"></span><span id="_CPPv2N8qhiredis9set_valueERK7qstringRK7qstring"></span><span id="qhiredis::set_value__qstringCR.qstringCR"></span><span class="target" id="d3/dd2/classqhiredis_1ad4dc13f05426992e7db9ff381b65b7bc"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the value of a key in Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>value</strong> – The value to set. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis9set_valueERK7qstringRK7qstringi">
+<span id="_CPPv3N8qhiredis9set_valueERK7qstringRK7qstringi"></span><span id="_CPPv2N8qhiredis9set_valueERK7qstringRK7qstringi"></span><span id="qhiredis::set_value__qstringCR.qstringCR.i"></span><span class="target" id="d3/dd2/classqhiredis_1a06ecc619e546acafa008a9fa11044d2e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">expiry_in_sec</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis9set_valueERK7qstringRK7qstringi" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the value of a key in Redis with an expiry time. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>value</strong> – The value to set. </p></li>
+<li><p><strong>expiry_in_sec</strong> – The expiry time in seconds. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis9get_valueERK7qstringR7qstring">
+<span id="_CPPv3N8qhiredis9get_valueERK7qstringR7qstring"></span><span id="_CPPv2N8qhiredis9get_valueERK7qstringR7qstring"></span><span id="qhiredis::get_value__qstringCR.qstringR"></span><span class="target" id="d3/dd2/classqhiredis_1a618004531c05ce7c8c08b49d770476b3"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis9get_valueERK7qstringR7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the value of a key from Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>value</strong> – The variable to store the retrieved value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring">
+<span id="_CPPv3N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring"></span><span id="_CPPv2N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring"></span><span id="qhiredis::set_hash_value__qstringCR.qstringCR.qstringCR"></span><span class="target" id="d3/dd2/classqhiredis_1aac0f894583b835c5b277ca55b022eb02"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">set_hash_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hashkey</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">field</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis14set_hash_valueERK7qstringRK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the value of a field in a Redis hash. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hashkey</strong> – The hash key name. </p></li>
+<li><p><strong>field</strong> – The field name. </p></li>
+<li><p><strong>value</strong> – The value to set. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring">
+<span id="_CPPv3N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring"></span><span id="_CPPv2N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring"></span><span id="qhiredis::get_hash_value__qstringCR.qstringCR.qstringR"></span><span class="target" id="d3/dd2/classqhiredis_1a8c7210dea25bb03c5bbfe8048aacb5d9"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_hash_value</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hashkey</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">field</span></span>, <a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis14get_hash_valueERK7qstringRK7qstringR7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the value of a field from a Redis hash. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hashkey</strong> – The hash key name. </p></li>
+<li><p><strong>field</strong> – The field name. </p></li>
+<li><p><strong>value</strong> – The variable to store the retrieved value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis17delete_hash_fieldERK7qstringRK7qstring">
+<span id="_CPPv3N8qhiredis17delete_hash_fieldERK7qstringRK7qstring"></span><span id="_CPPv2N8qhiredis17delete_hash_fieldERK7qstringRK7qstring"></span><span id="qhiredis::delete_hash_field__qstringCR.qstringCR"></span><span class="target" id="d3/dd2/classqhiredis_1a8dce5a24a7d8d0102851b7795338b79e"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">delete_hash_field</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hashkey</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">field</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis17delete_hash_fieldERK7qstringRK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Deletes a field from a Redis hash. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hashkey</strong> – The hash key name. </p></li>
+<li><p><strong>field</strong> – The field name to delete. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis4incrERK7qstringRx">
+<span id="_CPPv3N8qhiredis4incrERK7qstringRx"></span><span id="_CPPv2N8qhiredis4incrERK7qstringRx"></span><span id="qhiredis::incr__qstringCR.l-lR"></span><span class="target" id="d3/dd2/classqhiredis_1a159eec4992753e6401c0e9af67f915ea"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">incr</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis4incrERK7qstringRx" title="Link to this definition"></a><br /></dt>
+<dd><p>Increments the value of a key in Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>value</strong> – The variable to store the incremented value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis4decrERK7qstringRx">
+<span id="_CPPv3N8qhiredis4decrERK7qstringRx"></span><span id="_CPPv2N8qhiredis4decrERK7qstringRx"></span><span id="qhiredis::decr__qstringCR.l-lR"></span><span class="target" id="d3/dd2/classqhiredis_1a07b85ef8b666abc37420c952dd021ae5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">decr</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis4decrERK7qstringRx" title="Link to this definition"></a><br /></dt>
+<dd><p>Decrements the value of a key in Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>value</strong> – The variable to store the decremented value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis7incr_byERK7qstringKiRx">
+<span id="_CPPv3N8qhiredis7incr_byERK7qstringKiRx"></span><span id="_CPPv2N8qhiredis7incr_byERK7qstringKiRx"></span><span id="qhiredis::incr_by__qstringCR.iC.l-lR"></span><span class="target" id="d3/dd2/classqhiredis_1a717ac688798de4f624212ce0c48800d7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">incr_by</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">delta</span></span>, <span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis7incr_byERK7qstringKiRx" title="Link to this definition"></a><br /></dt>
+<dd><p>Increments the value of a key in Redis by a specified delta. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>delta</strong> – The delta value to increment by. </p></li>
+<li><p><strong>value</strong> – The variable to store the incremented value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis7decr_byERK7qstringKiRx">
+<span id="_CPPv3N8qhiredis7decr_byERK7qstringKiRx"></span><span id="_CPPv2N8qhiredis7decr_byERK7qstringKiRx"></span><span id="qhiredis::decr_by__qstringCR.iC.l-lR"></span><span class="target" id="d3/dd2/classqhiredis_1a4da33e634711758115aac7262f6e5e51"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">decr_by</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">delta</span></span>, <span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis7decr_byERK7qstringKiRx" title="Link to this definition"></a><br /></dt>
+<dd><p>Decrements the value of a key in Redis by a specified delta. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>delta</strong> – The delta value to decrement by. </p></li>
+<li><p><strong>value</strong> – The variable to store the decremented value. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis10expire_keyERK7qstringi">
+<span id="_CPPv3N8qhiredis10expire_keyERK7qstringi"></span><span id="_CPPv2N8qhiredis10expire_keyERK7qstringi"></span><span id="qhiredis::expire_key__qstringCR.i"></span><span class="target" id="d3/dd2/classqhiredis_1ac0a6d7e739d95cedf47367cfc2cd1eb7"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">expire_key</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">expiry_in_sec</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis10expire_keyERK7qstringi" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets an expiry time for a key in Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key name. </p></li>
+<li><p><strong>expiry_in_sec</strong> – The expiry time in seconds. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb">
+<span id="_CPPv3N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb"></span><span id="_CPPv2N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb"></span><span id="qhiredis::iterate_hash__qstringCR.voidP.type_redis_hash_iterator_field_value_cb"></span><span class="target" id="d3/dd2/classqhiredis_1ab9b79d86bc786d39ba70aafee09e4321"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterate_hash</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arg</span></span>, <a class="reference internal" href="#_CPPv439type_redis_hash_iterator_field_value_cb" title="type_redis_hash_iterator_field_value_cb"><span class="n"><span class="pre">type_redis_hash_iterator_field_value_cb</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis12iterate_hashERK7qstringPv39type_redis_hash_iterator_field_value_cb" title="Link to this definition"></a><br /></dt>
+<dd><p>Iterates over the fields of a Redis hash. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The hash key name. </p></li>
+<li><p><strong>arg</strong> – Additional argument to pass to the callback function. </p></li>
+<li><p><strong>callback</strong> – The callback function to invoke for each field-value pair. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis10delete_keyERK7qstring">
+<span id="_CPPv3N8qhiredis10delete_keyERK7qstring"></span><span id="_CPPv2N8qhiredis10delete_keyERK7qstring"></span><span id="qhiredis::delete_key__qstringCR"></span><span class="target" id="d3/dd2/classqhiredis_1af760cdac28a26cf16d779e9de1b0f624"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">delete_key</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">key</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis10delete_keyERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Deletes a key from Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> – The key name to delete. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the operation is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb">
+<span id="_CPPv3N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb"></span><span id="_CPPv2N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb"></span><span id="qhiredis::scan__qstringCR.voidP.type_redis_scan_iterator_key_field_value_cb"></span><span class="target" id="d3/dd2/classqhiredis_1a2f608a07f3bdba44c1eb4aa4670d3625"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">scan</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">prefix_key</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arg</span></span>, <a class="reference internal" href="#_CPPv443type_redis_scan_iterator_key_field_value_cb" title="type_redis_scan_iterator_key_field_value_cb"><span class="n"><span class="pre">type_redis_scan_iterator_key_field_value_cb</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis4scanERK7qstringPv43type_redis_scan_iterator_key_field_value_cb" title="Link to this definition"></a><br /></dt>
+<dd><p>Scans keys with a specific prefix in Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix_key</strong> – The prefix of the keys to scan. </p></li>
+<li><p><strong>arg</strong> – Additional argument to pass to the callback function. </p></li>
+<li><p><strong>callback</strong> – The callback function to invoke for each key-field-value triple. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis16retry_connectionEv">
+<span id="_CPPv3N8qhiredis16retry_connectionEv"></span><span id="_CPPv2N8qhiredis16retry_connectionEv"></span><span id="qhiredis::retry_connection"></span><span class="target" id="d3/dd2/classqhiredis_1a30931a4a5d8a65b9b76368f020e1f8bb"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">retry_connection</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis16retry_connectionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Retries the connection to the Redis server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0 if the connection is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis22connect_redis_internalERK7qstring8uint16_tb">
+<span id="_CPPv3N8qhiredis22connect_redis_internalERK7qstring8uint16_tb"></span><span id="_CPPv2N8qhiredis22connect_redis_internalERK7qstring8uint16_tb"></span><span id="qhiredis::connect_redis_internal__qstringCR.uint16_t.b"></span><span class="target" id="d3/dd2/classqhiredis_1ad932d52bd7507bde382cc2b4abaff8be"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect_redis_internal</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">hostname</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;127.0.0.1&quot;</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">port</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">6379</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">unix_socket</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis22connect_redis_internalERK7qstring8uint16_tb" title="Link to this definition"></a><br /></dt>
+<dd><p>Connects to the Redis server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hostname</strong> – The hostname or IP address of the Redis server. </p></li>
+<li><p><strong>port</strong> – The port number of the Redis server. </p></li>
+<li><p><strong>unix_socket</strong> – Flag indicating whether to use a Unix socket for connection. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the connection is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis7contextE">
+<span id="_CPPv3N8qhiredis7contextE"></span><span id="_CPPv2N8qhiredis7contextE"></span><span id="qhiredis::context__redisContextP"></span><span class="target" id="d3/dd2/classqhiredis_1aa4ba45ae9085276824245c2d26fe2af5"></span><span class="n"><span class="pre">redisContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">context</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N8qhiredis7contextE" title="Link to this definition"></a><br /></dt>
+<dd><p>The Redis context. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis4nameE">
+<span id="_CPPv3N8qhiredis4nameE"></span><span id="_CPPv2N8qhiredis4nameE"></span><span id="qhiredis::name__qstringC"></span><span class="target" id="d3/dd2/classqhiredis_1aecd8f72da420412a09c22b73a1cd6635"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">name</span></span></span><a class="headerlink" href="#_CPPv4N8qhiredis4nameE" title="Link to this definition"></a><br /></dt>
+<dd><p>The name of the <code class="docutils literal notranslate"><span class="pre">qhiredis</span></code> object. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis8redis_ipE">
+<span id="_CPPv3N8qhiredis8redis_ipE"></span><span id="_CPPv2N8qhiredis8redis_ipE"></span><span id="qhiredis::redis_ip__qstring"></span><span class="target" id="d3/dd2/classqhiredis_1a4bf1bb21d62d5eed0a85168b078ff632"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">redis_ip</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;127.0.0.1&quot;</span></span><a class="headerlink" href="#_CPPv4N8qhiredis8redis_ipE" title="Link to this definition"></a><br /></dt>
+<dd><p>The IP address of the Redis server. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis10redis_portE">
+<span id="_CPPv3N8qhiredis10redis_portE"></span><span id="_CPPv2N8qhiredis10redis_portE"></span><span id="qhiredis::redis_port__uint16_t"></span><span class="target" id="d3/dd2/classqhiredis_1ac5bca2d54823dc5c037676f6b5a5e0f2"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">redis_port</span></span></span><a class="headerlink" href="#_CPPv4N8qhiredis10redis_portE" title="Link to this definition"></a><br /></dt>
+<dd><p>The port number of the Redis server. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-functions">Private Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb">
+<span id="_CPPv3N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb"></span><span id="_CPPv2N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb"></span><span id="qhiredis::iterate_hash__redisContextP.cCP.voidP.type_redis_hash_iterator_field_value_cb"></span><span class="target" id="d3/dd2/classqhiredis_1ae69605eb3091807b59cd9445a64495fb"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterate_hash</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">redisContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">context</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">hash_key</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">arg</span></span>, <a class="reference internal" href="#_CPPv439type_redis_hash_iterator_field_value_cb" title="type_redis_hash_iterator_field_value_cb"><span class="n"><span class="pre">type_redis_hash_iterator_field_value_cb</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N8qhiredis12iterate_hashEP12redisContextPKcPv39type_redis_hash_iterator_field_value_cb" title="Link to this definition"></a><br /></dt>
+<dd><p>Iterates over the fields of a Redis hash. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – The Redis context. </p></li>
+<li><p><strong>hash_key</strong> – The hash key name. </p></li>
+<li><p><strong>arg</strong> – Additional argument to pass to the callback function. </p></li>
+<li><p><strong>callback</strong> – The callback function to invoke for each field-value pair. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+<section id="qhiredis-async">
+<h2>qhiredis_async<a class="headerlink" href="#qhiredis-async" title="Link to this heading"></a></h2>
+<p>The <cite>qhiredis_async.hpp</cite> file provides the <cite>qhiredis_async</cite> class, which manages the connection and interaction with a Redis database.</p>
+<p>This file contains the declaration of the <a class="reference internal" href="#d8/d9e/classqhiredis__async"><span class="std std-ref">qhiredis_async</span></a> class, which provides an asynchronous interface for interacting with a Redis server. </p>
+<p>The class allows connecting to a Redis server, sending commands, and receiving responses asynchronously. It also provides a callback mechanism for handling expired keys in Redis.</p>
+<p><dl class="simple">
+<dt><strong>Author</strong></dt><dd><p>Arun A </p>
+</dd>
+<dt><strong>Date</strong></dt><dd><p>03/03/24</p>
+</dd>
+<dt><strong>Copyright</strong></dt><dd><p>Copyright (c) 2024, amudaliar </p>
+</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="cpp macro">
+<dt class="sig sig-object cpp">
+<span class="target" id="db/dcf/qhiredis__async_8hpp_1a51a7b4cddb25f82f90871c021c988b9c"></span><span class="sig-name descname"><span class="n"><span class="pre">__LOGTAG__</span></span></span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv424interface_qhiredis_async">
+<span id="_CPPv324interface_qhiredis_async"></span><span id="_CPPv224interface_qhiredis_async"></span><span id="interface_qhiredis_async"></span><span class="target" id="d5/daf/classinterface__qhiredis__async"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">interface_qhiredis_async</span></span></span><a class="headerlink" href="#_CPPv424interface_qhiredis_async" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qhiredis_async.hpp&gt;</em></div>
+<p>Interface class for handling expired keys in Redis. </p>
+<p>Subclassed by qh3simple_router, qnetworkserver</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring">
+<span id="_CPPv3N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring"></span><span id="_CPPv2N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring"></span><span id="interface_qhiredis_async::on_qhiredis_async_key_expired__qstringCR"></span><span class="target" id="d5/daf/classinterface__qhiredis__async_1a1a83b583150537217ea2139bd4aef85d"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_qhiredis_async_key_expired</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">expired_key</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N24interface_qhiredis_async29on_qhiredis_async_key_expiredERK7qstring" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for handling expired keys in Redis. </p>
+<p>This function is called when a key in Redis expires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>expired_key</strong> – The expired key in Redis. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv414qhiredis_async">
+<span id="_CPPv314qhiredis_async"></span><span id="_CPPv214qhiredis_async"></span><span id="qhiredis_async"></span><span class="target" id="d8/d9e/classqhiredis__async"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">qhiredis_async</span></span></span><a class="headerlink" href="#_CPPv414qhiredis_async" title="Link to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;qhiredis_async.hpp&gt;</em></div>
+<p>Provides an asynchronous interface for interacting with a Redis server. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async">
+<span id="_CPPv3N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async"></span><span id="_CPPv2N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async"></span><span id="qhiredis_async::qhiredis_async__qstringCR.uint16_t.interface_qhiredis_asyncP"></span><span class="target" id="d8/d9e/classqhiredis__async_1aa9229ec5f4fcc056123d50148b296d25"></span><span class="sig-name descname"><span class="n"><span class="pre">qhiredis_async</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">redis_ip</span></span>, <span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">redis_port</span></span>, <a class="reference internal" href="#_CPPv424interface_qhiredis_async" title="interface_qhiredis_async"><span class="n"><span class="pre">interface_qhiredis_async</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">interface</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async14qhiredis_asyncERK7qstring8uint16_tP24interface_qhiredis_async" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructor for <a class="reference internal" href="#d8/d9e/classqhiredis__async"><span class="std std-ref">qhiredis_async</span></a> class. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>redis_ip</strong> – The IP address of the Redis server. </p></li>
+<li><p><strong>redis_port</strong> – The port number of the Redis server. </p></li>
+<li><p><strong>interface</strong> – A pointer to the <a class="reference internal" href="#d5/daf/classinterface__qhiredis__async"><span class="std std-ref">interface_qhiredis_async</span></a> object for handling callbacks. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_asyncD0Ev">
+<span id="_CPPv3N14qhiredis_asyncD0Ev"></span><span id="_CPPv2N14qhiredis_asyncD0Ev"></span><span id="qhiredis_async::~qhiredis_async"></span><span class="target" id="d8/d9e/classqhiredis__async_1abe54c2c077cd855b28da7521c4375358"></span><span class="sig-name descname"><span class="n"><span class="pre">~qhiredis_async</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_asyncD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destructor for <a class="reference internal" href="#d8/d9e/classqhiredis__async"><span class="std std-ref">qhiredis_async</span></a> class. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async19connect_async_redisEP7ev_loop">
+<span id="_CPPv3N14qhiredis_async19connect_async_redisEP7ev_loop"></span><span id="_CPPv2N14qhiredis_async19connect_async_redisEP7ev_loop"></span><span id="qhiredis_async::connect_async_redis__ev_loopP"></span><span class="target" id="d8/d9e/classqhiredis__async_1a2947bfc7256ce472977c857d0fea002b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connect_async_redis</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">ev_loop</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">loop</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async19connect_async_redisEP7ev_loop" title="Link to this definition"></a><br /></dt>
+<dd><p>Connects to the Redis server asynchronously. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>loop</strong> – The event loop to use for asynchronous operations. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 if the connection is successful, -1 otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async22disconnect_async_redisEv">
+<span id="_CPPv3N14qhiredis_async22disconnect_async_redisEv"></span><span id="_CPPv2N14qhiredis_async22disconnect_async_redisEv"></span><span id="qhiredis_async::disconnect_async_redis"></span><span class="target" id="d8/d9e/classqhiredis__async_1aa0d0d5605a9b5ec96904f0831c93df8d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">disconnect_async_redis</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async22disconnect_async_redisEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Disconnects from the Redis server. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async13async_contextE">
+<span id="_CPPv3N14qhiredis_async13async_contextE"></span><span id="_CPPv2N14qhiredis_async13async_contextE"></span><span id="qhiredis_async::async_context__redisAsyncContextP"></span><span class="target" id="d8/d9e/classqhiredis__async_1a6d34cdbb9b90bd4bc0e3ab9c9e2161e2"></span><span class="n"><span class="pre">redisAsyncContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">async_context</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N14qhiredis_async13async_contextE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async8redis_ipE">
+<span id="_CPPv3N14qhiredis_async8redis_ipE"></span><span id="_CPPv2N14qhiredis_async8redis_ipE"></span><span id="qhiredis_async::redis_ip__qstring"></span><span class="target" id="d8/d9e/classqhiredis__async_1a72cc6e66756faa8dc4547f6ae2f9efeb"></span><a class="reference internal" href="common.html#_CPPv47qstring" title="qstring"><span class="n"><span class="pre">qstring</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">redis_ip</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;127.0.0.1&quot;</span></span><a class="headerlink" href="#_CPPv4N14qhiredis_async8redis_ipE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async10redis_portE">
+<span id="_CPPv3N14qhiredis_async10redis_portE"></span><span id="_CPPv2N14qhiredis_async10redis_portE"></span><span id="qhiredis_async::redis_port__uint16_t"></span><span class="target" id="d8/d9e/classqhiredis__async_1a0be1f940aef442b3ceef31406c23e4c9"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">redis_port</span></span></span><a class="headerlink" href="#_CPPv4N14qhiredis_async10redis_portE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async9interfaceE">
+<span id="_CPPv3N14qhiredis_async9interfaceE"></span><span id="_CPPv2N14qhiredis_async9interfaceE"></span><span id="qhiredis_async::interface__interface_qhiredis_asyncP"></span><span class="target" id="d8/d9e/classqhiredis__async_1afd858baa20ed35a53e96dc5576ad30a1"></span><a class="reference internal" href="#_CPPv424interface_qhiredis_async" title="interface_qhiredis_async"><span class="n"><span class="pre">interface_qhiredis_async</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">interface</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N14qhiredis_async9interfaceE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async9connectedE">
+<span id="_CPPv3N14qhiredis_async9connectedE"></span><span id="_CPPv2N14qhiredis_async9connectedE"></span><span id="qhiredis_async::connected__b"></span><span class="target" id="d8/d9e/classqhiredis__async_1a2a4cdd1acbfc4bc40412e7a14dee13ad"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connected</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N14qhiredis_async9connectedE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-functions">Private Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti">
+<span id="_CPPv3N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti"></span><span id="_CPPv2N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti"></span><span id="qhiredis_async::on_connect_cb__redisAsyncContextCP.i"></span><span class="target" id="d8/d9e/classqhiredis__async_1ac78685fcce7b7e886138b958a9fc397b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_connect_cb</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">redisAsyncContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">c</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async13on_connect_cbEPK17redisAsyncContexti" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for handling the connection status of the Redis server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> – The redisAsyncContext object. </p></li>
+<li><p><strong>status</strong> – The connection status. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti">
+<span id="_CPPv3N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti"></span><span id="_CPPv2N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti"></span><span id="qhiredis_async::on_disconnect_cb__redisAsyncContextCP.i"></span><span class="target" id="d8/d9e/classqhiredis__async_1af304315795974d0e711b49834482da59"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_disconnect_cb</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">redisAsyncContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">c</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">status</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async16on_disconnect_cbEPK17redisAsyncContexti" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for handling the disconnection status of the Redis server. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> – The redisAsyncContext object. </p></li>
+<li><p><strong>status</strong> – The disconnection status. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv">
+<span id="_CPPv3N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv"></span><span id="_CPPv2N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv"></span><span id="qhiredis_async::on_message_cb__redisAsyncContextP.voidP.voidP"></span><span class="target" id="d8/d9e/classqhiredis__async_1a9a7fac5b8117bd697e985e34d44dfc99"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">on_message_cb</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">redisAsyncContext</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">c</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">reply</span></span>, <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">priv</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N14qhiredis_async13on_message_cbEP17redisAsyncContextPvPv" title="Link to this definition"></a><br /></dt>
+<dd><p>Callback function for handling the response from Redis. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> – The redisAsyncContext object. </p></li>
+<li><p><strong>reply</strong> – The reply from Redis. </p></li>
+<li><p><strong>priv</strong> – A pointer to private data. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="qh3server.html" class="btn btn-neutral float-left" title="qh3server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="qzookeeper.html" class="btn btn-neutral float-right" title="qzookeeper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, amudaliar.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
