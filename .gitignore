@@ -100,3 +100,4 @@ qunitysdk.d
 libqunityplugin.dylib
 *.d
 qunityplugin/libqunityplugin.so
+qfist-app

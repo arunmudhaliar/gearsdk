@@ -1,17 +1,37 @@
 {
     "configurations": [
         {
-            "name": "Build qserver",
+            "name": "(QFIST) Debug with Clang (macOS)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/qserver/qserver-app",
+            "program": "${workspaceFolder}/qfist/qfist-app",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/qserver",
+            "cwd": "${workspaceFolder}/qfist",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "make-qserver"
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.x86-disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set fork handling",
+                    "text": "process handle -p true -s false",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "(QFIST) Build Debug with Clang",
+            "miDebuggerPath": "/usr/local/bin/lldb-mi",
+            "logging": {
+                "trace": false,
+                "engineLogging": false,
+                "programOutput": true,
+                "exceptions": true
+            },
+            "targetArchitecture": "x86_64"
         }
     ],
     "version": "2.0.0"
