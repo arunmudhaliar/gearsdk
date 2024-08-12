@@ -101,3 +101,4 @@ libqunityplugin.dylib
 *.d
 qunityplugin/libqunityplugin.so
 qfist-app
+docs/sphinx/source/__pycache__
