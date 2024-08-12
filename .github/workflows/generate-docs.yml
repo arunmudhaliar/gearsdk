@@ -36,9 +36,9 @@ jobs:
         cd docs/sphinx/source
         sphinx-build -b html . ./../build/html
     
-    - name: List Sphinx build directory
-      run: |
-        ls -R docs/sphinx/build/
+    # - name: List Sphinx build directory
+    #   run: |
+    #     ls -R docs/sphinx/build/
     
     - name: Checkout the docs repository
       uses: actions/checkout@v2
