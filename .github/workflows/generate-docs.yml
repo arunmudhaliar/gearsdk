@@ -34,11 +34,11 @@ jobs:
     - name: Generate Sphinx documentation
       run: |
         cd docs/sphinx/source
-        sphinx-build -b html . _build/html
+        sphinx-build -b html . ./../build/html
     
     - name: List Sphinx build directory
       run: |
-        ls -R docs/sphinx/_build/
+        ls -R docs/sphinx/build/
     
     - name: Checkout the docs repository
       uses: actions/checkout@v2
@@ -49,7 +49,7 @@ jobs:
     
     - name: Copy generated docs to the docs repository
       run: |
-        rsync -av --delete docs/sphinx/_build/html/ docs_repo/docs/gearsdk-docs/
+        rsync -av --delete docs/sphinx/build/html/ docs_repo/docs/gearsdk-docs/
       
     - name: Commit and push changes
       run: |
