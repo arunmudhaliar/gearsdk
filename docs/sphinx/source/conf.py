@@ -59,7 +59,7 @@ html_static_path = ['_static']
 
 # -- Breathe configuration ---------------------------------------------------
 breathe_projects = {
-    "gearsdk": "../../doxygen/build/xml"
+    "gearsdk": "../../doxygen-build/xml"
 }
 breathe_default_project = "gearsdk"
 
