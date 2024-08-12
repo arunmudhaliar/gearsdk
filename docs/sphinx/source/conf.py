@@ -23,6 +23,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
+    'build_time_extension',
     # 'exhale',
 ]
 
@@ -56,6 +57,9 @@ html_theme_options = {
 }
 
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
 
 # -- Breathe configuration ---------------------------------------------------
 breathe_projects = {

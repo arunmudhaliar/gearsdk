@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-gearsdk documentation
-=====================
+gearsdk v0.1
+============
 
 .. toctree::
     :maxdepth: 2
@@ -15,4 +15,5 @@ gearsdk documentation
 Indices and tables
 ==================
 * :ref:`genindex`
-* :ref:`search`
+
+.. build_time::
