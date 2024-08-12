@@ -45,7 +45,7 @@ jobs:
       with:
         repository: arunmudhaliar/docs
         path: docs_repo
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.DOCS_REPO_TOKEN }}
     
     - name: Copy generated docs to the docs repository
       run: |
