@@ -12,6 +12,17 @@ gearsdk v0.1
 
     api/api
 
+.. rubric::  **Additional Sections**
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Important files:
+
+   reads/essentials_read
+   reads/qbuffer_read
+   reads/qstatslogger_read
+   reads/qtimer_read
+
 Indices and tables
 ==================
 * :ref:`genindex`
