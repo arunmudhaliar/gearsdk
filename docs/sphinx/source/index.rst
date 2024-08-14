@@ -1,3 +1,5 @@
+.. _index:
+
 .. gearsdk documentation master file, created by
    sphinx-quickstart on Mon Aug  5 20:17:56 2024.
    You can adapt this file completely to your liking, but it should at least
@@ -7,15 +9,19 @@ gearsdk v0.1
 ============
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
+    :caption: Pre-requisites:
+    
+    reads/prerequisites_read
+
+.. toctree::
+    :maxdepth: 1
     :caption: API reference:
 
     api/api
 
-.. rubric::  **Additional Sections**
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Important files:
 
    reads/essentials_read

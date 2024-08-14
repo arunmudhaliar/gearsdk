@@ -3,8 +3,10 @@ name: Generate and Publish Docs
 on:
   push:
     branches:
-      - main  # Adjust this to your default branch
-
+      - main
+  pull_request:
+    branches:
+      - main
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
