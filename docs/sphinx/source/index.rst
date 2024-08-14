@@ -22,6 +22,7 @@ gearsdk v0.1
    reads/qbuffer_read
    reads/qstatslogger_read
    reads/qtimer_read
+   reads/serverconfig_read
 
 Indices and tables
 ==================
