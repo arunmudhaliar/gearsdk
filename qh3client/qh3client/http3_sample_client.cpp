@@ -21,6 +21,11 @@ http3_sample_client::http3_sample_client(const qstring& host, const qstring& por
 
 http3_sample_client::~http3_sample_client() {}
 
+void http3_sample_client::set_server_info(const qstring& host, const qstring& port) {
+	this->host = host;
+	this->port = port;
+}
+
 void http3_sample_client::init_connection() {
 	//    qh3client_helper::send_request(host, port, getorpost_reqdata("/whoami", "{}"),
 	//        [this](conn_io_response* response) {

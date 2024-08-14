@@ -25,7 +25,7 @@ extern "C" {
 #undef ORIGINAL_CLIENT_ADDR_SZ
 #define ORIGINAL_CLIENT_ADDR_SZ (3 * sizeof(uint16_t))
 #define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ  // last 6 bytes is reserved for original client adress verification
-
+#define CONNECTION_ESTABLISHMENT_TIMEOUT 5.0	// in seconds
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3client"
 
@@ -35,6 +35,7 @@ struct conn_io_qh3_client {
 	conn_io_qh3_client() { response = conn_io_req_res::create(); }
 	~conn_io_qh3_client() { GX_DELETE(response); }
 	ev_timer timer;
+	ev_timer connection_establishment_timeout_timer; // Timer for connection establishment timeout
 	const char* host = nullptr;
 
 	int sock;
@@ -80,6 +81,7 @@ class qh3client : public bridge_h3client_connection {
 	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
+	static void connection_establishment_timeout_cb(EV_P_ ev_timer* w, int revents);
 	int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
 	int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
 	virtual void on_prepare_client_send();
