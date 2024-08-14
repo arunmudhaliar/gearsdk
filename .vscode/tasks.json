@@ -44,7 +44,7 @@
             },
             "detail": "Build the project in debug mode with Clang.",
             // "dependsOn": "(userserver) Pre-Build Task"
-        },        
+        },
         {
             "label": "(QFIST) Clean",
             "type": "shell",
@@ -52,6 +52,47 @@
             "args": [
                 "-C",
                 "qfist",
+                "clean"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Clean the project."
+        },
+        {
+            "label": "(QH3CLIENT) Build Debug with Clang",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-C",
+                "qh3client",
+                "debug",
+                "LOG_LEVEL=2"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "CXX": "clang++",
+                    "CC": "clang"
+                }
+            },
+            "detail": "Build the project in debug mode with Clang.",
+            // "dependsOn": "(QH3CLIENT) Pre-Build Task"
+        },
+        {
+            "label": "(QH3CLIENT) Clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-C",
+                "qh3client",
                 "clean"
             ],
             "group": "build",

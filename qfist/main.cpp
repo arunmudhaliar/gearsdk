@@ -353,8 +353,6 @@ void parse_arguments(int argc, char *argv[]) {
             } else {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
             }
-
-            app_state.summary_interval = atoi(argv[++i]);
         }
     }
 }
