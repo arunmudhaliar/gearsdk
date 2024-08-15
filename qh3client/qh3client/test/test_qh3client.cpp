@@ -6,7 +6,7 @@
 using namespace client;
 
 namespace ft_test_qh3client {
-// Mock ReqObj definition
+// Mock app state definition
 struct mock_app_state {
     qstring host;
     int port;
@@ -34,10 +34,10 @@ struct mock_app_state {
 class functional_test_qh3client : public ::testing::TestWithParam<int> {
 protected:
     // Mock or real dependencies
-    mock_app_state* app_state; // Define MockReqObj or use a suitable class
+    mock_app_state* app_state;
 
     void SetUp() override {
-        // Initialize req_obj and any other dependencies
+        // Initialize app state
         app_state = DEBUG_NEW mock_app_state();
         app_state->host = "15.206.79.30";
         app_state->port = 4004;
