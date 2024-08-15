@@ -1,4 +1,4 @@
-#include <functional> // For std::function
+#include <functional>
 #include <gtest/gtest.h>
 #include "../qh3client.hpp" // Include your header file
 #include "../networkcommon/source/message.hpp"

@@ -23,7 +23,7 @@ jobs:
 
       - name: Commit Test Results to Docs Repository
         run: |
-          cp qh3client-test-results.html docs/gearsdk-docs/_static/qh3client-test-results.html
+          cp qh3client-test-results-html/qh3client-test-results.html docs/gearsdk-docs/_static/qh3client-test-results.html
           git add docs/gearsdk-docs/_static/qh3client-test-results.html
           git commit -m "Update test results"
           git push
