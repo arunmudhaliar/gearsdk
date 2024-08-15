@@ -54,9 +54,9 @@ jobs:
         cd docs/sphinx/source
         sphinx-build -b html . ./../build/html
     - name: Copy test results to the Sphinx documentation build/html directory
-        run: |
-          mkdir -p docs/sphinx/build/html/test-results
-          cp qh3client/qh3client-test-results.html docs/sphinx/build/html/test-results/qh3client-test-results.html
+      run: |
+        mkdir -p docs/sphinx/build/html/test-results
+        cp qh3client/qh3client-test-results.html docs/sphinx/build/html/test-results/qh3client-test-results.html
  
     - name: Checkout the docs repository
       uses: actions/checkout@v2
