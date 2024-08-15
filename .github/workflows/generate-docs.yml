@@ -24,10 +24,26 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install sphinx breathe sphinx_rtd_theme sphinx-copybutton  # Add sphinx-copybutton here
-        
+        # For testing frameworks
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libgtest-dev
+
     - name: Install Doxygen
       run: sudo apt-get install -y doxygen
    
+       - name: Run tests
+      working-directory: qh3client
+      run: make test
+
+    - name: Execute qh3client test application
+      working-directory: qh3client
+      run: |
+        ./qh3client-test-app --gtest_output=xml:qh3client-test-results.xml
+    - name: Convert Test Results to HTML
+      working-directory: qh3client
+      run: |
+        python3 ./convert_gtest_xml_to_html.py ./qh3client-test-results.xml ./qh3client-test-results.html
+
     - name: Generate Doxygen documentation
       run: |
         cd docs
@@ -37,7 +53,11 @@ jobs:
       run: |
         cd docs/sphinx/source
         sphinx-build -b html . ./../build/html
-   
+    - name: Copy test results to the Sphinx documentation build/html directory
+        run: |
+          mkdir -p docs/sphinx/build/html/test-results
+          cp qh3client/qh3client-test-results.html docs/sphinx/build/html/test-results/qh3client-test-results.html
+ 
     - name: Checkout the docs repository
       uses: actions/checkout@v2
       with:

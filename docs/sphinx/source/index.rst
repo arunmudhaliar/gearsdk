@@ -30,6 +30,10 @@ gearsdk v0.1
    reads/qtimer_read
    reads/serverconfig_read
 
+.. raw:: html
+
+   <iframe src="test-results/qh3client-test-results.html" width="100%" height="600"></iframe>
+
 Indices and tables
 ==================
 * :ref:`genindex`
