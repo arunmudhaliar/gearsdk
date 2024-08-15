@@ -24,11 +24,11 @@ jobs:
       working-directory: qh3client
       run: make test
 
-    - name: Execute the test application
+    - name: Execute the tests
       working-directory: qh3client
       run: |
         ./qh3client-test-app --gtest_output=xml:qh3client-test-results.xml
-    - name: Convert Test Results to HTML
+    - name: Convert test results to HTML
       working-directory: qh3client
       run: |
-        python3 ./convert_gtest_xml_to_html.py ./qh3client-test-results.xml ./qh3client-test-results.html
+        python3 ./convert_gtest_xml_to_html.py ./qh3client-test-results.xml ./qh3client-test-results.html "Test results - qh3client"
