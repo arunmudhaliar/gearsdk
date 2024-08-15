@@ -1,0 +1,29 @@
+name: Update Documentation
+
+on:
+  workflow_run:
+    workflows: ["qh3client-test"]
+    types:
+      - completed
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout documentation repository
+        uses: actions/checkout@v3
+        with:
+          repository: arunmudhaliar/docs
+          token: ${{ secrets.DOCS_REPO_TOKEN }}
+
+      - name: Download Test Results
+        uses: actions/download-artifact@v3
+        with:
+          name: qh3client-test-results-html
+
+      - name: Commit Test Results to Docs Repository
+        run: |
+          cp qh3client-test-results.html docs/gearsdk-docs/_static/qh3client-test-results.html
+          git add docs/gearsdk-docs/_static/qh3client-test-results.html
+          git commit -m "Update test results"
+          git push

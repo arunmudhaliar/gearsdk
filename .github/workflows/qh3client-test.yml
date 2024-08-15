@@ -26,4 +26,19 @@ jobs:
 
     - name: Execute the test application
       working-directory: qh3client
-      run: ./qh3client-test-app
+      run: ./qh3client-test-app --gtest_output=xml:qh3client-test-results.xml
+          - name: Convert Test Results to HTML
+        run: |
+          python3 convert_gtest_xml_to_html.py qh3client-test-results.xml qh3client-test-results.html
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: qh3client-test-results-xml
+        path: qh3client/qh3client-test-results.xml
+
+    - name: Upload HTML Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: qh3client-test-results-html
+        path: qh3client/qh3client-test-results.html
