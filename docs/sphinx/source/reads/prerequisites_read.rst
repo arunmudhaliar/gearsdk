@@ -49,3 +49,12 @@ Pre-requisites
         cmake --build .
         sudo cmake --install .  # (sudo may be necessary for installation)
         # This will install `lldb-mi` to `/usr/local/bin/lldb-mi`.
+
+    **Google Test**
+
+    For unit, integration and functional testing, we use Google Test. To install Google Test, follow the below steps:
+
+    .. code-block:: shell
+
+        brew install googletest
+        brew install pkg-config # Required for make to find gtest
