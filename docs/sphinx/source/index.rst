@@ -30,9 +30,11 @@ gearsdk v0.1
    reads/qtimer_read
    reads/serverconfig_read
 
-.. raw:: html
+.. toctree::
+   :maxdepth: 1
+   :caption: Test results:
 
-   <iframe src="test-results/qh3client-test-results.html" width="100%" height="600"></iframe>
+   test-results/qh3client-test-results
 
 Indices and tables
 ==================
