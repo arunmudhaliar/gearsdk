@@ -27,8 +27,4 @@ jobs:
     - name: Execute the tests
       working-directory: qh3client
       run: |
-        ./qh3client-test-app --gtest_output=xml:qh3client-test-results.xml
-    - name: Convert test results to HTML
-      working-directory: qh3client
-      run: |
-        python3 ./convert_gtest_xml_to_html.py ./qh3client-test-results.xml ./qh3client-test-results.html "Test results - qh3client"
+        ./qh3client-test-app
