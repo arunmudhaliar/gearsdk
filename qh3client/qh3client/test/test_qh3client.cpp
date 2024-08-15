@@ -26,7 +26,6 @@ struct mock_app_state {
         : host(h), port(p), arg(a), async_cb(cb), retry(r) {}
 
     ~mock_app_state() {
-        // Cleanup
         GX_DELETE(data);
     }
 };

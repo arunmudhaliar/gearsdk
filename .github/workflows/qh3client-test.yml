@@ -29,8 +29,9 @@ jobs:
       run: |
         ./qh3client-test-app --gtest_output=xml:qh3client-test-results.xml
     - name: Convert Test Results to HTML
+      working-directory: qh3client
       run: |
-        python3 convert_gtest_xml_to_html.py qh3client-test-results.xml qh3client-test-results.html
+        python3 ./convert_gtest_xml_to_html.py ./qh3client-test-results.xml ./qh3client-test-results.html
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v3
