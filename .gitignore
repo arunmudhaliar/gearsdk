@@ -103,3 +103,4 @@ qunityplugin/libqunityplugin.so
 qfist-app
 docs/sphinx/source/__pycache__
 docs/doxygen-build
+qh3client-test-app
