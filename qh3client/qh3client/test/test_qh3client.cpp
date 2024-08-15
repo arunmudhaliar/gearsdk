@@ -82,6 +82,9 @@ TEST_P(functional_test_qh3client, test_send_request) {
     // Check if the response_received is as expected (true/false depending on your logic)
     EXPECT_TRUE(response_received); // or EXPECT_FALSE if it should be false
     
+    const conn_io_req_res::payload& payload = new_client->conn_io->response->get_payload();
+    DEBUG_RAW(LOG_LEVEL_0, "%.*s", payload.buffer.length(), payload.buffer.c_str());
+
     // Verify that DEBUG_PRINT was called with expected arguments
     // (Use a logging mock or check log output if possible)
     

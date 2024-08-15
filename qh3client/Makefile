@@ -92,7 +92,7 @@ release: $(APP_OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(EXE) $(APP_OBJS) $(LIBS)
 
 # Test build - Exclude main.cpp and include test_main.cpp
-test: CXXFLAGS += $(DEBUG_CXXFLAGS) $(shell pkg-config --cflags gtest)
+test: CXXFLAGS += $(RELEASE_CXXFLAGS) $(shell pkg-config --cflags gtest)
 test: LIBS += $(shell pkg-config --libs gtest)
 test: $(TEST_OBJS)
-	$(CXX) $(DEBUG_LDFLAGS) -o $(TEST_EXE) $(TEST_OBJS) $(LIBS)
+	$(CXX) $(RELEASE_LDFLAGS) -o $(TEST_EXE) $(TEST_OBJS) $(LIBS)
