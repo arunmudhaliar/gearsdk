@@ -58,7 +58,6 @@ protected:
     }
 
     void TearDown() override {
-        // Cleanup
         GX_DELETE(app_state);
     }
 };
