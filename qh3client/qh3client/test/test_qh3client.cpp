@@ -1,6 +1,8 @@
 #include <functional>
+#include <future>
 #include <gtest/gtest.h>
-#include "../qh3client.hpp" // Include your header file
+#include "../qh3client.hpp"
+#include "../qh3client_helper.hpp"
 #include "../networkcommon/source/message.hpp"
 
 using namespace client;
@@ -93,6 +95,53 @@ TEST_P(functional_test_qh3client, test_send_request) {
     GX_DELETE(new_client); // Ensure proper deletion if necessary
     
     // If using memory management libraries like GX_DELETE, include verification if needed
+}
+
+// Test case for send_async_request
+TEST_F(functional_test_qh3client, test_send_async_request_with_callback) {
+
+    rq_msg_user_get user_get_msg_rq;
+    user_get_msg_rq.sys_name = essentials::get_sysname();
+    user_get_msg_rq.node_name = essentials::get_device_name();
+    user_get_msg_rq.arch = essentials::get_device_arch();
+    user_get_msg_rq.release = essentials::get_device_release_str();
+
+    qstring json_str;
+    user_get_msg_rq.get_json_string(json_str);
+
+    std::promise<void> callback_invoked;
+    std::future<void> callback_future = callback_invoked.get_future();
+    bool success_flag = false;
+    qstring token_value;
+
+    // Act
+    qh3client_helper::send_async_request<client::qh3client>(
+        app_state->host, app_state->port, conn_io_req_res::create("/user_get", json_str), nullptr,
+        [&callback_invoked, &success_flag, &token_value](conn_io_req_res* response, void*, void*, bool success) {
+            success_flag = success;
+
+            bool validate = response->validate();
+            ASSERT_TRUE(validate);  // Simulate an assertion for validation
+
+            conn_io_req_res::header* token_header = response->get_header("token");
+            if (token_header) {
+                token_value = token_header->value;
+            }
+
+            // Notify the test that the callback was invoked
+            callback_invoked.set_value();
+        },
+        1
+    );
+
+    // Wait for the callback to be invoked
+    callback_future.wait();
+
+    // Assert
+    EXPECT_TRUE(success_flag); // Ensure the request succeeded
+    // Perform the assertion after the async operation completes
+    DEBUG_RAW(LOG_LEVEL_0, "Token value: %s", token_value.c_str());
+    EXPECT_TRUE(token_value.length() > 0) << "Token value should not be empty";
 }
 
 // Instantiate the test suite with the number of iterations
