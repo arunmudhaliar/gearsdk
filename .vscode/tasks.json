@@ -87,6 +87,32 @@
             // "dependsOn": "(QH3CLIENT) Pre-Build Task"
         },
         {
+            "label": "(TEST-QH3CLIENT) Build Debug with Clang",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-C",
+                "qh3client",
+                "test",
+                "LOG_LEVEL=2"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "CXX": "clang++",
+                    "CC": "clang"
+                }
+            },
+            "detail": "Build the project in test mode with Clang.",
+            // "dependsOn": "(QH3CLIENT) Pre-Build Task"
+        },
+        {
             "label": "(QH3CLIENT) Clean",
             "type": "shell",
             "command": "make",

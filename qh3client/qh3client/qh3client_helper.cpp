@@ -6,6 +6,7 @@
 //  Created by Arun A on 04/11/23.
 //
 
+#include <future>  // Include necessary header for std::async
 #include "qh3client_helper.hpp"
 
 using namespace client;
@@ -22,11 +23,21 @@ int qh3client_helper::send_request(const qstring host, const qstring port, const
 	qh3_req_obj* req_obj = DEBUG_NEW qh3_req_obj(host, port, data_getorpost_);
 	req_obj->async_cb = async_cb;
 	req_obj->retry = retry;
-	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*) req_obj) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
-		return -1;
-	}
-	pthread_join(req_obj->run_thread_id, nullptr);
+    auto thread_func = [req_obj]() {
+        qh3client_helper::run_internal<T>(req_obj);
+    };
+    try {
+        std::thread worker_thread(thread_func);
+        worker_thread.join();
+    } catch (const std::exception& e) {
+		GX_DELETE(req_obj);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Exception creating or joining thread: %s", e.what());
+        return -1;
+    } catch (...) {
+		GX_DELETE(req_obj);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Unknown exception creating or joining thread");
+        return -2;
+    }
 	return 0;
 }
 
@@ -36,10 +47,17 @@ int qh3client_helper::send_async_request(const qstring host, const qstring port,
 	req_obj->async_cb = async_cb;
 	req_obj->arg = arg;
 	req_obj->retry = retry;
-	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*) req_obj) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
-		return -1;
-	}
+    try {
+        std::async(std::launch::async, qh3client_helper::run_internal<T>, req_obj);
+    } catch (const std::exception& e) {
+		GX_DELETE(req_obj);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Exception caught while launching async task: %s", e.what());
+        return -1;
+    } catch (...) {
+		GX_DELETE(req_obj);
+        DEBUG_PRINT_ERROR(__LOGTAG__, "Unknown error caught while launching async task");
+        return -2;
+    }
 	return 0;
 }
 //
@@ -71,5 +89,5 @@ void* qh3client_helper::run_internal(void* data) {
 		}
 	}
 	GX_DELETE(req_obj);
-	pthread_exit(0);
+	return nullptr;
 }

@@ -60,9 +60,12 @@ def parse_gtest_xml(input_file, output_file, title):
         suite_time = testsuite.get('time')
         suite_timestamp = testsuite.get('timestamp')
 
+        # Determine the CSS class for disabled test suites
+        suite_class = 'disabled' if suite_disabled != '0' else 'normal'
+
         # Add a summary for the current test suite using HTML
         rst_content += (".. raw:: html\n\n"
-                        f"   <h3>Suite: {suite_name}</h3>\n"
+                        f"   <h3 class=\"{suite_class}\">Suite: {suite_name}</h3>\n"
                         "   <table class=\"suite-summary-table\">\n"
                         "   <tr>\n"
                         f"     <td><strong>Tests:</strong> {suite_tests}</td>\n"
@@ -94,6 +97,11 @@ def parse_gtest_xml(input_file, output_file, title):
             time = testcase.get('time')
             test_timestamp = testcase.get('timestamp')
 
+            # Check if the test case is disabled
+            status = testcase.get('status')
+            result = 'Disabled' if status == 'notrun' else 'Passed'
+            row_class = 'disabled' if result == 'Disabled' else 'passed'
+
             for failure in testcase.iter('failure'):
                 result = 'Failed'
                 message = failure.text.strip()  # Strip any extra newlines or spaces
@@ -114,6 +122,16 @@ def parse_gtest_xml(input_file, output_file, title):
             if result == 'Passed':
                 # Add passed test case row to the table
                 rst_content += (f"   <tr class=\"passed\">\n"
+                                f"     <td>{classname}::{name}</td>\n"
+                                f"     <td>{result}</td>\n"
+                                f"     <td>{message}</td>\n"
+                                f"     <td>{time}s</td>\n"
+                                f"     <td>{test_timestamp}</td>\n"
+                                "   </tr>\n")
+
+            if result == 'Disabled':
+                # Add disabled test case row to the table with grey background
+                rst_content += (f"   <tr class=\"disabled\">\n"
                                 f"     <td>{classname}::{name}</td>\n"
                                 f"     <td>{result}</td>\n"
                                 f"     <td>{message}</td>\n"

@@ -98,7 +98,9 @@ TEST_P(functional_test_qh3client, test_send_request) {
 }
 
 // Test case for send_async_request
-TEST_F(functional_test_qh3client, test_send_async_request_with_callback) {
+TEST_P(functional_test_qh3client, test_send_async_request_with_callback) {
+    int iteration = GetParam();
+    DEBUG_RAW(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
     rq_msg_user_get user_get_msg_rq;
     user_get_msg_rq.sys_name = essentials::get_sysname();
