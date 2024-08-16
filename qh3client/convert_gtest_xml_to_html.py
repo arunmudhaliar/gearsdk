@@ -10,7 +10,7 @@ def parse_gtest_xml(input_file, output_file, title):
     html_content = f'''
     <html>
     <head>
-        <link rel="stylesheet" href="../_static/styles.5966e581.css">
+        <link rel="stylesheet" href="../_static/styles.css">
     </head>
     <body>
     <h1>{title}</h1>

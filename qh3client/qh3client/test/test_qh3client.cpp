@@ -119,9 +119,10 @@ TEST_F(functional_test_qh3client, test_send_async_request_with_callback) {
         app_state->host, app_state->port, conn_io_req_res::create("/user_get", json_str), nullptr,
         [&callback_invoked, &success_flag, &token_value](conn_io_req_res* response, void*, void*, bool success) {
             success_flag = success;
-
             bool validate = response->validate();
-            ASSERT_TRUE(validate);  // Simulate an assertion for validation
+            EXPECT_TRUE(validate) << "crc validation FAILED !!!";
+
+            DEBUG_RAW(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
 
             conn_io_req_res::header* token_header = response->get_header("token");
             if (token_header) {

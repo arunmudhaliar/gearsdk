@@ -33,18 +33,22 @@ def parse_gtest_xml(input_file, output_file, title):
     total_time = root.get('time')
     timestamp = root.get('timestamp')
 
-    # Start the RST content with the title and consolidated summary in HTML
+    # Start the RST content with the title and link to the CSS file
     rst_content = f'{title}\n{"=" * len(title)}\n\n'
     rst_content += (".. raw:: html\n\n"
-                    "   <h3>Consolidated Test Suite Summary</h3>\n"
-                    "   <ul>\n"
-                    f"     <li>Total tests: {total_tests}</li>\n"
-                    f"     <li>Failures: {total_failures}</li>\n"
-                    f"     <li>Disabled: {total_disabled}</li>\n"
-                    f"     <li>Errors: {total_errors}</li>\n"
-                    f"     <li>Total time: {total_time}s</li>\n"
-                    f"     <li>Timestamp: {timestamp}</li>\n"
-                    "   </ul>\n\n")
+                    "   <link rel=\"stylesheet\" type=\"text/css\" href=\"../_static/custom.css\">\n"
+                    "   <h3>Summary</h3>\n"
+                    "   <table class=\"summary-table\">\n"
+                    "   <tr>\n"
+                    f"     <td><strong>Total tests:</strong> {total_tests}</td>\n"
+                    f"     <td><strong>Failures:</strong> {total_failures}</td>\n"
+                    f"     <td><strong>Disabled:</strong> {total_disabled}</td>\n"
+                    f"     <td><strong>Errors:</strong> {total_errors}</td>\n"
+                    f"     <td><strong>Total time taken:</strong> {total_time}s</td>\n"
+                    f"     <td><strong>Timestamp:</strong> {timestamp}</td>\n"
+                    "   </tr>\n"
+                    "   </table>\n\n"
+                    "   <div class=\"double-line-separator\"></div>\n\n")
 
     # Loop through each testsuite
     for idx, testsuite in enumerate(root.iter('testsuite')):
@@ -58,15 +62,17 @@ def parse_gtest_xml(input_file, output_file, title):
 
         # Add a summary for the current test suite using HTML
         rst_content += (".. raw:: html\n\n"
-                        f"   <h3>Test Suite: {suite_name}</h3>\n"
-                        "   <ul>\n"
-                        f"     <li>Total tests: {suite_tests}</li>\n"
-                        f"     <li>Failures: {suite_failures}</li>\n"
-                        f"     <li>Disabled: {suite_disabled}</li>\n"
-                        f"     <li>Errors: {suite_errors}</li>\n"
-                        f"     <li>Total time: {suite_time}s</li>\n"
-                        f"     <li>Timestamp: {suite_timestamp}</li>\n"
-                        "   </ul>\n\n"
+                        f"   <h3>Suite: {suite_name}</h3>\n"
+                        "   <table class=\"suite-summary-table\">\n"
+                        "   <tr>\n"
+                        f"     <td><strong>Tests:</strong> {suite_tests}</td>\n"
+                        f"     <td><strong>Failures:</strong> {suite_failures}</td>\n"
+                        f"     <td><strong>Disabled:</strong> {suite_disabled}</td>\n"
+                        f"     <td><strong>Errors:</strong> {suite_errors}</td>\n"
+                        f"     <td><strong>Time:</strong> {suite_time}s</td>\n"
+                        f"     <td><strong>Timestamp:</strong> {suite_timestamp}</td>\n"
+                        "   </tr>\n"
+                        "   </table>\n\n"
                         "   <table class=\"test-result-table\">\n"
                         "   <thead>\n"
                         "   <tr>\n"
@@ -118,17 +124,17 @@ def parse_gtest_xml(input_file, output_file, title):
         # Close the HTML table for the current test suite
         rst_content += "   </tbody>\n   </table>\n\n"
 
-        # Add a line separator after each test suite except the last one
+        # Add a single line separator after each test suite except the last one
         if idx < len(root.findall('testsuite')) - 1:
             rst_content += (".. raw:: html\n\n"
-                            "   <hr>\n\n")
+                            "   <div class=\"single-line-separator\"></div>\n\n")
 
     # Write the RST content to the output file
     with open(output_file, 'w') as f:
         f.write(rst_content)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Convert Google Test XML to reStructuredText (RST) with separate HTML tables for each test suite, a consolidated summary, and line separators between suites.')
+    parser = argparse.ArgumentParser(description='Convert Google Test XML to reStructuredText (RST) with styled summary tables and separators.')
     parser.add_argument('input_file', type=str, help='Path to the input XML file')
     parser.add_argument('output_file', type=str, help='Path to the output RST file')
     parser.add_argument('title', type=str, help='Title for RST file')

@@ -37,3 +37,57 @@
     background-color: #d4edda; /* Light green background for passed rows */
     color: #155724; /* Dark green text */
 }
+
+/* styles.css */
+.summary-table {
+    background-color: #f8ef72;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+.summary-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.suite-summary-table {
+    background-color: #e0e0e0;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.suite-summary-table th {
+    background-color: #a8a5a5; /* Light grey background color for the header row */
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.suite-summary-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.test-result-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.test-result-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.test-result-table th {
+    background-color: #d6d6d6; /* Light grey background color for the header row */
+    border: 1px solid #919191;
+}
+
+.single-line-separator {
+    border-top: 1px solid #ccc; /* Grey color for single line separator */
+    margin: 20px 0;
+}
+
+.double-line-separator {
+    border-top: 3px double #aaa; /* Grey color for double line separator */
+    margin: 20px 0;
+}

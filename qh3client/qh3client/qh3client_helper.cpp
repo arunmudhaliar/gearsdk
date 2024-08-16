@@ -57,6 +57,12 @@ void* qh3client_helper::run_internal(void* data) {
 		response_received = new_client->conn_io->res_received;
 		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
 			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "send_request returned with response_received %d", response_received);
+			if (!response_received && req_obj->async_cb != nullptr) {
+				auto empty_response = conn_io_req_res::create();
+				req_obj->async_cb(empty_response, new_client->get_client_specific_data(), req_obj->arg, false);
+				GX_DELETE(empty_response);
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "send_request empty response sent to client");
+			}
 		}
 		new_client->on_post_send_cleanup();
 		GX_DELETE(new_client);

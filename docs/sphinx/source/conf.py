@@ -63,7 +63,7 @@ html_theme_options = {
 html_static_path = ['_static']
 html_css_files = [
     'custom.css',
-    'styles.5966e581.css'
+    'styles.css'
 ]
 
 # -- Breathe configuration ---------------------------------------------------
