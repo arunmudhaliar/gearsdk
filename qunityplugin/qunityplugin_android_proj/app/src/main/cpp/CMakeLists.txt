@@ -44,7 +44,7 @@ if(ZLIB_FOUND)
 endif()
 
 # Add a definition globally
-add_definitions(-DUSE_PTHREAD=1 -DLOG_LEVEL=2)
+add_definitions(-DPROD_BUILD=1 -DUSE_PTHREAD=1 -DLOG_LEVEL=2)
 
 # In order to load a library into your app from Java/Kotlin, you must call
 # System.loadLibrary() and pass the name of the library defined here;

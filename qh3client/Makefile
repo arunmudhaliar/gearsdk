@@ -96,3 +96,8 @@ test: CXXFLAGS += $(RELEASE_CXXFLAGS) $(shell pkg-config --cflags gtest)
 test: LIBS += $(shell pkg-config --libs gtest)
 test: $(TEST_OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(TEST_EXE) $(TEST_OBJS) $(LIBS)
+
+test-debug: CXXFLAGS += $(DEBUG_CXXFLAGS) $(shell pkg-config --cflags gtest)
+test-debug: LIBS += $(shell pkg-config --libs gtest)
+test-debug: $(TEST_OBJS)
+	$(CXX) $(DEBUG_LDFLAGS) -o $(TEST_EXE) $(TEST_OBJS) $(LIBS)

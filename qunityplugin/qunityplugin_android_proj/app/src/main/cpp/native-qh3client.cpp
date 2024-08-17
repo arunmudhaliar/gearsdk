@@ -40,7 +40,7 @@ jstring j_path, jstring j_payload, jobject arg, jobject request_cb_interface, ji
     qh3client_helper::send_async_request<client::qh3client_android>(host, port,
                                                                     conn_io_req_res::create(path, payload),
                                                                     g_arg,
-    [g_request_cb_interface](conn_io_req_res *response, void* client_specific_data, void* arg, bool success) {
+    [g_request_cb_interface](conn_io_req_res* request, conn_io_req_res *response, void* client_specific_data, void* arg, bool success) {
         bool validate = response->validate();
         //                assert(validate);
         if (!validate) {

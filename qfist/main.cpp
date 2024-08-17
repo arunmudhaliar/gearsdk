@@ -1,6 +1,5 @@
 #include <iostream>
 #include <uv.h>
-#include <curl/curl.h>
 #include <cstdlib>  // For malloc and free
 #include <cstring>  // For memset
 #include <algorithm> // For std::sort
@@ -246,7 +245,7 @@ void finish_and_destroy_work(WorkData* data) {
 void request_qh3(WorkData *data) {
     qh3client_helper::send_async_request<client::qh3client>(
         app_state.host, app_state.port, conn_io_req_res::create("/whoami", "{}"), data,
-        [&](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+        [&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
             bool validate = response->validate();
             if (!validate) {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");

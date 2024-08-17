@@ -64,7 +64,7 @@ class bridge_h3client_connection {
 	virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
 };
 
-typedef std::function<void(conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
+typedef std::function<void(conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
 
 class qh3client : public bridge_h3client_connection {
    public:

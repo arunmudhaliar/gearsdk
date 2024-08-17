@@ -67,7 +67,7 @@ void http3_sample_client::create_connections() {
 	for (int x = 0; x < 1; x++) {
 		qh3client_helper::send_async_request<client::qh3client>(
 			host, port, conn_io_req_res::create("/user_get", json_str), nullptr,
-			[this, x](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+			[this, x](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 				bool validate = response->validate();
 				//                assert(validate);
 				if (!validate) {
@@ -139,7 +139,7 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 	req->add_or_get_header("token", session_token);
 	qh3client_helper::send_async_request<client::qh3client>(
 		host, port, req, nullptr,
-		[this](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+		[this](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 			live_connections--;
 			total_connections_returned_success++;
 			total_connections_returned++;
