@@ -65,6 +65,7 @@ class bridge_h3client_connection {
 };
 
 typedef std::function<void(conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
+typedef std::function<void(void* arg)> type_qh3client_helper_finalize_cb;
 
 class qh3client : public bridge_h3client_connection {
    public:

@@ -9,15 +9,17 @@
 #include <future>  // Include necessary header for std::async
 #include "qh3client_helper.hpp"
 
+#define PTHREAD_IMPL 1
+
 using namespace client;
 
-template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
+template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
 template int qh3client_helper::send_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
 
 
 #if PLATFORM == PLATFORM_ANDROID
 #include "qh3client-android.h"
-template int qh3client_helper::send_async_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
+template int qh3client_helper::send_async_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
 template int qh3client_helper::send_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
 #endif
 
@@ -29,9 +31,17 @@ int qh3client_helper::send_request(const qstring host, const qstring port, const
 	req_obj->async_cb = async_cb;
 	req_obj->retry = retry;
 
+#if PTHREAD_IMPL
+	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*)thread_data_t::create(req_obj)) < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+		return -1;
+	}
+	pthread_join(req_obj->run_thread_id, nullptr);
+#else
 	try {
-		std::future<void> future = std::async(std::launch::async, [req_obj]() {
-			qh3client_helper::run_internal<T>(req_obj.get());
+		auto thread_data = thread_data_t::create(req_obj);
+		std::future<void> future = std::async(std::launch::async, [thread_data]() {
+			qh3client_helper::run_internal<T>(thread_data);
 		});
 		future.get(); // Wait for the async task to complete
 		DEBUG_RAW(LOG_LEVEL_4, "Future get completed, async task finished");
@@ -42,19 +52,28 @@ int qh3client_helper::send_request(const qstring host, const qstring port, const
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Unknown exception creating or joining thread");
 		return -2;
 	}
+#endif
     return 0;
 }
 
 template <typename T>
-int qh3client_helper::send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry) {
+int qh3client_helper::send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb) {
 	std::shared_ptr<qh3_req_obj> req_obj(DEBUG_NEW qh3_req_obj(host, port, data_getorpost_), [](qh3_req_obj* obj) {
         GX_DELETE(obj);
     });
 	req_obj->async_cb = async_cb;
+	req_obj->finalize_cb = finalize_cb;
 	req_obj->arg = arg;
 	req_obj->retry = retry;
+#if PTHREAD_IMPL
+	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*)thread_data_t::create(req_obj)) < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+		return -1;
+	}
+	// pthread_detach(req_obj->run_thread_id);
+#else
     try {
-        std::async(std::launch::async, qh3client_helper::run_internal<T>, req_obj.get());
+        std::async(std::launch::async, qh3client_helper::run_internal<T>, thread_data_t::create(req_obj));
     } catch (const std::exception& e) {
         DEBUG_PRINT_ERROR(__LOGTAG__, "Exception caught while launching async task: %s", e.what());
         return -1;
@@ -62,6 +81,7 @@ int qh3client_helper::send_async_request(const qstring host, const qstring port,
         DEBUG_PRINT_ERROR(__LOGTAG__, "Unknown error caught while launching async task");
         return -2;
     }
+#endif
 	return 0;
 }
 //
@@ -80,9 +100,22 @@ void qh3client_helper::respond_with_empty_response(conn_io_req_res* request, typ
 	}
 }
 
+// // Define cleanup handler
+// void qh3client_helper::cleanup_handler(void* arg) {
+//     // std::shared_ptr<qh3_req_obj>* req_obj_ptr = static_cast<std::shared_ptr<qh3_req_obj>*>(arg);
+//     // Cleanup logic, if necessary
+//     DEBUG_RAW(LOG_LEVEL_0, "Cleaning up shared_ptr in thread.");
+//     // delete req_obj_ptr; // Free the wrapper struct
+// }
+
 template <typename T>
 void* qh3client_helper::run_internal(void* data) {
-	qh3_req_obj* req_obj = (qh3_req_obj*) data;
+	// Register cleanup handler
+    // pthread_cleanup_push(qh3client_helper::cleanup_handler, data);
+	// std::shared_ptr<qh3_req_obj>& req_obj = *(reinterpret_cast<std::shared_ptr<qh3_req_obj>*>(data));
+	thread_data_t* thread_data = reinterpret_cast<thread_data_t*>(data);
+	qh3_req_obj* req_obj = thread_data->req_obj.get();
+
 	bool response_received = false;
 	for (int x = 0; x < req_obj->retry + 1; x++) {
 		if (x > 0) {
@@ -103,5 +136,13 @@ void* qh3client_helper::run_internal(void* data) {
 			break;
 		}
 	}
+	if (req_obj->finalize_cb != nullptr) {
+		req_obj->finalize_cb(req_obj->arg);
+	}
+	GX_DELETE(thread_data);
+
+	// DEBUG_RAW(LOG_LEVEL_0, "Exiting thread");
+	// pthread_cleanup_pop(1); // Pop and execute cleanup handler if the second argument is non-zero
 	return nullptr;
 }
+

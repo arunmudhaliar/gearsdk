@@ -153,7 +153,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
             }
 
             // Notify the test that the callback was invoked
-            callback_invoked.set_value();
+            callback_invoked.set_value();   // This won't cause memory leaks. Since the main thread will wait for the worker thread to finish its job.
         },
         1
     );
@@ -216,9 +216,15 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
                 token_value = token_header->value;
             }
             // Notify the test that the callback was invoked
-            callback_invoked.set_value();
+            // callback_invoked.set_value();    // Will lead to memory leak since the main thread will exit immediately after this.
         },
-        1
+        1,
+        [&callback_invoked](void* arg) {
+            // Cleanup logic, if necessary
+            // DEBUG_RAW(LOG_LEVEL_0, "Cleaning up thread.");
+            callback_invoked.set_value();   // Notify the test that the callback was invoked.
+                                            // This needs to be done here else ther will be memory leaks on exit since the main will exit immediately.
+        }
     );
 
     EXPECT_EQ(0, result) << "send_async_request returned non zero !!!"; // Ensure the request was sent successfully
