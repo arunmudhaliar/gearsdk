@@ -65,7 +65,7 @@ namespace fs = std::__fs::filesystem;
     if (x)           \
     {                \
         delete x;    \
-        x = NULL;    \
+        x = nullptr;    \
     }
 
 /** Macro to safely delete an array of pointers */
@@ -73,7 +73,7 @@ namespace fs = std::__fs::filesystem;
     if (x)               \
     {                    \
         delete[] x;      \
-        x = NULL;        \
+        x = nullptr;        \
     }
 
 /** Macro to calculate absolute value */

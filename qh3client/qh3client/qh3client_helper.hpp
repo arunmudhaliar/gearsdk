@@ -40,6 +40,10 @@ class qh3client_helper {
    private:
 	template <typename T>
 	static void* run_internal(void* data);
+	template <typename T>
+	static void respond_with_empty_response(conn_io_req_res* request, type_qh3client_helper_cb async_cb, void* arg, T* client);
+	template <typename T>
+	static void respond_with_empty_response(qh3_req_obj* req_obj, T* client);
 };
 };	// namespace client
 #endif /* qh3client_helper_hpp */

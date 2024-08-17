@@ -37,7 +37,18 @@ ifeq ($(UNAME), Linux)
 	LIBS = ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a -L$(LIBLDIR) -Wl,--as-needed -Wl,-rpath,'./libs/linux',--enable-new-dtags  -lpgcommon -lpgport -lpq -lz -lreadline -lpthread -lrt -ldl -lm -lresolv
 endif
 ifeq ($(UNAME),Darwin)
-	LIBS = ../networkcommon/libs/macos/libev.a ../common/libs/macos/libz.a ./libs/macos/libpgcommon.a ./libs/macos/libpgport.a ./libs/macos/libpq.a -lresolv
+	# Define a variable that gets the architecture
+	ARCH := $(shell uname -m)
+	# ifeq ($(ARCH),arm64)
+	# 	@echo "ARM architecture"
+	# else ifeq ($(ARCH),x86_64)
+	# 	@echo "x86_64 architecture"
+	# else
+	# 	@echo "Unsupported architecture - $(ARCH). Exiting !!!"
+	# 	exit 1
+	# endif
+	MACOS_LIB_DIR = macos_$(ARCH)
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../common/libs/$(MACOS_LIB_DIR)/libz.a ./libs/$(MACOS_LIB_DIR)/libpgcommon.a ./libs/$(MACOS_LIB_DIR)/libpgport.a ./libs/$(MACOS_LIB_DIR)/libpq.a -lresolv
 endif
 
 EXE = qstats-crawler-app

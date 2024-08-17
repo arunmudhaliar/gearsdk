@@ -275,7 +275,7 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
 					conn_io_req_res* req = conn_io_req_res::create("/shutdown_cmd_center", "");
 					qh3client_helper::send_async_request<client::qh3client>(
 						command_route->host, command_route->port, req, nullptr,
-						[](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+						[](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 							UNUSED(response);
 							UNUSED(client_specific_data);
 							UNUSED(arg);

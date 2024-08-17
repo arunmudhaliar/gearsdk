@@ -106,3 +106,5 @@ docs/doxygen-build
 qh3client-test-app
 qh3client-test-results.rst
 qh3client-test-results.xml
+deploymentTargetSelector.xml
+other.xml

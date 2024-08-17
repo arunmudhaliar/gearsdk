@@ -373,7 +373,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 				case Event_type::Finished: {
 					if (client->response_cb && client->conn_io && client->conn_io->response) {
-						client->response_cb(client->conn_io->response, client->get_client_specific_data(), client->arg, conn_io->res_received);
+						client->response_cb(const_cast<conn_io_req_res*>(client->http_request), client->conn_io->response, client->get_client_specific_data(), client->arg, conn_io->res_received);
 					}
 					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
 						fprintf(stderr, "failed to close connection\n");

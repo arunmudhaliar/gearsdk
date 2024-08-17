@@ -12,6 +12,8 @@ $(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"
+INCLUDES += $(shell pkg-config --cflags libuv)
+
 SRCDIR = .
 SRCS = $(SRCDIR)/main.cpp \
 $(QH3CLIENT_SRCDIR)/qh3client.cpp \
@@ -31,7 +33,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -lz -luv -lcurl 
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -lz $(shell pkg-config --libs libuv)
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture
@@ -45,7 +47,7 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a -lz -luv -lcurl -framework CoreFoundation -framework Security
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a -lz $(shell pkg-config --libs libuv) -framework CoreFoundation -framework Security
 
 	DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
 	RELEASE_CXXFLAGS += -mmacosx-version-min=12.3

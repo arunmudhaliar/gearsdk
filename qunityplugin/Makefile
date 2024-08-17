@@ -58,9 +58,16 @@ ifeq ($(UNAME), Darwin)
     RPATH_FLAGS = -Wl,-rpath,@loader_path/
     LIB_EXT = dylib
 
-    DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
-    RELEASE_CXXFLAGS += -mmacosx-version-min=12.3 -target x86_64-apple-macos12.3
-    LDFLAGS += -mmacosx-version-min=12.3
+    # Set architecture flags based on the detected architecture
+    ifeq ($(ARCH), arm64)
+        ARCH_FLAGS = -arch arm64
+    else
+        ARCH_FLAGS = -arch x86_64
+    endif
+
+    DEBUG_CXXFLAGS += -mmacosx-version-min=12.3 $(ARCH_FLAGS)
+    RELEASE_CXXFLAGS += -mmacosx-version-min=12.3 $(ARCH_FLAGS)
+    LDFLAGS += -mmacosx-version-min=12.3 $(ARCH_FLAGS)
 endif
 
 DEBUG_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)

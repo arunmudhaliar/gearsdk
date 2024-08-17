@@ -193,7 +193,7 @@ void http3_command_server::send_shutdown_to_all() {
 	conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
 	qh3client_helper::send_async_request<client::qh3client>(
 		host_id, router_port, req, nullptr,
-		[](conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+		[](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 			UNUSED(response);
 			UNUSED(client_specific_data);
 			UNUSED(arg);
