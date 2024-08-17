@@ -1,7 +1,5 @@
 #include <iostream>
 #include <uv.h>
-#include <cstdlib>  // For malloc and free
-#include <cstring>  // For memset
 #include <algorithm> // For std::sort
 #include <atomic>    // For std::atomic
 #include <cstddef>   // For std::size_t
@@ -9,6 +7,9 @@
 #include <vector>    // For std::vector>
 #include <iomanip>   // For std::setfill and std::setw
 #include <sstream>   // For std::ostringstream
+
+#include <rapidjson/document.h>
+#include <rapidjson/filereadstream.h>
 
 #include "../qh3client/qh3client/qh3client_helper.hpp"
 
@@ -37,12 +38,18 @@
 using namespace client;
 
 // Structs
-typedef struct {
+struct WorkData {
+    WorkData() : result(0) {
+        start_time.tv_sec = 0;
+        start_time.tv_usec = 0;
+    }
     uv_timeval64_t start_time;
     short result;
-} WorkData;
+    qstring api;
+    qstring payload;
+};
 
-typedef struct {
+struct AppState {
     qstring host = "192.168.0.230";
 	qstring port = "4004";
     uv_loop_t *loop;
@@ -53,7 +60,7 @@ typedef struct {
     int successful_requests;
     double cumulative_response_time;
     std::atomic<std::size_t> total_data_transferred;
-    std::atomic<std::size_t> chunk_counter; // Atomic counter to avoid race conditions
+    // std::atomic<std::size_t> chunk_counter; // Atomic counter to avoid race conditions
     double response_times[WINDOW_SIZE]; // Circular buffer for response times
     size_t response_times_count; // Number of entries in the circular buffer
     size_t window_start_index; // Index to track the start of the window
@@ -76,7 +83,10 @@ typedef struct {
     // Total run metrics
     int total_successful_requests;
     double total_cumulative_response_time;
-} AppState;
+
+    // Requests
+    std::vector<std::pair<qstring, qstring>> requests;
+};
 
 // Global App State
 AppState app_state;
@@ -87,7 +97,7 @@ double calculate_percentile(std::vector<double>& sorted_times, double percentile
     double index = percentile * (sorted_times.size() - 1);
     int lower = static_cast<int>(index);
     int upper = lower + 1;
-    if (upper >= sorted_times.size()) {
+    if (upper >= (int)sorted_times.size()) {
         return sorted_times[lower];
     } else {
         return sorted_times[lower] + (sorted_times[upper] - sorted_times[lower]) * (index - lower);
@@ -242,10 +252,46 @@ void finish_and_destroy_work(WorkData* data) {
     delete data;
 }
 
+std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* filename) {
+    std::vector<std::pair<qstring, qstring>> requests;
+    
+    FILE* fp = fopen(filename, "r");
+    if (!fp) {
+        std::cerr << "Failed to open file " << filename << std::endl;
+        return requests;
+    }
+
+    char readBuffer[65536];
+    rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+    rapidjson::Document document;
+    document.ParseStream(is);
+    fclose(fp);
+
+    if (!document.IsArray()) {
+        std::cerr << "JSON is not an array" << std::endl;
+        return requests;
+    }
+
+    for (auto& value : document.GetArray()) {
+        if (value.IsObject() && value.HasMember("api") && value.HasMember("payload")) {
+            const rapidjson::Value& api = value["api"];
+            const rapidjson::Value& payload = value["payload"];
+
+            if (api.IsString() && payload.IsString()) {
+                requests.emplace_back(api.GetString(), payload.GetString());
+            }
+        }
+    }
+
+    return requests;
+}
+
 void request_qh3(WorkData *data) {
     qh3client_helper::send_async_request<client::qh3client>(
-        app_state.host, app_state.port, conn_io_req_res::create("/whoami", "{}"), data,
+        app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
         [&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+            UNUSED(client_specific_data);
+            UNUSED(request);
             bool validate = response->validate();
             if (!validate) {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
@@ -256,7 +302,7 @@ void request_qh3(WorkData *data) {
 
             std::size_t total_size = payload.get_size();
             app_state.total_data_transferred.fetch_add(total_size);
-            std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
+            // std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
             std::cout << "<";
             // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
             finish_and_destroy_work(data);
@@ -275,9 +321,15 @@ void request_worker(uv_timer_t* handle) {
     for (int i = 0; i < num_requests; i++) {
         uv_work_t *req = DEBUG_NEW uv_work_t();
         WorkData *data = DEBUG_NEW WorkData();
-        memset(data, 0, sizeof(WorkData));
+        // memset(data, 0, sizeof(WorkData));
         req->data = data;
         uv_gettimeofday(&data->start_time);
+
+        // Pick a random request
+        size_t index = rand() % app_state.requests.size();
+        const auto& request = app_state.requests[index];
+        data->api = request.first;
+        data->payload = request.second;
 
         request_qh3(data);
     }
@@ -292,6 +344,7 @@ void request_worker(uv_timer_t* handle) {
 
 // Timer callback to handle exit
 void exit_after_delay(uv_timer_t *handle) {
+    UNUSED(handle);
     app_state.exit_signal = true;
     uv_stop(app_state.loop);  // Stop the loop
 
@@ -301,6 +354,7 @@ void exit_after_delay(uv_timer_t *handle) {
 
 // Timer callback to print summary periodically
 void summary_timer_cb(uv_timer_t *handle) {
+    UNUSED(handle);
     print_summary();
 }
 
@@ -365,7 +419,7 @@ void initialize_app_state(AppState& app_state) {
     app_state.successful_requests = 0;
     app_state.cumulative_response_time = 0.0;
     app_state.total_data_transferred = 0;
-    app_state.chunk_counter = 0;
+    // app_state.chunk_counter = 0;
     app_state.response_times_count = 0;
     app_state.window_start_index = 0;
     app_state.window_end_index = 0;
@@ -389,6 +443,9 @@ void initialize_app_state(AppState& app_state) {
     // Get the current time
     uv_gettimeofday(&app_state.start_time);
     uv_gettimeofday(&app_state.summary_start_time);
+
+    // Load requests from the JSON file
+    app_state.requests = load_requests_from_json("requests.json");
 }
 
 int main(int argc, char *argv[]) {
@@ -397,6 +454,10 @@ int main(int argc, char *argv[]) {
 
     // Initialize app_state
     initialize_app_state(app_state);
+    if (app_state.requests.empty()) {
+        std::cerr << "Failed to load requests from JSON file" << std::endl;
+        return 0;
+    }
 
     // Parse command-line arguments to potentially override defaults
     parse_arguments(argc, argv);

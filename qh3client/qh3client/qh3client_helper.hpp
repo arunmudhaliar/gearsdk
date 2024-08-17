@@ -28,14 +28,21 @@ class qh3client_helper {
 		const conn_io_req_res* data = nullptr;
 		pthread_t run_thread_id;
 		type_qh3client_helper_cb async_cb = nullptr;
+		type_qh3client_helper_finalize_cb finalize_cb = nullptr;
 		void* arg = nullptr;
 		int retry = 0;
+	};
+
+	struct thread_data_t {
+		std::shared_ptr<qh3_req_obj> req_obj;
+		thread_data_t(std::shared_ptr<qh3_req_obj> req) : req_obj(req) {}
+		static thread_data_t* create(std::shared_ptr<qh3_req_obj> req) { return DEBUG_NEW thread_data_t(req); }
 	};
 
 	template <typename T>
 	static int send_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
 	template <typename T>
-	static int send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry);
+	static int send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
 
    private:
 	template <typename T>
@@ -44,6 +51,7 @@ class qh3client_helper {
 	static void respond_with_empty_response(conn_io_req_res* request, type_qh3client_helper_cb async_cb, void* arg, T* client);
 	template <typename T>
 	static void respond_with_empty_response(qh3_req_obj* req_obj, T* client);
+	// static void cleanup_handler(void* arg);
 };
 };	// namespace client
 #endif /* qh3client_helper_hpp */

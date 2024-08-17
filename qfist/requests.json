@@ -1,0 +1,22 @@
+[
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"Linux\",\"node_name\":\"server01.local\",\"release\":\"5.15.0-56-generic\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"Windows\",\"node_name\":\"DESKTOP-1234ABCD\",\"release\":\"10.0.19044\",\"arch\":\"amd64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"Darwin\",\"node_name\":\"Johns-MBP.local\",\"release\":\"22.3.0\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"Ubuntu\",\"node_name\":\"ubuntu-vm.local\",\"release\":\"20.04\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"FreeBSD\",\"node_name\":\"freebsd-server.local\",\"release\":\"13.1-RELEASE\",\"arch\":\"i386\"}}"
+    }
+]
