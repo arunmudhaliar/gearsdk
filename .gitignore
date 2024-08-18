@@ -108,3 +108,5 @@ qh3client-test-results.rst
 qh3client-test-results.xml
 deploymentTargetSelector.xml
 other.xml
+docs/sphinx/source/plot_extension/__pycache__
+summary-*.csv

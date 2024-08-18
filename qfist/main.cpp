@@ -7,6 +7,8 @@
 #include <vector>    // For std::vector>
 #include <iomanip>   // For std::setfill and std::setw
 #include <sstream>   // For std::ostringstream
+#include <fstream> // For file handling (CSV)
+#include <string> // For string handling
 
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
@@ -31,7 +33,7 @@
 #define MIN_TIMEOUT_MS 50  // Minimum timeout in milliseconds
 #define MAX_TIMEOUT_MS 300  // Maximum timeout in milliseconds
 #define WINDOW_SIZE 1000     // Define the size of the moving window
-#define EXIT_AFTER 20*60        // Exit after this time in seconds
+#define EXIT_AFTER 60        // Exit after this time in seconds
 #define DEFAULT_WEIGHTAGE 0.65f
 #define SUMMARY_INTERVAL 10  // Default interval to print summary in seconds
 
@@ -86,6 +88,8 @@ struct AppState {
 
     // Requests
     std::vector<std::pair<qstring, qstring>> requests;
+
+    qstring export_csv_filename = "summary.csv";
 };
 
 // Global App State
@@ -157,6 +161,42 @@ void print_parameters() {
                << "s, server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
 }
 
+// Function to write summary data to a CSV file
+void write_summary_to_csv(const qstring& filename) {
+    std::ofstream csv_file(filename.c_str(), std::ios::app);  // Open in append mode
+    if (!csv_file.is_open()) {
+        std::cerr << "Failed to open CSV file." << std::endl;
+        return;
+    }
+
+    double total_success_percentage = (app_state.total_requests > 0) ? (app_state.total_successful_requests * 100.0 / app_state.total_requests) : 0.0;
+    double total_average_response_time = (app_state.total_requests > 0) ? (app_state.total_cumulative_response_time / app_state.total_requests) : 0.0;
+
+    double elapsed_seconds = elapsed_seconds_since_app_launch();
+    std::size_t total_data_bytes = app_state.total_data_transferred.load();
+    double data_transfer_rate_kb = (elapsed_seconds > 0) ? (total_data_bytes / 1024.0 / elapsed_seconds) : 0.0; // KB/s
+
+   // Calculate requests per second
+    double elapsed_since_summary = elapsed_seconds_since_summary();
+    double rps = (elapsed_since_summary > 0) ? (app_state.summary_requests / elapsed_since_summary) : 0.0;
+
+
+    // Write headers if file is empty (optional)
+    if (csv_file.tellp() == 0) {
+        csv_file << "Elapsed Time,Total Requests,Success Percentage,Avg Response Time (ms),Data Transfer Rate (KB/s),Rq/s\n";
+    }
+
+    // Write the summary data
+    csv_file << format_elapsed_time(elapsed_seconds) << ","
+             << app_state.total_requests << ","
+             << total_success_percentage << ","
+             << total_average_response_time << ","
+             << data_transfer_rate_kb << ","
+             << rps << "\n";
+
+    csv_file.close();
+}
+
 // Calculate and print statistics
 void print_summary() {
     if (app_state.summary_requests ==0 ) {
@@ -211,6 +251,8 @@ void print_summary() {
     print_percentiles();
     // std::cout << std::endl;
 
+    write_summary_to_csv(app_state.export_csv_filename);
+
     // Reset summary counters
     app_state.summary_requests = 0;
     app_state.summary_successful_requests = 0;
@@ -226,7 +268,7 @@ void finish_and_destroy_work(WorkData* data) {
 
     app_state.total_requests++;
     app_state.total_cumulative_response_time += response_time;
-    if (data->result > 0) {
+    if (data->result > 1) {
         app_state.total_successful_requests++;
     }
 
@@ -240,7 +282,7 @@ void finish_and_destroy_work(WorkData* data) {
     // Update summary statistics
     app_state.summary_requests++;
     app_state.summary_cumulative_response_time += response_time;
-    if (data->result > 0) {
+    if (data->result > 1) {
         app_state.summary_successful_requests++;
     }
 
@@ -358,6 +400,16 @@ void summary_timer_cb(uv_timer_t *handle) {
     print_summary();
 }
 
+std::string get_timestamp() {
+    std::time_t t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
+    
+    return oss.str();
+}
+
 // Function to parse command line arguments
 void parse_arguments(int argc, char *argv[]) {
     app_state.min_timeout_ms = MIN_TIMEOUT_MS;
@@ -444,6 +496,10 @@ void initialize_app_state(AppState& app_state) {
     uv_gettimeofday(&app_state.start_time);
     uv_gettimeofday(&app_state.summary_start_time);
 
+    // Generate timestamp and update export CSV filename
+    std::string timestamp = get_timestamp();
+    app_state.export_csv_filename = qstring(("summary-" + timestamp + ".csv").c_str());
+
     // Load requests from the JSON file
     app_state.requests = load_requests_from_json("requests.json");
 }
@@ -487,7 +543,7 @@ int main(int argc, char *argv[]) {
 
     // Wait for the exit signal
     while (!app_state.exit_signal) {
-        uv_sleep(100);
+        uv_sleep(3000);
     }
 
     return 0;
