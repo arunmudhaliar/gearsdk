@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install sphinx breathe sphinx_rtd_theme sphinx-copybutton  # Add sphinx-copybutton here
+        pip install sphinx breathe sphinx_rtd_theme sphinx-copybutton pandas plotly
         # For testing frameworks
         sudo apt-get update
         sudo apt-get install -y build-essential cmake libgtest-dev

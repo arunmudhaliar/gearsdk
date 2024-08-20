@@ -26,7 +26,8 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.todo',
     'build_time_extension',
-    'sphinx_copybutton'
+    'sphinx_copybutton',
+    'plot_extension.plot_qh3client_metrics',
     # 'exhale',
 ]
 

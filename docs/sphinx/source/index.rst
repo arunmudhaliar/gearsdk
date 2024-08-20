@@ -35,6 +35,7 @@ gearsdk v0.1
    :caption: Test results:
 
    test-results/qh3client-test-results
+   metric-results/qh3client-metric-results
 
 Indices and tables
 ==================
