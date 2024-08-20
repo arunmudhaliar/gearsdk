@@ -35,7 +35,7 @@
 #define WINDOW_SIZE 1000     // Define the size of the moving window
 #define EXIT_AFTER 60        // Exit after this time in seconds
 #define DEFAULT_WEIGHTAGE 0.65f
-#define SUMMARY_INTERVAL 10  // Default interval to print summary in seconds
+#define SUMMARY_INTERVAL 5  // Default interval to print summary in seconds
 
 using namespace client;
 
@@ -59,12 +59,12 @@ struct AppState {
     uv_timer_t request_timer;
     uv_timer_t summary_timer;
     int total_requests;
-    int successful_requests;
+    std::atomic<int> finished_requests{0};
     double cumulative_response_time;
     std::atomic<std::size_t> total_data_transferred;
     // std::atomic<std::size_t> chunk_counter; // Atomic counter to avoid race conditions
     double response_times[WINDOW_SIZE]; // Circular buffer for response times
-    size_t response_times_count; // Number of entries in the circular buffer
+    std::atomic<size_t> response_times_count{0}; // Number of entries in the circular buffer
     size_t window_start_index; // Index to track the start of the window
     size_t window_end_index; // Index to track the end of the window
     int exit_after_seconds;
@@ -83,7 +83,7 @@ struct AppState {
     double summary_cumulative_response_time;
 
     // Total run metrics
-    int total_successful_requests;
+    std::atomic<int> total_successful_requests{0};
     double total_cumulative_response_time;
 
     // Requests
@@ -239,7 +239,7 @@ void print_summary() {
     std::cout << "\n";
     std::cout << "SUMMARY " << elapsed_time_str << ":\n";
     print_parameters();
-    std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " (" << total_success_percentage << "%)\n";
+    std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " (" << total_success_percentage << "%) \tFinished: " << app_state.finished_requests << "\n";
     std::cout << "Total Avg Response Time: " << total_average_response_time << " ms\n";
     std::cout << "Data Downloaded: " << total_data_mb << " MB (" << total_data_kb << " KB)" << " Bytes (" << total_data_bytes << ")\n";
     std::cout << "Data Transfer Rate: " << data_transfer_rate_kb << " KB/s\n";
@@ -260,16 +260,21 @@ void print_summary() {
     uv_gettimeofday(&app_state.summary_start_time);
 }
 
+std::mutex response_time_mutex;
+
 void finish_and_destroy_work(WorkData* data) {
     uv_timeval64_t end_time;
     uv_gettimeofday(&end_time);
 
     double response_time = (end_time.tv_sec - data->start_time.tv_sec) * 1000.0 + (end_time.tv_usec - data->start_time.tv_usec) / 1000.0; // in milliseconds
-
-    app_state.total_requests++;
+    std::lock_guard<std::mutex> lock(response_time_mutex);
     app_state.total_cumulative_response_time += response_time;
-    if (data->result > 1) {
-        app_state.total_successful_requests++;
+
+    if (data->result > 0) {
+        app_state.finished_requests++;
+        if (data->result > 1) {
+            app_state.total_successful_requests++;
+        }
     }
 
     // Add response time to the circular buffer
@@ -280,7 +285,6 @@ void finish_and_destroy_work(WorkData* data) {
     }
 
     // Update summary statistics
-    app_state.summary_requests++;
     app_state.summary_cumulative_response_time += response_time;
     if (data->result > 1) {
         app_state.summary_successful_requests++;
@@ -291,7 +295,7 @@ void finish_and_destroy_work(WorkData* data) {
     //     print_percentiles();
     // }
 
-    delete data;
+    GX_DELETE(data);
 }
 
 std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* filename) {
@@ -329,7 +333,7 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 }
 
 void request_qh3(WorkData *data) {
-    qh3client_helper::send_async_request<client::qh3client>(
+    int result = qh3client_helper::send_async_request<client::qh3client>(
         app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
         [&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
             UNUSED(client_specific_data);
@@ -345,11 +349,16 @@ void request_qh3(WorkData *data) {
             std::size_t total_size = payload.get_size();
             app_state.total_data_transferred.fetch_add(total_size);
             // std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
-            std::cout << "<";
+            // std::cout << "<";
             // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
             finish_and_destroy_work(data);
         },
         0);
+
+    if (result == 0) {
+        app_state.total_requests++;
+        app_state.summary_requests++;
+    }
 }
 
 // Worker to handle requests
@@ -359,12 +368,9 @@ void request_worker(uv_timer_t* handle) {
         num_requests = static_cast<int>((rand() % app_state.max_parallel_requests) * app_state.request_weightage);
     }
 
-    std::cout << " r:" << num_requests << " " << std::endl;
+    // std::cout << " r:" << num_requests << " " << std::endl;
     for (int i = 0; i < num_requests; i++) {
-        uv_work_t *req = DEBUG_NEW uv_work_t();
         WorkData *data = DEBUG_NEW WorkData();
-        // memset(data, 0, sizeof(WorkData));
-        req->data = data;
         uv_gettimeofday(&data->start_time);
 
         // Pick a random request
@@ -387,6 +393,17 @@ void request_worker(uv_timer_t* handle) {
 // Timer callback to handle exit
 void exit_after_delay(uv_timer_t *handle) {
     UNUSED(handle);
+    if (app_state.finished_requests < app_state.total_requests) {
+        std::cout << "Waiting for pending requests to finish... pending :" << (app_state.total_requests - app_state.finished_requests) << "\n";
+        uv_timer_start(&app_state.exit_timer, exit_after_delay, 2 * 1000, 0);
+
+        uv_timer_stop(&app_state.request_timer);
+        if (app_state.summary_interval > 0) {
+            uv_timer_stop(&app_state.summary_timer);
+        }
+        return;
+    }
+
     app_state.exit_signal = true;
     uv_stop(app_state.loop);  // Stop the loop
 
@@ -468,7 +485,7 @@ void initialize_app_state(AppState& app_state) {
     app_state.port = "4004";
     app_state.loop = nullptr;
     app_state.total_requests = 0;
-    app_state.successful_requests = 0;
+    app_state.finished_requests = 0;
     app_state.cumulative_response_time = 0.0;
     app_state.total_data_transferred = 0;
     // app_state.chunk_counter = 0;
@@ -482,7 +499,7 @@ void initialize_app_state(AppState& app_state) {
     app_state.max_timeout_ms = MAX_TIMEOUT_MS;
     app_state.summary_interval = SUMMARY_INTERVAL;
     app_state.exit_signal = false;
-
+    
     // Initialize summary counters
     app_state.summary_requests = 0;
     app_state.summary_successful_requests = 0;
@@ -502,6 +519,17 @@ void initialize_app_state(AppState& app_state) {
 
     // Load requests from the JSON file
     app_state.requests = load_requests_from_json("requests.json");
+}
+
+void cleanup() {
+    if (app_state.loop) {
+        uv_timer_stop(&app_state.exit_timer);
+        uv_timer_stop(&app_state.request_timer);
+        uv_timer_stop(&app_state.summary_timer);
+        // uv_run(app_state.loop, UV_RUN_DEFAULT);
+        uv_loop_close(app_state.loop);
+        // delete app_state.loop;   // Only needed for custom loops
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -545,6 +573,9 @@ int main(int argc, char *argv[]) {
     while (!app_state.exit_signal) {
         uv_sleep(3000);
     }
+
+    // Cleanup
+    cleanup();
 
     return 0;
 }

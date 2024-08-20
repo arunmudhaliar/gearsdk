@@ -71,6 +71,13 @@ struct conn_io_qh3 {
 			ev_timer_stop(bridge->get_mainloop(), &timer);
 		}
 		if (conn) {
+			bool is_closed = quiche_conn_is_closed(conn);
+			if (!is_closed) {
+				int close_result = quiche_conn_close(conn, true, 0, NULL, 0);
+				if (close_result < 0) {
+					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection, err %d", close_result);
+				}
+			}
 			quiche_conn_free(conn);
 			conn = nullptr;
 		}

@@ -36,8 +36,12 @@ def generate_plot(app):
     for file in recent_files:
         csv_path = os.path.join(csv_dir, file)
         
-        # Read the CSV file
-        df = pd.read_csv(csv_path)
+        try:
+            # Read the CSV file
+            df = pd.read_csv(csv_path)
+        except Exception as e:
+            logger.error(f"Error reading {csv_path}: {e}")
+            continue
 
         # Prepare the plot
         fig = go.Figure()
@@ -119,11 +123,13 @@ def generate_plot(app):
     
     final_html_content = f"<html><head>{plotly_js_cdn}</head><body>{combined_html_content}</body></html>"
 
-    # Write the final HTML content to the output file
-    with open(output_html_path, 'w') as f:
-        f.write(final_html_content)
-
-    logger.info(f"Generated combined plot: {output_html_path}")
+    try:
+        # Write the final HTML content to the output file
+        with open(output_html_path, 'w') as f:
+            f.write(final_html_content)
+        logger.info(f"Generated combined plot: {output_html_path}")
+    except Exception as e:
+        logger.error(f"Error writing HTML file: {e}")
 
 def setup(app):
     app.connect('builder-inited', generate_plot)
