@@ -710,7 +710,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	DEBUG_PRINT(LOG_LEVEL_2, const_logtag, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
 	int res_crt_load = quiche_config_load_cert_chain_from_pem_file(config, certFile.c_str());
 	if (res_crt_load != 0) {
-		DEBUG_PRINT_ERROR(const_logtag, "CERT load error - %s", certFile.c_str());
+		DEBUG_PRINT_ERROR(const_logtag, "CERT load error - %s, err %d", certFile.c_str(), res_crt_load);
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
@@ -803,11 +803,9 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 				ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
 				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {  // DROP_CONNECTION_AFTER seconds after connection
 					// creation time.
-					if ((true) || !quiche_conn_is_closed(conn_io->conn)) {	// flushing even if the
-						// connection is closed.
-						// DEBUG_PRINT(LOG_LEVEL_4,
-						// const_logtag, "dangling : try flush
-						// : connection is still open");
+					bool is_closed = quiche_conn_is_closed(conn_io->conn);
+					if (/*(true) ||*/ !is_closed) {
+						DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
 						ssize_t sent_bytes = flush_egress(mainloop, conn_io);
 						if (sent_bytes) {
 							DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
@@ -828,6 +826,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
 								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, ev_now(mainloop) - conn_io->creation_time);
 					HASH_DELETE(hh, conns->h, conn_io);
+					if (!is_closed) {
+						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
+						if (close_result < 0) {
+							DEBUG_PRINT_ERROR(const_logtag, "failed to close dangling connection, err %d", close_result);
+						}
+					}
 					GX_DELETE(conn_io);
 					dangling_connections++;
 				}

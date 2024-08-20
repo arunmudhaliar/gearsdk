@@ -31,7 +31,7 @@
                 "programOutput": true,
                 "exceptions": true
             },
-            "targetArchitecture": "x86_64"
+            // "targetArchitecture": "x86_64"
         },
         {
             "name": "(QH3CLIENT) Debug with Clang (macOS)",
@@ -64,7 +64,7 @@
                 "programOutput": true,
                 "exceptions": true
             },
-            "targetArchitecture": "x86_64"
+            // "targetArchitecture": "x86_64"
         },
         {
             "name": "(TEST-QH3CLIENT) Debug with Clang (macOS)",
@@ -97,7 +97,40 @@
                 "programOutput": true,
                 "exceptions": true
             },
-            "targetArchitecture": "x86_64"
+            // "targetArchitecture": "x86_64"
+        },
+        {
+            "name": "(userserver) Debug with Clang (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/qh3sampleserver/qh3sampleserver-app",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/qh3sampleserver",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.x86-disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set fork handling",
+                    "text": "process handle -p true -s false",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "(userserver) Build Debug with Clang",
+            "miDebuggerPath": "/usr/local/bin/lldb-mi",
+            "logging": {
+                "trace": false,
+                "engineLogging": false,
+                "programOutput": true,
+                "exceptions": true
+            },
+            // "targetArchitecture": "x86_64"
         }
     ],
     "version": "2.0.0"

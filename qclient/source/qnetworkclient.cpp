@@ -370,10 +370,12 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 			}
 
 			if (fin) {
-				if (quiche_conn_close(qconnection_->conn, true, 0, NULL, 0) < 0) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection");
+				int close_result = quiche_conn_close(qconnection_->conn, true, 0, NULL, 0);
+				if (close_result < 0) {
+					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection, err %d", close_result);
+				} else {
+					DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
 				}
-				DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
 			}
 			qconnection_->bridge->event_msg_received(recv_len, qconnection_->recv_buf, qconnection_);
 		}

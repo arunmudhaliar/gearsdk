@@ -46,9 +46,15 @@ MAIN_SRCS = $(MAIN_SRCDIR)/main.cpp
 OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 MAIN_OBJS = ${MAIN_SRCS:.cpp=.o}
 
+LOG_LEVEL ?= 2
+USER_DEFINES = -DLOG_LEVEL=$(LOG_LEVEL)
+
+FORK_QH3_SERVER ?= 1
+USER_DEFINES += -DFORK_QH3_SERVER=$(FORK_QH3_SERVER)
+
 # Includes and flags
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" -I "$(QUTILS_SRCDIR)" -I "$(QH3_CLIENT_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0" -I "$(SERVER_COMMON_SRCDIR)"
-USER_DEFINES = -DLOG_LEVEL=2 -DFORK_QH3_SERVER=1 -DTHREADED -DENABLE_ZK=1
+USER_DEFINES += -DTHREADED -DENABLE_ZK=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 

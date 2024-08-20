@@ -629,7 +629,7 @@ void* qnetworkserver::run_internal(void* data) {
 	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
 	int res_crt_load = quiche_config_load_cert_chain_from_pem_file(thiz->config, certFile.c_str());
 	if (res_crt_load != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s", certFile.c_str());
+		DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s, err %d", certFile.c_str(), res_crt_load);
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
