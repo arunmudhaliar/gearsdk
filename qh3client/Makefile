@@ -4,6 +4,7 @@ COMMON_SRCDIR = ../common
 # Common source files
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
@@ -11,7 +12,7 @@ $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 # Include paths
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" \
--I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" \
+-I "../networkcommon/source/ev" -I "../networkcommon/source/uv" -I "../networkcommon/source/quiche" \
 -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"
 
 # Main source directory
@@ -47,13 +48,13 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-    LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a ../common/libs/linux/libbson-static-1.0.a
+    LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a ../common/libs/linux/libz.a ../common/libs/linux/libbson-static-1.0.a
 endif
 ifeq ($(UNAME), Darwin)
     # Define a variable that gets the architecture
     ARCH := $(shell uname -m)
     MACOS_LIB_DIR = macos_$(ARCH)
-    LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
+    LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a \
     ../common/libs/$(MACOS_LIB_DIR)/libz.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a -framework CoreFoundation -framework Security
 
     DEBUG_CXXFLAGS += -mmacosx-version-min=14.2

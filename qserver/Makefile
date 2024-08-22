@@ -7,6 +7,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(SERVER_COMMON_SRCDIR)/servercommon.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \
@@ -16,7 +17,7 @@ $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis.cpp \
 $(QHIREDIS_SRCDIR)/qhiredis_async.cpp \
 
-INCLUDES = -I "$(QUTILS_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "../qhiredis/hiredis"
+INCLUDES = -I "$(QUTILS_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/uv" -I "../networkcommon/source/quiche" -I "../qhiredis/hiredis"
 SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/room.cpp \
@@ -39,7 +40,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
@@ -55,7 +56,7 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -ldpp -framework CoreFoundation -framework Security -lcurl
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -ldpp -framework CoreFoundation -framework Security -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 
