@@ -7,6 +7,7 @@
 //
 
 #include "sdktypes.hpp"
+
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
@@ -20,266 +21,263 @@ using namespace gsdk;
 struct utsname device::device_details;
 char server::machine_public_ip[16] = "0.0.0.0";
 
-extern "C"
-{
+extern "C" {
 #if PLATFORM == PLATFORM_ANDROID
 JavaVM* device::g_JavaVM = nullptr;
-    int init_gsdk(JavaVM* JavaVM) {
-        device::g_JavaVM = JavaVM;
+int init_gsdk(JavaVM* JavaVM) {
+	device::g_JavaVM = JavaVM;
 #else
-    int init_gsdk() {
+int init_gsdk() {
 #endif
-        errno = 0;
-        if (uname(&device::device_details) != 0) {
-            perror("uname doesn't return 0, so there is an error");
-            return -1;
-        }
-        
-        print_common_info();
-        return 0;
-    }
+	errno = 0;
+	if (uname(&device::device_details) != 0) {
+		perror("uname doesn't return 0, so there is an error");
+		return -1;
+	}
 
-    void print_common_info() {
+	print_common_info();
+	return 0;
+}
+
+void print_common_info() {
 #if DEV_BUILD
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
+	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
 #elif PROD_BUILD
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
+	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
 #else
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
+	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
 #endif
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
-        const char* endian_str = "Little endian machine";
+	const char* endian_str = "Little endian machine";
 #else
-        const char* endian_str = "Big endian machine";
+	const char* endian_str = "Big endian machine";
 #endif
 
 #ifdef __aarch64__
-        const char* arch_str = "ARM64 arch";
+	const char* arch_str = "ARM64 arch";
 #elif __x86_64__
-    #define ARCH "Intel 64-bit"
-        const char* arch_str = "Intel x86_64 arch";
+#define ARCH "Intel 64-bit"
+	const char* arch_str = "Intel x86_64 arch";
 #else
-        const char* arch_str = "Unknown architecture";
+	const char* arch_str = "Unknown architecture";
 #endif
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "%s [%s], sz(int):%d", endian_str, arch_str, sizeof(int));
-        
-        DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
-        DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
-        DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
-        DEBUG_PRINT(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
-        DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
-        DEBUG_PRINT(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
-        DEBUG_PRINT(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
-        
+	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "%s [%s], sz(int):%d", endian_str, arch_str, sizeof(int));
 
-        char cwd[PATH_MAX];
-        if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
-        }
-        else {
-            DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
-        }
+	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
+	DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
+	DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
+	DEBUG_PRINT(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
+	DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
+	DEBUG_PRINT(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
+	DEBUG_PRINT(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
+
+	char cwd[PATH_MAX];
+	if (getcwd(cwd, sizeof(cwd)) != NULL) {
+		DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
+	} else {
+		DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
+	}
 #if DEBUG
-        DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
+	DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
 #endif
-    }
+}
 
-    int number_of_digits(unsigned int num) {
-        if (num == 0) {
-            return 1;
-        }
-        int len = 0;
-        unsigned int n = num;
-        while (n != 0) {
-            len++;
-            n /= 10;
-        }
-        return len;
-    }
+int number_of_digits(unsigned int num) {
+	if (num == 0) {
+		return 1;
+	}
+	int len = 0;
+	unsigned int n = num;
+	while (n != 0) {
+		len++;
+		n /= 10;
+	}
+	return len;
+}
 
-    void DEBUG_RAW(int logLevel, const char* format, ...) {
-        if (logLevel > LOG_LEVEL) {
-            return;
-        }
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+void DEBUG_RAW(int logLevel, const char* format, ...) {
+	if (logLevel > LOG_LEVEL) {
+		return;
+	}
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "[%d] %s\n", getpid(), buffer);
+	fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #elif PLATFORM == PLATFORM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
+	__android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
 #else
-        fprintf(stderr, "[%d] %s\n", getpid(), buffer);
+	fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #endif
-        va_end(v);
-    }
+	va_end(v);
+}
 
-    void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
-        if (logLevel > LOG_LEVEL) {
-            return;
-        }
-        time_t givemetime = time(NULL);
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
+	if (logLevel > LOG_LEVEL) {
+		return;
+	}
+	time_t givemetime = time(NULL);
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
+	fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #elif PLATFORM == PLATFORM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, tag, "%s", buffer);
+	__android_log_print(ANDROID_LOG_INFO, tag, "%s", buffer);
 #else
-        fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
+	fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
 #endif
-        va_end(v);
-    }
+	va_end(v);
+}
 
-    void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
-        if (logLevel > LOG_LEVEL) {
-            return;
-        }
-        time_t givemetime = time(NULL);
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
+	if (logLevel > LOG_LEVEL) {
+		return;
+	}
+	time_t givemetime = time(NULL);
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 #if PLATFORM == PLATFORM_MAC
-        fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
+	fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
 #elif PLATFORM == PLATFORM_ANDROID
-        __android_log_print(ANDROID_LOG_INFO, tag, "%s\t\t(%s : %s:%d)", buffer, file, function, line);
+	__android_log_print(ANDROID_LOG_INFO, tag, "%s\t\t(%s : %s:%d)", buffer, file, function, line);
 #else
-        fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
+	fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
 #endif
-        va_end(v);
-    }
-        
-    type_debug_warn_or_err_cb global_warn_cb = nullptr;
-    type_debug_warn_or_err_cb global_err_cb = nullptr;
-    type_debug_warn_or_err_cb global_assert_cb = nullptr;
-        
-    void set_warn_callback(type_debug_warn_or_err_cb cb) {
-        global_warn_cb = cb;
-    }
-    void set_error_callback(type_debug_warn_or_err_cb cb) {
-        global_err_cb = cb;
-    }
-    void set_assert_callback(type_debug_warn_or_err_cb cb) {
-        global_assert_cb = cb;
-    }
-        
-    void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
-        if (logLevel > LOG_LEVEL) {
-            return;
-        }
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_warn_cb) {
-            global_warn_cb(buffer);
-        }
-    }
+	va_end(v);
+}
 
-    void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
-        if (condition == false) {
-            return;
-        }
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_warn_cb) {
-            global_warn_cb(buffer);
-        }
-    }
-    void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_warn_cb) {
-            global_warn_cb(buffer);
-        }
-    }
-    void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
-        if (global_err_cb) {
-            global_err_cb(buffer);
-        }
-    }
-    void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        //fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
-        DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
-        if (global_assert_cb) {
-            global_assert_cb(buffer);
-        }
-    }
-    void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
-    }
-    void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
-        char buffer[LOGBUFFER_SIZE + 1];
-        va_list v;
-        va_start(v, format);
-        vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-        va_end(v);
-        DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
-    }
+type_debug_warn_or_err_cb global_warn_cb = nullptr;
+type_debug_warn_or_err_cb global_err_cb = nullptr;
+type_debug_warn_or_err_cb global_assert_cb = nullptr;
 
-    void DEBUG_PRINT_scid(int logLevel, const uint8_t *scid, size_t scid_len) {
-        if (logLevel > LOG_LEVEL) {
-            return;
-        }
-        fprintf(stderr, "[%d] SCID: ", getpid());
-        for (size_t i = 0; i < scid_len; ++i) {
-            fprintf(stderr, "%02x", scid[i]);
-        }
-        fprintf(stderr, "\n");
-    }
+void set_warn_callback(type_debug_warn_or_err_cb cb) {
+	global_warn_cb = cb;
+}
+void set_error_callback(type_debug_warn_or_err_cb cb) {
+	global_err_cb = cb;
+}
+void set_assert_callback(type_debug_warn_or_err_cb cb) {
+	global_assert_cb = cb;
+}
+
+void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
+	if (logLevel > LOG_LEVEL) {
+		return;
+	}
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	if (global_warn_cb) {
+		global_warn_cb(buffer);
+	}
+}
+
+void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
+	if (condition == false) {
+		return;
+	}
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	if (global_warn_cb) {
+		global_warn_cb(buffer);
+	}
+}
+void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	if (global_warn_cb) {
+		global_warn_cb(buffer);
+	}
+}
+void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	if (global_err_cb) {
+		global_err_cb(buffer);
+	}
+}
+void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	// fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
+	DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
+	if (global_assert_cb) {
+		global_assert_cb(buffer);
+	}
+}
+void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
+}
+void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list v;
+	va_start(v, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
+	va_end(v);
+	DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
+}
+
+void DEBUG_PRINT_scid(int logLevel, const uint8_t* scid, size_t scid_len) {
+	if (logLevel > LOG_LEVEL) {
+		return;
+	}
+	fprintf(stderr, "[%d] SCID: ", getpid());
+	for (size_t i = 0; i < scid_len; ++i) {
+		fprintf(stderr, "%02x", scid[i]);
+	}
+	fprintf(stderr, "\n");
+}
 
 namespace gsdk {
-    str2int_errno str2int(int *out, const char *s, int base) {
-        if (out == nullptr || s == nullptr) {
-            return STR2INT_INCONVERTIBLE;
-        }
-        char *end = nullptr;
-        if (s[0] == '\0' || isspace(s[0]))
-            return STR2INT_INCONVERTIBLE;
-        errno = 0;
-        long l = strtol(s, &end, base);
-        /* Both checks are needed because INT_MAX == LONG_MAX is possible. */
-        if (l > INT_MAX || (errno == ERANGE && l == LONG_MAX))
-            return STR2INT_OVERFLOW;
-        if (l < INT_MIN || (errno == ERANGE && l == LONG_MIN))
-            return STR2INT_UNDERFLOW;
-        if (*end != '\0')
-            return STR2INT_INCONVERTIBLE;
-        *out = (int)l;
-        return STR2INT_SUCCESS;
-    }
+str2int_errno str2int(int* out, const char* s, int base) {
+	if (out == nullptr || s == nullptr) {
+		return STR2INT_INCONVERTIBLE;
+	}
+	char* end = nullptr;
+	if (s[0] == '\0' || isspace(s[0]))
+		return STR2INT_INCONVERTIBLE;
+	errno = 0;
+	long l = strtol(s, &end, base);
+	/* Both checks are needed because INT_MAX == LONG_MAX is possible. */
+	if (l > INT_MAX || (errno == ERANGE && l == LONG_MAX))
+		return STR2INT_OVERFLOW;
+	if (l < INT_MIN || (errno == ERANGE && l == LONG_MIN))
+		return STR2INT_UNDERFLOW;
+	if (*end != '\0')
+		return STR2INT_INCONVERTIBLE;
+	*out = (int) l;
+	return STR2INT_SUCCESS;
 }
-} // extern "C"
+}  // namespace gsdk
+}  // extern "C"
 
 /*
  // Console colour

@@ -20,7 +20,7 @@
  * @brief The qstats_crawler class is responsible for crawling and parsing files to extract statistics.
  */
 class qstats_crawler {
-public:
+   public:
 	/**
 	 * @brief Default constructor for qstats_crawler.
 	 */
@@ -37,7 +37,7 @@ public:
 	 */
 	enum CRAWL_EVENT {
 		CRAWL_START, /**< Crawl start event. */
-		CRAWL_STOP   /**< Crawl stop event. */
+		CRAWL_STOP	 /**< Crawl stop event. */
 	};
 
 	/**
@@ -58,7 +58,7 @@ public:
 	 */
 	void try_crawl(const qstring& root_filename, const qstring& host, const qstring& port, type_qstats_crawler_crawl_event_cb event_cb);
 
-private:
+   private:
 	/**
 	 * @brief Parses a file and updates the parsed lines count.
 	 * @param file The file to parse.
@@ -121,12 +121,12 @@ private:
 	 */
 	int batch_send_open_stats(fs::path current_file);
 
-	qpgsql pgsql_client; /**< The PostgreSQL client. */
-	int count_stats_counter = 0; /**< The count statistics counter. */
+	qpgsql pgsql_client;							   /**< The PostgreSQL client. */
+	int count_stats_counter = 0;					   /**< The count statistics counter. */
 	int total_records_sent_to_db_through_batching = 0; /**< The total records sent to the database through batching. */
-	qstring batch_count_stats_values; /**< The batch count statistics values. */
-	int open_stats_counter = 0; /**< The open statistics counter. */
-	qstring batch_open_stats_values; /**< The batch open statistics values. */
+	qstring batch_count_stats_values;				   /**< The batch count statistics values. */
+	int open_stats_counter = 0;						   /**< The open statistics counter. */
+	qstring batch_open_stats_values;				   /**< The batch open statistics values. */
 };
 
 #endif /* qstats_crawler_h */

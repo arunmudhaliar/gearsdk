@@ -24,11 +24,11 @@
 #include "../../common/qstring.h"
 #include "../../common/sdktypes.hpp"
 
+#include <functional>
 #include <hiredis.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <functional>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qhiredis"
@@ -231,9 +231,9 @@ class qhiredis {
 	static void iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_field_value_cb callback);
 
 	redisContext* context = nullptr; /**< The Redis context. */
-	const qstring name; /**< The name of the `qhiredis` object. */
-	qstring redis_ip = "127.0.0.1"; /**< The IP address of the Redis server. */
-	uint16_t redis_port; /**< The port number of the Redis server. */
+	const qstring name;				 /**< The name of the `qhiredis` object. */
+	qstring redis_ip = "127.0.0.1";	 /**< The IP address of the Redis server. */
+	uint16_t redis_port;			 /**< The port number of the Redis server. */
 };
 
 #endif /* qhiredis_hpp */

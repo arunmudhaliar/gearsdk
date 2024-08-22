@@ -1,16 +1,15 @@
 /**
  * @file qmongo.hpp
  * @brief This file contains the declaration of the qmongo class and the interface_qmongo_connection class.
- * 
+ *
  * The qmongo class provides a way to interact with MongoDB using the qmongo library. It allows inserting, updating, and finding documents in a collection, as well as connecting to the MongoDB server.
- * 
+ *
  * The interface_qmongo_connection class is an interface for handling qmongo connection events. It defines two pure virtual functions: on_mongo_connect() and on_mongo_create_index_keys().
- * 
+ *
  * @author Arun A
  * @date 2023
  * @copyright 2024 homenet25
  */
-
 
 #ifndef qmongo_hpp
 #define qmongo_hpp

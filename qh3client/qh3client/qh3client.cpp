@@ -8,7 +8,6 @@
 
 #include "qh3client.hpp"
 
-#include "../../common/gxcrc32.h"
 #include "../../common/sdktypes.hpp"
 
 #include <zlib.h>

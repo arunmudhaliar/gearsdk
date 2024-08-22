@@ -17,7 +17,6 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
               $(QUTILS_SRCDIR)/discord_util.cpp \
               $(COMMON_SRCDIR)/timer.cpp \
               $(COMMON_SRCDIR)/sdktypes.cpp \
-              $(COMMON_SRCDIR)/gxcrc32.cpp \
               $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis_async.cpp

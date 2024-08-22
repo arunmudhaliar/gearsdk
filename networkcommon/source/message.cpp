@@ -275,60 +275,60 @@ DEFINE_MESSAGE_PRE_REQUISITES(res_msg_gservers)
 res_msg_gservers::res_msg_gservers() : message_base() {}
 
 bool res_msg_gservers::deserialize(rapidjson::Value& obj) {
-    gservers.clear();
-    if (!message_base::deserialize(obj)) {
-        return false;
-    }
-    
-    if (!obj.IsArray()) {
-        return false;
-    }
+	gservers.clear();
+	if (!message_base::deserialize(obj)) {
+		return false;
+	}
 
-    for (rapidjson::SizeType i = 0; i < obj.Size(); i++) {
-        const rapidjson::Value& serverObj = obj[i];
-        if (!serverObj.IsObject()) {
-            return false;
-        }
+	if (!obj.IsArray()) {
+		return false;
+	}
 
-        qstring addr;
-        if (serverObj.HasMember("addr") && serverObj["addr"].IsString()) {
-            addr = serverObj["addr"].GetString();
-        } else {
-            return false;
-        }
+	for (rapidjson::SizeType i = 0; i < obj.Size(); i++) {
+		const rapidjson::Value& serverObj = obj[i];
+		if (!serverObj.IsObject()) {
+			return false;
+		}
 
-        if (serverObj.HasMember("ports") && serverObj["ports"].IsArray()) {
-            const rapidjson::Value& portsArray = serverObj["ports"];
-            for (rapidjson::SizeType j = 0; j < portsArray.Size(); j++) {
-                if (portsArray[j].IsString()) {
-                    gservers[addr].push_back(portsArray[j].GetString());
-                } else {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-    }
+		qstring addr;
+		if (serverObj.HasMember("addr") && serverObj["addr"].IsString()) {
+			addr = serverObj["addr"].GetString();
+		} else {
+			return false;
+		}
 
-    return true;
+		if (serverObj.HasMember("ports") && serverObj["ports"].IsArray()) {
+			const rapidjson::Value& portsArray = serverObj["ports"];
+			for (rapidjson::SizeType j = 0; j < portsArray.Size(); j++) {
+				if (portsArray[j].IsString()) {
+					gservers[addr].push_back(portsArray[j].GetString());
+				} else {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void res_msg_gservers::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
-    message_base::serialize(obj, allocator);
-    obj.SetArray();
-    for (const auto& kv : gservers) {
-        rapidjson::Value serverObj(rapidjson::kObjectType);
-        serverObj.SetObject();
-        serverObj.AddMember("addr", rapidjson::Value().SetString(kv.first.c_str(), (uint)kv.first.length(), allocator), allocator);
-        
-        rapidjson::Value portsArray(rapidjson::kArrayType);
-        for (const auto& port : kv.second) {
-            portsArray.PushBack(rapidjson::Value().SetString(port.c_str(), allocator), allocator);
-        }
-        serverObj.AddMember("ports", portsArray, allocator);
-        obj.PushBack(serverObj, allocator);
-    }
+	message_base::serialize(obj, allocator);
+	obj.SetArray();
+	for (const auto& kv : gservers) {
+		rapidjson::Value serverObj(rapidjson::kObjectType);
+		serverObj.SetObject();
+		serverObj.AddMember("addr", rapidjson::Value().SetString(kv.first.c_str(), (uint) kv.first.length(), allocator), allocator);
+
+		rapidjson::Value portsArray(rapidjson::kArrayType);
+		for (const auto& port : kv.second) {
+			portsArray.PushBack(rapidjson::Value().SetString(port.c_str(), allocator), allocator);
+		}
+		serverObj.AddMember("ports", portsArray, allocator);
+		obj.PushBack(serverObj, allocator);
+	}
 }
 
 // MARK: - res_msg_user_get
@@ -351,11 +351,11 @@ bool res_msg_user_get::deserialize(rapidjson::Value& obj) {
 	if (obj.HasMember("token") && obj["token"].IsString()) {
 		token = obj["token"].GetString();
 	}
-    if (obj.HasMember("gservers") && obj["gservers"].IsArray()) {
-        return gservers.deserialize(obj["gservers"].GetArray());
-    }
-    
-    return false;
+	if (obj.HasMember("gservers") && obj["gservers"].IsArray()) {
+		return gservers.deserialize(obj["gservers"].GetArray());
+	}
+
+	return false;
 }
 
 void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
@@ -365,10 +365,10 @@ void res_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::All
 	obj.AddMember("last_login", Value().SetString(last_login.c_str(), (uint32_t) last_login.length(), allocator), allocator);
 	obj.AddMember("user_name", Value().SetString(user_name.c_str(), (uint32_t) user_name.length(), allocator), allocator);
 	obj.AddMember("token", Value().SetString(token.c_str(), (uint32_t) token.length(), allocator), allocator);
-    
-    rapidjson::Value gservers_obj(rapidjson::kArrayType);
-    gservers.serialize(gservers_obj, allocator);
-    obj.AddMember("gservers", gservers_obj, allocator);
+
+	rapidjson::Value gservers_obj(rapidjson::kArrayType);
+	gservers.serialize(gservers_obj, allocator);
+	obj.AddMember("gservers", gservers_obj, allocator);
 }
 
 // MARK: - message_parser
@@ -394,7 +394,7 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 	std::map<unsigned long, type_room_message_create_cb>::iterator it = records.find(crc);
 	if (it == records.end()) {
 		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "message type not registered - %s. registering.. !!!", T::get_type_string().c_str());
-        register_message_type<T>();
+		register_message_type<T>();
 	}
 	message_base* new_msg = records[crc]();
 	T* msg = dynamic_cast<T*>(new_msg);

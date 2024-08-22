@@ -1,15 +1,15 @@
 /**
  * @file qhiredis_async.hpp
  * @brief This file contains the declaration of the qhiredis_async class, which provides an asynchronous interface for interacting with a Redis server.
- * 
+ *
  * The class allows connecting to a Redis server, sending commands, and receiving responses asynchronously.
  * It also provides a callback mechanism for handling expired keys in Redis.
- * 
+ *
  * @author Arun A
  * @date 03/03/24
- * 
+ *
  * @copyright Copyright (c) 2024, amudaliar
- * 
+ *
  */
 
 #ifndef qhiredis_async_hpp
@@ -37,9 +37,9 @@ class interface_qhiredis_async {
    public:
 	/**
 	 * @brief Callback function for handling expired keys in Redis.
-	 * 
+	 *
 	 * This function is called when a key in Redis expires.
-	 * 
+	 *
 	 * @param expired_key The expired key in Redis.
 	 */
 	virtual void on_qhiredis_async_key_expired(const qstring& expired_key) = 0;
@@ -53,7 +53,7 @@ class qhiredis_async {
    public:
 	/**
 	 * @brief Constructor for qhiredis_async class.
-	 * 
+	 *
 	 * @param redis_ip The IP address of the Redis server.
 	 * @param redis_port The port number of the Redis server.
 	 * @param interface A pointer to the interface_qhiredis_async object for handling callbacks.
@@ -67,7 +67,7 @@ class qhiredis_async {
 
 	/**
 	 * @brief Connects to the Redis server asynchronously.
-	 * 
+	 *
 	 * @param loop The event loop to use for asynchronous operations.
 	 * @return 0 if the connection is successful, -1 otherwise.
 	 */
@@ -81,7 +81,7 @@ class qhiredis_async {
    private:
 	/**
 	 * @brief Callback function for handling the connection status of the Redis server.
-	 * 
+	 *
 	 * @param c The redisAsyncContext object.
 	 * @param status The connection status.
 	 */
@@ -89,7 +89,7 @@ class qhiredis_async {
 
 	/**
 	 * @brief Callback function for handling the disconnection status of the Redis server.
-	 * 
+	 *
 	 * @param c The redisAsyncContext object.
 	 * @param status The disconnection status.
 	 */
@@ -97,7 +97,7 @@ class qhiredis_async {
 
 	/**
 	 * @brief Callback function for handling the response from Redis.
-	 * 
+	 *
 	 * @param c The redisAsyncContext object.
 	 * @param reply The reply from Redis.
 	 * @param priv A pointer to private data.

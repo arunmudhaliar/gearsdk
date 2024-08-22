@@ -439,17 +439,17 @@ int essentials::get_all_child_folders(const fs::path& folder_path, std::vector<f
 }
 
 int essentials::get_all_files(const fs::path& folder_path, std::vector<fs::path>& names, const qstring& extension) {
-    try {
-        for (const auto& entry : fs::directory_iterator(folder_path)) {
-            if (fs::is_regular_file(entry.path()) && entry.path().extension() == extension.c_str()) {
-                names.push_back(entry.path());
-            }
-        }
-    } catch (const fs::filesystem_error& e) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
-        return 1;
-    }
-    return 0;
+	try {
+		for (const auto& entry : fs::directory_iterator(folder_path)) {
+			if (fs::is_regular_file(entry.path()) && entry.path().extension() == extension.c_str()) {
+				names.push_back(entry.path());
+			}
+		}
+	} catch (const fs::filesystem_error& e) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
+		return 1;
+	}
+	return 0;
 }
 
 int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port) {

@@ -42,8 +42,6 @@
 		556AB71C2AFA993200D688DB /* crypto_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 556AB71A2AFA993200D688DB /* crypto_helper.hpp */; };
 		55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55853CC72AC32A1E00901E52 /* sdktypes.cpp */; };
 		55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B3730B2AC3263200F0095E /* sdktypes.hpp */; };
-		55E4D3102AC8A73000555999 /* gxcrc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D30E2AC8A73000555999 /* gxcrc32.cpp */; };
-		55E4D3112AC8A73000555999 /* gxcrc32.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D30F2AC8A73000555999 /* gxcrc32.h */; };
 		55E4D3152ACAF18B00555999 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3132ACAF18B00555999 /* timer.cpp */; };
 		55E4D3162ACAF18B00555999 /* timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3142ACAF18B00555999 /* timer.h */; };
 /* End PBXBuildFile section */
@@ -88,8 +86,6 @@
 		55A72F702B93B14400064250 /* typex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = typex.h; sourceTree = "<group>"; };
 		55B372FA2AC325B200F0095E /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B3730B2AC3263200F0095E /* sdktypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sdktypes.hpp; sourceTree = "<group>"; };
-		55E4D30E2AC8A73000555999 /* gxcrc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gxcrc32.cpp; sourceTree = "<group>"; };
-		55E4D30F2AC8A73000555999 /* gxcrc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gxcrc32.h; sourceTree = "<group>"; };
 		55E4D3132ACAF18B00555999 /* timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timer.cpp; sourceTree = "<group>"; };
 		55E4D3142ACAF18B00555999 /* timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timer.h; sourceTree = "<group>"; };
 		55E4D31F2ACAF4AC00555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
@@ -171,8 +167,6 @@
 				556AB6C22AF5736E00D688DB /* libbson-1.0 */,
 				55E4D3132ACAF18B00555999 /* timer.cpp */,
 				55E4D3142ACAF18B00555999 /* timer.h */,
-				55E4D30E2AC8A73000555999 /* gxcrc32.cpp */,
-				55E4D30F2AC8A73000555999 /* gxcrc32.h */,
 				55B3730B2AC3263200F0095E /* sdktypes.hpp */,
 				55853CC72AC32A1E00901E52 /* sdktypes.cpp */,
 				55B372FB2AC325B200F0095E /* Products */,
@@ -229,7 +223,6 @@
 				556AB6E62AF5736E00D688DB /* bson-config.h in Headers */,
 				556AB6F92AF5736E00D688DB /* bson-version.h in Headers */,
 				556AB7142AFA8FBC00D688DB /* sha256.h in Headers */,
-				55E4D3112AC8A73000555999 /* gxcrc32.h in Headers */,
 				556AB6F12AF5736E00D688DB /* bson-types.h in Headers */,
 				556AB6F02AF5736E00D688DB /* bson-context.h in Headers */,
 				556AB6EE2AF5736E00D688DB /* bson-error.h in Headers */,
@@ -250,6 +243,7 @@
 				55B372F62AC325B200F0095E /* Headers */,
 				55B372F72AC325B200F0095E /* Sources */,
 				55B372F82AC325B200F0095E /* Frameworks */,
+				55CB70482C77D52800E05D37 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -291,13 +285,32 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		55CB70482C77D52800E05D37 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\\n    \\( -not -path \"${SRCROOT}/crypto/*\" -not -path \"${SRCROOT}/libbson-1.0/*\" -not -path \"${SRCROOT}/libs/*\" -not -path \"${SRCROOT}/nvwa/*\" -not -path \"${SRCROOT}/rapidjson/*\" -not -path \"${SRCROOT}/uthash/*\" -not -path \"${SRCROOT}/zlib/*\" \\) \\\n    \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) \\\n    -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		55B372F72AC325B200F0095E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				55E4D3152ACAF18B00555999 /* timer.cpp in Sources */,
-				55E4D3102AC8A73000555999 /* gxcrc32.cpp in Sources */,
 				556AB7152AFA8FBC00D688DB /* sha256.c in Sources */,
 				55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */,
 				556AB71B2AFA993200D688DB /* crypto_helper.cpp in Sources */,

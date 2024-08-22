@@ -14,6 +14,7 @@
 #include "../../common/timer.h"
 #include "qtimer.hpp"
 #include "qtimer_uv.hpp"
+
 #include <map>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -31,21 +32,20 @@
 #define __LOGTAG__ "essentials"
 
 #define EV_START_RECORD(timestamp_) unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg)                                            \
-        DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
-#define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                              \
-        DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);  \
-        timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                          \
-    do {                                                                                            \
-        unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_;  \
-        if (elapsed_since_##timestamp_ > warn_after_ms) {                                           \
-            DEBUG_PRINT_IMPORTANT(tag, formatted_msg, elapsed_since_##timestamp_);                  \
-        }                                                                                           \
-    } while(false)
-#define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)                \
-    EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);                             \
-    timestamp_ = timer::getCurrentTimeInMilliSec()
+#define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg) DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
+#define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                             \
+	DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_); \
+	timestamp_ = timer::getCurrentTimeInMilliSec()
+#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                         \
+	do {                                                                                           \
+		unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_; \
+		if (elapsed_since_##timestamp_ > warn_after_ms) {                                          \
+			DEBUG_PRINT_IMPORTANT(tag, formatted_msg, elapsed_since_##timestamp_);                 \
+		}                                                                                          \
+	} while (false)
+#define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms) \
+	EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);              \
+	timestamp_ = timer::getCurrentTimeInMilliSec()
 
 class qmutex;
 class qmutexcondition {
@@ -117,8 +117,8 @@ class essentials {
 
 	// fs
 	static int get_all_child_folders(const fs::path& folder_path, std::vector<fs::path>& names);
-    static int get_all_files(const fs::path& folder_path, std::vector<fs::path>& names, const qstring& extension = ".log");
-    
+	static int get_all_files(const fs::path& folder_path, std::vector<fs::path>& names, const qstring& extension = ".log");
+
 	static unsigned long get_crc(const uint8_t* buffer, ssize_t len);
 
 	static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
@@ -161,9 +161,7 @@ struct conn_io_req_res {
 			crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*) buffer.c_str(), buffer.length());
 			return crc_;
 		}
-        unsigned long get_size() const {
-            return buffer.length();
-        }
+		unsigned long get_size() const { return buffer.length(); }
 		qstring buffer;
 	} payload;
 

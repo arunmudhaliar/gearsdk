@@ -12,6 +12,7 @@
 #include "../../common/qstring.h"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qtextfile.hpp"
+
 #include <map>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
@@ -20,13 +21,14 @@
 #define __LOGTAG__ "serverconfig"
 
 class observer_serverconfig {
-public:
-    virtual void configchanged(const qstring& path, const qstring& data) = 0;
+   public:
+	virtual void configchanged(const qstring& path, const qstring& data) = 0;
 };
 
 class serverconfig {
-private:
-    serverconfig(){}
+   private:
+	serverconfig() {}
+
    public:
 	serverconfig(interface_qzookeeper* interface, observer_serverconfig* observer);
 	~serverconfig();
@@ -36,14 +38,14 @@ private:
 	int get_config(const qstring& key, const qstring& default_value, qstring& result);
 	int get_int32(const qstring& key, const int32_t default_value);
 	qstring get_string(const qstring& key, const qstring& default_value);
-    
+
    private:
-    static void zk_value_change_listener(const qstring& path, const qstring& data, void* context);
+	static void zk_value_change_listener(const qstring& path, const qstring& data, void* context);
 	bool iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk, const qstring& zk_root_folder);
-    bool try_update_value(const qstring& path, const qstring& data);
-    
+	bool try_update_value(const qstring& path, const qstring& data);
+
 	std::map<qstring, qstring> configs;
-    interface_qzookeeper* zk_interface = nullptr;
-    observer_serverconfig* config_change_observer = nullptr;
+	interface_qzookeeper* zk_interface = nullptr;
+	observer_serverconfig* config_change_observer = nullptr;
 };
 #endif /* serverconfig_hpp */

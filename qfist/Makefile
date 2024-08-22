@@ -8,7 +8,6 @@ $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
-$(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"

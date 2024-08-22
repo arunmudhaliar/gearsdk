@@ -7,6 +7,7 @@
 //
 
 #include "qzookeeper.hpp"
+
 #include <chrono>
 #include <thread>
 
@@ -60,39 +61,39 @@ const char* qzookeeper::type2String(int state) {
 #include <chrono>
 
 const char* qzookeeper::get_name() const {
-    std::unique_lock<std::timed_mutex> lock(nameMutex, std::defer_lock);
-    if (lock.try_lock_for(std::chrono::milliseconds(100))) {
-        return name.c_str();
-    } else {
-        return __LOGTAG__;
-    }
+	std::unique_lock<std::timed_mutex> lock(nameMutex, std::defer_lock);
+	if (lock.try_lock_for(std::chrono::milliseconds(100))) {
+		return name.c_str();
+	} else {
+		return __LOGTAG__;
+	}
 }
 
 const char* qzookeeper::get_wname() const {
-    std::unique_lock<std::timed_mutex> lock(wnameMutex, std::defer_lock);
-    if (lock.try_lock_for(std::chrono::milliseconds(100))) {
-        return wname.c_str();
-    } else {
-        return __LOGTAG__;
-    }
+	std::unique_lock<std::timed_mutex> lock(wnameMutex, std::defer_lock);
+	if (lock.try_lock_for(std::chrono::milliseconds(100))) {
+		return wname.c_str();
+	} else {
+		return __LOGTAG__;
+	}
 }
 
 void qzookeeper::watcher(zhandle_t* zzh, int type, int state, const char* path, void* context) {
 	/* Be careful using zh here rather than zzh - as this may be mt code
 	 * the client lib may call the watcher before zookeeper_init returns */
 	qzookeeper* qzk = (qzookeeper*) context;
-    PTHREAD_NAME(qzk->get_wname());
-    const char* logtag = qzk->get_name(); // its safe to read since no one going to write on this variable except constructor;
-    
+	PTHREAD_NAME(qzk->get_wname());
+	const char* logtag = qzk->get_name();  // its safe to read since no one going to write on this variable except constructor;
+
 	DEBUG_PRINT(LOG_LEVEL_0, logtag, "Watcher %s state = %s", type2String(type), state2String(state));
 	if (path && strlen(path) > 0) {
 		DEBUG_PRINT(LOG_LEVEL_0, logtag, "for path %s", path);
 	}
-    
-    std::lock_guard<std::mutex> lock(qzk->watcher_gaurd_mutex); // Lock the mutex for thread-safe access
 
-    qzk->connection_state = state;
-    
+	std::lock_guard<std::mutex> lock(qzk->watcher_gaurd_mutex);	 // Lock the mutex for thread-safe access
+
+	qzk->connection_state = state;
+
 	if (type == ZOO_SESSION_EVENT) {
 		if (state == ZOO_CONNECTED_STATE) {
 			const clientid_t* id = zoo_client_id(zzh);
@@ -112,33 +113,31 @@ void qzookeeper::watcher(zhandle_t* zzh, int type, int state, const char* path, 
 						fclose(fh);
 					}
 				}
-                
-                // retry pending config change if any
-                for(auto p : qzk->pending_config_updates) {
-                    char buffer[4*1024];
-                    int buffer_len = sizeof(buffer);
-                    auto operation = [&]() {
-                        return zoo_wget(zzh, p.c_str(), watcher, context, buffer, &buffer_len, nullptr);
-                    };
-                    int rc = retry_with_backoff(operation, QZK_MAX_RETRIES_FOR_API, QZK_RETRY_BASE_DELAY_MS);
-//                    int rc = zoo_wget(zzh, p.c_str(), watcher, context, buffer, &buffer_len, NULL);
-                    if (rc == ZOK) {
-                        DEBUG_PRINT(LOG_LEVEL_2, logtag, "updated value for %s --> [%d bytes]\n%.*s", p.c_str(), buffer_len, buffer_len, buffer);
-                        qzk->broadcast_value_change_to_all(p.c_str(), qstring(buffer, buffer_len));
-                    } else {
-                        DEBUG_PRINT_ERROR(logtag, "zk config update failed with error %s on zoo_wget for %s", zerror(rc), path);
-                        qzk->close_zk(state);
-                        return;
-                    }
-                }
-                if (qzk->pending_config_updates.size()) {
-                    DEBUG_PRINT_IMPORTANT2(logtag, "qzookeeper - pending updates applied !!!");
-                    qzk->pending_config_updates.clear();
-                }
-                // ~retry
-                
-                qzk->retry_count = 0;
-                qzk->connection_in_progress = false;
+
+				// retry pending config change if any
+				for (auto p : qzk->pending_config_updates) {
+					char buffer[4 * 1024];
+					int buffer_len = sizeof(buffer);
+					auto operation = [&]() { return zoo_wget(zzh, p.c_str(), watcher, context, buffer, &buffer_len, nullptr); };
+					int rc = retry_with_backoff(operation, QZK_MAX_RETRIES_FOR_API, QZK_RETRY_BASE_DELAY_MS);
+					//                    int rc = zoo_wget(zzh, p.c_str(), watcher, context, buffer, &buffer_len, NULL);
+					if (rc == ZOK) {
+						DEBUG_PRINT(LOG_LEVEL_2, logtag, "updated value for %s --> [%d bytes]\n%.*s", p.c_str(), buffer_len, buffer_len, buffer);
+						qzk->broadcast_value_change_to_all(p.c_str(), qstring(buffer, buffer_len));
+					} else {
+						DEBUG_PRINT_ERROR(logtag, "zk config update failed with error %s on zoo_wget for %s", zerror(rc), path);
+						qzk->close_zk(state);
+						return;
+					}
+				}
+				if (qzk->pending_config_updates.size()) {
+					DEBUG_PRINT_IMPORTANT2(logtag, "qzookeeper - pending updates applied !!!");
+					qzk->pending_config_updates.clear();
+				}
+				// ~retry
+
+				qzk->retry_count = 0;
+				qzk->connection_in_progress = false;
 			}
 		} else if (state == ZOO_AUTH_FAILED_STATE) {
 			DEBUG_PRINT_ERROR(logtag, "Authentication failure. Shutting down...");
@@ -146,81 +145,78 @@ void qzookeeper::watcher(zhandle_t* zzh, int type, int state, const char* path, 
 		} else if (state == ZOO_EXPIRED_SESSION_STATE) {
 			DEBUG_PRINT_ERROR(logtag, "Session expired. Shutting down...");
 			qzk->close_zk(state);
-//            qzk->retry_connection();
-        }
+			//            qzk->retry_connection();
+		}
 	} else if (type == ZOO_CHANGED_EVENT) {
-        if (state == ZOO_CONNECTED_STATE) {
-            char buffer[4*1024];
-            int buffer_len = sizeof(buffer);
-            auto operation = [&]() {
-                return zoo_wget(zzh, path, watcher, context, buffer, &buffer_len, nullptr);
-            };
-            int rc = retry_with_backoff(operation, QZK_MAX_RETRIES_FOR_API, QZK_RETRY_BASE_DELAY_MS);
-//            int rc = zoo_wget(zzh, path, watcher, context, buffer, &buffer_len, NULL);
-            if (rc == ZOK) {
-                DEBUG_PRINT(LOG_LEVEL_2, logtag, "updated value for %s --> [%d bytes]\n%.*s", path, buffer_len, buffer_len, buffer);
-                qzk->broadcast_value_change_to_all(path, qstring(buffer, buffer_len));
-            } else {
-                qzk->pending_config_updates.push_back(path);
-                DEBUG_PRINT_ERROR(logtag, "zk config update failed with error %s on zoo_wget for %s", zerror(rc), path);
-//                qzk->close_zk(state);
-//                qzk->retry_connection();
-            }
-        }
-    }
+		if (state == ZOO_CONNECTED_STATE) {
+			char buffer[4 * 1024];
+			int buffer_len = sizeof(buffer);
+			auto operation = [&]() { return zoo_wget(zzh, path, watcher, context, buffer, &buffer_len, nullptr); };
+			int rc = retry_with_backoff(operation, QZK_MAX_RETRIES_FOR_API, QZK_RETRY_BASE_DELAY_MS);
+			//            int rc = zoo_wget(zzh, path, watcher, context, buffer, &buffer_len, NULL);
+			if (rc == ZOK) {
+				DEBUG_PRINT(LOG_LEVEL_2, logtag, "updated value for %s --> [%d bytes]\n%.*s", path, buffer_len, buffer_len, buffer);
+				qzk->broadcast_value_change_to_all(path, qstring(buffer, buffer_len));
+			} else {
+				qzk->pending_config_updates.push_back(path);
+				DEBUG_PRINT_ERROR(logtag, "zk config update failed with error %s on zoo_wget for %s", zerror(rc), path);
+				//                qzk->close_zk(state);
+				//                qzk->retry_connection();
+			}
+		}
+	}
 }
 
 int qzookeeper::retry_with_backoff(std::function<int()> operation, int max_retries, int base_delay_ms) {
-    int attempt = 0;
-    int delay = base_delay_ms;
+	int attempt = 0;
+	int delay = base_delay_ms;
 
-    while (attempt < max_retries) {
-        int rc = operation();
-        if (rc == ZOK) {
-            return ZOK;
-        } else if (rc == ZOPERATIONTIMEOUT) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-            delay *= 2; // Exponential backoff
-            attempt++;
-        } else {
-            return rc; // If it's not a timeout, return the error code
-        }
-    }
-    return ZOPERATIONTIMEOUT; // If all retries fail, return timeout
+	while (attempt < max_retries) {
+		int rc = operation();
+		if (rc == ZOK) {
+			return ZOK;
+		} else if (rc == ZOPERATIONTIMEOUT) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+			delay *= 2;	 // Exponential backoff
+			attempt++;
+		} else {
+			return rc;	// If it's not a timeout, return the error code
+		}
+	}
+	return ZOPERATIONTIMEOUT;  // If all retries fail, return timeout
 }
 
-qzookeeper::qzookeeper(const qstring& name) :
- qtimer_sceduler(), name(name), wname(qstring::format_string("%s-watcher", name.c_str())) {
-    retry_in_progress = false;
+qzookeeper::qzookeeper(const qstring& name) : qtimer_sceduler(), name(name), wname(qstring::format_string("%s-watcher", name.c_str())) {
+	retry_in_progress = false;
 	connection_in_progress = false;
 	running = false;
 	op_in_progress = false;
 	op_result = 0;
-    DEBUG_ASSERT(name.c_str(), (close_mutex.init("qzk_close") == 0), "qzookeeper Constructor - CHECK !!!");
-    DEBUG_ASSERT(name.c_str(), (reconnect_mutex.init("qzk_reconnect") == 0), "qzookeeper Constructor - CHECK !!!");
+	DEBUG_ASSERT(name.c_str(), (close_mutex.init("qzk_close") == 0), "qzookeeper Constructor - CHECK !!!");
+	DEBUG_ASSERT(name.c_str(), (reconnect_mutex.init("qzk_reconnect") == 0), "qzookeeper Constructor - CHECK !!!");
 }
 
 qzookeeper::~qzookeeper() {
-    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
+	const char* logtag = get_name();  // its safe to read since no one going to write on this variable except constructor;
 	if (zh) {
 		zookeeper_close(zh);
 		zh = nullptr;
-        DEBUG_PRINT(LOG_LEVEL_4, logtag, "zk closed");
-    } else {
-        DEBUG_PRINT(LOG_LEVEL_4, logtag, "no zk handle. no need to close.");
-    }
+		DEBUG_PRINT(LOG_LEVEL_4, logtag, "zk closed");
+	} else {
+		DEBUG_PRINT(LOG_LEVEL_4, logtag, "no zk handle. no need to close.");
+	}
 	if (mainloop) {
 		ev_loop_destroy(mainloop);
 		mainloop = nullptr;
-        DEBUG_PRINT(LOG_LEVEL_4, logtag, "zk mainloop destroyed");
+		DEBUG_PRINT(LOG_LEVEL_4, logtag, "zk mainloop destroyed");
 	} else {
-        DEBUG_PRINT(LOG_LEVEL_4, logtag, "no zk mainloop. no need to destroy mainloop.");
-    }
-    DEBUG_PRINT(LOG_LEVEL_0, logtag, "zk destroyed");
+		DEBUG_PRINT(LOG_LEVEL_4, logtag, "no zk mainloop. no need to destroy mainloop.");
+	}
+	DEBUG_PRINT(LOG_LEVEL_0, logtag, "zk destroyed");
 }
 
 int qzookeeper::connect(const qstring& url) {
-    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
+	const char* logtag = get_name();  // its safe to read since no one going to write on this variable except constructor;
 	connection_url = url;
 	connection_in_progress = true;
 	if (pthread_create(&zk_thread_id, nullptr, qzookeeper::connect_internal, (void*) this) < 0) {
@@ -232,39 +228,39 @@ int qzookeeper::connect(const qstring& url) {
 	while (connection_in_progress) {
 		millisleep(50);
 	}
-    if (connection_state != ZOO_CONNECTED_STATE) {
-        DEBUG_PRINT_ERROR(logtag, "qzookeeper not in ZOO_CONNECTED_STATE state while returning from connect - %s", state2String(connection_state));
-    }
+	if (connection_state != ZOO_CONNECTED_STATE) {
+		DEBUG_PRINT_ERROR(logtag, "qzookeeper not in ZOO_CONNECTED_STATE state while returning from connect - %s", state2String(connection_state));
+	}
 	return connection_state == ZOO_CONNECTED_STATE ? 0 : -1;
 }
 
 int qzookeeper::retry_connection() {
-    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
+	const char* logtag = get_name();  // its safe to read since no one going to write on this variable except constructor;
 	if (zh) {
 		DEBUG_PRINT_ERROR(logtag, "qzookeeper retry_connection - already inited (thiz->zh != null)");
 		return -1;
 	}
 
-    if (reconnect_mutex.tryLock(__FUNCTION__) != 0) {
-        DEBUG_PRINT_ERROR(logtag, "qzookeeper - retry_connection acquire lock failed. returning !!!");
-        return -2;
-    }
-    
-    retry_in_progress = true;
+	if (reconnect_mutex.tryLock(__FUNCTION__) != 0) {
+		DEBUG_PRINT_ERROR(logtag, "qzookeeper - retry_connection acquire lock failed. returning !!!");
+		return -2;
+	}
+
+	retry_in_progress = true;
 	retry_count++;
 	DEBUG_PRINT_IMPORTANT2(logtag, "qzookeeper - retry connection !!!");
 	int flags = ZOO_READONLY;
 	bool use_fresh = connection_state == ZOO_EXPIRED_SESSION_STATE || connection_state == ZOO_AUTH_FAILED_STATE || connection_state == ZOO_NOTCONNECTED_STATE;
 	zh = zookeeper_init(connection_url.c_str(), watcher, 30000, use_fresh ? nullptr : &myid, this, flags);
-    retry_in_progress = false;
-    DEBUG_ASSERT(logtag, (reconnect_mutex.unLock() == 0), "retry_connection unlock CHECK !!!");
+	retry_in_progress = false;
+	DEBUG_ASSERT(logtag, (reconnect_mutex.unLock() == 0), "retry_connection unlock CHECK !!!");
 	return 0;
 }
 
 void* qzookeeper::connect_internal(void* data) {
 	qzookeeper* thiz = (qzookeeper*) data;
-    const char* logtag = thiz->get_name(); // its safe to read since no one going to write on this variable except constructor;
-    PTHREAD_NAME(logtag);
+	const char* logtag = thiz->get_name();	// its safe to read since no one going to write on this variable except constructor;
+	PTHREAD_NAME(logtag);
 	thiz->running = true;
 	thiz->connection_in_progress = true;
 
@@ -277,21 +273,21 @@ void* qzookeeper::connect_internal(void* data) {
 
 	zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
 
-    if (thiz->reconnect_mutex.tryLock(__FUNCTION__) != 0) {
-        DEBUG_PRINT_ERROR(logtag, "qzookeeper - retry_connection (connect_internal) acquire lock failed. returning !!!");
-        pthread_exit(0);
-    }
-    
+	if (thiz->reconnect_mutex.tryLock(__FUNCTION__) != 0) {
+		DEBUG_PRINT_ERROR(logtag, "qzookeeper - retry_connection (connect_internal) acquire lock failed. returning !!!");
+		pthread_exit(0);
+	}
+
 	int flags = ZOO_READONLY;
 	thiz->zh = zookeeper_init(thiz->connection_url.c_str(), watcher, 30000, &thiz->myid, thiz, flags);
-    
-    DEBUG_ASSERT(logtag, (thiz->reconnect_mutex.unLock() == 0), "retry_connection (connect_internal) unlock CHECK !!!");
-    
+
+	DEBUG_ASSERT(logtag, (thiz->reconnect_mutex.unLock() == 0), "retry_connection (connect_internal) unlock CHECK !!!");
+
 	if (!thiz->zh) {
 		DEBUG_PRINT_ERROR(logtag, "qzookeeper - zookeeper_init failed : %s - %d", strerror(errno), errno);
 		pthread_exit(0);
 	}
-	
+
 	thiz->mainloop = ev_loop_new(0);
 	thiz->set_ev_lopp(thiz->mainloop);
 
@@ -301,13 +297,13 @@ void* qzookeeper::connect_internal(void* data) {
 			if (!(thiz->connection_state == ZOO_CONNECTING_STATE || thiz->connection_state == ZOO_ASSOCIATING_STATE || thiz->connection_state == ZOO_CONNECTED_STATE) /*&& !thiz->connection_in_progress*/) {
 				thiz->close_zk(-1);
 				if (thiz->retry_count < 5) {
-                    DEBUG_PRINT_ERROR(logtag,
-                                      "qzookeeper - zk server not in CONNECTED state !!! "
-                                      "retrying... retry-count:%d, STATE:%s [%d]",
-                                      thiz->retry_count, qzookeeper::state2String(thiz->connection_state), thiz->connection_state);
+					DEBUG_PRINT_ERROR(logtag,
+									  "qzookeeper - zk server not in CONNECTED state !!! "
+									  "retrying... retry-count:%d, STATE:%s [%d]",
+									  thiz->retry_count, qzookeeper::state2String(thiz->connection_state), thiz->connection_state);
 					thiz->retry_connection();
 				} else {
-                    DEBUG_PRINT_IMPORTANT2(logtag, "mainloop break %s", qzookeeper::state2String(thiz->connection_state));
+					DEBUG_PRINT_IMPORTANT2(logtag, "mainloop break %s", qzookeeper::state2String(thiz->connection_state));
 					ev_break(thiz->mainloop, EVBREAK_ONE);
 				}
 			}
@@ -316,8 +312,8 @@ void* qzookeeper::connect_internal(void* data) {
 
 	ev_run(thiz->mainloop, 0);
 
-    DEBUG_PRINT_IMPORTANT2(logtag, "mainloop exited with connection state %s", qzookeeper::state2String(thiz->connection_state));
-    
+	DEBUG_PRINT_IMPORTANT2(logtag, "mainloop exited with connection state %s", qzookeeper::state2String(thiz->connection_state));
+
 	if (thiz->zh) {
 		zookeeper_close(thiz->zh);
 		thiz->zh = nullptr;
@@ -331,18 +327,18 @@ void* qzookeeper::connect_internal(void* data) {
 }
 
 void qzookeeper::shutdown() {
-    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
+	const char* logtag = get_name();  // its safe to read since no one going to write on this variable except constructor;
 	if (connection_check_timer) {
 		if (cancel_and_destroy_timer(connection_check_timer)) {
 			connection_check_timer = nullptr;
-            DEBUG_PRINT(LOG_LEVEL_0, logtag, "qzookeeper - connection_check_timer detroyed !!!");
+			DEBUG_PRINT(LOG_LEVEL_0, logtag, "qzookeeper - connection_check_timer detroyed !!!");
 		}
 	}
-    
-    if (mainloop != nullptr) {
-        ev_break(mainloop, EVBREAK_ONE);
-        DEBUG_PRINT(LOG_LEVEL_0, logtag, "mainloop break");
-    }
+
+	if (mainloop != nullptr) {
+		ev_break(mainloop, EVBREAK_ONE);
+		DEBUG_PRINT(LOG_LEVEL_0, logtag, "mainloop break");
+	}
 }
 
 void qzookeeper::my_data_completion(int rc, const char* value, int value_len, const struct Stat* stat, const void* data) {
@@ -350,7 +346,7 @@ void qzookeeper::my_data_completion(int rc, const char* value, int value_len, co
 	qzookeeper* thiz = (qzookeeper*) data;
 	thiz->op_in_progress = true;
 	if (value) {
-//		DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", value_len, value);
+		//		DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", value_len, value);
 		thiz->get_result.clear();
 		thiz->get_result.run_printf(value, value_len);
 	}
@@ -405,12 +401,12 @@ void qzookeeper::my_void_completion(int rc, const void* data) {
 }
 
 int qzookeeper::set_data(const qstring& zk_path, const qstring& data) {
-    while (retry_in_progress) {
-        millisleep(50);
-    }
-    
+	while (retry_in_progress) {
+		millisleep(50);
+	}
+
 	if (!zh) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
+		DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
 		return -1;
 	}
 	if (connection_state != ZOO_CONNECTED_STATE) {
@@ -440,13 +436,13 @@ int qzookeeper::set_data(const qstring& zk_path, const qstring& data) {
 
 int qzookeeper::get_data(const qstring& zk_path, qstring& result, const qstring& default_value) {
 	result = default_value;
-    
-    while (retry_in_progress) {
-        millisleep(50);
-    }
-    
+
+	while (retry_in_progress) {
+		millisleep(50);
+	}
+
 	if (!zh) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
+		DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
 		return -1;
 	}
 	if (connection_state != ZOO_CONNECTED_STATE) {
@@ -459,7 +455,7 @@ int qzookeeper::get_data(const qstring& zk_path, qstring& result, const qstring&
 	if (op_in_progress) {
 		return -5;
 	}
-//	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
+	//	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
 	op_in_progress = true;
 	op_result = -1;
 	int rc = zoo_aget(zh, zk_path.c_str(), 1, my_data_completion, this);
@@ -473,20 +469,20 @@ int qzookeeper::get_data(const qstring& zk_path, qstring& result, const qstring&
 		millisleep(50);
 	}
 	result.copy(get_result);
-    int return_val = op_result.load();
-    if (return_val==0) {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
-        DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", result.length(), result.c_str());
-    }
+	int return_val = op_result.load();
+	if (return_val == 0) {
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "get : %.*s", zk_path.length(), zk_path.c_str());
+		DEBUG_RAW(LOG_LEVEL_0, "\t[zk] : value = %.*s", result.length(), result.c_str());
+	}
 	return return_val;
 }
 
 int qzookeeper::delete_path(const qstring& zk_path) {
-    while (retry_in_progress) {
-        millisleep(50);
-    }
+	while (retry_in_progress) {
+		millisleep(50);
+	}
 	if (!zh) {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
+		DEBUG_PRINT_ERROR(__LOGTAG__, "qzookeeper zh == null - %s", state2String(connection_state));
 		return -1;
 	}
 	if (connection_state != ZOO_CONNECTED_STATE) {
@@ -516,37 +512,37 @@ int qzookeeper::delete_path(const qstring& zk_path) {
 }
 
 void qzookeeper::close_zk(const int state) {
-    const char* logtag = get_name(); // its safe to read since no one going to write on this variable except constructor;
+	const char* logtag = get_name();  // its safe to read since no one going to write on this variable except constructor;
 	UNUSED(state);
-    if (close_mutex.tryLock(__FUNCTION__) != 0) {
-        DEBUG_PRINT_ERROR(logtag, "qzookeeper - close_zk acquire lock failed. returning !!!");
-        return;
-    }
+	if (close_mutex.tryLock(__FUNCTION__) != 0) {
+		DEBUG_PRINT_ERROR(logtag, "qzookeeper - close_zk acquire lock failed. returning !!!");
+		return;
+	}
 	if (zh != nullptr) {
 		zookeeper_close(zh);
 		zh = nullptr;
-        DEBUG_PRINT_IMPORTANT2(logtag, "qzookeeper - close_zk called !!!");
+		DEBUG_PRINT_IMPORTANT2(logtag, "qzookeeper - close_zk called !!!");
 	}
-    DEBUG_ASSERT(logtag, (close_mutex.unLock() == 0), "close_zk unlock CHECK !!!");
+	DEBUG_ASSERT(logtag, (close_mutex.unLock() == 0), "close_zk unlock CHECK !!!");
 }
 
 void qzookeeper::register_value_change_callback(type_qzk_value_changed callback, void* context) {
-    std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
-    if (it!=value_change_callbacks.end()) {
-        return;
-    }
-    value_change_callbacks[callback] = context;
+	std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
+	if (it != value_change_callbacks.end()) {
+		return;
+	}
+	value_change_callbacks[callback] = context;
 }
 
 void qzookeeper::unregister_value_change_callback(type_qzk_value_changed callback, void* context) {
-    std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
-    if (it!=value_change_callbacks.end()) {
-        value_change_callbacks.erase(it);
-    }
+	std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
+	if (it != value_change_callbacks.end()) {
+		value_change_callbacks.erase(it);
+	}
 }
 
 void qzookeeper::broadcast_value_change_to_all(const qstring& path, const qstring& data) {
-    for (std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.begin(); it != value_change_callbacks.end(); it++) {
-        it->first(path, data, it->second);
-    }
+	for (std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.begin(); it != value_change_callbacks.end(); it++) {
+		it->first(path, data, it->second);
+	}
 }

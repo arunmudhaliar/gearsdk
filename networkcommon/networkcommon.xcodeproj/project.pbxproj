@@ -163,6 +163,7 @@
 				55B372CB2AC3091000F0095E /* Headers */,
 				55B372CC2AC3091000F0095E /* Sources */,
 				55B372CD2AC3091000F0095E /* Frameworks */,
+				55CB70472C77D48D00E05D37 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -203,6 +204,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		55CB70472C77D48D00E05D37 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT}/source \\\n    \\( -not -path \"${SRCROOT}/source/ev/*\" -not -path \"${SRCROOT}/source/uv/*\" -not -path \"${SRCROOT}/source/quiche/*\" \\) \\\n    \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) \\\n    -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55B372CC2AC3091000F0095E /* Sources */ = {

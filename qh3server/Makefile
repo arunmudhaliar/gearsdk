@@ -20,7 +20,6 @@ $(SERVER_COMMON_SRCDIR)/servercommon.cpp \
 $(QUTILS_SRCDIR)/discord_util.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
-$(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
