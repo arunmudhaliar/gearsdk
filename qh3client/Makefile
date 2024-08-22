@@ -57,9 +57,9 @@ ifeq ($(UNAME), Darwin)
     LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
     ../common/libs/$(MACOS_LIB_DIR)/libz.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a -framework CoreFoundation -framework Security
 
-    DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
-    RELEASE_CXXFLAGS += -mmacosx-version-min=12.3
-    LDFLAGS += -mmacosx-version-min=12.3
+    DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
+    RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
+    LDFLAGS += -mmacosx-version-min=14.2
 endif
 
 EXE = qh3client-app
