@@ -507,6 +507,7 @@
 					"\"$(SRCROOT)/../common/zlib\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/source\"",
 					"\"$(SRCROOT)/../common\"",
 				);
@@ -535,6 +536,7 @@
 					"\"$(SRCROOT)/../common/zlib\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/source\"",
 					"\"$(SRCROOT)/../common\"",
 				);

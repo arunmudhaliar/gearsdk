@@ -21,7 +21,7 @@ void networkclient_tester::send_msg_timer_cb(EV_P_ ev_timer* w, int revents) {
 	networkclient_tester* tester = (networkclient_tester*) w->data;
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT MAIN %d", tester->clientList.size());
 	std::vector<gameclient*> finishedList;
-	for (int x = 0; x < (int)tester->clientList.size(); x++) {
+	for (int x = 0; x < (int) tester->clientList.size(); x++) {
 		gameclient* client = tester->clientList[x];
 		client->sendMessage("hello from client", true);
 		//        client->sendMessage("hello12 from client", true);
@@ -108,7 +108,7 @@ void networkclient_tester::run(const qstring& host, const qstring& port, int sen
 		ev_run(loop, 0);
 
 		// destroy the list
-		for (int x = 0; x < (int)clientList.size(); x++) {
+		for (int x = 0; x < (int) clientList.size(); x++) {
 			gameclient* client = clientList[x];
 			GX_DELETE(client);
 		}

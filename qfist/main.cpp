@@ -76,6 +76,7 @@ struct AppState {
     uv_timeval64_t start_time;
     uv_timeval64_t summary_start_time;
     bool exit_signal; // Flag to signal exit
+    bool single_request = false; // Flag to enable single request mode
 
     // New variables for summary tracking
     int summary_requests;
@@ -152,6 +153,7 @@ double elapsed_seconds_since_summary() {
 }
 
 void print_parameters() {
+    if (!app_state.single_request) {
         std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms 
               << "ms, Max Timeout=" << app_state.max_timeout_ms 
               << "ms, Weightage=" << app_state.request_weightage 
@@ -159,6 +161,9 @@ void print_parameters() {
               << ", Exit After=" << app_state.exit_after_seconds 
               << "s, Summary Interval=" << app_state.summary_interval 
                << "s, server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+    } else {
+        std::cout << "SINGLE-SHOT-MODE, server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+    }
 }
 
 // Function to write summary data to a CSV file
@@ -333,6 +338,7 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 }
 
 void request_qh3(WorkData *data) {
+    uv_gettimeofday(&data->start_time);
     int result = qh3client_helper::send_async_request<client::qh3client>(
         app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
         [&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
@@ -361,6 +367,12 @@ void request_qh3(WorkData *data) {
     }
 }
 
+void prepareRequest(WorkData *data, int request_index ) {
+    const auto& request = app_state.requests[request_index];
+    data->api = request.first;
+    data->payload = request.second;
+}
+
 // Worker to handle requests
 void request_worker(uv_timer_t* handle) {
     int num_requests = 0; // NOTE: parallel request is buggy. so forcing it to 1 req.
@@ -371,14 +383,10 @@ void request_worker(uv_timer_t* handle) {
     // std::cout << " r:" << num_requests << " " << std::endl;
     for (int i = 0; i < num_requests; i++) {
         WorkData *data = DEBUG_NEW WorkData();
-        uv_gettimeofday(&data->start_time);
 
         // Pick a random request
         size_t index = rand() % app_state.requests.size();
-        const auto& request = app_state.requests[index];
-        data->api = request.first;
-        data->payload = request.second;
-
+        prepareRequest(data, index);
         request_qh3(data);
     }
 
@@ -435,6 +443,7 @@ void parse_arguments(int argc, char *argv[]) {
     app_state.max_parallel_requests = MAX_PARALLEL_REQUESTS;
     app_state.exit_after_seconds = EXIT_AFTER;
     app_state.summary_interval = SUMMARY_INTERVAL;
+    app_state.single_request = false;
 
     // server address
     qstring request_ip(REQUEST_IP);
@@ -475,6 +484,8 @@ void parse_arguments(int argc, char *argv[]) {
             } else {
                 DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
             }
+        } else if (strcmp(argv[i], "--single-mode") == 0) {
+            app_state.single_request = true;
         }
     }
 }
@@ -522,13 +533,82 @@ void initialize_app_state(AppState& app_state) {
 }
 
 void cleanup() {
-    if (app_state.loop) {
-        uv_timer_stop(&app_state.exit_timer);
-        uv_timer_stop(&app_state.request_timer);
-        uv_timer_stop(&app_state.summary_timer);
-        // uv_run(app_state.loop, UV_RUN_DEFAULT);
+    if (app_state.single_request) {
         uv_loop_close(app_state.loop);
-        // delete app_state.loop;   // Only needed for custom loops
+    } else {
+        if (app_state.loop) {
+            uv_timer_stop(&app_state.exit_timer);
+            uv_timer_stop(&app_state.request_timer);
+            uv_timer_stop(&app_state.summary_timer);
+            // uv_run(app_state.loop, UV_RUN_DEFAULT);
+            uv_loop_close(app_state.loop);
+            // delete app_state.loop;   // Only needed for custom loops
+        }
+    }
+}
+
+void single_mode() {
+    WorkData *data = DEBUG_NEW WorkData();
+    prepareRequest(data, 0);
+    int result = qh3client_helper::send_async_request<client::qh3client>(
+        app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
+        [&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+            UNUSED(client_specific_data);
+            UNUSED(request);
+            bool validate = response->validate();
+            if (!validate) {
+                DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+            }
+            WorkData *data = static_cast<WorkData*>(arg);
+            data->result = 1 + (success && validate);
+            const conn_io_req_res::payload& payload = response->data;
+
+            std::size_t total_size = payload.get_size();
+            app_state.total_data_transferred.fetch_add(total_size);
+            // std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
+            // std::cout << "<";
+            // DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
+            std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
+            std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
+            finish_and_destroy_work(data);
+        },
+    0, [](void* arg) {
+        UNUSED(arg);
+        app_state.exit_signal = true;
+        uv_stop(app_state.loop);  // Stop the loop
+        print_summary();
+        std::cout << "\nFINISHED.\n\n";
+    });
+
+    if (result == 0) {
+        app_state.total_requests++;
+        app_state.summary_requests++;
+    } else {
+        std::cerr << "Failed to send request" << std::endl;
+        app_state.exit_signal = true;
+        uv_stop(app_state.loop);  // Stop the loop
+        print_summary();
+        std::cout << "\nFINISHED.\n\n";
+    }
+}
+
+void multi_mode() {
+    // Initialize timers
+    uv_timer_init(app_state.loop, &app_state.request_timer);
+    uv_timer_init(app_state.loop, &app_state.exit_timer);
+    uv_timer_init(app_state.loop, &app_state.summary_timer);
+
+    // Start the request timer immediately
+    uv_timer_start(&app_state.request_timer, request_worker, 0, 0);
+
+    // Start summary timer if specified
+    if (app_state.summary_interval > 0) {
+        uv_timer_start(&app_state.summary_timer, summary_timer_cb, app_state.summary_interval * 1000, app_state.summary_interval * 1000);
+    }
+
+    // Start exit timer if specified
+    if (app_state.exit_after_seconds > 0) {
+        uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
     }
 }
 
@@ -549,22 +629,10 @@ int main(int argc, char *argv[]) {
 
     app_state.loop = uv_default_loop();
 
-    // Initialize timers
-    uv_timer_init(app_state.loop, &app_state.request_timer);
-    uv_timer_init(app_state.loop, &app_state.exit_timer);
-    uv_timer_init(app_state.loop, &app_state.summary_timer);
-
-    // Start the request timer immediately
-    uv_timer_start(&app_state.request_timer, request_worker, 0, 0);
-
-    // Start summary timer if specified
-    if (app_state.summary_interval > 0) {
-        uv_timer_start(&app_state.summary_timer, summary_timer_cb, app_state.summary_interval * 1000, app_state.summary_interval * 1000);
-    }
-
-    // Start exit timer if specified
-    if (app_state.exit_after_seconds > 0) {
-        uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
+    if (app_state.single_request) {
+        single_mode();
+    } else {
+        multi_mode();
     }
 
     uv_run(app_state.loop, UV_RUN_DEFAULT);

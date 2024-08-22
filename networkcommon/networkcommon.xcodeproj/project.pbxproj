@@ -22,6 +22,8 @@
 		557487452AE9A78D00C0F6CA /* essentials.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557487432AE9A78D00C0F6CA /* essentials.hpp */; };
 		5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574879C2AEC227500C0F6CA /* qtimer.cpp */; };
 		5574879F2AEC227500C0F6CA /* qtimer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5574879D2AEC227500C0F6CA /* qtimer.hpp */; };
+		557620572C7676DE002372E4 /* qtimer_uv.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557620552C7676DE002372E4 /* qtimer_uv.hpp */; };
+		557620582C7676DE002372E4 /* qtimer_uv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557620562C7676DE002372E4 /* qtimer_uv.cpp */; };
 		5594E2262B3DD61900E47984 /* qtextfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2242B3DD61900E47984 /* qtextfile.cpp */; };
 		5594E2272B3DD61900E47984 /* qtextfile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5594E2252B3DD61900E47984 /* qtextfile.hpp */; };
 		5595E1212BB0101D00FA2618 /* roommessage.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5595E11F2BB0101D00FA2618 /* roommessage.hpp */; };
@@ -44,6 +46,8 @@
 		557487432AE9A78D00C0F6CA /* essentials.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = essentials.hpp; sourceTree = "<group>"; };
 		5574879C2AEC227500C0F6CA /* qtimer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer.cpp; sourceTree = "<group>"; };
 		5574879D2AEC227500C0F6CA /* qtimer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtimer.hpp; sourceTree = "<group>"; };
+		557620552C7676DE002372E4 /* qtimer_uv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = qtimer_uv.hpp; sourceTree = "<group>"; };
+		557620562C7676DE002372E4 /* qtimer_uv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qtimer_uv.cpp; sourceTree = "<group>"; };
 		5594E2242B3DD61900E47984 /* qtextfile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfile.cpp; sourceTree = "<group>"; };
 		5594E2252B3DD61900E47984 /* qtextfile.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfile.hpp; sourceTree = "<group>"; };
 		5595E11E2BB0101D00FA2618 /* roommessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roommessage.cpp; sourceTree = "<group>"; };
@@ -104,6 +108,8 @@
 				557487432AE9A78D00C0F6CA /* essentials.hpp */,
 				5574879C2AEC227500C0F6CA /* qtimer.cpp */,
 				5574879D2AEC227500C0F6CA /* qtimer.hpp */,
+				557620562C7676DE002372E4 /* qtimer_uv.cpp */,
+				557620552C7676DE002372E4 /* qtimer_uv.hpp */,
 				556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */,
 				556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */,
 				556AB5F82AF3A2C700D688DB /* qbuffer.cpp */,
@@ -142,6 +148,7 @@
 				556AB5F72AF260DD00D688DB /* qtextfilelogger.hpp in Headers */,
 				556AB5FB2AF3A2C700D688DB /* qbuffer.hpp in Headers */,
 				55384B942B9651AF00BE7723 /* message.hpp in Headers */,
+				557620572C7676DE002372E4 /* qtimer_uv.hpp in Headers */,
 				55384BB62B9AD1D600BE7723 /* serverconfig.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -210,6 +217,7 @@
 				556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,
 				55384BB52B9AD1D600BE7723 /* serverconfig.cpp in Sources */,
+				557620582C7676DE002372E4 /* qtimer_uv.cpp in Sources */,
 				556AB5FA2AF3A2C700D688DB /* qbuffer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -342,6 +350,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/quiche",
 					"$(PROJECT_DIR)/Source/ev",
+					"$(PROJECT_DIR)/Source/uv",
 					"\"$(SRCROOT)/../common\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
@@ -370,6 +379,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/quiche",
 					"$(PROJECT_DIR)/Source/ev",
+					"$(PROJECT_DIR)/Source/uv",
 					"\"$(SRCROOT)/../common\"",
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);

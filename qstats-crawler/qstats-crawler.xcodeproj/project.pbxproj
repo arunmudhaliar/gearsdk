@@ -20,6 +20,9 @@
 		556ABAF72B0BDFC900D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAF62B0BDFC500D688DB /* libz.a */; };
 		5574F20C2B11D9AC007C93AA /* qstats-crawler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */; };
 		5574F2202B20ECB2007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F21F2B20ECB2007C93AA /* debug_new.cpp */; };
+		55CB703E2C77C69800E05D37 /* libuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB703D2C77C69400E05D37 /* libuv.a */; };
+		55CB70402C77C6AB00E05D37 /* libuv.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */; };
+		55CB70412C77C6AB00E05D37 /* libuv.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +32,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				55CB70412C77C6AB00E05D37 /* libuv.1.dylib in Embed Libraries */,
 				555BA6FE2C3AEEFD00E23A51 /* libev.4.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
@@ -47,7 +51,7 @@
 
 /* Begin PBXFileReference section */
 		55384BB22B98F59F00BE7723 /* qstats-crawler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "qstats-crawler.entitlements"; sourceTree = "<group>"; };
-		555BA6FC2C3AEEFD00E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
+		555BA6FC2C3AEEFD00E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		556ABACE2B0A8AAD00D688DB /* qstats-crawler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "qstats-crawler"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAD12B0A8AAD00D688DB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		556ABAD92B0A8BDA00D688DB /* qpgsql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qpgsql.cpp; sourceTree = "<group>"; };
@@ -62,6 +66,8 @@
 		5574F20A2B11D941007C93AA /* qstats-crawler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "qstats-crawler.h"; path = "qstats-crawler/qstats-crawler.h"; sourceTree = SOURCE_ROOT; };
 		5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "qstats-crawler.cpp"; sourceTree = "<group>"; };
 		5574F21F2B20ECB2007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
+		55CB703D2C77C69400E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos_arm64/libuv.a; sourceTree = "<group>"; };
+		55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos_arm64/libuv.1.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,9 +75,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55CB703E2C77C69800E05D37 /* libuv.a in Frameworks */,
 				556ABAF52B0BDFA800D688DB /* libev.a in Frameworks */,
 				556ABAF32B0BDF6D00D688DB /* libcommon.a in Frameworks */,
 				556ABADE2B0A8D1300D688DB /* libpq.a in Frameworks */,
+				55CB70402C77C6AB00E05D37 /* libuv.1.dylib in Frameworks */,
 				555BA6FD2C3AEEFD00E23A51 /* libev.4.dylib in Frameworks */,
 				556ABAE12B0A8D2200D688DB /* libpgport.a in Frameworks */,
 				556ABAE22B0A8D2200D688DB /* libpgcommon.a in Frameworks */,
@@ -125,6 +133,8 @@
 		556ABADC2B0A8D1300D688DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */,
+				55CB703D2C77C69400E05D37 /* libuv.a */,
 				555BA6FC2C3AEEFD00E23A51 /* libev.4.dylib */,
 				556ABAF62B0BDFC500D688DB /* libz.a */,
 				556ABAF42B0BDFA400D688DB /* libev.a */,
@@ -255,7 +265,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -307,7 +317,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -325,6 +335,7 @@
 					"\"$(SRCROOT)/libpgsql/include\"",
 					"\"$(SRCROOT)/qpgsql\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -348,6 +359,7 @@
 					"\"$(SRCROOT)/libpgsql/include\"",
 					"\"$(SRCROOT)/qpgsql\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (

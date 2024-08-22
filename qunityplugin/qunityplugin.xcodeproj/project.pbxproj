@@ -36,9 +36,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		55294FF82BD591440090816B /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos_x86_64/libev.dylib; sourceTree = "<group>"; };
-		55294FFA2BD5914D0090816B /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_x86_64/libquiche.a; sourceTree = "<group>"; };
-		555BA70F2C3B135800E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
+		55294FF82BD591440090816B /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos/libev.dylib; sourceTree = "<group>"; };
+		55294FFA2BD5914D0090816B /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
+		555BA70F2C3B135800E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		55A72F5B2B779A1000064250 /* qnetworkclient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = qnetworkclient.cpp; path = ../qclient/source/qnetworkclient.cpp; sourceTree = "<group>"; };
 		55A847B22B6178E800001308 /* qunitysdk.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qunitysdk.cpp; sourceTree = "<group>"; };
 		55A847B32B6178E800001308 /* qunitysdk.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qunitysdk.hpp; sourceTree = "<group>"; };
@@ -139,6 +139,7 @@
 				55A9CD2D2B68263E006CAD14 /* Frameworks */,
 				555BA7122C3B135800E23A51 /* Embed Libraries */,
 				555BA7132C3B187300E23A51 /* ShellScript */,
+				55CB70422C77C8DF00E05D37 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -198,6 +199,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "install_name_tool -change /Users/amudaliar/Desktop/ev_mac_out/lib/libev.4.dylib @rpath/libev.4.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\ninstall_name_tool -change /Users/amudaliar/Documents/PROJECTS/PERSONAL/quiche/target/release/deps/libquiche.dylib @rpath/libquiche.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\notool -L ${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\n\n# Re-sign the binary\ncodesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\n\necho \"Modification and re-signing complete.\"\n";
+		};
+		55CB70422C77C8DF00E05D37 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -270,7 +288,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -323,7 +341,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -344,6 +362,7 @@
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/uthash\"",
@@ -376,6 +395,7 @@
 					"PROD_BUILD=1",
 				);
 				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
 					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
 					"\"$(SRCROOT)/../common/uthash\"",

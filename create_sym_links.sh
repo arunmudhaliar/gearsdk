@@ -44,6 +44,13 @@ cd ./qzookeeper/libs
 ln -s ./macos_$arch ./macos
 cd ../../
 
+# 'qstats-crawler sym link'
+echo 'creating qstats-crawler symlink'
+rm -rf ./qstats-crawler/libs/macos
+cd ./qstats-crawler/libs
+ln -s ./macos_$arch ./macos
+cd ../../
+
 # 'qutils sym link'
 echo 'creating qutils symlink'
 rm -rf ./qutils/libs/macos

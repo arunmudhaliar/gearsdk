@@ -21,35 +21,35 @@ typedef struct {
 
 app_state_t app_state;
 
-void parse_arguments(int argc, const char *argv[]) {
-    // server address
+void parse_arguments(int argc, const char* argv[]) {
+	// server address
 	app_state.host = "127.0.0.1";
 	app_state.port = "4004";
 
-    qstring request_ip(DEFAULT_REQUEST_IP);
-    std::vector<qstring> request_ip_parts;
-    request_ip.split(":", request_ip_parts, false);
-    if (request_ip_parts.size() == 2) {
-        app_state.host = request_ip_parts[0];
-        app_state.port = request_ip_parts[1];
-    } else {
-        DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
-    }
-    //
+	qstring request_ip(DEFAULT_REQUEST_IP);
+	std::vector<qstring> request_ip_parts;
+	request_ip.split(":", request_ip_parts, false);
+	if (request_ip_parts.size() == 2) {
+		app_state.host = request_ip_parts[0];
+		app_state.port = request_ip_parts[1];
+	} else {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
+	}
+	//
 
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--server") == 0 && i + 1 < argc) {
-            qstring request_ip(argv[++i]);
-            std::vector<qstring> request_ip_parts;
-            request_ip.split(":", request_ip_parts, false);
-            if (request_ip_parts.size() == 2) {
-                app_state.host = request_ip_parts[0];
-                app_state.port = request_ip_parts[1];
-            } else {
-                DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), DEFAULT_REQUEST_IP);
-            }
-        }
-    }
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--server") == 0 && i + 1 < argc) {
+			qstring request_ip(argv[++i]);
+			std::vector<qstring> request_ip_parts;
+			request_ip.split(":", request_ip_parts, false);
+			if (request_ip_parts.size() == 2) {
+				app_state.host = request_ip_parts[0];
+				app_state.port = request_ip_parts[1];
+			} else {
+				DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), DEFAULT_REQUEST_IP);
+			}
+		}
+	}
 }
 
 int main(int argc, const char* argv[]) {

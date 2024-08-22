@@ -271,6 +271,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/zookeeper\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -296,6 +297,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/zookeeper\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = (

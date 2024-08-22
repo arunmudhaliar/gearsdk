@@ -24,6 +24,11 @@
 		555EB1562C319255001F1B21 /* libhiredis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1552C319255001F1B21 /* libhiredis.a */; };
 		555EB15A2C3198E5001F1B21 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB1582C3198CC001F1B21 /* cert.key */; };
 		555EB15B2C3198E5001F1B21 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB1592C3198CC001F1B21 /* cert.crt */; };
+		55CB70332C77BFC500E05D37 /* libuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB70322C77BFC100E05D37 /* libuv.a */; };
+		55CB70352C77C07000E05D37 /* libuv.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB70342C77C07000E05D37 /* libuv.1.dylib */; };
+		55CB70362C77C07000E05D37 /* libuv.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB70342C77C07000E05D37 /* libuv.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		55CB70382C77C08700E05D37 /* libquiche.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB70372C77C08700E05D37 /* libquiche.dylib */; };
+		55CB70392C77C08700E05D37 /* libquiche.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB70372C77C08700E05D37 /* libquiche.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,7 +38,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				55CB70362C77C07000E05D37 /* libuv.1.dylib in Embed Libraries */,
 				555BA7022C3AEF6900E23A51 /* libev.4.dylib in Embed Libraries */,
+				55CB70392C77C08700E05D37 /* libquiche.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -52,7 +59,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		555BA7002C3AEF6900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_x86_64/libev.4.dylib; sourceTree = "<group>"; };
+		555BA7002C3AEF6900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB1312C318EB0001F1B21 /* qsampleserver */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qsampleserver; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EB1342C318EB0001F1B21 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		555EB13B2C318F4A001F1B21 /* qsampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qsampleserver.entitlements; sourceTree = "<group>"; };
@@ -62,14 +69,17 @@
 		555EB1432C318FE7001F1B21 /* libqhiredis.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqhiredis.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EB1452C318FF1001F1B21 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		555EB1472C31902E001F1B21 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
-		555EB1492C319049001F1B21 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos_x86_64/libdpp.dylib; sourceTree = "<group>"; };
-		555EB14D2C31906D001F1B21 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos_x86_64/libev.a; sourceTree = "<group>"; };
-		555EB14F2C319075001F1B21 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_x86_64/libquiche.a; sourceTree = "<group>"; };
-		555EB1512C31909B001F1B21 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos_x86_64/libz.a; sourceTree = "<group>"; };
+		555EB1492C319049001F1B21 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
+		555EB14D2C31906D001F1B21 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
+		555EB14F2C319075001F1B21 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
+		555EB1512C31909B001F1B21 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		555EB1532C31912E001F1B21 /* libqserver-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libqserver-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		555EB1552C319255001F1B21 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos_x86_64/libhiredis.a; sourceTree = "<group>"; };
+		555EB1552C319255001F1B21 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos/libhiredis.a; sourceTree = "<group>"; };
 		555EB1582C3198CC001F1B21 /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		555EB1592C3198CC001F1B21 /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
+		55CB70322C77BFC100E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos_arm64/libuv.a; sourceTree = "<group>"; };
+		55CB70342C77C07000E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos_arm64/libuv.1.dylib; sourceTree = "<group>"; };
+		55CB70372C77C08700E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,10 +91,13 @@
 				555EB14E2C319070001F1B21 /* libev.a in Frameworks */,
 				555EB1442C318FE7001F1B21 /* libqhiredis.a in Frameworks */,
 				555EB1402C318FD1001F1B21 /* libcommon.a in Frameworks */,
+				55CB70332C77BFC500E05D37 /* libuv.a in Frameworks */,
 				555EB14A2C319049001F1B21 /* libdpp.dylib in Frameworks */,
 				555EB1502C319078001F1B21 /* libquiche.a in Frameworks */,
+				55CB70382C77C08700E05D37 /* libquiche.dylib in Frameworks */,
 				555EB1482C319035001F1B21 /* libcurl.tbd in Frameworks */,
 				555BA7012C3AEF6900E23A51 /* libev.4.dylib in Frameworks */,
+				55CB70352C77C07000E05D37 /* libuv.1.dylib in Frameworks */,
 				555EB1422C318FDC001F1B21 /* libnetworkcommon.a in Frameworks */,
 				555EB1462C318FF1001F1B21 /* libqutils.a in Frameworks */,
 				555EB1542C31912E001F1B21 /* libqserver-st.a in Frameworks */,
@@ -126,6 +139,9 @@
 		555EB13C2C318FBC001F1B21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55CB70372C77C08700E05D37 /* libquiche.dylib */,
+				55CB70342C77C07000E05D37 /* libuv.1.dylib */,
+				55CB70322C77BFC100E05D37 /* libuv.a */,
 				555BA7002C3AEF6900E23A51 /* libev.4.dylib */,
 				555EB1552C319255001F1B21 /* libhiredis.a */,
 				555EB1532C31912E001F1B21 /* libqserver-st.a */,
@@ -240,7 +256,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -306,7 +322,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -358,7 +374,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -375,6 +391,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/Source/uv\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
@@ -398,6 +415,7 @@
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/Source/uv\"",
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
