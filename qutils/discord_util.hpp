@@ -3,8 +3,19 @@
 
 #include "../common/qstring.h"
 
+
 #include <pthread.h>
 #include <atomic>
+
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <condition_variable>
+#include <queue>
+#include <mutex>
+#include <cstring>
+#include <stdexcept>
+#include <chrono>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "discord_util"
@@ -68,6 +79,8 @@ class discord_util {
 	 */
 	static void send_async(const qstring& msg);
 
+	static void shutdown();
+
    private:
 	static std::atomic<bool> inited; ///< Flag indicating whether the class has been initialized.
 	static void initialize_webhook_url(); ///< Initializes the webhook URL.
@@ -79,9 +92,20 @@ class discord_util {
 	 */
 	static void* send_async_internal(void* data);
 
+	static void request_worker();
+	
+
 	static qstring current_web_hook; ///< The current webhook URL.
 	static pthread_mutex_t webhook_mutex; ///< Mutex for thread-safe access to the webhook URL.
 	static uint64_t counter; ///< Counter for generating unique message IDs.
+
+	static std::queue<qstring> request_queue;
+	static std::mutex queue_mutex;
+	static std::condition_variable queue_cv;
+	static std::atomic<bool> done;
+	static std::vector<std::thread> worker_threads;
+	static std::atomic<int> active_requests;
+	static const int MAX_CONCURRENT_REQUESTS;
 };
 
 #endif /* discord_util_hpp */

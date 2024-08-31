@@ -21,11 +21,12 @@ void qh3server::debug_log(const uint8_t* line, void* argp) {
 	}
 }
 
-ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_io) {
+ssize_t qh3server::flush_egress(struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const bool via_router = relay_through_router_info && relay_through_router_info->serialised_buffer.length() >= ORIGINAL_CLIENT_ADDR_SZ;
 	SendInfo send_info;
 	ssize_t total_bytes_sent = 0;
+
 	while (1) {
 		ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out), &send_info);
 
@@ -47,12 +48,14 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 		//
 
 		ssize_t sent = sendto(conn_io->sock, out, written, 0, (struct sockaddr*) &conn_io->peer_addr, conn_io->peer_addr_len);
+
 #if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		getnameinfo((struct sockaddr*) &conn_io->peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 		DEBUG_PRINT(LOG_LEVEL_0, const_logtag, "send to %s:%s bytes:%d", name, port, sent);
 #endif
+
 		if (sent != written) {
 			char name[INET6_ADDRSTRLEN];
 			char port[10];
@@ -69,13 +72,13 @@ ssize_t qh3server::flush_egress(struct ev_loop* loop, struct conn_io_qh3* conn_i
 #endif
 
 		qh3server::get_stats_loggeer()->server_count("flush_egress", sent, "", "", "", "tx", "qh3server", "", port_id.c_str());
-		// return sent;
 		total_bytes_sent += sent;
 	}
 
 	double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
+
 	conn_io->timer.repeat = t;
-	ev_timer_again(loop, &conn_io->timer);
+	uv_timer_start(&conn_io->timer, timeout_cb, t * 1000, 0);  // Replaces ev_timer_again
 	return total_bytes_sent;
 }
 
@@ -150,14 +153,15 @@ struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8
 		return NULL;
 	}
 	memcpy(new_conn_io->cid, scid, LOCAL_CONN_ID_LEN);
-	new_conn_io->creation_time = ev_now(mainloop);
+	new_conn_io->creation_time = uv_now(mainloop);
 	new_conn_io->sock = conns->sock;
 	new_conn_io->conn = conn;
 	HASH_VALUE(scid, scid_len, new_conn_io->cid_hash_val);
 	memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
 	new_conn_io->peer_addr_len = peer_addr_len;
 
-	ev_init(&new_conn_io->timer, timeout_cb);
+	// ev_init(&new_conn_io->timer, timeout_cb);
+	uv_timer_init(mainloop, &new_conn_io->timer);
 	new_conn_io->timer.data = new_conn_io;
 	HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, new_conn_io);
 
@@ -186,9 +190,14 @@ int qh3server::for_each_header(const uint8_t* name, size_t name_len, const uint8
 	return 0;
 }
 
-void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
-	UNUSED(revents);
-	qh3server* server = reinterpret_cast<qh3server*>(w->data);
+void qh3server::recv_cb(uv_poll_t* handle, int status, int events) {
+	UNUSED(events);
+	// DEBUG_RAW(LOG_LEVEL_0, "recv_cb");
+	if (status < 0) {
+		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to recv");
+		return;
+	}
+	qh3server* server = reinterpret_cast<qh3server*>(handle->data);
 	struct connections* conns = server->conns;
 	struct conn_io_qh3 *tmp, *conn_io = NULL;
 	const char* const_logtag = server->logtag.c_str();
@@ -578,7 +587,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 
 	HASH_ITER(hh, conns->h, conn_io, tmp) {
-		server->flush_egress(loop, conn_io);
+		server->flush_egress(conn_io);
 
 		if (quiche_conn_is_closed(conn_io->conn)) {
 			Stats stats;
@@ -620,17 +629,17 @@ void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
 	}
 }
 
-void qh3server::destroy_connection(struct ev_loop* loop, struct conn_io_qh3* conn_io) {
+void qh3server::destroy_connection(struct conn_io_qh3* conn_io) {
 	HASH_DELETE(hh, conns->h, conn_io);
 	GX_DELETE(conn_io);
 }
 
-void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
-	UNUSED(revents);
-	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) w->data;
+void qh3server::timeout_cb(uv_timer_t* handle) {
+	// UNUSED(revents);
+	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) handle->data;
 	quiche_conn_on_timeout(conn_io->conn);
 	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", conn_io->cid_hash_val);
-	conn_io->bridge->flush_egress(loop, conn_io);
+	conn_io->bridge->flush_egress(conn_io);
 
 	if (quiche_conn_is_closed(conn_io->conn)) {
 		Stats stats;
@@ -639,9 +648,9 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
-		conn_io->bridge->destroy_connection(loop, conn_io);
+		conn_io->bridge->destroy_connection(conn_io);
 		return;
 	}
 }
@@ -758,11 +767,31 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	conns = &c;
 
-	ev_io watcher;
-	mainloop = ev_loop_new();
-	ev_io_init(&watcher, recv_cb, sock, EV_READ);
-	ev_io_start(mainloop, &watcher);
-	watcher.data = this;
+	mainloop = uv_loop_new();
+	//		uv_udp_init(mainloop, &c.udp_handle);
+	//		int rc;
+	//		if ((rc = uv_udp_open(&c.udp_handle, c.sock))) {
+	//			// logger_stderr("udp open error: %s", uv_strerror(rc));
+	//			return 1;
+	//		}
+	//
+	//		if ((rc = uv_udp_bind(&c.udp_handle, c.local_addr, UV_UDP_REUSEADDR))) {
+	//			// logger_stderr("udp bind error: %s", uv_strerror(rc));
+	//			return 1;
+	//		}
+
+	int poll_status = uv_poll_init_socket(mainloop, &c.poll_handle, sock);
+	if (poll_status < 0) {
+		DEBUG_PRINT_ERROR(const_logtag, "Poll init socket error: %s", uv_strerror(poll_status));
+	}
+	c.poll_handle.data = this;
+	int poll_start_status = uv_poll_start(&c.poll_handle, UV_READABLE, recv_cb);
+	if (poll_start_status < 0) {
+		DEBUG_PRINT_ERROR(const_logtag, "Poll start error: %s", uv_strerror(poll_start_status));
+	}
+	//	 ev_io_init(&watcher, recv_cb, sock, EV_READ);
+	//	 ev_io_start(mainloop, &watcher);
+	//	 watcher.data = this;
 
 	//
 	GX_DELETE(logger);
@@ -789,24 +818,25 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
 	//
 
-	//
-	qtimer_sceduler close_dangling_connections_scheduler;
-	close_dangling_connections_scheduler.set_ev_lopp(mainloop);
-	qtimer* dangling_connections_check_timer = close_dangling_connections_scheduler.schedule_repeat_timer(
-		[this, const_logtag](qtimer& timer) {
+	qtimer_uv_scheduler close_dangling_connections_scheduler;
+	close_dangling_connections_scheduler.set_uv_loop(mainloop);
+	qtimer_uv* dangling_connections_check_timer = close_dangling_connections_scheduler.schedule_repeat_timer(
+		[this, const_logtag](qtimer_uv& timer) {
 			UNUSED(timer);
+			//			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "dangling_connections_check_timer callback");
 			int dangling_connections = 0;
 			int dangling_with_response = 0;
 			int flushed_on_exit = 0;
 			struct conn_io_qh3 *tmp, *conn_io = NULL;
 			HASH_ITER(hh, conns->h, conn_io, tmp) {
-				ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
-				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {  // DROP_CONNECTION_AFTER seconds after connection
+				// ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
+				uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000.0;  // Elapsed time in seconds
+				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {	  // DROP_CONNECTION_AFTER seconds after connection
 					// creation time.
 					bool is_closed = quiche_conn_is_closed(conn_io->conn);
-					if (/*(true) ||*/ !is_closed) {
+					if (!is_closed) {
 						DEBUG_PRINT(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
-						ssize_t sent_bytes = flush_egress(mainloop, conn_io);
+						ssize_t sent_bytes = flush_egress(conn_io);
 						if (sent_bytes) {
 							DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
 							flushed_on_exit++;
@@ -824,7 +854,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 					DEBUG_PRINT(LOG_LEVEL_4, const_logtag,
 								"dangling connection force closed, recv=%zu sent=%zu "
 								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
-								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, ev_now(mainloop) - conn_io->creation_time);
+								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, uv_now(mainloop) - conn_io->creation_time);
 					HASH_DELETE(hh, conns->h, conn_io);
 					if (!is_closed) {
 						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
@@ -858,18 +888,19 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		3);
 	//
 
-	qtimer_sceduler router_hb_scheduler;
-	router_hb_scheduler.set_ev_lopp(mainloop);
-	qtimer* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
+	qtimer_uv_scheduler router_hb_scheduler;
+	router_hb_scheduler.set_uv_loop(mainloop);
+	qtimer_uv* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
 
 	on_run_started();
-	ev_loop(mainloop, 0);
+	// ev_loop(mainloop, 0);
+	uv_run(mainloop, UV_RUN_DEFAULT);
 
 	// destroy connections
 	struct conn_io_qh3 *tmp, *conn_io = NULL;
 	int pending_connections = 0;
 	HASH_ITER(hh, conns->h, conn_io, tmp) {
-		ssize_t sent_bytes = flush_egress(mainloop, conn_io);
+		ssize_t sent_bytes = flush_egress(conn_io);
 		if (sent_bytes) {
 			DEBUG_PRINT2(LOG_LEVEL_3, const_logtag, "force close --> try flush : sent bytes %zd", sent_bytes);
 		}
@@ -896,7 +927,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	router_hb_scheduler.cancel_and_destroy_timer(router_hb_timer);
 	close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
 
-	ev_loop_destroy(mainloop);
+	// ev_loop_destroy(mainloop);
+	uv_loop_delete(mainloop);
 
 	freeaddrinfo(local);
 
@@ -958,12 +990,12 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	ev_loop_destroy(wait_loop);
 }
 
-qtimer* qh3server::router_hb_loop(qtimer_sceduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
+qtimer_uv* qh3server::router_hb_loop(qtimer_uv_scheduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
 	float router_hb_interval_in_sec = get_router_hb_interval_in_sec();
 	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "router_hb_interval_in_sec timer %5.1f", router_hb_interval_in_sec);
 	const char* const_logtag = logtag.c_str();
-	qtimer* router_hb_timer = router_hb_scheduler.schedule_repeat_timer(
-		[this, const_logtag, host, sock, command_center_feedback_port](qtimer& timer) {
+	qtimer_uv* router_hb_timer = router_hb_scheduler.schedule_repeat_timer(
+		[this, const_logtag, host, sock, command_center_feedback_port](qtimer_uv& timer) {
 			int new_timer_val = get_router_hb_interval_in_sec();
 			float diff = new_timer_val - timer.delay;
 			if (GX_ABS(diff) > 1.0f) {

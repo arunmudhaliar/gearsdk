@@ -98,7 +98,8 @@ void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header
 							   path_header->value.c_str());
 	}
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
-	ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
+	// ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
+	uv_stop(conn_io->bridge->get_mainloop());
 }
 
 void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
