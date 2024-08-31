@@ -65,7 +65,7 @@
 		55A9CD3F2B701385006CAD14 /* qclient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qclient.entitlements; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* qclient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qclient; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372A62AC2AB4A00F0095E /* networkclient_tester.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = networkclient_tester.cpp; sourceTree = "<group>"; };
-		55CB703A2C77C1D400E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
+		55CB703A2C77C1D400E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
 		55D1C6D32AD3269800470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/libquiche.a; sourceTree = "<group>"; };
 		55D1C6D42AD3269800470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/libev.a; sourceTree = "<group>"; };
 		55D1C6D72AD326A500470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };

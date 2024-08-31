@@ -89,16 +89,16 @@
 		555EB1172C303AC8001F1B21 /* qh3sampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3sampleserver.entitlements; sourceTree = "<group>"; };
 		555EB15F2C319999001F1B21 /* cert.key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		555EB1602C319999001F1B21 /* cert.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
-		55CB700B2C77AF1A00E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos_arm64/libuv.a; sourceTree = "<group>"; };
-		55CB700D2C77AFB900E05D37 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos_arm64/libdpp.dylib; sourceTree = "<group>"; };
-		55CB70112C77B05300E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos_arm64/libuv.1.dylib; sourceTree = "<group>"; };
-		55CB70142C77B0D000E05D37 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos_arm64/libev.4.dylib; sourceTree = "<group>"; };
-		55CB70172C77B11500E05D37 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos_arm64/libquiche.a; sourceTree = "<group>"; };
-		55CB70192C77B16000E05D37 /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos_arm64/libbson-static-1.0.a"; sourceTree = "<group>"; };
-		55CB701B2C77B19400E05D37 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos_arm64/libev.a; sourceTree = "<group>"; };
-		55CB701D2C77B1A400E05D37 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos_arm64/libhiredis.a; sourceTree = "<group>"; };
-		55CB701F2C77B1E100E05D37 /* libmongoc-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmongoc-static-1.0.a"; path = "../servercommon/libs/macos_arm64/libmongoc-static-1.0.a"; sourceTree = "<group>"; };
-		55CB70212C77B21600E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
+		55CB700B2C77AF1A00E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
+		55CB700D2C77AFB900E05D37 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
+		55CB70112C77B05300E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
+		55CB70142C77B0D000E05D37 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
+		55CB70172C77B11500E05D37 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
+		55CB70192C77B16000E05D37 /* libbson-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libbson-static-1.0.a"; path = "../common/libs/macos/libbson-static-1.0.a"; sourceTree = "<group>"; };
+		55CB701B2C77B19400E05D37 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
+		55CB701D2C77B1A400E05D37 /* libhiredis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libhiredis.a; path = ../qhiredis/libs/macos/libhiredis.a; sourceTree = "<group>"; };
+		55CB701F2C77B1E100E05D37 /* libmongoc-static-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmongoc-static-1.0.a"; path = "../servercommon/libs/macos/libmongoc-static-1.0.a"; sourceTree = "<group>"; };
+		55CB70212C77B21600E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

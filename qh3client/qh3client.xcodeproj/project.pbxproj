@@ -74,7 +74,7 @@
 		55A72F532B752CFC00064250 /* qh3client.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3client.entitlements; sourceTree = "<group>"; };
 		55A9CD172B66A89C006CAD14 /* qh3client-android.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "qh3client-android.h"; sourceTree = "<group>"; };
 		55CB70242C77B3B000E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_x86_64/libquiche.dylib; sourceTree = "<group>"; };
-		55CB70272C77B3EF00E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
+		55CB70272C77B3EF00E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
