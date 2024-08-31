@@ -51,8 +51,8 @@ bool qlogfile::file_exists(const qstring& filename) {
 }
 
 void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs) {
-    essentials::get_all_files(path.parent_path(), files, ".log");
-    
+	essentials::get_all_files(path.parent_path(), files, ".log");
+
 #if 0
 	unsigned int next_minor_counter_ = 0;
 	unsigned int next_major_version_ = 0;
@@ -357,7 +357,8 @@ uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const cha
 }
 
 int qtextfilelogger::end_session() {
-    if (logtimer == nullptr) return -1;
+	if (logtimer == nullptr)
+		return -1;
 	cancel_and_destroy_timer(logtimer);
 	logtimer = nullptr;
 	return 0;
