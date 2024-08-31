@@ -66,8 +66,8 @@
 		5574F20A2B11D941007C93AA /* qstats-crawler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "qstats-crawler.h"; path = "qstats-crawler/qstats-crawler.h"; sourceTree = SOURCE_ROOT; };
 		5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "qstats-crawler.cpp"; sourceTree = "<group>"; };
 		5574F21F2B20ECB2007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
-		55CB703D2C77C69400E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos_arm64/libuv.a; sourceTree = "<group>"; };
-		55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos_arm64/libuv.1.dylib; sourceTree = "<group>"; };
+		55CB703D2C77C69400E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
+		55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
