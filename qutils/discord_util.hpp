@@ -34,6 +34,7 @@
 
 class discord_util {
    public:
+#if FOR_OLD_DD_IMPL
 	/**
 	 * @struct discord_async_data
 	 * @brief A structure to hold data for asynchronous message sending.
@@ -58,7 +59,7 @@ class discord_util {
 		qstring msg; ///< The message to send.
 		uint64_t msg_id = 0; ///< The ID of the message.
 	};
-
+#endif
 	/**
 	 * @brief Sets the webhook URL for sending messages to Discord.
 	 * @param web_hook The webhook URL to set.

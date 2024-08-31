@@ -44,6 +44,7 @@ int32_t main(int32_t argc, const char* argv[]) {
 	fs::path rootDir;
 	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
+		discord_util::shutdown();
 		exit(0);
 	}
 	gameserver server;
@@ -67,5 +68,7 @@ int32_t main(int32_t argc, const char* argv[]) {
 
 	ev_run(loop, 0);
 
+	discord_util::shutdown();
+	
 	return 0;
 }

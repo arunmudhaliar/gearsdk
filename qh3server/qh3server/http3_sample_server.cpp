@@ -367,7 +367,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo update user t:%lu ms", 50);
 
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", get_server_name(), path_header->value.c_str(), port_id_cstr);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
+	DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
 }
 
 int http3_sample_server::validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {

@@ -100,7 +100,7 @@
             // "targetArchitecture": "x86_64"
         },
         {
-            "name": "(userserver) Debug with Clang (macOS)",
+            "name": "(qh3sampleserver) Debug with Clang (macOS)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/qh3sampleserver/qh3sampleserver-app",
@@ -122,7 +122,40 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "(userserver) Build Debug with Clang",
+            "preLaunchTask": "(qh3sampleserver) Build Debug with Clang",
+            "miDebuggerPath": "/usr/local/bin/lldb-mi",
+            "logging": {
+                "trace": false,
+                "engineLogging": false,
+                "programOutput": true,
+                "exceptions": true
+            },
+            // "targetArchitecture": "x86_64"
+        },
+        {
+            "name": "(qh3server) Debug with Clang (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/qh3server/qh3server-app",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/qh3server",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.x86-disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set fork handling",
+                    "text": "process handle -p true -s false",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "(qh3server) Build Debug with Clang",
             "miDebuggerPath": "/usr/local/bin/lldb-mi",
             "logging": {
                 "trace": false,

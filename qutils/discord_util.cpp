@@ -124,7 +124,7 @@ void discord_util::send_async(const qstring& msg) {
         request_queue.push(msg);
         queue_cv.notify_one(); // Notify a worker thread that a new request is available
     } else {
-        throw std::runtime_error("Discord utility is not initialized.");
+        std::cerr << "Discord utility is not initialized." << std::endl;
     }
 }
 

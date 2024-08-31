@@ -43,7 +43,7 @@
                 }
             },
             "detail": "Build the project in debug mode with Clang.",
-            // "dependsOn": "(userserver) Pre-Build Task"
+            // "dependsOn": "(qh3sampleserver) Pre-Build Task"
         },
         {
             "label": "(QFIST) Clean",
@@ -128,7 +128,7 @@
             "detail": "Clean the project."
         },
         {
-            "label": "(userserver) Build Debug with Clang",
+            "label": "(qh3sampleserver) Build Debug with Clang",
             "type": "shell",
             "command": "make",
             "args": [
@@ -152,10 +152,37 @@
                 }
             },
             "detail": "Build the project in debug mode with Clang.",
-            // "dependsOn": "(userserver) Pre-Build Task"
+            // "dependsOn": "(qh3sampleserver) Pre-Build Task"
         },
         {
-            "label": "(userserver) Clean",
+            "label": "(qh3server) Build Debug with Clang",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-C",
+                "qh3server",
+                "debug",
+                "FORK_QH3_SERVER=0",
+                "LOG_LEVEL=2"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "env": {
+                    "CXX": "clang++",
+                    "CC": "clang"
+                }
+            },
+            "detail": "Build the project in debug mode with Clang.",
+            // "dependsOn": "(qh3server) Pre-Build Task"
+        },
+        {
+            "label": "(qh3sampleserver) Clean",
             "type": "shell",
             "command": "make",
             "args": [

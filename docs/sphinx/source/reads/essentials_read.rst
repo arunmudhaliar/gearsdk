@@ -31,8 +31,6 @@ Macros
 
 - `__LOGTAG__`: Defines the log tag for this file.
 - `EV_START_RECORD(timestamp_)`: Starts recording an event timestamp.
-- `EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg)`: Prints the elapsed time since the timestamp.
-- `EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)`: Prints the elapsed time and clears the timestamp.
 - `EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)`: Prints if the elapsed time exceeds a warning threshold.
 - `EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)`: Prints if the elapsed time exceeds a warning threshold and clears the timestamp.
 

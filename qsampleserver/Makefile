@@ -62,9 +62,9 @@ ifeq ($(UNAME),Darwin)
 	       -ldpp -framework CoreFoundation -framework Security -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
-	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
-	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
 endif
 
 EXE = qsampleserver-app

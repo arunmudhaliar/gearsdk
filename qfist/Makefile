@@ -10,8 +10,7 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
-INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"
-INCLUDES += $(shell pkg-config --cflags libuv)
+INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"
 
 SRCDIR = .
 SRCS = $(SRCDIR)/main.cpp \
@@ -32,7 +31,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a -lz $(shell pkg-config --libs libuv)
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a -lz
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture
@@ -46,12 +45,12 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a -lz $(shell pkg-config --libs libuv) -framework CoreFoundation -framework Security
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a -lz -framework CoreFoundation -framework Security
 
-	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
-	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
 endif
 
 EXE = qfist-app

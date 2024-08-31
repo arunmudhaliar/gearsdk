@@ -648,7 +648,7 @@ void qh3server::timeout_cb(uv_timer_t* handle) {
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closedA, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
 		conn_io->bridge->destroy_connection(conn_io);
 		return;
@@ -830,8 +830,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 			struct conn_io_qh3 *tmp, *conn_io = NULL;
 			HASH_ITER(hh, conns->h, conn_io, tmp) {
 				// ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
-				uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000.0;  // Elapsed time in seconds
-				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {	  // DROP_CONNECTION_AFTER seconds after connection
+				uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000;	// Elapsed time in seconds
+				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {	// DROP_CONNECTION_AFTER seconds after connection
 					// creation time.
 					bool is_closed = quiche_conn_is_closed(conn_io->conn);
 					if (!is_closed) {
@@ -854,7 +854,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 					DEBUG_PRINT(LOG_LEVEL_4, const_logtag,
 								"dangling connection force closed, recv=%zu sent=%zu "
 								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
-								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, uv_now(mainloop) - conn_io->creation_time);
+								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, (uv_now(mainloop) - conn_io->creation_time) / 1000);
 					HASH_DELETE(hh, conns->h, conn_io);
 					if (!is_closed) {
 						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);

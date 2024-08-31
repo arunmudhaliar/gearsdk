@@ -65,9 +65,9 @@ ifeq ($(UNAME), Darwin)
         ARCH_FLAGS = -arch x86_64
     endif
 
-    DEBUG_CXXFLAGS += -mmacosx-version-min=14.2 $(ARCH_FLAGS)
-    RELEASE_CXXFLAGS += -mmacosx-version-min=14.2 $(ARCH_FLAGS)
-    LDFLAGS += -mmacosx-version-min=14.2 $(ARCH_FLAGS)
+    DEBUG_CXXFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
+    RELEASE_CXXFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
+    LDFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
 endif
 
 DEBUG_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)

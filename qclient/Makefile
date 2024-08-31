@@ -46,10 +46,10 @@ ifeq ($(UNAME),Darwin)
 	MACOS_LIB_DIR = macos_$(ARCH)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security
 
-	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
-	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
 endif
 
 EXE = qclient-app

@@ -31,11 +31,16 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
+#define DISABLE_PERF_READS (DEV_BUILD == 1)
 #define EV_START_RECORD(timestamp_) unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg) DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
-#define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                             \
+// #define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg) DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
+ //  #define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                             \
 	DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_); \
 	timestamp_ = timer::getCurrentTimeInMilliSec()
+#if DISABLE_PERF_READS
+#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)
+#define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)
+#else
 #define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                         \
 	do {                                                                                           \
 		unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_; \
@@ -46,6 +51,7 @@
 #define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms) \
 	EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);              \
 	timestamp_ = timer::getCurrentTimeInMilliSec()
+#endif
 
 class qmutex;
 class qmutexcondition {
