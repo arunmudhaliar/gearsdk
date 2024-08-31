@@ -51,8 +51,8 @@ bool qlogfile::file_exists(const qstring& filename) {
 }
 
 void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs) {
-    essentials::get_all_files(path.parent_path(), files, ".log");
-    
+	essentials::get_all_files(path.parent_path(), files, ".log");
+
 #if 0
 	unsigned int next_minor_counter_ = 0;
 	unsigned int next_major_version_ = 0;
@@ -277,11 +277,11 @@ int qlogfile::flush(bool check_for_log_file_size) {
 	return (int) flushed_cnt;
 }
 
-qtextfilelogger::qtextfilelogger() : qtimer_sceduler() {}
+qtextfilelogger::qtextfilelogger() : qtimer_uv_scheduler() {}
 
 qtextfilelogger::~qtextfilelogger() {
 	if (log_loop) {
-		ev_loop_destroy(log_loop);
+		uv_loop_delete(log_loop);
 		log_loop = nullptr;
 	}
 }
@@ -316,19 +316,24 @@ void* qtextfilelogger::run_log_session(void* data) {
 	logger->logfile = DEBUG_NEW qlogfile(config->logfile_path, config->max_size_of_file);
 
 	config->finished = false;
-	logger->log_loop = ev_loop_new(0);
-	ev_tstamp creation_time = ev_now(logger->log_loop);
-	logger->set_ev_lopp(logger->log_loop);
+	logger->log_loop = uv_loop_new();
+	uv_timeval64_t creation_time;
+	uv_gettimeofday(&creation_time);  // Get current time
+	logger->set_uv_loop(logger->log_loop);
 	logger->logtimer = logger->schedule_repeat_timer(
-		[logger, creation_time](qtimer& timer) {
+		[logger, creation_time](qtimer_uv& timer) {
 			UNUSED(timer);
+			uv_timeval64_t now;
+			uv_gettimeofday(&now);
+			// Calculate elapsed time
+			double elapsed_time = (now.tv_sec - creation_time.tv_sec) + (now.tv_usec - creation_time.tv_usec) / 1e6;
 			if (logger->logfile->flush(true) > 0) {
-				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", ev_now(logger->log_loop) - creation_time);
+				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", elapsed_time);
 			}
 		},
 		config->flush_time);
 	logger->log(qlogfile::level_0, __LOGTAG__, "start-session");
-	ev_run(logger->log_loop, 0);
+	uv_run(logger->log_loop, UV_RUN_DEFAULT);
 
 	logger->logtimer = nullptr;	 // scheduler will delete the timer;
 	config->finished = true;
@@ -357,7 +362,8 @@ uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const cha
 }
 
 int qtextfilelogger::end_session() {
-    if (logtimer == nullptr) return -1;
+	if (logtimer == nullptr)
+		return -1;
 	cancel_and_destroy_timer(logtimer);
 	logtimer = nullptr;
 	return 0;
