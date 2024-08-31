@@ -17,7 +17,6 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
               $(QUTILS_SRCDIR)/discord_util.cpp \
               $(COMMON_SRCDIR)/timer.cpp \
               $(COMMON_SRCDIR)/sdktypes.cpp \
-              $(COMMON_SRCDIR)/gxcrc32.cpp \
               $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis_async.cpp
@@ -63,9 +62,9 @@ ifeq ($(UNAME),Darwin)
 	       -ldpp -framework CoreFoundation -framework Security -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
-	DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
-	RELEASE_CXXFLAGS += -mmacosx-version-min=12.3
-	LDFLAGS += -mmacosx-version-min=12.3
+	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
+	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
+	LDFLAGS += -mmacosx-version-min=14.2
 endif
 
 EXE = qsampleserver-app

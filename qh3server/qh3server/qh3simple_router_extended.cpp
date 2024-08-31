@@ -15,6 +15,12 @@ using namespace client;
 template <typename U, typename V>
 int qh3simple_router::run() {
 	PTHREAD_NAME(qstring::format_string("router-%s", config.port.c_str()).c_str());
+
+#if FORK_QH3_SERVER
+	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Forking enabled !!!");
+#else
+	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Forking disabled !!!");
+#endif
 	// router object needs to be inited first, since this info is needed by child
 	// qh3server child process
 	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};

@@ -34,11 +34,10 @@ void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host
 	fs::path logfile_path = root_filename.c_str();
 	qlogfile::get_all_log_files(logfile_path, files, false);
 
-    bool have_files_to_process = (files.size()>0);
-    if (have_files_to_process)
-    {
-        event_cb(root_filename, files, CRAWL_START);
-    }
+	bool have_files_to_process = (files.size() > 0);
+	if (have_files_to_process) {
+		event_cb(root_filename, files, CRAWL_START);
+	}
 	for (fs::path f : files) {
 		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "crawling...  %s", f.c_str());
 		int parsed_lines = 0;
@@ -62,10 +61,9 @@ void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host
 		}
 	}
 	pgsql_client.close_db();
-    if (have_files_to_process)
-    {
-        event_cb(root_filename, files, CRAWL_STOP);
-    }
+	if (have_files_to_process) {
+		event_cb(root_filename, files, CRAWL_STOP);
+	}
 }
 
 int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {

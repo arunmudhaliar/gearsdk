@@ -31,7 +31,7 @@ int qhiredis_async::connect_async_redis(struct ev_loop* loop) {
 
 	// redisLibeventAttach(async_context, base);
 	redisLibevAttach(loop, async_context);
-    async_context->data = this;
+	async_context->data = this;
 	redisAsyncSetConnectCallback(async_context, on_connect_cb);
 	redisAsyncSetDisconnectCallback(async_context, on_disconnect_cb);
 
@@ -47,22 +47,22 @@ void qhiredis_async::disconnect_async_redis() {
 		return;
 	}
 
-    if (!connected) {
-        DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qhiredis_async not connected. Returning!!!");
-        return;
-    }
+	if (!connected) {
+		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "qhiredis_async not connected. Returning!!!");
+		return;
+	}
 	redisAsyncContext* temp_async_context = async_context;
 	async_context = nullptr;
 	redisAsyncDisconnect(temp_async_context);
-    redisAsyncFree(temp_async_context);
+	redisAsyncFree(temp_async_context);
 }
 
 void qhiredis_async::on_connect_cb(const redisAsyncContext* c, int status) {
 	if (status != REDIS_OK) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Message: %s", c->errstr);
 	} else {
-        qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
-        thiz->connected = true;
+		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
+		thiz->connected = true;
 		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Connected hiredis async...");
 	}
 }
@@ -71,8 +71,8 @@ void qhiredis_async::on_disconnect_cb(const redisAsyncContext* c, int status) {
 	if (status != REDIS_OK) {
 		DEBUG_PRINT_ERROR(__LOGTAG__, "Message: %s", c->errstr);
 	} else {
-        qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
-        thiz->connected = false;
+		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
+		thiz->connected = false;
 		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Disconnected hiredis async...");
 	}
 }

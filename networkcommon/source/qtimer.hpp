@@ -73,16 +73,16 @@ class qtimer {
 	}
 	virtual ~qtimer() { DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "qtimer destructor"); }
 
-    void update_delay(float new_delay) {
-        // Stop the timer
-        ev_timer_stop(loop, &timer);
+	void update_delay(float new_delay) {
+		// Stop the timer
+		ev_timer_stop(loop, &timer);
 
-        // Modify the timer's delay and restart it
-        timer.repeat = new_delay;
-        ev_timer_again(loop, &timer);
-        delay = new_delay;
-    }
-    
+		// Modify the timer's delay and restart it
+		timer.repeat = new_delay;
+		ev_timer_again(loop, &timer);
+		delay = new_delay;
+	}
+
 	ev_timer timer;
 	struct ev_loop* loop;
 	const type_qtimer_cb timeout_callback;
@@ -104,8 +104,8 @@ class qtimer_sceduler {
 	void cancel_timer(qtimer* qtimer_);
 	bool cancel_and_destroy_timer(qtimer* qtimer_);
 	void shutdown_mainloop();  // carefull
-    bool is_timer_present_in_list(qtimer* qtimer_);
-    
+	bool is_timer_present_in_list(qtimer* qtimer_);
+
    private:
 	struct qtimer_sceduler_data {
 		qtimer_sceduler_data(void* data, void* scheduler, const type_qtimer_cb timeout_callback) : data(data), scheduler(scheduler), timeout_callback(timeout_callback) {}

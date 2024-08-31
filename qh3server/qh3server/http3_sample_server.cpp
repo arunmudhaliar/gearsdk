@@ -9,7 +9,6 @@
 #include "http3_sample_server.hpp"
 
 #include "../../common/crypto_helper.hpp"
-#include "../../common/gxcrc32.h"
 #include "../../networkcommon/source/qbuffer.hpp"
 
 http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : zk_uri(zk_uri) {

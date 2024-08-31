@@ -7,7 +7,6 @@ $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
-$(COMMON_SRCDIR)/gxcrc32.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
@@ -47,10 +46,10 @@ ifeq ($(UNAME),Darwin)
 	MACOS_LIB_DIR = macos_$(ARCH)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security
 
-	DEBUG_CXXFLAGS += -mmacosx-version-min=12.3
-	RELEASE_CXXFLAGS += -mmacosx-version-min=12.3
-	LDFLAGS += -mmacosx-version-min=12.3
-	LDFLAGS += -mmacosx-version-min=12.3
+	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
+	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
+	LDFLAGS += -mmacosx-version-min=14.2
+	LDFLAGS += -mmacosx-version-min=14.2
 endif
 
 EXE = qclient-app

@@ -88,8 +88,8 @@ class message_parser {
 	T* parse(ssize_t len, uint8_t* buf);
 
    private:
-    template <typename T>
-    void register_message_type();
+	template <typename T>
+	void register_message_type();
 	typedef message_base* (*type_room_message_create_cb)();
 	std::map<unsigned long, type_room_message_create_cb> records;
 };
@@ -163,11 +163,11 @@ class res_msg_user_base : public message_base {
 // MARK: -
 class res_msg_gservers : public message_base {
    public:
-    res_msg_gservers();
-    void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
-    bool deserialize(rapidjson::Value& obj) override;
-    DECLARE_MESSAGE_PRE_REQUISITES(res_msg_gservers, "res_msg_gservers")
-    std::map<qstring, std::vector<qstring>> gservers;
+	res_msg_gservers();
+	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
+	bool deserialize(rapidjson::Value& obj) override;
+	DECLARE_MESSAGE_PRE_REQUISITES(res_msg_gservers, "res_msg_gservers")
+	std::map<qstring, std::vector<qstring>> gservers;
 };
 
 // MARK: -
@@ -180,8 +180,7 @@ class res_msg_user_get : public res_msg_user_base {
 	qstring last_login;
 	qstring user_name;
 	qstring token;
-    res_msg_gservers gservers;
+	res_msg_gservers gservers;
 };
-
 
 #endif /* message_hpp */

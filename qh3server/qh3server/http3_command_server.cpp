@@ -8,8 +8,6 @@
 
 #include "http3_command_server.hpp"
 
-#include "../../common/gxcrc32.h"
-
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>

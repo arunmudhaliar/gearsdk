@@ -10,7 +10,7 @@
  *
  * The qzookeeper class also inherits from the qtimer_sceduler class, which provides functionality for scheduling
  * timer events.
- * 
+ *
  * @copyright 2024 homenet25
  * @note This file is part of the qzookeeper library.
  * @author Arun A
@@ -33,8 +33,11 @@
 #include "../../networkcommon/source/qtimer.hpp"
 
 #include <assert.h>
+#include <atomic>
 #include <errno.h>
 #include <getopt.h>
+#include <map>
+#include <mutex>
 #include <proto.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,9 +46,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <map>
-#include <atomic>
-#include <mutex>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qzookeeper"
@@ -53,18 +53,18 @@
 #define QZK_MAX_RETRIES_FOR_API 5
 #define QZK_RETRY_BASE_DELAY_MS 100
 
-typedef void(*type_qzk_value_changed)(const qstring& path, const qstring& data, void* context);
+typedef void (*type_qzk_value_changed)(const qstring& path, const qstring& data, void* context);
 
 /**
  * @brief The interface_qzookeeper class represents an interface for interacting with a ZooKeeper client.
- * 
+ *
  * This class provides methods for registering and unregistering value change callbacks.
  */
 class interface_qzookeeper {
-public:
+   public:
 	/**
 	 * @brief Registers a callback function to be called when a value changes in the ZooKeeper client.
-	 * 
+	 *
 	 * @param callback The callback function to be registered.
 	 * @param context A pointer to user-defined context data that will be passed to the callback function.
 	 */
@@ -72,7 +72,7 @@ public:
 
 	/**
 	 * @brief Unregisters a previously registered value change callback function.
-	 * 
+	 *
 	 * @param callback The callback function to be unregistered.
 	 * @param context A pointer to the user-defined context data that was passed to the callback function.
 	 */
@@ -82,7 +82,7 @@ public:
 class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
    public:
 	qzookeeper(const qstring& name);
-    ~qzookeeper();
+	~qzookeeper();
 
 	/**
 	 * Establishes a connection to the specified URL.
@@ -99,10 +99,10 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * operations.
 	 */
 	void shutdown();
-	
+
 	/**
 	 * @brief Checks if the ZooKeeper instance is currently running.
-	 * 
+	 *
 	 * @return true if the ZooKeeper instance is running, false otherwise.
 	 */
 	bool is_running() { return running; }
@@ -112,9 +112,9 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 *
 	 * @return true if the ZooKeeper connection is active, false otherwise.
 	 */
-    bool is_zk_active() { return zh!=nullptr; }
-    int get_connection_state() { return connection_state; }
-    
+	bool is_zk_active() { return zh != nullptr; }
+	int get_connection_state() { return connection_state; }
+
 	/**
 	 * Retrieves the data associated with the specified ZooKeeper path.
 	 *
@@ -145,14 +145,14 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @return Returns 0 if the path is successfully deleted, otherwise returns an error code.
 	 */
 	int delete_path(const qstring& zk_path);
-    
+
 	/**
 	 * Registers a callback function to be called when the value changes.
 	 *
 	 * @param callback The callback function to be called when the value changes.
 	 * @param context  A pointer to user-defined context data that will be passed to the callback function.
 	 */
-    void register_value_change_callback(type_qzk_value_changed callback, void* context) final;
+	void register_value_change_callback(type_qzk_value_changed callback, void* context) final;
 
 	/**
 	 * Unregisters a value change callback.
@@ -163,7 +163,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @param callback The callback function to unregister.
 	 * @param context The context associated with the callback function.
 	 */
-    void unregister_value_change_callback(type_qzk_value_changed callback, void* context) final;
+	void unregister_value_change_callback(type_qzk_value_changed callback, void* context) final;
 
 	/**
 	 * @brief Broadcasts a value change to all connected clients.
@@ -174,15 +174,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @param path The path associated with the value change.
 	 * @param data The new data to be associated with the value change.
 	 */
-    void broadcast_value_change_to_all(const qstring& path, const qstring& data);
-    
-	/**
-	 * Converts the given state value to its corresponding string representation.
-	 *
-	 * @param state The state value to convert.
-	 * @return The string representation of the state value.
-	 */
-    static const char* state2String(int state);
+	void broadcast_value_change_to_all(const qstring& path, const qstring& data);
 
 	/**
 	 * Converts the given state value to its corresponding string representation.
@@ -190,8 +182,16 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @param state The state value to convert.
 	 * @return The string representation of the state value.
 	 */
-    static const char* type2String(int state);
-    
+	static const char* state2String(int state);
+
+	/**
+	 * Converts the given state value to its corresponding string representation.
+	 *
+	 * @param state The state value to convert.
+	 * @return The string representation of the state value.
+	 */
+	static const char* type2String(int state);
+
    private:
 	/**
 	 * @brief Retries the connection to the ZooKeeper server.
@@ -215,9 +215,9 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 */
 	void close_zk(const int state);
 
-    const char* get_name() const;
-    const char* get_wname() const;
-    
+	const char* get_name() const;
+	const char* get_wname() const;
+
 	/**
 	 * @brief Callback function for handling ZooKeeper events.
 	 *
@@ -247,7 +247,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @return A void pointer representing the connection object.
 	 */
 	static void* connect_internal(void* data);
-    
+
 	/**
 	 * Retries an operation with backoff.
 	 *
@@ -263,16 +263,16 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @return The result of the operation if it succeeds within the specified number of retries, or an error code if all
 	 *         retries fail.
 	 */
-    static int retry_with_backoff(std::function<int()> operation, int max_retries, int base_delay_ms);
-    
+	static int retry_with_backoff(std::function<int()> operation, int max_retries, int base_delay_ms);
+
 	zhandle_t* zh = nullptr;
 	clientid_t myid;
 	const char* clientIdFile = nullptr;
 
 	pthread_t zk_thread_id;
 	qstring connection_url;
-    const qstring name;
-    const qstring wname;
+	const qstring name;
+	const qstring wname;
 	std::atomic<bool> connection_in_progress;
 	std::atomic<bool> running;
 	struct ev_loop* mainloop = nullptr;
@@ -282,13 +282,13 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	int connection_state = -1;
 	int retry_count = 0;
 	qtimer* connection_check_timer = nullptr;
-    std::map<type_qzk_value_changed, void*> value_change_callbacks;
-    std::vector<qstring> pending_config_updates;
-    qmutex close_mutex;
-    qmutex reconnect_mutex;
-    std::mutex watcher_gaurd_mutex;
-    std::atomic<bool> retry_in_progress;
-    mutable std::timed_mutex nameMutex;
-    mutable std::timed_mutex wnameMutex;
+	std::map<type_qzk_value_changed, void*> value_change_callbacks;
+	std::vector<qstring> pending_config_updates;
+	qmutex close_mutex;
+	qmutex reconnect_mutex;
+	std::mutex watcher_gaurd_mutex;
+	std::atomic<bool> retry_in_progress;
+	mutable std::timed_mutex nameMutex;
+	mutable std::timed_mutex wnameMutex;
 };
 #endif /* qzookeeper_hpp */

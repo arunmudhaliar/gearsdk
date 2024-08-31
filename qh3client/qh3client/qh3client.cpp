@@ -8,7 +8,6 @@
 
 #include "qh3client.hpp"
 
-#include "../../common/gxcrc32.h"
 #include "../../common/sdktypes.hpp"
 
 #include <zlib.h>
@@ -288,7 +287,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 	if (quiche_conn_is_established(conn_io->conn) && !conn_io->req_sent) {
 		// Stop the connection establishment timeout timer if connection is established
-        ev_timer_stop(loop, &conn_io->connection_establishment_timeout_timer);
+		ev_timer_stop(loop, &conn_io->connection_establishment_timeout_timer);
 
 		const uint8_t* app_proto;
 		size_t app_proto_len;
@@ -450,20 +449,20 @@ void* qh3client::get_client_specific_data() {
 }
 
 void qh3client::connection_establishment_timeout_cb(EV_P_ ev_timer* w, int revents) {
-    UNUSED(revents);
-    
-    qh3client* client = reinterpret_cast<qh3client*>(w->data);
-    struct conn_io_qh3_client* conn_io = client->conn_io;
-    
-    DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "Connection establishment timeout");
-    
-    // Clean up and close the connection
-    if (conn_io->conn) {
-        quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
+	UNUSED(revents);
+
+	qh3client* client = reinterpret_cast<qh3client*>(w->data);
+	struct conn_io_qh3_client* conn_io = client->conn_io;
+
+	DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "Connection establishment timeout");
+
+	// Clean up and close the connection
+	if (conn_io->conn) {
+		quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
 		DEBUG_PRINT_ERROR(__LOGTAG__, "connection couldn't establish due to timeout.");
-    }
-    
-    ev_break(EV_A_ EVBREAK_ONE);
+	}
+
+	ev_break(EV_A_ EVBREAK_ONE);
 }
 
 int qh3client::send_request(const conn_io_req_res* data_get_, type_qh3client_helper_cb response_cb_) {
@@ -581,9 +580,9 @@ int qh3client::send_request(const conn_io_req_res* data_get_, type_qh3client_hel
 	conn_io->host = host.c_str();
 	conn_io->bridge = this;
 
-    // Initialize connection establishment timeout timer
-    ev_timer_init(&conn_io->connection_establishment_timeout_timer, qh3client::connection_establishment_timeout_cb, CONNECTION_ESTABLISHMENT_TIMEOUT, 0.0); // 10 seconds timeout
-    conn_io->connection_establishment_timeout_timer.data = this; // Store pointer to the client object
+	// Initialize connection establishment timeout timer
+	ev_timer_init(&conn_io->connection_establishment_timeout_timer, qh3client::connection_establishment_timeout_cb, CONNECTION_ESTABLISHMENT_TIMEOUT, 0.0);	 // 10 seconds timeout
+	conn_io->connection_establishment_timeout_timer.data = this;																							 // Store pointer to the client object
 
 	ev_io watcher;
 

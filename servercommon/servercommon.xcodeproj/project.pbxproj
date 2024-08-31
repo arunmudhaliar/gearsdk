@@ -325,6 +325,7 @@
 				556AB6012AF5094600D688DB /* Headers */,
 				556AB6022AF5094600D688DB /* Sources */,
 				556AB6032AF5094600D688DB /* Frameworks */,
+				55CB70462C77D36900E05D37 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -366,6 +367,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		55CB70462C77D36900E05D37 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT}/source \\\n    \\( -not -path \"${SRCROOT}/source/libmongoc-1.0/*\" \\) \\\n    \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) \\\n    -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		556AB6022AF5094600D688DB /* Sources */ = {
@@ -507,6 +528,7 @@
 					"\"$(SRCROOT)/../common/zlib\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/source\"",
 					"\"$(SRCROOT)/../common\"",
 				);
@@ -535,6 +557,7 @@
 					"\"$(SRCROOT)/../common/zlib\"",
 					"\"$(SRCROOT)/../common/nvwa\"",
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
 					"\"$(SRCROOT)/source\"",
 					"\"$(SRCROOT)/../common\"",
 				);
