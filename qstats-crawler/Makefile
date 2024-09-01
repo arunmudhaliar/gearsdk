@@ -6,6 +6,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+$(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
@@ -15,7 +16,7 @@ $(SRCDIR)/qstats-crawler/qstats-crawler.cpp \
 $(SRCDIR)/qpgsql/qpgsql.cpp \
 $(NCOMMONSRCS) \
 
-INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(COMMON_SRCDIR)/zlib" -I "$(SRCDIR)/libpgsql/include" -I "$(SRCDIR)/qpgsql"
+INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(COMMON_SRCDIR)/zlib" -I "$(SRCDIR)/libpgsql/include" -I "$(SRCDIR)/qpgsql"
 
 # C_SRCS =$(COMMON_SRCDIR)/crypto/sha256.c
 C_SRCS =
@@ -34,7 +35,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	LIBLDIR = ./libs/linux
-	LIBS = ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a -L$(LIBLDIR) -Wl,--as-needed -Wl,-rpath,'./libs/linux',--enable-new-dtags  -lpgcommon -lpgport -lpq -lz -lreadline -lpthread -lrt -ldl -lm -lresolv
+	LIBS = ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a ../common/libs/linux/libz.a -L$(LIBLDIR) -Wl,--as-needed -Wl,-rpath,'./libs/linux',--enable-new-dtags  -lpgcommon -lpgport -lpq -lz -lreadline -lpthread -lrt -ldl -lm -lresolv
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture
@@ -48,16 +49,20 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../common/libs/$(MACOS_LIB_DIR)/libz.a ./libs/$(MACOS_LIB_DIR)/libpgcommon.a ./libs/$(MACOS_LIB_DIR)/libpgport.a ./libs/$(MACOS_LIB_DIR)/libpq.a -lresolv
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../common/libs/$(MACOS_LIB_DIR)/libz.a ./libs/$(MACOS_LIB_DIR)/libpgcommon.a ./libs/$(MACOS_LIB_DIR)/libpgport.a ./libs/$(MACOS_LIB_DIR)/libpq.a -lresolv
+
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
 endif
 
 EXE = qstats-crawler-app
 CXX ?= clang
 CC ?= clang
 
-DEBUG_LDFLAGS =
-RELEASE_LDFLAGS =
-
+DEBUG_LDFLAGS = $(LDFLAGS)
+RELEASE_LDFLAGS = $(LDFLAGS)
 
 # Add this rule back and adjust for the `objects/` directory, if you decide to use it.
 .cpp.o:
