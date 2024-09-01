@@ -327,7 +327,7 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& 
 				if (elapsed < timeout_unresponsive_routes_in_sec) {
 					continue;
 				}
-				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Expired active route %s:%s from router. elapsed:%f timeout_unresponsive_routes_in_sec:%f", r->host.c_str(), r->port.c_str(), elapsed, timeout_unresponsive_routes_in_sec);
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Expired active route %s:%s from router. elapsed:%f timeout_unresponsive_routes_in_sec:%d", r->host.c_str(), r->port.c_str(), elapsed, timeout_unresponsive_routes_in_sec);
 				expired.push_back(r);
 			}
 
@@ -347,7 +347,7 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& 
 				if (elapsed < (timeout_unresponsive_routes_in_sec << 1)) {
 					continue;
 				}
-				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Expired unresponsive route %s:%s from router. elapsed:%f timeout_unresponsive_routes_in_sec:%f", r->host.c_str(), r->port.c_str(), elapsed, (timeout_unresponsive_routes_in_sec << 1));
+				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Expired unresponsive route %s:%s from router. elapsed:%f timeout_unresponsive_routes_in_sec:%d", r->host.c_str(), r->port.c_str(), elapsed, (timeout_unresponsive_routes_in_sec << 1));
 				expired.push_back(r);
 			}
 

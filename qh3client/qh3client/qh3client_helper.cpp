@@ -92,7 +92,7 @@ void qh3client_helper::respond_with_empty_response(conn_io_req_res* request, typ
 		auto empty_response = conn_io_req_res::create();
 		async_cb(request, empty_response, client != nullptr ? client->get_client_specific_data() : nullptr, arg, false);
 		GX_DELETE(empty_response);
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "send_request empty response sent to client");
+		DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "send_request empty response sent to client");
 	}
 }
 

@@ -459,7 +459,7 @@ void qh3client::connection_establishment_timeout_cb(EV_P_ ev_timer* w, int reven
 	// Clean up and close the connection
 	if (conn_io->conn) {
 		quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "connection couldn't establish due to timeout.");
+		DEBUG_PRINT_ERROR(__LOGTAG__, "connection couldn't establish due to timeout. t:%5.2fs", ev_now(loop) - conn_io->creation_time);
 	}
 
 	ev_break(EV_A_ EVBREAK_ONE);

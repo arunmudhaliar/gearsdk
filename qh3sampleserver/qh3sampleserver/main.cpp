@@ -39,7 +39,7 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://13.233.45.2:27017";	//"mongodb://192.168.0.230:27017"
+	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  //"mongodb://192.168.0.230:27017"
 	qstring redis_ip = "13.233.45.2";
 	qstring zk_uri = "13.233.45.2:2181";
 
@@ -59,7 +59,7 @@ int main(int argc, const char* argv[]) {
 	router.run<http3_command_server, http3_sample_server>();
 
 	discord_util::shutdown();
-	
+
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
 	sleep(5);
 	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");

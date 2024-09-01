@@ -57,9 +57,9 @@ struct AppState {
 	uv_timer_t exit_timer;
 	uv_timer_t request_timer;
 	uv_timer_t summary_timer;
-	int total_requests;
+	std::atomic<int>  total_requests {0};
 	std::atomic<int> finished_requests {0};
-	double cumulative_response_time;
+	std::atomic<double> cumulative_response_time {0.0};
 	std::atomic<std::size_t> total_data_transferred;
 	// std::atomic<std::size_t> chunk_counter; // Atomic counter to avoid race conditions
 	double response_times[WINDOW_SIZE];			   // Circular buffer for response times
@@ -78,18 +78,20 @@ struct AppState {
 	bool single_request = false;  // Flag to enable single request mode
 
 	// New variables for summary tracking
-	int summary_requests;
-	int summary_successful_requests;
+	std::atomic<int> summary_requests {0};
+	std::atomic<int> summary_successful_requests {0};
 	double summary_cumulative_response_time;
 
 	// Total run metrics
 	std::atomic<int> total_successful_requests {0};
-	double total_cumulative_response_time;
+	std::atomic<double> total_cumulative_response_time  {0.0};
 
 	// Requests
 	std::vector<std::pair<qstring, qstring>> requests;
 
 	qstring export_csv_filename = "summary.csv";
+
+	std::mutex response_time_mutex;
 };
 
 // Global App State
@@ -252,15 +254,21 @@ void print_summary() {
 	uv_gettimeofday(&app_state.summary_start_time);
 }
 
-std::mutex response_time_mutex;
+void atomic_add(std::atomic<double>& atomic_var, double value) {
+    double current = atomic_var.load(std::memory_order_relaxed);
+    double desired;
+    do {
+        desired = current + value;
+    } while (!atomic_var.compare_exchange_weak(current, desired, std::memory_order_relaxed));
+}
 
 void finish_and_destroy_work(WorkData* data) {
 	uv_timeval64_t end_time;
 	uv_gettimeofday(&end_time);
 
 	double response_time = (end_time.tv_sec - data->start_time.tv_sec) * 1000.0 + (end_time.tv_usec - data->start_time.tv_usec) / 1000.0;  // in milliseconds
-	std::lock_guard<std::mutex> lock(response_time_mutex);
-	app_state.total_cumulative_response_time += response_time;
+	std::lock_guard<std::mutex> lock(app_state.response_time_mutex);
+	atomic_add(app_state.total_cumulative_response_time, response_time);
 
 	if (data->result > 0) {
 		app_state.finished_requests++;
@@ -333,7 +341,7 @@ void request_qh3(WorkData* data) {
 			UNUSED(request);
 			bool validate = response->validate();
 			if (!validate) {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				// DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
 			}
 			WorkData* data = static_cast<WorkData*>(arg);
 			data->result = 1 + (success && validate);
