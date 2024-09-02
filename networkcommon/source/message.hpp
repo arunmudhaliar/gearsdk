@@ -10,7 +10,7 @@
 #define message_hpp
 
 #include "essentials.hpp"
-#include "qstring.h"
+#include "qstring.hpp"
 #include "typex.h"
 
 #include <map>

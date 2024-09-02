@@ -9,7 +9,7 @@
 #ifndef qbuffer_hpp
 #define qbuffer_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #include <stdint.h>

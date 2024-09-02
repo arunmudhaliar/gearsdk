@@ -9,7 +9,7 @@
 #ifndef serverconfig_hpp
 #define serverconfig_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qtextfile.hpp"
 

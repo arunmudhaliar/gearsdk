@@ -9,7 +9,7 @@
 #ifndef qstatslogger_hpp
 #define qstatslogger_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "qtextfilelogger.hpp"
 
 #undef __LOGTAG__

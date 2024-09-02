@@ -10,9 +10,9 @@ Includes
 
 The file includes several headers for common utilities and external libraries:
 
-- `../../common/qstring.h`
+- `../../common/qstring.hpp`
 - `../../common/sdktypes.hpp`
-- `../../common/timer.h`
+- `../../common/timer.hpp`
 - `qtimer.hpp`
 - `<map>`
 - `<netdb.h>`

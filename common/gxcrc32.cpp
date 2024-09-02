@@ -1,4 +1,4 @@
-#include "gxcrc32.h"
+#include "gxcrc32.hpp"
 
 // const unsigned int gxCrc32::CrcSeed;
 unsigned int gxcrc32::crcData = 0;

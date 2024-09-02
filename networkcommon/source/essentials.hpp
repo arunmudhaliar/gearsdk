@@ -9,9 +9,9 @@
 #ifndef essentials_hpp
 #define essentials_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
-#include "../../common/timer.h"
+#include "../../common/timer.hpp"
 #include "qtimer.hpp"
 #include "qtimer_uv.hpp"
 

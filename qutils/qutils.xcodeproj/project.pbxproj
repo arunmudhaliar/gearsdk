@@ -66,6 +66,8 @@
 				55384B9B2B97AB1200BE7723 /* Headers */,
 				55384B9C2B97AB1200BE7723 /* Sources */,
 				55384B9D2B97AB1200BE7723 /* Frameworks */,
+				551CDD302C862EC200ED9D65 /* ShellScript */,
+				551CDD312C8637AA00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -107,6 +109,43 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		551CDD302C862EC200ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\\n    \\( -not -path \"${SRCROOT}/dpp/*\" \\) \\\n    \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) \\\n    -exec clang-format -i {} +\n";
+		};
+		551CDD312C8637AA00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n\n# Run clang-tidy\n# clang-tidy your_file.cpp --config-file=.clang-tidy\n\n# Run custom naming convention script\npython3 ../check_naming.py ${SRCROOT} -- ${SRCROOT}/dpp\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		55384B9C2B97AB1200BE7723 /* Sources */ = {

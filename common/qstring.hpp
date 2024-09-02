@@ -1,5 +1,5 @@
 /**
- * @file qstring.h
+ * @file qstring.hpp
  * @brief Header file for the qstring class.
  *
  * This file contains the declaration of the qstring class, which provides flexible string handling using UT_string.

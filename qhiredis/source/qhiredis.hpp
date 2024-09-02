@@ -21,7 +21,7 @@
 #ifndef qhiredis_hpp
 #define qhiredis_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #include <functional>

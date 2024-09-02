@@ -27,7 +27,7 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtimer.hpp"

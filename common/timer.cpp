@@ -6,7 +6,7 @@
 //  Copyright 2010 __MyCompanyName__. All rights reserved.
 //
 
-#include "timer.h"
+#include "timer.hpp"
 #if PLATFORM == PLATFORM_MAC
 #include <CoreFoundation/CFDate.h>
 #elif defined(GEAR_WINDOWS)

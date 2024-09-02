@@ -9,7 +9,7 @@
 #ifndef qpgsql_hpp
 #define qpgsql_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 extern "C" {
 #include "./libpq-fe.h"
 }

@@ -1,21 +1,19 @@
 #ifndef discord_util_hpp
 #define discord_util_hpp
 
-#include "../common/qstring.h"
+#include "../common/qstring.hpp"
 
-
-#include <pthread.h>
 #include <atomic>
-
+#include <chrono>
+#include <condition_variable>
+#include <cstring>
 #include <iostream>
+#include <mutex>
+#include <pthread.h>
+#include <queue>
+#include <stdexcept>
 #include <thread>
 #include <vector>
-#include <condition_variable>
-#include <queue>
-#include <mutex>
-#include <cstring>
-#include <stdexcept>
-#include <chrono>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "discord_util"
@@ -45,7 +43,7 @@ class discord_util {
 	 */
 	struct discord_async_data {
 	   private:
-		discord_async_data() {};
+		discord_async_data() {}
 
 	   public:
 		/**
@@ -55,9 +53,9 @@ class discord_util {
 		 */
 		discord_async_data(const qstring& msg, uint64_t msg_id) : msg(msg), msg_id(msg_id) {}
 
-		pthread_t tid; ///< The thread ID of the thread that sends the message.
-		qstring msg; ///< The message to send.
-		uint64_t msg_id = 0; ///< The ID of the message.
+		pthread_t tid;		  ///< The thread ID of the thread that sends the message.
+		qstring msg;		  ///< The message to send.
+		uint64_t msg_id = 0;  ///< The ID of the message.
 	};
 #endif
 	/**
@@ -83,8 +81,8 @@ class discord_util {
 	static void shutdown();
 
    private:
-	static std::atomic<bool> inited; ///< Flag indicating whether the class has been initialized.
-	static void initialize_webhook_url(); ///< Initializes the webhook URL.
+	static std::atomic<bool> inited;	   ///< Flag indicating whether the class has been initialized.
+	static void initialize_webhook_url();  ///< Initializes the webhook URL.
 
 	/**
 	 * @brief Internal function for sending messages asynchronously.
@@ -94,11 +92,10 @@ class discord_util {
 	static void* send_async_internal(void* data);
 
 	static void request_worker();
-	
 
-	static qstring current_web_hook; ///< The current webhook URL.
-	static pthread_mutex_t webhook_mutex; ///< Mutex for thread-safe access to the webhook URL.
-	static uint64_t counter; ///< Counter for generating unique message IDs.
+	static qstring current_web_hook;	   ///< The current webhook URL.
+	static pthread_mutex_t webhook_mutex;  ///< Mutex for thread-safe access to the webhook URL.
+	static uint64_t counter;			   ///< Counter for generating unique message IDs.
 
 	static std::queue<qstring> request_queue;
 	static std::mutex queue_mutex;
