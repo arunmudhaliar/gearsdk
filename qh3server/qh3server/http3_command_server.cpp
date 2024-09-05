@@ -16,7 +16,7 @@
 using namespace rapidjson;
 using namespace client;
 
-http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge_, qstring router_port_) : bridge(bridge_), router_port(router_port_) {
+http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge, qstring router_port) : bridge(bridge), router_port(router_port) {
 	UNUSED(bridge);
 	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", redis_ip, redis_port);
 }
@@ -61,13 +61,13 @@ void http3_command_server::parse(struct conn_io_qh3* conn_io) {
 	const char* port_id_cstr = port_id.c_str();
 	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
 	if (path_header == nullptr) {
-		DEBUG_PRINT_ERROR(const_logtag, "path_header == null, returning. !!!");
+		debug_print_error(const_logtag, "path_header == null, returning. !!!");
 		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", get_server_name(), "", port_id_cstr, "path_not_found");
 		return;
 	}
 
 	if (path_header->value.length() <= 1) {
-		DEBUG_PRINT_WARN(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
+		debug_print_warn(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
 		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", get_server_name(), path_header->value.c_str(), port_id_cstr, "short_path");
 		return;
 	}
@@ -92,7 +92,7 @@ void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header
 		assert(validate);
 	} else {
 		// may be called from a browser
-		DEBUG_PRINT_IMPORTANT2(const_logtag,
+		debug_print_important2(const_logtag,
 							   "May be '%s' requested from browser. So crc "
 							   "validation not possible !!!",
 							   path_header->value.c_str());
@@ -111,7 +111,7 @@ void http3_command_server::parse_shutdown_test(conn_io_req_res::header* path_hea
 		assert(validate);
 	} else {
 		// may be called from a browser
-		DEBUG_PRINT_IMPORTANT2(const_logtag,
+		debug_print_important2(const_logtag,
 							   "May be '%s' requested from browser. So crc "
 							   "validation not possible !!!",
 							   path_header->value.c_str());
@@ -133,7 +133,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 		assert(validate);
 	} else {
 		// may be called from a browser
-		DEBUG_PRINT_IMPORTANT2(const_logtag,
+		debug_print_important2(const_logtag,
 							   "May be '%s' requested from browser. So crc "
 							   "validation not possible !!!",
 							   path_header->value.c_str());
@@ -142,7 +142,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 					  // \"%d-http3_command_server\"}", getpid());
 	construct_response_whoami(payload);
 	conn_io->http_response->set_payload(payload);
-	qh3server::get_file_logger()->log(qlogfile::level_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
+	qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 
@@ -160,24 +160,24 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
 
 	hiredis->iterate_hash(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), &doc, [&allocator, &servers](const char* field, const char* value, void* arg) {
 		UNUSED(arg);
-		Value serverObj(kObjectType);
+		Value server_obj(kObjectType);
 		// Convert the key and value to `Value` type
 		Value f(field, allocator);
 		Value v(value, allocator);
-		serverObj.AddMember(f, v, allocator);
-		servers.PushBack(serverObj, allocator);
+		server_obj.AddMember(f, v, allocator);
+		servers.PushBack(server_obj, allocator);
 	});
 	doc.AddMember("servers", servers, allocator);
 
 	Value gservers(kArrayType);
 	hiredis->iterate_hash("gservers", &doc, [&allocator, &gservers](const char* field, const char* value, void* arg) {
 		UNUSED(arg);
-		Value gserverObj(kObjectType);
+		Value gserver_obj(kObjectType);
 		// Convert the key and value to `Value` type
 		Value f(field, allocator);
 		Value v(value, allocator);
-		gserverObj.AddMember(f, v, allocator);
-		gservers.PushBack(gserverObj, allocator);
+		gserver_obj.AddMember(f, v, allocator);
+		gservers.PushBack(gserver_obj, allocator);
 	});
 	doc.AddMember("gservers", gservers, allocator);
 
@@ -197,7 +197,7 @@ void http3_command_server::send_shutdown_to_all() {
 			UNUSED(client_specific_data);
 			UNUSED(arg);
 			UNUSED(success);
-			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
 		},
 		1);
 }
@@ -217,16 +217,16 @@ void http3_command_server::command_feedback_recv_cb(EV_P_ ev_io* w, int revents)
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 
 		qstring cmd(buf_r, read);
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "RECEIVED cmd feedback from client - %s !!!", cmd.c_str());
+		debug_print(LOG_LEVEL_4, __LOGTAG__, "RECEIVED cmd feedback from client - %s !!!", cmd.c_str());
 		bridge->cmd_feedback_from_client((struct sockaddr*) &peer_addr, cmd.c_str());
 	}
 }

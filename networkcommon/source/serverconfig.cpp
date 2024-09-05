@@ -29,7 +29,7 @@ bool serverconfig::load(const fs::path& path, qzookeeper* qzk, const qstring& zk
 	if (qtextfile::get_content(path, buffer) == 0) {
 		result = iterate_and_load_keys(buffer, qzk, zk_root_folder);
 	} else {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "couldn't read zk config - %s", path.string().c_str());
+		debug_print_error(__LOGTAG__, "couldn't read zk config - %s", path.string().c_str());
 	}
 	return result;
 }
@@ -38,22 +38,22 @@ int serverconfig::get_config(const qstring& key, const qstring& default_value, q
 	result = default_value;
 	std::map<qstring, qstring>::iterator itr = configs.find(key);
 	if (itr == configs.end()) {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "zk config not found for key %s. setting default value of %s !!!.", key.c_str(), default_value.c_str());
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "zk config not found for key %s. setting default value of %s !!!.", key.c_str(), default_value.c_str());
 		return -1;
 	}
 	result = itr->second;
 	return 0;
 }
 
-int serverconfig::get_int32(const qstring& key, const int32_t default_value) {
+int serverconfig::get_int32(const qstring& key, const int32_t DEFAULT_VALUE) {
 	std::map<qstring, qstring>::iterator itr = configs.find(key);
 	if (itr == configs.end()) {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "get_int32 : zk config not found for key %s. setting default value of %d !!!.", key.c_str(), default_value);
-		return default_value;
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "get_int32 : zk config not found for key %s. setting default value of %d !!!.", key.c_str(), DEFAULT_VALUE);
+		return DEFAULT_VALUE;
 	}
-	int result = default_value;
+	int result = DEFAULT_VALUE;
 	if (gsdk::str2int(&result, itr->second.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Unable to parse %s value - %s. setting default value of %d !!!.", key.c_str(), itr->second.c_str(), default_value);
+		debug_print_error(__LOGTAG__, "Unable to parse %s value - %s. setting default value of %d !!!.", key.c_str(), itr->second.c_str(), DEFAULT_VALUE);
 	}
 	return result;
 }
@@ -61,7 +61,7 @@ int serverconfig::get_int32(const qstring& key, const int32_t default_value) {
 qstring serverconfig::get_string(const qstring& key, const qstring& default_value) {
 	std::map<qstring, qstring>::iterator itr = configs.find(key);
 	if (itr == configs.end()) {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "get_string : zk config not found for key %s. setting default value of %s !!!.", key.c_str(), default_value.c_str());
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "get_string : zk config not found for key %s. setting default value of %s !!!.", key.c_str(), default_value.c_str());
 		return default_value;
 	}
 	return itr->second;
@@ -71,23 +71,23 @@ bool serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 	rapidjson::Document doc;
 	rapidjson::ParseResult ok = doc.Parse((char*) buffer.c_str(), buffer.length());
 	if (!ok) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "JSON parse error: %s (Offset: %d)", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+		debug_print_error(__LOGTAG__, "JSON parse error: %s (Offset: %d)", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 		return false;
 	}
 
 	std::map<qstring, std::vector<qstring>> config_keys;
 	for (auto& m : doc.GetObject()) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%s", m.name.GetString());
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "%s", m.name.GetString());
 		if (!m.value.IsArray()) {
-			DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "root key(%s) must be an array !!!", m.name.GetString());
+			debug_warn(LOG_LEVEL_0, __LOGTAG__, "root key(%s) must be an array !!!", m.name.GetString());
 			return false;
 		}
 		for (const auto& n : m.value.GetArray()) {
 			if (!n.IsString()) {
-				DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "value (%s) must be a string !!!", n.GetString());
+				debug_warn(LOG_LEVEL_0, __LOGTAG__, "value (%s) must be a string !!!", n.GetString());
 				return false;
 			}
-			// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "keys %s", n.GetString());
+			// debug_print(LOG_LEVEL_0, __LOGTAG__, "keys %s", n.GetString());
 			config_keys[m.name.GetString()].push_back(n.GetString());
 		}
 	}
@@ -99,7 +99,7 @@ bool serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 			qstring zk_res;
 			int result = qzk->get_data(zk_key, zk_res);
 			if (result == ZNONODE) {
-				//                DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Node does not exist (ZNONODE) for key %s. continuing...", zk_key.c_str());
+				//                debug_print_important2(__LOGTAG__, "Node does not exist (ZNONODE) for key %s. continuing...", zk_key.c_str());
 				continue;
 			}
 			if (result != 0) {
@@ -109,7 +109,7 @@ bool serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 			configs[mod_zk_key] = zk_res;
 		}
 	}
-	// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d keys loaded", configs.size());
+	// debug_print(LOG_LEVEL_0, __LOGTAG__, "%d keys loaded", configs.size());
 	return true;
 }
 
@@ -129,11 +129,11 @@ bool serverconfig::try_update_value(const qstring& path, const qstring& data) {
 void serverconfig::zk_value_change_listener(const qstring& path, const qstring& data, void* context) {
 	serverconfig* config = reinterpret_cast<serverconfig*>(context);
 	if (config->try_update_value(path, data)) {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "config updated k:%s", path.c_str());
+		debug_print(LOG_LEVEL_2, __LOGTAG__, "config updated k:%s", path.c_str());
 		if (config->config_change_observer) {
 			config->config_change_observer->configchanged(path, data);
 		}
 	} else {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "config not found for k:%s", path.c_str());
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "config not found for k:%s", path.c_str());
 	}
 }

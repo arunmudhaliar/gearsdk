@@ -20,12 +20,12 @@ qtextfile::~qtextfile() {
 
 int qtextfile::open(const fs::path& path, const qstring& mode) {
 	if (fp != nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "file open failed - already opened a file. fp != null !!!");
+		debug_print_error(__LOGTAG__, "file open failed - already opened a file. fp != null !!!");
 		return -1;
 	}
 	fp = fopen(path.c_str(), mode.c_str());
 	if (fp == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "file open failed - %s !!!", path.c_str());
+		debug_print_error(__LOGTAG__, "file open failed - %s !!!", path.c_str());
 	}
 	return fp == nullptr ? -1 : 0;
 }
@@ -43,7 +43,7 @@ int qtextfile::seek_to_begining() {
 	}
 	// Move to the beginning of the file
 	if (fseek(fp, 0, SEEK_SET) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Error seeking to the beginning of the file");
+		debug_print_error(__LOGTAG__, "Error seeking to the beginning of the file");
 		close();
 		return -1;
 	}
@@ -52,17 +52,17 @@ int qtextfile::seek_to_begining() {
 
 ssize_t qtextfile::read() {
 	if (fp == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "file to read - fp == nullptr !!!");
+		debug_print_error(__LOGTAG__, "file to read - fp == nullptr !!!");
 		return -1;
 	}
 
 	buffer.clear();
-	const int str_sz = 1024;
-	char str[str_sz];
+	const int STR_SZ = 1024;
+	char str[STR_SZ];
 	if (seek_to_begining() != 0) {
 		return -1;
 	}
-	while (fgets(str, str_sz, fp)) {
+	while (fgets(str, STR_SZ, fp)) {
 		buffer += str;
 	}
 	return buffer.length() > 0 ? buffer.length() : -1;

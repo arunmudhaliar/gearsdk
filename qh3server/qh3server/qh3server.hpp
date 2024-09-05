@@ -77,7 +77,7 @@ struct conn_io_qh3 {
 			if (!is_closed) {
 				int close_result = quiche_conn_close(conn, true, 0, NULL, 0);
 				if (close_result < 0) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close connection, err %d", close_result);
+					debug_print_error(__LOGTAG__, "failed to close connection, err %d", close_result);
 				}
 			}
 			quiche_conn_free(conn);
@@ -106,11 +106,11 @@ struct conn_io_qh3 {
 
 // MARK: -
 struct routerinfo {
-	routerinfo(struct addrinfo* router_, uint16_t port_return) : port_return(port_return) {
-		router_address = DEBUG_NEW qaddress(*router_->ai_addr);
+	routerinfo(struct addrinfo* router, uint16_t port_return) : port_return(port_return) {
+		router_address = DEBUG_NEW qaddress(*router->ai_addr);
 		router_address->serialise(serialised_buffer);
 		router = (struct addrinfo*) malloc(sizeof(struct addrinfo));
-		memcpy(router, router_, sizeof(struct addrinfo));
+		memcpy(router, router, sizeof(struct addrinfo));
 	}
 	~routerinfo() {
 		free(router);
@@ -176,7 +176,7 @@ class qh3server : public bridge_h3_connection {
 	qtextfilelogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 
-	int run(const qstring& host, const qstring& port, const fs::path& rootDir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
+	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
 };
 
 #endif /* qh3server_hpp */

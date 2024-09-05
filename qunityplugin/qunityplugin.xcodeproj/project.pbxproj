@@ -378,6 +378,7 @@
 					"@rpath/libqunityplugin.dylib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -412,6 +413,7 @@
 					"@rpath/libqunityplugin.dylib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

@@ -30,7 +30,7 @@ qlogfile::~qlogfile() {
 	}
 	int flush_result = flush(false);
 	if (flush_result < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to flush records in qlogfile destructor - %s, flush_result %d", logfile_path.c_str(), flush_result);
+		debug_print_error(__LOGTAG__, "failed to flush records in qlogfile destructor - %s, flush_result %d", logfile_path.c_str(), flush_result);
 		// Cann not delete (Need to implement conditional wait for mutex here)
 		//        for (std::vector<qbuffer*>::iterator it = records.begin(); it!=records.end(); it++) {
 		//            GX_DELETE(*it);
@@ -42,7 +42,7 @@ qlogfile::~qlogfile() {
 	}
 	int result = fclose(fp);
 	if (result != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to close log file - %s, ret_val %d", logfile_path.c_str(), result);
+		debug_print_error(__LOGTAG__, "failed to close log file - %s, ret_val %d", logfile_path.c_str(), result);
 	}
 }
 
@@ -72,9 +72,9 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, b
 			if (next_major_version_ > MAJOR_VERSION_ALARM_AT) {
                 if (print_error_logs) {
                     if (files.size() > 50) {
-                        DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER ----- %s", path.native().c_str());
+                        debug_print_error(__LOGTAG__, "----- CLEAN UP LOG FOLDER ----- %s", path.native().c_str());
                     } else if (files.size() == 0) {
-                        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "----- NO LOG FILE FOUND ----- %s", path.native().c_str());
+                        debug_print_important(__LOGTAG__, "----- NO LOG FILE FOUND ----- %s", path.native().c_str());
                     }
                 }
 				break;
@@ -101,9 +101,9 @@ int qlogfile::finalise_logfile() {
 
 	// Print the result
 	if (!result) {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file renamed to --> %s", finalized_path.c_str());
+		debug_print_important(__LOGTAG__, "log file renamed to --> %s", finalized_path.c_str());
 	} else {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Couldn't rename logfile '%s'", current_logfile_path.c_str());
+		debug_print_error(__LOGTAG__, "Couldn't rename logfile '%s'", current_logfile_path.c_str());
 	}
 
 	if (fp) {
@@ -135,9 +135,9 @@ int qlogfile::create_new_logfile(bool finalize_prev_file) {
 			next_major_version++;
 			next_minor_counter = 0;
 			if (next_major_version > MAJOR_VERSION_ALARM_AT) {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
-				DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
-				DEBUG_PRINT_ERROR(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
+				debug_print_error(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
+				debug_print_error(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
+				debug_print_error(__LOGTAG__, "----- CLEAN UP LOG FOLDER -----", logfile_path.c_str());
 			}
 		}
 
@@ -154,10 +154,10 @@ int qlogfile::create_new_logfile(bool finalize_prev_file) {
 
 	fp = fopen(current_logfile_path.c_str(), "a");
 	if (fp == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open log file to append - %s - %d", current_logfile_path.c_str(), errno);
+		debug_print_error(__LOGTAG__, "failed to open log file to append - %s - %d", current_logfile_path.c_str(), errno);
 		return -1;
 	} else {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "log file opened for append - %s", current_logfile_path.c_str());
+		debug_print_important(__LOGTAG__, "log file opened for append - %s", current_logfile_path.c_str());
 	}
 
 	struct stat st;
@@ -178,20 +178,20 @@ qbuffer* qlogfile::create_new_record(uint64_t buffer_size, std::vector<qbuffer*>
 
 uint64_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buffer, uint64_t buffer_length) {
 	UNUSED(lvl);
-	bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+	bool locked = (log_mutex.try_lock(__FUNCTION__) == 0);
 	if (!locked) {
-		DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "logging failed - '%s' !!!", buffer);
+		debug_warn(LOG_LEVEL_3, __LOGTAG__, "logging failed - '%s' !!!", buffer);
 	} else {
 		// move pending records if any
 		for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it != records_waiting.end(); it++) {
 			records.push_back(*it);
 		}
-		DEBUG_WARN_COND(__LOGTAG__, records_waiting.size() > 0, "pending logs pushed - '%d' !!!", records_waiting.size());
+		debug_warn_cond(__LOGTAG__, records_waiting.size() > 0, "pending logs pushed - '%d' !!!", records_waiting.size());
 		records_waiting.clear();
 	}
 	if (fp == nullptr) {
 		if (locked) {
-			log_mutex.unLock();
+			log_mutex.unlock();
 		}
 		return -1;
 	}
@@ -206,26 +206,26 @@ uint64_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buff
 	snprintf((char*) record->data, total_record_sz, "%s : [%s] - %s\n", ctime_str_mod, tag, buffer);
 	record->index = total_record_sz;
 	if (locked) {
-		log_mutex.unLock();
+		log_mutex.unlock();
 	}
 	return total_record_sz;
 }
 
 uint64_t qlogfile::log_buffer(const char* buffer, uint64_t buffer_length) {
-	bool locked = (log_mutex.tryLock(__FUNCTION__) == 0);
+	bool locked = (log_mutex.try_lock(__FUNCTION__) == 0);
 	if (!locked) {
-		DEBUG_WARN(LOG_LEVEL_4, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
+		debug_warn(LOG_LEVEL_4, __LOGTAG__, "logging failed (buffer) - '%s' !!!", buffer);
 	} else {
 		// move pending records if any
 		for (std::vector<qbuffer*>::iterator it = records_waiting.begin(); it != records_waiting.end(); it++) {
 			records.push_back(*it);
 		}
-		DEBUG_WARN_COND(__LOGTAG__, records_waiting.size() > 0, "pending logs(buffer) pushed - '%d' !!!", records_waiting.size());
+		debug_warn_cond(__LOGTAG__, records_waiting.size() > 0, "pending logs(buffer) pushed - '%d' !!!", records_waiting.size());
 		records_waiting.clear();
 	}
 	if (fp == nullptr) {
 		if (locked) {
-			log_mutex.unLock();
+			log_mutex.unlock();
 		}
 		return -1;
 	}
@@ -234,18 +234,18 @@ uint64_t qlogfile::log_buffer(const char* buffer, uint64_t buffer_length) {
 	snprintf((char*) record->data, total_record_sz, "%s\n", buffer);
 	record->index = total_record_sz;
 	if (locked) {
-		log_mutex.unLock();
+		log_mutex.unlock();
 	}
 	return total_record_sz;
 }
 
 int qlogfile::flush(bool check_for_log_file_size) {
-	if (log_mutex.tryLock(__FUNCTION__) != 0) {
-		DEBUG_WARN(LOG_LEVEL_3, __LOGTAG__, "flush failed - '%d' !!!", check_for_log_file_size);
+	if (log_mutex.try_lock(__FUNCTION__) != 0) {
+		debug_warn(LOG_LEVEL_3, __LOGTAG__, "flush failed - '%d' !!!", check_for_log_file_size);
 		return -2;
 	}
 	if (fp == nullptr) {
-		log_mutex.unLock();
+		log_mutex.unlock();
 		return -1;
 	}
 
@@ -254,7 +254,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
 		qbuffer* record = *it;
 		ssize_t bytes_written = fprintf(fp, "%.*s", (int) record->index, record->data);
 		if (bytes_written < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "error while flushing - record - '%s' !!!", record->data);
+			debug_print_error(__LOGTAG__, "error while flushing - record - '%s' !!!", record->data);
 			err_cnt++;
 		} else {
 			logfile_size += bytes_written;
@@ -263,7 +263,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
 	}
 
 	if (err_cnt) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "error while logging - lines not written %d !!!", err_cnt);
+		debug_print_error(__LOGTAG__, "error while logging - lines not written %d !!!", err_cnt);
 	}
 	ssize_t flushed_cnt = records.size();
 	if (flushed_cnt) {
@@ -273,7 +273,7 @@ int qlogfile::flush(bool check_for_log_file_size) {
 	if (check_for_log_file_size && logfile_size > max_size_of_file) {
 		create_new_logfile(true);
 	}
-	log_mutex.unLock();
+	log_mutex.unlock();
 	return (int) flushed_cnt;
 }
 
@@ -288,7 +288,7 @@ qtextfilelogger::~qtextfilelogger() {
 
 int qtextfilelogger::start_session(const qstring& path, float flush_time, uint64_t max_size_of_file) {
 	if (!config.finished) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "file logger already running !!!");
+		debug_print_error(__LOGTAG__, "file logger already running !!!");
 		return -1;
 	}
 	config.logfile_path = path;
@@ -296,7 +296,7 @@ int qtextfilelogger::start_session(const qstring& path, float flush_time, uint64
 	config.max_size_of_file = max_size_of_file;
 	config.logger = this;
 	if (pthread_create(&log_thread_id, nullptr, qtextfilelogger::run_log_session, (void*) &config) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+		debug_print_error(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
 		return -1;
 	}
 	return 0;
@@ -307,10 +307,10 @@ void* qtextfilelogger::run_log_session(void* data) {
 	qtextfilelogger* logger = config->logger;
 
 	PTHREAD_NAME("qtextfilelogger");
-	if (logger->log_session_mutex.tryLock(__FUNCTION__) != 0) {
+	if (logger->log_session_mutex.try_lock(__FUNCTION__) != 0) {
 		config->finished = true;
-		config->pthread_returnValue = -1;
-		pthread_exit(&config->pthread_returnValue);
+		config->pthread_return_value = -1;
+		pthread_exit(&config->pthread_return_value);
 	}
 	GX_DELETE(logger->logfile);
 	logger->logfile = DEBUG_NEW qlogfile(config->logfile_path, config->max_size_of_file);
@@ -328,20 +328,20 @@ void* qtextfilelogger::run_log_session(void* data) {
 			// Calculate elapsed time
 			double elapsed_time = (now.tv_sec - creation_time.tv_sec) + (now.tv_usec - creation_time.tv_usec) / 1e6;
 			if (logger->logfile->flush(true) > 0) {
-				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", elapsed_time);
+				debug_print(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", elapsed_time);
 			}
 		},
 		config->flush_time);
-	logger->log(qlogfile::level_0, __LOGTAG__, "start-session");
+	logger->log(qlogfile::LEVEL_0, __LOGTAG__, "start-session");
 	uv_run(logger->log_loop, UV_RUN_DEFAULT);
 
 	logger->logtimer = nullptr;	 // scheduler will delete the timer;
 	config->finished = true;
 	GX_DELETE(logger->logfile);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "file logger exiting ...");
-	if (logger->log_session_mutex.unLock(__FUNCTION__) != 0) {
-		config->pthread_returnValue = -1;
-		pthread_exit(&config->pthread_returnValue);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "file logger exiting ...");
+	if (logger->log_session_mutex.unlock(__FUNCTION__) != 0) {
+		config->pthread_return_value = -1;
+		pthread_exit(&config->pthread_return_value);
 	}
 
 	pthread_exit(0);
@@ -349,7 +349,7 @@ void* qtextfilelogger::run_log_session(void* data) {
 
 uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const char* format, ...) {
 	if (logfile == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "log file not created yet !!!");
+		debug_print_error(__LOGTAG__, "log file not created yet !!!");
 		return -1;
 	}
 	memset(log_record_buffer, 0, SINGLE_LOG_RECORD_LENGTH);

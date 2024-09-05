@@ -58,20 +58,20 @@ class qstring {
 
 	/**
 	 * @brief Constructs from an integer.
-	 * @param n Integer value to initialize the qstring.
+	 * @param N Integer value to initialize the qstring.
 	 */
-	qstring(const int n) {
+	qstring(const int N) {
 		utstring_new(ut_string);
-		utstring_printf(ut_string, "%d", n);
+		utstring_printf(ut_string, "%d", N);
 	}
 
 	/**
 	 * @brief Constructs from a long integer.
-	 * @param n Long integer value to initialize the qstring.
+	 * @param N Long integer value to initialize the qstring.
 	 */
-	qstring(const long n) {
+	qstring(const long N) {
 		utstring_new(ut_string);
-		utstring_printf(ut_string, "%ld", n);
+		utstring_printf(ut_string, "%ld", N);
 	}
 
 	/**

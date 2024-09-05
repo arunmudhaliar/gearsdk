@@ -113,7 +113,7 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 		qstring host;
 		qstring port;
 		qnetworkclient* thiz;
-		int pthread_returnValue;
+		int pthread_return_value;
 		bool finished = false;
 		int id = -1;
 	};

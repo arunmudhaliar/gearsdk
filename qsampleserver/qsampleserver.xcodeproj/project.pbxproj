@@ -402,6 +402,7 @@
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 			};
 			name = Debug;
 		};
@@ -426,6 +427,7 @@
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 			};
 			name = Release;
 		};

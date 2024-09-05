@@ -30,7 +30,7 @@ void http3_sample_client::init_connection() {
 	//    qh3client_helper::send_request(host, port, getorpost_reqdata("/whoami", "{}"),
 	//        [this](conn_io_response* response) {
 	//            if (response->responses.size()){
-	//                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__,"response %.*s", (int) response->responses[0]->len, response->responses[0]->buf);
+	//                debug_print(LOG_LEVEL_0, __LOGTAG__,"response %.*s", (int) response->responses[0]->len, response->responses[0]->buf);
 	//            }
 	//        });
 	// user_get
@@ -39,11 +39,11 @@ void http3_sample_client::init_connection() {
 
 	//    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
 	//        UNUSED(timer);
-	//        DEBUG_PRINT_IMPORTANT(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
+	//        debug_print_important(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
 	//                              total_connections_issued.load(), total_connections_returned.load(),
 	//                              total_connections_returned_success.load(), live_connections.load());
 	//        if (live_connections<30) {
-	//            DEBUG_PRINT_IMPORTANT(__LOGTAG__, "issue create_connections");
+	//            debug_print_important(__LOGTAG__, "issue create_connections");
 	//            create_connections();
 	//            //shutdown_mainloop();
 	//        }
@@ -53,7 +53,7 @@ void http3_sample_client::init_connection() {
 }
 
 void http3_sample_client::create_connections() {
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "create_connections");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "create_connections");
 	rq_msg_user_get user_get_msg_rq;
 
 	user_get_msg_rq.sys_name = essentials::get_sysname();
@@ -71,7 +71,7 @@ void http3_sample_client::create_connections() {
 				bool validate = response->validate();
 				//                assert(validate);
 				if (!validate) {
-					// DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+					// debug_print_error(__LOGTAG__, "crc fail !!!");
 				}
 				conn_io_req_res::header* token_header = response->get_header("token");
 				live_connections--;
@@ -85,7 +85,7 @@ void http3_sample_client::create_connections() {
 				bson_t bson;
 				bson_error_t error;
 				if (!bson_init_from_json(&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "%s", error.message);
+					debug_print_error(__LOGTAG__, "%s", error.message);
 					return;
 				}
 
@@ -98,7 +98,7 @@ void http3_sample_client::create_connections() {
 				bson_destroy(&bson);
 
 				total_connections_returned_success++;
-				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
+				debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned %d - %s !!!", x, token_header->value.c_str());
 
 				session_token = token_header->value;
 				this->on_login_complete(token_header->value, token_header->value.length() > 0);
@@ -111,7 +111,7 @@ void http3_sample_client::create_connections() {
 
 void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 	if (result == false) {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Login failed t:%s !!!", token.c_str());
+		debug_print_important(__LOGTAG__, "Login failed t:%s !!!", token.c_str());
 		return;
 	}
 
@@ -120,7 +120,7 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 		qh3client_helper::send_async_request(host, port, req,
 			[](conn_io_req_res* response) {
 				const conn_io_req_res::payload& payload = response->get_payload();
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async C returned %s !!!", payload.buffer.c_str());
+				debug_print_important(__LOGTAG__, "async C returned %s !!!", payload.buffer.c_str());
 			});
 	*/
 
@@ -144,7 +144,7 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 			total_connections_returned_success++;
 			total_connections_returned++;
 			const conn_io_req_res::payload& payload = response->get_payload();
-			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str());
+			debug_print_important(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str());
 		},
 		1);
 	live_connections++;

@@ -6,6 +6,8 @@
 //  Created by Arun A on 30/10/23.
 //
 
+#define TEST_SIGNAL_HANDLER 0
+
 #if TEST_SIGNAL_HANDLER
 #include <execinfo.h>
 #include <iostream>
@@ -13,7 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void signalHandler(int signum) {
+void signal_handler(int signum) {
 	// Print the signal number
 	std::cerr << "Error: signal " << signum << " received." << std::endl;
 
@@ -28,7 +30,7 @@ void signalHandler(int signum) {
 	exit(1);
 }
 
-void causeSegmentationFault() {
+void cause_segmentation_fault() {
 	int* ptr = nullptr;
 	*ptr = 42;	// This will cause a segmentation fault
 }
@@ -60,8 +62,8 @@ void assert_callback(const char* msg) {
 int main(int argc, const char* argv[]) {
 #if TEST_SIGNAL_HANDLER
 	// Register signal handler for SIGSEGV
-	signal(SIGSEGV, signalHandler);
-	causeSegmentationFault();
+	signal(SIGSEGV, signal_handler);
+	cause_segmentation_fault();
 #endif
 
 	init_gsdk();
@@ -79,8 +81,8 @@ int main(int argc, const char* argv[]) {
 	qstring zk_uri = "13.233.45.2:2181";
 
 	uint16_t redis_port = 6379;
-	fs::path rootDir;
-	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
+	fs::path root_dir;
+	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, root_dir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
 		discord_util::shutdown();
 		exit(0);
@@ -89,14 +91,14 @@ int main(int argc, const char* argv[]) {
 	//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(),
 	//    redis_port, zk_uri); server.run(host, port, rootDir, nullptr, 4010, 0);   // port return not used, so passing 0
 
-	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005);
+	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, root_dir, nullptr, 4010, port, zk_uri, 4005);
 	http3_sample_router router(config);
 	router.run<http3_command_server, http3_sample_server>();
 
 	discord_util::shutdown();
 
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
 	sleep(5);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
 	return 0;
 }

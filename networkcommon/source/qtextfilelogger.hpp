@@ -23,7 +23,7 @@
 
 class qlogfile {
    public:
-	enum log_lvls { level_0, level_1, level_2, level_3, level_4 };
+	enum log_lvls { LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4 };
 
 	qlogfile(const qstring& path, uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
 	~qlogfile();
@@ -62,7 +62,7 @@ class qtextfilelogger : public qtimer_uv_scheduler {
 		uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES;
 		qtextfilelogger* logger = nullptr;
 		bool finished = true;
-		int pthread_returnValue = 0;
+		int pthread_return_value = 0;
 	};
 	int start_session(const qstring& path, float flush_time = 60.0f, uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
 	uint64_t log(qlogfile::log_lvls lvl, const char* tag, const char* format, ...);

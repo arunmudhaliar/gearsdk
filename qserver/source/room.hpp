@@ -22,7 +22,7 @@
 // MARK: -
 struct player {
 	player(conn_io* qcon, const qstring& pid) : qconnection(qcon), pid(pid) {}
-	~player() { DEBUG_PRINT_IMPORTANT(__LOGTAG__, "player destructor"); }
+	~player() { debug_print_important(__LOGTAG__, "player destructor"); }
 	conn_io* qconnection;
 	qstring pid;
 };

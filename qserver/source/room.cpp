@@ -19,11 +19,11 @@ room::room(roomserver_interface* interface, const roomconfig& room_config) : roo
 }
 
 room::~room() {
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room destructor - %d", room_id);
+	debug_print_important(__LOGTAG__, "room destructor - %d", room_id);
 	kick_all_except(nullptr);
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_to_rem = (*it).second;
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, room_id);
+		debug_print_important2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, room_id);
 		onroom_player_removed(player_to_rem);
 		GX_DELETE(player_to_rem);
 	}
@@ -103,7 +103,7 @@ void room::onroom_player_added(player* p) {
 	UNUSED(p);
 }
 void room::onroom_message(player* p, const qstring& msg) {
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", room_id, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", room_id, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 }
 void room::onroom_player_removed(player* p) {
 	UNUSED(p);
@@ -120,27 +120,27 @@ void room::pass_message_to_room(player* p, const qstring& msg) {
 }
 ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val) {
 	if (qconnection == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "try_add_connection: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "try_add_connection: qconnection == null !!!");
 		return -1;
 	}
 	if (playermap.find(qconnection->cid_hash_val) != playermap.end()) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "qconnection already in the playermap !!!");
+		debug_print_error(__LOGTAG__, "qconnection already in the playermap !!!");
 		return -2;
 	}
 	bool reconnection = prev_cid_hash_val > 0 && is_cid_hash_in_disconnected_players_hash_list(prev_cid_hash_val);
 	if (!reconnection && state > room_waiting) {
 		if (!room_config.allow_join_after_start) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "room not in waiting state and allow_join_after_start==false !!!");
+			debug_print_error(__LOGTAG__, "room not in waiting state and allow_join_after_start==false !!!");
 			return -3;
 		}
 	}
 	if ((int) playermap.size() >= room_config.max_players) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "room max cpacity reached !!!");
+		debug_print_error(__LOGTAG__, "room max cpacity reached !!!");
 		return -4;
 	}
 	if (reconnection) {
 		if (!can_allow_reconnection(qconnection->cid_hash_val)) {
-			DEBUG_PRINT_WARN(__LOGTAG__, "reconnection rejected !!!");
+			debug_print_warn(__LOGTAG__, "reconnection rejected !!!");
 			return -5;
 		}
 	}
@@ -149,12 +149,12 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 	if (reconnection) {
 		std::map<unsigned, ev_tstamp>::iterator it = disconnected_players_hash_after_room_start.find(prev_cid_hash_val);
 		if (it != disconnected_players_hash_after_room_start.end()) {
-			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", qconnection->cid_hash_val, prev_cid_hash_val, disconnected_players_hash_after_room_start.size());
+			debug_print_important(__LOGTAG__, "player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", qconnection->cid_hash_val, prev_cid_hash_val, disconnected_players_hash_after_room_start.size());
 			disconnected_players_hash_after_room_start.erase(it);
 		}
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x re-added to room %d", qconnection->cid_hash_val, room_id);
+		debug_print_important2(__LOGTAG__, "player %0x re-added to room %d", qconnection->cid_hash_val, room_id);
 	} else {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_id);
+		debug_print_important2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, room_id);
 	}
 	send_event_player_add_or_remove(player_, true);
 	onroom_player_added(player_);
@@ -162,13 +162,13 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 		if ((int) playermap.size() == room_config.max_players) {
 			set_state(room_start);
 		} else {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "start count down for room %d ...", room_id);
+			debug_print_important2(__LOGTAG__, "start count down for room %d ...", room_id);
 			const int max_count_down = 5;
 			const float delay_between_count_down = 1.5f;
 			cancel_and_destroy_timer(count_down_timer);
 			count_down_timer = schedule_count_timer(
 				[this](qtimer& timer) {
-					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "count down %d room %d ...", timer.count, room_id);
+					debug_print_important(__LOGTAG__, "count down %d room %d ...", timer.count, room_id);
 					if (timer.count > 0) {
 						onroom_countdown_to_start(timer.count, max_count_down);
 					} else {
@@ -184,12 +184,12 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 
 player* room::get_player(conn_io* qconnection) {
 	if (qconnection == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "get_player: qconnection == null !!!");
 		return nullptr;
 	}
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "get_player: qconnection not in the playermap !!! %s", qconnection->cid);
+		debug_print_error(__LOGTAG__, "get_player: qconnection not in the playermap !!! %s", qconnection->cid);
 		return nullptr;
 	}
 	return (*it).second;
@@ -201,25 +201,25 @@ bool room::is_cid_hash_in_disconnected_players_hash_list(unsigned cid_hash) {
 
 ssize_t room::remove_connection(conn_io* qconnection) {
 	if (qconnection == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "remove_connection: qconnection == null !!!");
 		return -1;
 	}
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "remove_connection: qconnection not in the playermap !!! %s", qconnection->cid);
+		debug_print_error(__LOGTAG__, "remove_connection: qconnection not in the playermap !!! %s", qconnection->cid);
 		return -1;
 	}
 	player* removed_player = (*it).second;
 	send_event_player_add_or_remove(removed_player, false);
 	playermap.erase(it);
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_id);
+	debug_print_important2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, room_id);
 	onroom_player_removed(removed_player);
 	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
 
 	if (state > room_uninitialised && state < room_start && !is_min_capacity_reached()) {
 		cancel_and_destroy_timer(count_down_timer);
 		onroom_countdown_cancelled();
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "count down cancelled for room %d ...", room_id);
+		debug_print_important2(__LOGTAG__, "count down cancelled for room %d ...", room_id);
 	}
 
 	// player leaving between gameplay and gone below min threshold
@@ -241,14 +241,14 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 }
 
 void room::kick_all_except(conn_io* qconnection) {
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick all");
+	debug_print_important(__LOGTAG__, "room : kick all");
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ = it->second;
 		if (player_->qconnection == qconnection) {	// to avoid recursive Close.
 			continue;
 		}
 		player_->qconnection->close();
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room : kick player %0x", player_->qconnection->cid_hash_val);
+		debug_print_important(__LOGTAG__, "room : kick player %0x", player_->qconnection->cid_hash_val);
 	}
 }
 
@@ -267,19 +267,19 @@ void room::on_state_change(states prev_state) {
 		}
 		case room_waiting: {
 			if (prev_state == room_uninitialised) {
-				DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - create %d", room_id);
+				debug_print_important2(__LOGTAG__, "room - create %d", room_id);
 				onroom_create();
 			}
 		} break;
 		case room_start: {
 			roomserverinterface->onroom_pre_start(this);
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - start %d", room_id);
+			debug_print_important2(__LOGTAG__, "room - start %d", room_id);
 			send_event_room_start_or_end(true);
 			onroom_start();
 			break;
 		}
 		case room_end: {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room - end %d", room_id);
+			debug_print_important2(__LOGTAG__, "room - end %d", room_id);
 			send_event_room_start_or_end(false);
 			onroom_end();
 			break;
@@ -288,7 +288,7 @@ void room::on_state_change(states prev_state) {
 }
 
 void room::print_info() {
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d", room_id, get_state_string().c_str(), since_creation(), playermap.size());
+	debug_print_important2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d", room_id, get_state_string().c_str(), since_creation(), playermap.size());
 }
 
 ev_tstamp room::since_creation() {
@@ -300,7 +300,7 @@ const qstring& room::get_state_string() {
 }
 
 void room::broadcast(const qstring& msg) {
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room %d: broadcast %s", room_id, msg.c_str());
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "room %d: broadcast %s", room_id, msg.c_str());
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ = it->second;
 		player_->qconnection->sendmessage(msg, true);
@@ -310,7 +310,7 @@ void room::broadcast(const qstring& msg) {
 void room::broadcast_except(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it_except = playermap.find(p->qconnection->cid_hash_val);
 	if (it_except == playermap.end()) {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "broadcast_except - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "broadcast_except - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
 		return;
 	}
 
@@ -326,7 +326,7 @@ void room::broadcast_except(player* p, const qstring& msg) {
 void room::sendto(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it = playermap.find(p->qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		DEBUG_WARN(LOG_LEVEL_0, __LOGTAG__, "sendto - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "sendto - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
 		return;
 	}
 	p->qconnection->sendmessage(msg, true);

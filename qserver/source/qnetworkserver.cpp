@@ -28,7 +28,7 @@ int qnetworkserver::runID = 0;
 
 conn_io::conn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_len, int sock) : bridge(bridge), sock(sock) {
 	if (scid_len != Q_LOCAL_CONN_ID_LEN) {
-		DEBUG_PRINT_WARN(__LOGTAG__, "failed, scid length too short");
+		debug_print_warn(__LOGTAG__, "failed, scid length too short");
 	}
 	memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
 	HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
@@ -48,7 +48,7 @@ void conn_io::sendmessage(const qstring& buffer, bool flush) {
 
 void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 	if (!quiche_conn_is_established(conn)) {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant send !!!, connection not established - %s", (char*) buf);
+		debug_print_important(__LOGTAG__, "Cant send !!!, connection not established - %s", (char*) buf);
 		return;
 	}
 	bool success = false;
@@ -58,15 +58,15 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		if (last_stream_s == s) {
 			continue;
 		}
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+		debug_print(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len != (ssize_t) buflen) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "send failure %d", sent_len);
+			debug_print_error(__LOGTAG__, "send failure %d", sent_len);
 			break;
 		}
 		success = true;
 		last_stream_s = s;
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) buf);
+		debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) buf);
 		break;
 	}
 
@@ -76,14 +76,14 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		next_s = (next_s + 1) + (next_s % 2);
 		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len == (ssize_t) buflen) {
-			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
+			debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
 			last_stream_s = next_s;
 			success = true;
 		}
 	}
 
 	if (!success && next_s >= MAX_SEND_STREAM_TO_TRY) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Send %s FAILED even after %d tries. Streams not available to send !!!", (char*) buf, next_s);
+		debug_print_error(__LOGTAG__, "Send %s FAILED even after %d tries. Streams not available to send !!!", (char*) buf, next_s);
 	}
 	quiche_stream_iter_free(writable);
 	if (flush) {
@@ -93,21 +93,21 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 
 void conn_io::close() {
 	if (!quiche_conn_is_established(conn)) {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Cant close !!!, connection not established.");
+		debug_print_important(__LOGTAG__, "Cant close !!!, connection not established.");
 		return;
 	}
 	uint64_t s = 0;
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
-		DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+		debug_print(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		const char* byez = "byez\n";
 		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true);
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Close, sending 'byez'");
+		debug_print_important(__LOGTAG__, "Close, sending 'byez'");
 		if (bye_sent_len != 5) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
+			debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
 		}
 
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
+		debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
 		break;
 	}
 	quiche_stream_iter_free(writable);
@@ -117,7 +117,7 @@ void conn_io::close() {
 // MARK: - qnetworkserver
 void qnetworkserver::debug_log(const uint8_t* line, void* argp) {
 	UNUSED(argp);
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "%s", (char*) line);
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "%s", (char*) line);
 }
 void qnetworkserver::mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len) {
 	memcpy(token, "quiche", sizeof("quiche") - 1);
@@ -155,13 +155,13 @@ bool qnetworkserver::validate_token(const uint8_t* token, size_t token_len, stru
 uint8_t* qnetworkserver::gen_cid(uint8_t* cid, size_t cid_len) {
 	int rng = open("/dev/urandom", O_RDONLY);
 	if (rng < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to open /dev/urandom");
+		debug_print_error(__LOGTAG__, "failed to open /dev/urandom");
 		return nullptr;
 	}
 
 	ssize_t rand_len = read(rng, cid, cid_len);
 	if (rand_len < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection ID");
+		debug_print_error(__LOGTAG__, "failed to create connection ID");
 		close(rng);
 		return nullptr;
 	}
@@ -173,13 +173,13 @@ uint8_t* qnetworkserver::gen_cid(uint8_t* cid, size_t cid_len) {
 conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len) {
 	conn_io* qconnection = DEBUG_NEW conn_io(this, scid, scid_len, conns->sock);
 	if (qconnection == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to allocate qconnection");
+		debug_print_error(__LOGTAG__, "failed to allocate qconnection");
 		return nullptr;
 	}
 
 	Connection* conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_addr, peer_addr_len, config);
 	if (conn == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create connection");
+		debug_print_error(__LOGTAG__, "failed to create connection");
 		GX_DELETE(qconnection);
 		return nullptr;
 	}
@@ -201,11 +201,11 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 
 void qnetworkserver::onconnection_connect(conn_io* qconnection) {
 	UNUSED(qconnection);
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "<<<<< new connection");
+	debug_print_important(__LOGTAG__, "<<<<< new connection");
 }
 void qnetworkserver::onconnection_connected(conn_io* qconnection) {
 	UNUSED(qconnection);
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection established");
+	debug_print_important(__LOGTAG__, "connection established");
 }
 
 void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) {
@@ -215,9 +215,9 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_i
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
 	if (getnameinfo((struct sockaddr*) &qconnection->peer_addr, qconnection->peer_addr_len, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
+		debug_print_important2(__LOGTAG__, "<<<<< %s [len %d], host : %s, serv : %s", copybuf, recv_len, hbuf, sbuf);
 	} else {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "<<<<< %s [len %d]", copybuf, recv_len);
+		debug_print_important2(__LOGTAG__, "<<<<< %s [len %d]", copybuf, recv_len);
 	}
 	GX_DELETE_ARY(copybuf);
 
@@ -237,13 +237,13 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 			break;
 		}
 		if (written < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create packet: %zd", written);
+			debug_print_error(__LOGTAG__, "failed to create packet: %zd", written);
 			return;
 		}
 
 		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 		if (sent != written) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
+			debug_print_error(__LOGTAG__, "failed to send");
 			return;
 		}
 
@@ -258,7 +258,7 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 	double t = static_cast<double>(timeout_in_nanos) / 1e9;
 	qconnection->timer.repeat = t < 0.00001f ? 1.0f : t;
 	ev_timer_again(loop, &qconnection->timer);
-	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+	debug_print(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
 void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnection) {
@@ -266,12 +266,12 @@ void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnecti
 	onconnection_destroy(qconnection);
 	HASH_DELETE(hh, conns->h, qconnection);
 	GX_DELETE(qconnection);
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
+	debug_print_important(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
 
 void qnetworkserver::onconnection_destroy(conn_io* qconnection) {
 	UNUSED(qconnection);
-	//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connection about to destroy !!!");
+	//    debug_print_important(__LOGTAG__, "Connection about to destroy !!!");
 }
 
 void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
@@ -292,13 +292,13 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		quiche_conn_stats(qconnection->conn, &stats);
 		quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-		DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		debug_print(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu\n", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
 		qconnection->bridge->destroy_connection(loop, qconnection);
 		return;
 	} /*else {
 		// force close here
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Force close connection !!!");
+		debug_print_important(__LOGTAG__, "Force close connection !!!");
 		qconnection->bridge->DestroyConnection(loop, qconnection);
 		return;
 	}*/
@@ -319,11 +319,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 
@@ -344,7 +344,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 		int rc = quiche_header_info(conns->buf, read, Q_LOCAL_CONN_ID_LEN, &version, &type, scid, &scid_len, dcid, &dcid_len, token, &token_len);
 		if (rc < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse header: %d", rc);
+			debug_print_error(__LOGTAG__, "failed to parse header: %d", rc);
 			continue;
 		}
 
@@ -352,18 +352,18 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 		if (qconnection == nullptr) {
 			if (!quiche_version_is_supported(version)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "version negotiation");
+				debug_print(LOG_LEVEL_4, __LOGTAG__, "version negotiation");
 
 				ssize_t written = quiche_negotiate_version(scid, scid_len, dcid, dcid_len, conns->out, sizeof(conns->out));
 
 				if (written < 0) {
-					DEBUG_PRINT_WARN(__LOGTAG__, "failed to create vneg packet: %zd", written);
+					debug_print_warn(__LOGTAG__, "failed to create vneg packet: %zd", written);
 					continue;
 				}
 
 				ssize_t sent = sendto(conns->sock, conns->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 				if (sent != written) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
+					debug_print_error(__LOGTAG__, "failed to send");
 					continue;
 				}
 
@@ -376,7 +376,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			}
 
 			if (token_len == 0) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stateless retry");
+				debug_print(LOG_LEVEL_4, __LOGTAG__, "stateless retry");
 
 				mint_token(dcid, dcid_len, &peer_addr, peer_addr_len, token, &token_len);
 
@@ -389,13 +389,13 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				ssize_t written = quiche_retry(scid, scid_len, dcid, dcid_len, new_cid, Q_LOCAL_CONN_ID_LEN, token, token_len, version, conns->out, sizeof(conns->out));
 
 				if (written < 0) {
-					DEBUG_PRINT_WARN(__LOGTAG__, "failed to create retry packet: %zd", written);
+					debug_print_warn(__LOGTAG__, "failed to create retry packet: %zd", written);
 					continue;
 				}
 
 				ssize_t sent = sendto(conns->sock, conns->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 				if (sent != written) {
-					DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
+					debug_print_error(__LOGTAG__, "failed to send");
 					continue;
 				}
 
@@ -408,7 +408,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			}
 
 			if (!validate_token(token, token_len, &peer_addr, peer_addr_len, odcid, &odcid_len)) {
-				DEBUG_PRINT_WARN(__LOGTAG__, "invalid address validation token");
+				debug_print_warn(__LOGTAG__, "invalid address validation token");
 				continue;
 			}
 
@@ -430,7 +430,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 		ssize_t done = quiche_conn_recv(qconnection->conn, conns->buf, read, &recv_info);
 
 		if (done < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to process packet: %zd", done);
+			debug_print_error(__LOGTAG__, "failed to process packet: %zd", done);
 			continue;
 		}
 
@@ -448,7 +448,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			uint64_t s = 0;
 			StreamIter* readable = quiche_conn_readable(qconnection->conn);
 			while (quiche_stream_iter_next(readable, &s)) {
-				DEBUG_PRINT(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
+				debug_print(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 				bool fin = false;
 				ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s, conns->buf, sizeof(conns->buf), &fin);
 				if (recv_len < 0) {
@@ -457,12 +457,12 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				if (fin) {
 					const char* resp = "byez\n";
 					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, reinterpret_cast<const uint8_t*>(resp), 5, true);
-					DEBUG_PRINT_IMPORTANT(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
+					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
 					if (bye_sent_len != 5) {
-						DEBUG_PRINT_ERROR(__LOGTAG__, "sending 'byez' failed !!!");
+						debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
 					}
 				}
-				//                DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
+				//                debug_print(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
 				qconnection->bridge->onconnection_message(recv_len, conns->buf, qconnection);
 			}
 			quiche_stream_iter_free(readable);
@@ -479,7 +479,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			quiche_conn_stats(qconnection->conn, &stats);
 			quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
 
-			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+			debug_print_important(__LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 
 			destroy_connection(loop, qconnection);
 		}
@@ -497,29 +497,29 @@ void qnetworkserver::broadcast_message(const qstring& buffer, bool flush) {
 }
 
 void qnetworkserver::force_disconnect_all() {
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "force disconnect all connections !!!");
+	debug_print_important(__LOGTAG__, "force disconnect all connections !!!");
 	// destroy connections
 	struct conn_io *tmp, *conn_io = NULL;
 	int pending_connections = 0;
 	HASH_ITER(hh, conns->h, conn_io, tmp) {
 		flush_egress(mainloop, conn_io);
 		//        if (sent_bytes) {
-		//            DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "force close --> try flush : sent bytes %zd", sent_bytes);
+		//            debug_print(LOG_LEVEL_3, __LOGTAG__, "force close --> try flush : sent bytes %zd", sent_bytes);
 		//        }
 		if (quiche_conn_is_closed(conn_io->conn)) {
-			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
 		}
 		Stats stats;
 		PathStats path_stats;
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-		DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
 		HASH_DELETE(hh, conns->h, conn_io);
 		GX_DELETE(conn_io);
 		pending_connections++;
 	}
 	if (pending_connections > 0) {
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Force closed %d pending connections.", pending_connections);
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "Force closed %d pending connections.", pending_connections);
 	}
 }
 
@@ -543,20 +543,20 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->host_id = host;
 	thiz->port_id = port;
 
-	if (thiz->run_mutex.tryLock(__FUNCTION__) != 0) {
+	if (thiz->run_mutex.try_lock(__FUNCTION__) != 0) {
 		runConfig->finished = true;
-		runConfig->pthread_returnValue = -1;
-		pthread_exit(&runConfig->pthread_returnValue);
+		runConfig->pthread_return_value = -1;
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	GX_DELETE(thiz->hiredis);
 	thiz->hiredis = DEBUG_NEW qhiredis("qserver_hiredis", runConfig->redis_ip, runConfig->redis_port);
 	if (thiz->hiredis->connect_redis() != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
+		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
 		GX_DELETE(thiz->hiredis);
 		runConfig->finished = true;
-		runConfig->pthread_returnValue = -1;
-		pthread_exit(&runConfig->pthread_returnValue);
+		runConfig->pthread_return_value = -1;
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", port.c_str()), qstring::format_string("%s:%s", host.c_str(), port.c_str()));
@@ -569,85 +569,85 @@ void* qnetworkserver::run_internal(void* data) {
 
 	struct addrinfo* local;
 	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &local) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
+		debug_print_error(__LOGTAG__, "failed to resolve host");
 		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	int sock = socket(local->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
+		debug_print_error(__LOGTAG__, "failed to create socket");
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
+		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
+		debug_print_error(__LOGTAG__, "failed to connect socket");
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	thiz->config = quiche_config_new(PROTOCOL_VERSION);
 	if (thiz->config == nullptr) {
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create config");
+		debug_print_error(__LOGTAG__, "failed to create config");
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	fs::path certFile(runConfig->rootDir / "cert.crt");
 	fs::path keyFile(runConfig->rootDir / "cert.key");
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", certFile.c_str(), keyFile.c_str());
 	int res_crt_load = quiche_config_load_cert_chain_from_pem_file(thiz->config, certFile.c_str());
 	if (res_crt_load != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "CERT load error - %s, err %d", certFile.c_str(), res_crt_load);
+		debug_print_error(__LOGTAG__, "CERT load error - %s, err %d", certFile.c_str(), res_crt_load);
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 	int res_key_load = quiche_config_load_priv_key_from_pem_file(thiz->config, keyFile.c_str());
 	if (res_key_load != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
+		debug_print_error(__LOGTAG__, "KEY load error - %s", keyFile.c_str());
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
-		runConfig->pthread_returnValue = -1;
+		runConfig->pthread_return_value = -1;
 		runConfig->finished = true;
-		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unLock() == 0), "CHECK !!!");
-		pthread_exit(&runConfig->pthread_returnValue);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	quiche_config_set_application_protos(thiz->config, reinterpret_cast<const uint8_t*>("\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9"), 38);
@@ -675,15 +675,15 @@ void* qnetworkserver::run_internal(void* data) {
 
 	thiz->hiredis_async = DEBUG_NEW qhiredis_async(runConfig->redis_ip, runConfig->redis_port, thiz);
 	if (thiz->hiredis_async->connect_async_redis(thiz->mainloop) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
+		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 		GX_DELETE(thiz->hiredis_async);
 		ev_loop_destroy(thiz->mainloop);
 		freeaddrinfo(local);
 		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
 		runConfig->finished = true;
-		runConfig->pthread_returnValue = -1;
-		pthread_exit(&runConfig->pthread_returnValue);
+		runConfig->pthread_return_value = -1;
+		pthread_exit(&runConfig->pthread_return_value);
 	}
 
 	ev_io_init(&watcher, recv_cb, sock, EV_READ);
@@ -712,7 +712,7 @@ void* qnetworkserver::run_internal(void* data) {
 	/*
 	thiz->logger.end_session();
 
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for services to finish !!!");
+	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_sceduler wait_scheduler;
 	wait_scheduler.set_ev_lopp(wait_loop);
@@ -721,7 +721,7 @@ void* qnetworkserver::run_internal(void* data) {
 			UNUSED(timer);
 			int service_shutdown_cnt = 0;
 			if (thiz->logger.config.finished) {
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats service finished !!!");
+				debug_print_important(__LOGTAG__, "stats service finished !!!");
 				service_shutdown_cnt++;
 			}
 			if (service_shutdown_cnt >= 1) {
@@ -740,7 +740,7 @@ void* qnetworkserver::run_internal(void* data) {
 
 void qnetworkserver::exit_services_gracefully() {
 	int status = logger.end_session();
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "waiting for services to finish !!!");
+	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_sceduler wait_scheduler;
 	wait_scheduler.set_ev_lopp(wait_loop);
@@ -752,7 +752,7 @@ void qnetworkserver::exit_services_gracefully() {
 			}
 			int service_shutdown_cnt = 0;
 			if (logger.config.finished) {
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats service finished !!!");
+				debug_print_important(__LOGTAG__, "stats service finished !!!");
 				service_shutdown_cnt++;
 			}
 			if (service_shutdown_cnt >= 1) {
@@ -766,14 +766,14 @@ void qnetworkserver::exit_services_gracefully() {
 }
 
 bool qnetworkserver::is_run() {
-	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
+	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
 	bool is_run = run_server_config.finished;
-	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
+	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unlock() == 0), __FUNCTION__);
 	return is_run;
 }
 
 int qnetworkserver::run(qstring host, qstring port, fs::path rootDir, const qstring& redis_ip, const uint16_t redis_port) {
-	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.tryLock(__FUNCTION__) == 0), __FUNCTION__);
+	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
 	run_server_config.host = host;
 	run_server_config.port = port;
 	run_server_config.redis_ip = redis_ip;
@@ -782,9 +782,9 @@ int qnetworkserver::run(qstring host, qstring port, fs::path rootDir, const qstr
 	run_server_config.finished = false;
 	run_server_config.rootDir = rootDir;
 	run_server_config.id = qnetworkserver::runID++;
-	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unLock() == 0), __FUNCTION__);
+	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unlock() == 0), __FUNCTION__);
 	if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, reinterpret_cast<void*>(&run_server_config)) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
+		debug_print_error(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
 		return -1;
 	}
 	return 0;

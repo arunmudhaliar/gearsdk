@@ -10,7 +10,7 @@
 
 #include <zlib.h>
 
-qmongo::qmongo(interface_qmongo_connection* interfce_, const qstring& app_name, const qstring& db_name, const qstring& uri_string) : interface(interfce_), app_name(app_name), db_name(db_name), uri_string(uri_string) {}
+qmongo::qmongo(interface_qmongo_connection* interface_ptr, const qstring& app_name, const qstring& db_name, const qstring& uri_string) : interface(interface_ptr), app_name(app_name), db_name(db_name), uri_string(uri_string) {}
 
 qmongo::~qmongo() {
 	cleanup();
@@ -52,7 +52,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
 	bson_error_t error;
 	uri = mongoc_uri_new_with_error(uri_string.c_str(), &error);
 	if (!uri) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to parse URI: %s, error message: %s", uri_string.c_str(), error.message);
+		debug_print_error(__LOGTAG__, "failed to parse URI: %s, error message: %s", uri_string.c_str(), error.message);
 		cleanup();
 		return EXIT_FAILURE;
 	}
@@ -63,7 +63,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
 	client = mongoc_client_new_from_uri(uri);
 	if (!client) {
 		cleanup();
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create client !!! - %s", uri_string.c_str());
+		debug_print_error(__LOGTAG__, "failed to create client !!! - %s", uri_string.c_str());
 		return EXIT_FAILURE;
 	}
 
@@ -78,7 +78,7 @@ int qmongo::connect(const qstring& app_name, const qstring& db_name, const qstri
 	 */
 	database = mongoc_client_get_database(client, db_name.c_str());
 
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "Connected - %s", uri_string.c_str());
+	debug_print_important(__LOGTAG__, "Connected - %s", uri_string.c_str());
 	if (interface) {
 		interface->on_mongo_connect();
 	}
@@ -161,9 +161,9 @@ int qmongo::update(const qstring& collection_name, bson_t& query, bson_t& update
 	opts = mongoc_find_and_modify_opts_new();
 	mongoc_find_and_modify_opts_set_update(opts, &update);
 
-	const mongoc_find_and_modify_flags_t flags = (mongoc_find_and_modify_flags_t) (MONGOC_FIND_AND_MODIFY_UPSERT | MONGOC_FIND_AND_MODIFY_RETURN_NEW);
+	const mongoc_find_and_modify_flags_t MODIFY_FLAGS = (mongoc_find_and_modify_flags_t) (MONGOC_FIND_AND_MODIFY_UPSERT | MONGOC_FIND_AND_MODIFY_RETURN_NEW);
 	/* Create the document if it didn't exist, and return the updated document */
-	mongoc_find_and_modify_opts_set_flags(opts, flags);
+	mongoc_find_and_modify_opts_set_flags(opts, MODIFY_FLAGS);
 
 	bool result = mongoc_collection_find_and_modify_with_opts(get_collection(collection_name), &query, opts, &reply, &error);
 	if (!result) {

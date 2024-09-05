@@ -828,7 +828,7 @@
 <text text-anchor="" x="331.89" y="319.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (8 samples, 0.41%)</title><rect x="694.6" y="373" width="4.9" height="15.0" fill="rgb(250,194,1)" rx="2" ry="2" />
+<title>qh3server`debug_print (8 samples, 0.41%)</title><rect x="694.6" y="373" width="4.9" height="15.0" fill="rgb(250,194,1)" rx="2" ry="2" />
 <text text-anchor="" x="697.63" y="383.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -1472,7 +1472,7 @@
 <text text-anchor="" x="311.19" y="367.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (15 samples, 0.77%)</title><rect x="179.2" y="437" width="9.1" height="15.0" fill="rgb(234,187,34)" rx="2" ry="2" />
+<title>qh3server`debug_print (15 samples, 0.77%)</title><rect x="179.2" y="437" width="9.1" height="15.0" fill="rgb(234,187,34)" rx="2" ry="2" />
 <text text-anchor="" x="182.18" y="447.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -2540,7 +2540,7 @@
 <text text-anchor="" x="787.70" y="367.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT_IMPORTANT (1 samples, 0.05%)</title><rect x="783.5" y="453" width="0.6" height="15.0" fill="rgb(247,218,8)" rx="2" ry="2" />
+<title>qh3server`debug_print_important (1 samples, 0.05%)</title><rect x="783.5" y="453" width="0.6" height="15.0" fill="rgb(247,218,8)" rx="2" ry="2" />
 <text text-anchor="" x="786.48" y="463.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -2620,7 +2620,7 @@
 <text text-anchor="" x="341.01" y="431.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT_IMPORTANT2 (7 samples, 0.36%)</title><rect x="188.3" y="437" width="4.3" height="15.0" fill="rgb(248,182,27)" rx="2" ry="2" />
+<title>qh3server`debug_print_important2 (7 samples, 0.36%)</title><rect x="188.3" y="437" width="4.3" height="15.0" fill="rgb(248,182,27)" rx="2" ry="2" />
 <text text-anchor="" x="191.31" y="447.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -4356,7 +4356,7 @@
 <text text-anchor="" x="616.08" y="287.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (8 samples, 0.41%)</title><rect x="235.8" y="389" width="4.8" height="15.0" fill="rgb(233,75,6)" rx="2" ry="2" />
+<title>qh3server`debug_print (8 samples, 0.41%)</title><rect x="235.8" y="389" width="4.8" height="15.0" fill="rgb(233,75,6)" rx="2" ry="2" />
 <text text-anchor="" x="238.78" y="399.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -4376,7 +4376,7 @@
 <text text-anchor="" x="698.24" y="367.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (20 samples, 1.03%)</title><rect x="325.8" y="421" width="12.2" height="15.0" fill="rgb(235,155,50)" rx="2" ry="2" />
+<title>qh3server`debug_print (20 samples, 1.03%)</title><rect x="325.8" y="421" width="12.2" height="15.0" fill="rgb(235,155,50)" rx="2" ry="2" />
 <text text-anchor="" x="328.84" y="431.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -4668,7 +4668,7 @@
 <text text-anchor="" x="208.96" y="399.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (5 samples, 0.26%)</title><rect x="195.6" y="405" width="3.1" height="15.0" fill="rgb(249,176,53)" rx="2" ry="2" />
+<title>qh3server`debug_print (5 samples, 0.26%)</title><rect x="195.6" y="405" width="3.1" height="15.0" fill="rgb(249,176,53)" rx="2" ry="2" />
 <text text-anchor="" x="198.61" y="415.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -6528,7 +6528,7 @@
 <text text-anchor="" x="563.75" y="239.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  >qh3..</text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (7 samples, 0.36%)</title><rect x="188.3" y="421" width="4.3" height="15.0" fill="rgb(212,168,27)" rx="2" ry="2" />
+<title>qh3server`debug_print (7 samples, 0.36%)</title><rect x="188.3" y="421" width="4.3" height="15.0" fill="rgb(212,168,27)" rx="2" ry="2" />
 <text text-anchor="" x="191.31" y="431.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -6792,7 +6792,7 @@
 <text text-anchor="" x="568.01" y="191.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT_IMPORTANT (8 samples, 0.41%)</title><rect x="235.8" y="405" width="4.8" height="15.0" fill="rgb(221,51,51)" rx="2" ry="2" />
+<title>qh3server`debug_print_important (8 samples, 0.41%)</title><rect x="235.8" y="405" width="4.8" height="15.0" fill="rgb(221,51,51)" rx="2" ry="2" />
 <text text-anchor="" x="238.78" y="415.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
@@ -7764,7 +7764,7 @@
 <text text-anchor="" x="207.74" y="335.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">
-<title>qh3server`DEBUG_PRINT (1 samples, 0.05%)</title><rect x="783.5" y="437" width="0.6" height="15.0" fill="rgb(220,187,42)" rx="2" ry="2" />
+<title>qh3server`debug_print (1 samples, 0.05%)</title><rect x="783.5" y="437" width="0.6" height="15.0" fill="rgb(220,187,42)" rx="2" ry="2" />
 <text text-anchor="" x="786.48" y="447.5" font-size="12" font-family="Verdana" fill="rgb(0,0,0)"  ></text>
 </g>
 <g class="func_g" onmouseover="s(this)" onmouseout="c()" onclick="zoom(this)">

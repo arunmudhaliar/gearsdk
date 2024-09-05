@@ -60,8 +60,8 @@ int main(int argc, const char* argv[]) {
 
 	discord_util::shutdown();
 
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
 	sleep(5);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
 	return 0;
 }

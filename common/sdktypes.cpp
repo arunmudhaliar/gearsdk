@@ -41,11 +41,11 @@ int init_gsdk() {
 
 void print_common_info() {
 #if DEV_BUILD
-	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "DEVELOPMENT BUILD");
 #elif PROD_BUILD
-	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
 #else
-	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
 #endif
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
 	const char* endian_str = "Little endian machine";
@@ -61,24 +61,24 @@ void print_common_info() {
 #else
 	const char* arch_str = "Unknown architecture";
 #endif
-	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "%s [%s], sz(int):%d", endian_str, arch_str, sizeof(int));
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "%s [%s], sz(int):%d", endian_str, arch_str, sizeof(int));
 
-	DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
-	DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
-	DEBUG_PRINT(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
-	DEBUG_PRINT(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
-	DEBUG_PRINT(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
-	DEBUG_PRINT(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
-	DEBUG_PRINT(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Log level [LOG_LEVEL_%d]", LOG_LEVEL);
+	debug_print(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "Lvl0");
+	debug_print(LOG_LEVEL_1, __DEFAULT_LOG_TAG__, "Lvl1");
+	debug_print(LOG_LEVEL_2, __DEFAULT_LOG_TAG__, "Lvl2");
+	debug_print(LOG_LEVEL_3, __DEFAULT_LOG_TAG__, "Lvl3");
+	debug_print(LOG_LEVEL_4, __DEFAULT_LOG_TAG__, "Lvl4");
+	debug_print(LOG_LEVEL_5, __DEFAULT_LOG_TAG__, "Lvl5");
 
 	char cwd[PATH_MAX];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
-		DEBUG_PRINT(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
+		debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Current working dir : %s", cwd);
 	} else {
-		DEBUG_PRINT_WARN(__DEFAULT_LOG_TAG__, "getcwd() error");
+		debug_print_warn(__DEFAULT_LOG_TAG__, "getcwd() error");
 	}
 #if DEBUG
-	DEBUG_PRINT(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
+	debug_print(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
 #endif
 }
 
@@ -95,8 +95,8 @@ int number_of_digits(unsigned int num) {
 	return len;
 }
 
-void DEBUG_RAW(int logLevel, const char* format, ...) {
-	if (logLevel > LOG_LEVEL) {
+void debug_raw(int log_level, const char* format, ...) {
+	if (log_level > LOG_LEVEL) {
 		return;
 	}
 	char buffer[LOGBUFFER_SIZE + 1];
@@ -113,8 +113,8 @@ void DEBUG_RAW(int logLevel, const char* format, ...) {
 	va_end(v);
 }
 
-void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
-	if (logLevel > LOG_LEVEL) {
+void debug_print(int log_level, const char* tag, const char* format, ...) {
+	if (log_level > LOG_LEVEL) {
 		return;
 	}
 	time_t givemetime = time(NULL);
@@ -132,8 +132,8 @@ void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...) {
 	va_end(v);
 }
 
-void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
-	if (logLevel > LOG_LEVEL) {
+void debug_print2_internal(int log_level, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
+	if (log_level > LOG_LEVEL) {
 		return;
 	}
 	time_t givemetime = time(NULL);
@@ -165,8 +165,8 @@ void set_assert_callback(type_debug_warn_or_err_cb cb) {
 	global_assert_cb = cb;
 }
 
-void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
-	if (logLevel > LOG_LEVEL) {
+void debug_warn(int log_level, const char* tag, const char* format, ...) {
+	if (log_level > LOG_LEVEL) {
 		return;
 	}
 	char buffer[LOGBUFFER_SIZE + 1];
@@ -174,13 +174,13 @@ void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...) {
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(logLevel, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	debug_print(log_level, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
 	if (global_warn_cb) {
 		global_warn_cb(buffer);
 	}
 }
 
-void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
+void debug_warn_cond(const char* tag, bool condition, const char* format, ...) {
 	if (condition == false) {
 		return;
 	}
@@ -189,64 +189,64 @@ void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...) {
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	debug_print(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
 	if (global_warn_cb) {
 		global_warn_cb(buffer);
 	}
 }
-void DEBUG_PRINT_WARN(const char* tag, const char* format, ...) {
+void debug_print_warn(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	debug_print(LOG_LEVEL, "\x1b[93mWARN !!!", "[%s] : %s\x1b[0m", tag, buffer);
 	if (global_warn_cb) {
 		global_warn_cb(buffer);
 	}
 }
-void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...) {
+void debug_print_error(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
+	debug_print(LOG_LEVEL, "\033[41mERROR !!!", "[%s] : %s\x1b[0m", tag, buffer);
 	if (global_err_cb) {
 		global_err_cb(buffer);
 	}
 }
-void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
+void debug_assert_internal(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
 	// fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
-	DEBUG_PRINT(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
+	debug_print(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
 	if (global_assert_cb) {
 		global_assert_cb(buffer);
 	}
 }
-void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...) {
+void debug_print_important(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
+	debug_print(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
 }
-void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...) {
+void debug_print_important2(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	DEBUG_PRINT(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
+	debug_print(LOG_LEVEL, tag, "\x1b[96m%s\x1b[0m", buffer);
 }
 
-void DEBUG_PRINT_scid(int logLevel, const uint8_t* scid, size_t scid_len) {
-	if (logLevel > LOG_LEVEL) {
+void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len) {
+	if (log_level > LOG_LEVEL) {
 		return;
 	}
 	fprintf(stderr, "[%d] SCID: ", getpid());

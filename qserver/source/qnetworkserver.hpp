@@ -84,7 +84,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 		qstring host;
 		qstring port;
 		qnetworkserver* thiz;
-		int pthread_returnValue;
+		int pthread_return_value;
 		bool finished = false;
 		int id = -1;
 		fs::path rootDir;

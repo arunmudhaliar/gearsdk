@@ -326,6 +326,7 @@
 				556AB6022AF5094600D688DB /* Sources */,
 				556AB6032AF5094600D688DB /* Frameworks */,
 				55CB70462C77D36900E05D37 /* ShellScript */,
+				551CDD342C87843B00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -369,6 +370,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD342C87843B00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=(\"source/libmongoc-1.0\")\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/source/libmongoc-1.0\" -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/../common/libbson-1.0\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\" -I\"${SRCROOT}/../networkcommon/source/quiche\"\ndone\n";
+		};
 		55CB70462C77D36900E05D37 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -541,6 +559,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -570,6 +589,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

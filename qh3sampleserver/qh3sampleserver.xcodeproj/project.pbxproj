@@ -457,6 +457,7 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 			};
 			name = Debug;
 		};
@@ -497,6 +498,7 @@
 				);
 				OTHER_LDFLAGS = "-lresolv";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 			};
 			name = Release;
 		};

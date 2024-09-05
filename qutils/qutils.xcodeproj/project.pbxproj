@@ -143,7 +143,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# Run clang-tidy\n# clang-tidy your_file.cpp --config-file=.clang-tidy\n\n# Run custom naming convention script\npython3 ../check_naming.py ${SRCROOT} -- ${SRCROOT}/dpp\n";
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define the directory to exclude\nEXCLUDED_DIR=\"dpp\"\n\n# Find all relevant source files excluding the specified directory\nfind \"${SRCROOT}\" -type f \\( -name \"*.cpp\" -o -name \"*.c\" -o -name \"*.h\" -o -name \"*.hpp\" \\) ! -path \"${SRCROOT}/${EXCLUDED_DIR}/*\" -print | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}\" -I\"${SRCROOT}/${EXCLUDED_DIR}\"\ndone\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -281,6 +281,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -298,6 +299,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

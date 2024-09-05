@@ -376,6 +376,7 @@
 					"-fno-sanitize=alignment",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Debug;
@@ -406,6 +407,7 @@
 					"-fno-sanitize=alignment",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Release;

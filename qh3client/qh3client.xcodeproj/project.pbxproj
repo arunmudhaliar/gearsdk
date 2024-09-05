@@ -163,6 +163,7 @@
 				55A4ADB02AEF82AA00BC4CED /* CopyFiles */,
 				5595E1232BB08B7B00FA2618 /* ShellScript */,
 				555BA6EF2C3AEC8000E23A51 /* Embed Libraries */,
+				551CDD392C8A311B00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -206,6 +207,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD392C8A311B00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\n\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories and files to exclude\nEXCLUDED_DIRS=(\"\")  # Add directories you want to exclude here\nEXCLUDED_FILES=(\"qh3client-android.cpp\" \"qh3client-android.h\")  # Add files to exclude here\n\n# Base find command for source files\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Exclude specific files\nfor file in \"${EXCLUDED_FILES[@]}\"; do\n    FIND_CMD+=\" ! -name \\\"${file}\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command and run clang-tidy on each file\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/../common/libbson-1.0\" -I\"${SRCROOT}/../common/uthash\" -I\"${SRCROOT}/../common/rapidjson\" -I\"${SRCROOT}/../common/nvwa\" -I\"${SRCROOT}/../common/zlib\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\" -I\"${SRCROOT}/../networkcommon/source/quiche\" -I\"usr/include/sys\" $(pkg-config --cflags gtest)\ndone\n";
+		};
 		5595E1232BB08B7B00FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -378,6 +396,7 @@
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -405,6 +424,7 @@
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Release;

@@ -29,9 +29,9 @@ class timer {
 	/**
 	 * @brief Updates the timer variables for each frame with a target FPS.
 	 *
-	 * @param targetFPS The target frames per second.
+	 * @param target_fps The target frames per second.
 	 */
-	static void update(float targetFPS);
+	static void update(float target_fps);
 
 	/**
 	 * @brief Resets the timer variables.
@@ -43,65 +43,65 @@ class timer {
 	 *
 	 * @return The delta time in seconds.
 	 */
-	static float getDtinSec() { return timerDTInSec; }
+	static float get_dt_in_sec() { return timer_dt_in_sec; }
 
 	/**
 	 * @brief Gets the delta time in milliseconds.
 	 *
 	 * @return The delta time in milliseconds.
 	 */
-	static int getDTinMilliSec() { return timerDTInMilliSec; }
+	static int get_dt_in_milli_sec() { return timer_dt_in_milli_sec; }
 
 	/**
 	 * @brief Gets the current frames per second.
 	 *
 	 * @return The current frames per second.
 	 */
-	static float getFPS() { return timerFPS; }
+	static float get_fps() { return timer_fps; }
 
 	/**
 	 * @brief Gets the elapsed time in seconds since the timer was initialized.
 	 *
 	 * @return The elapsed time in seconds.
 	 */
-	static float getElapsedTime() { return timerElapsedTimeInSec; }
+	static float get_elapsed_time() { return timer_elapsed_time_in_sec; }
 
 	/**
 	 * @brief Gets the current time in seconds.
 	 *
 	 * @return The current time in seconds.
 	 */
-	static double getCurrentTimeInSec();
+	static double get_current_time_in_sec();
 
 	/**
 	 * @brief Gets the current time in milliseconds.
 	 *
 	 * @return The current time in milliseconds.
 	 */
-	static unsigned long getCurrentTimeInMilliSec();
+	static unsigned long get_current_time_in_milli_sec();
 
 	/**
 	 * @brief Sets the global time scale for the engine.
 	 *
 	 * @param timescale The new time scale value.
 	 */
-	static void setTimeScale(float timescale) { timerTimeScale = timescale; }
+	static void set_time_scale(float timescale) { timer_time_scale = timescale; }
 
 	/**
 	 * @brief Gets the current global time scale.
 	 *
 	 * @return The current time scale value.
 	 */
-	static float getTimeScale() { return timerTimeScale; }
+	static float get_time_scale() { return timer_time_scale; }
 
    private:
-	static float timerFPS;				 ///< The current frames per second.
-	static float timerDTInSec;			 ///< The delta time in seconds.
-	static int timerDTInMilliSec;		 ///< The delta time in milliseconds.
-	static float timerElapsedTimeInSec;	 ///< The elapsed time in seconds since the timer was initialized.
-	static double timerPreviousTime;	 ///< The previous time, used for internal calculations.
-	static float timerAveragingTime;	 ///< The time over which to average the frame rate.
-	static double timerLastTime;		 ///< The last recorded time, used for internal calculations.
-	static int timerFrameCount;			 ///< The frame count, used for calculating the frame rate.
-	static float timerTimeScale;		 ///< The global time scale for the engine.
+	static float timer_fps;					 ///< The current frames per second.
+	static float timer_dt_in_sec;			 ///< The delta time in seconds.
+	static int timer_dt_in_milli_sec;		 ///< The delta time in milliseconds.
+	static float timer_elapsed_time_in_sec;	 ///< The elapsed time in seconds since the timer was initialized.
+	static double timer_previous_time;		 ///< The previous time, used for internal calculations.
+	static float timer_averaging_time;		 ///< The time over which to average the frame rate.
+	static double timer_last_time;			 ///< The last recorded time, used for internal calculations.
+	static int timer_frame_count;			 ///< The frame count, used for calculating the frame rate.
+	static float timer_time_scale;			 ///< The global time scale for the engine.
 };

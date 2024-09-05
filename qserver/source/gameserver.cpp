@@ -19,7 +19,7 @@ void game_room::onroom_player_added(player* p) {
 	UNUSED(p);
 }
 void game_room::onroom_message(player* p, const qstring& msg) {
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", room_id, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", room_id, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 	// passing to other clients
 	broadcast_except(p, msg);
 }
@@ -37,7 +37,7 @@ bool game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 void gameserver::on_network_server_init() {
 	roomserver::on_network_server_init();
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "gameserver::init");
+	debug_print_important2(__LOGTAG__, "gameserver::init");
 }
 
 room* gameserver::create_room(const msg_room_config* room_config_msg) {

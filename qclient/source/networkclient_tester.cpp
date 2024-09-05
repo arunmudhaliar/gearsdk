@@ -19,7 +19,7 @@ void networkclient_tester::send_msg_timer_cb(EV_P_ ev_timer* w, int revents) {
 		return;
 	}
 	networkclient_tester* tester = (networkclient_tester*) w->data;
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT MAIN %d", tester->clientList.size());
+	debug_print_important(__LOGTAG__, "TIMEOUT MAIN %d", tester->clientList.size());
 	std::vector<gameclient*> finishedList;
 	for (int x = 0; x < (int) tester->clientList.size(); x++) {
 		gameclient* client = tester->clientList[x];
@@ -51,7 +51,7 @@ void networkclient_tester::delete_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(w);
 	UNUSED(revents);
 	//    networkclient_tester* tester = (networkclient_tester*)w->data;
-	//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "TIMEOUT DELETE %d", tester->clientList.size());
+	//    debug_print_important(__LOGTAG__, "TIMEOUT DELETE %d", tester->clientList.size());
 	//    //    int finished = 0;
 	//    for (int x = 0;x < tester->clientList.size();x++) {
 	//        gameclient* client = tester->clientList[x];
@@ -70,7 +70,7 @@ void networkclient_tester::shutdown_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(w);
 	UNUSED(revents);
 	//    networkclient_tester* tester = (networkclient_tester*)w->data;
-	//    DEBUG_PRINT_IMPORTANT(__LOGTAG__, "SHUTDOWN EVENT %d", tester->clientList.size());
+	//    debug_print_important(__LOGTAG__, "SHUTDOWN EVENT %d", tester->clientList.size());
 }
 
 void networkclient_tester::run(const qstring& host, const qstring& port, int send_interval, int close_timeout, int shutdown_server_after) {

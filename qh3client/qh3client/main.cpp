@@ -33,7 +33,7 @@ void parse_arguments(int argc, const char* argv[]) {
 		app_state.host = request_ip_parts[0];
 		app_state.port = request_ip_parts[1];
 	} else {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
+		debug_print_error(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
 	}
 	//
 
@@ -46,7 +46,7 @@ void parse_arguments(int argc, const char* argv[]) {
 				app_state.host = request_ip_parts[0];
 				app_state.port = request_ip_parts[1];
 			} else {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), DEFAULT_REQUEST_IP);
+				debug_print_error(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), DEFAULT_REQUEST_IP);
 			}
 		}
 	}
@@ -59,7 +59,7 @@ int main(int argc, const char* argv[]) {
 	//    qstring host = "192.168.0.230";
 	//    qstring host = "54.173.204.159";
 
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "host %s, port %s", app_state.host.c_str(), app_state.port.c_str());
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "host %s, port %s", app_state.host.c_str(), app_state.port.c_str());
 
 	app_state.loop = ev_default_loop(0);
 
@@ -73,7 +73,7 @@ int main(int argc, const char* argv[]) {
 	qtimer* keep_alive_loop = app_state.scheduler.schedule_repeat_timer(
 		[&](qtimer& timer) {
 			UNUSED(timer);
-			DEBUG_PRINT_IMPORTANT(__LOGTAG__, "client alive - t:%5.2fs", ev_now(app_state.loop) - app_state.creation_time);
+			debug_print_important(__LOGTAG__, "client alive - t:%5.2fs", ev_now(app_state.loop) - app_state.creation_time);
 
 			//        http3_sample_client client(host, "4004");
 			//        client.set_ev_lopp(loop);

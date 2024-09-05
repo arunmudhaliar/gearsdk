@@ -57,12 +57,12 @@ Handles mutex operations.
 - `qmutex()`: Constructor.
 - `~qmutex()`: Destructor.
 - `int init(const std::string& name)`: Initializes the mutex.
-- `int tryLock(const char* lockedBy, const char* msg = nullptr)`: Tries to lock the mutex.
-- `int unLock(const char* msg = nullptr)`: Unlocks the mutex.
+- `int try_lock(const char* lockedBy, const char* msg = nullptr)`: Tries to lock the mutex.
+- `int unlock(const char* msg = nullptr)`: Unlocks the mutex.
 - `pthread_mutex_t* getMutexInternal()`: Returns the internal mutex.
-- `void conditionalWait(const char* waiting_at)`: Waits conditionally.
+- `void conditional_wait(const char* waiting_at)`: Waits conditionally.
 - `void block(const char* blockedBy = nullptr)`: Blocks the mutex.
-- `void unBlock(const char* unblockedBy)`: Unblocks the mutex.
+- `void unblock(const char* unblockedBy)`: Unblocks the mutex.
 
 essentials
 ----------

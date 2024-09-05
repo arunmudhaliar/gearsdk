@@ -55,7 +55,7 @@ Here's a simple example demonstrating how to use the `qtimer` and `qtimer_scedul
     #include <ev.h>
 
     void example_callback(qtimer& timer) {
-        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Timer expired");
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "Timer expired");
     }
 
     int main() {
@@ -65,17 +65,17 @@ Here's a simple example demonstrating how to use the `qtimer` and `qtimer_scedul
 
         // Schedule a one-time timer
         scheduler.schedule_timer([](qtimer& timer) {
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "One-time timer expired");
+            debug_print(LOG_LEVEL_0, __LOGTAG__, "One-time timer expired");
         }, 5);
 
         // Schedule a repeating timer
         scheduler.schedule_repeat_timer([](qtimer& timer) {
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Repeating timer expired");
+            debug_print(LOG_LEVEL_0, __LOGTAG__, "Repeating timer expired");
         }, 5);
 
         // Schedule a count timer
         scheduler.schedule_count_timer([](qtimer& timer) {
-            DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Count timer expired");
+            debug_print(LOG_LEVEL_0, __LOGTAG__, "Count timer expired");
         }, 5, 3);
 
         ev_run(loop, 0);

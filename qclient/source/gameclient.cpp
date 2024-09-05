@@ -26,7 +26,7 @@ void gameclient::onconnect(conn_io_client* qconnection) {
 	qstring msg_room_config_packet;
 	msg->serialize(doc, doc.GetAllocator());
 	essentials::get_json_string(doc, msg_room_config_packet);
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
 	sendMessage(msg_room_config_packet, true);
 	GX_DELETE(msg);
 }
@@ -37,7 +37,7 @@ void gameclient::test_send_shutdown_event() {
 	qstring msg_room_server_shutdown_packet;
 	msg->serialize(doc, doc.GetAllocator());
 	essentials::get_json_string(doc, msg_room_server_shutdown_packet);
-	DEBUG_PRINT(LOG_LEVEL_2, __LOGTAG__, "room shutdown --> %s", msg_room_server_shutdown_packet.c_str());
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "room shutdown --> %s", msg_room_server_shutdown_packet.c_str());
 	sendMessage(msg_room_server_shutdown_packet, true);
 	GX_DELETE(msg);
 }

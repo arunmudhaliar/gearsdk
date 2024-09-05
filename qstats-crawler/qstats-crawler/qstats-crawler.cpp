@@ -17,7 +17,7 @@ qstats_crawler::~qstats_crawler() {}
 
 void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host, const qstring& port, type_qstats_crawler_crawl_event_cb event_cb) {
 	if (pgsql_client.connect_db(host, port) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect db. returning !!!");
+		debug_print_error(__LOGTAG__, "failed to connect db. returning !!!");
 		return;
 	}
 
@@ -39,25 +39,25 @@ void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host
 		event_cb(root_filename, files, CRAWL_START);
 	}
 	for (fs::path f : files) {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "crawling...  %s", f.c_str());
+		debug_print_important(__LOGTAG__, "crawling...  %s", f.c_str());
 		int parsed_lines = 0;
 		if (parse_file(f, parsed_lines) == 0) {
 			fs::path dest = crawled_dir / fs::path(f.c_str()).filename();
 			int result = rename(f.c_str(), dest.c_str());
 			if (!result) {
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats file crawled and moved to %s", dest.c_str());
+				debug_print_important(__LOGTAG__, "stats file crawled and moved to %s", dest.c_str());
 			} else {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "failed to move stats file %s", f.c_str());
+				debug_print_error(__LOGTAG__, "failed to move stats file %s", f.c_str());
 			}
 		} else {
 			fs::path dest = crawl_failed_dir / fs::path(f.c_str()).filename();
 			int result = rename(f.c_str(), dest.c_str());
 			if (!result) {
-				DEBUG_PRINT_IMPORTANT(__LOGTAG__, "stats file failed while parsing !!!. moved to %s", dest.c_str());
+				debug_print_important(__LOGTAG__, "stats file failed while parsing !!!. moved to %s", dest.c_str());
 			} else {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "failed to move parse-failed-stats file %s", f.c_str());
+				debug_print_error(__LOGTAG__, "failed to move parse-failed-stats file %s", f.c_str());
 			}
-			//            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to crawl stats file %s", f.c_str());
+			//            debug_print_error(__LOGTAG__, "failed to crawl stats file %s", f.c_str());
 		}
 	}
 	pgsql_client.close_db();
@@ -67,19 +67,19 @@ void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host
 }
 
 int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
-	const int max_chars_in_a_line = 1024;
-	char str[max_chars_in_a_line];
+	const int MAX_CHARS_IN_A_LINE = 1024;
+	char str[MAX_CHARS_IN_A_LINE];
 	total_records_sent_to_db_through_batching = 0;
 
 	std::string fname = file.string();
 	/* opening file for reading */
 	FILE* fp = fopen(file.string().c_str(), "r");
 	if (fp == NULL) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Error opening stats file");
+		debug_print_error(__LOGTAG__, "Error opening stats file");
 		return (-1);
 	}
 	parsed_lines = 0;
-	while (fgets(str, max_chars_in_a_line, fp)) {
+	while (fgets(str, MAX_CHARS_IN_A_LINE, fp)) {
 		/* writing content to stdout */
 		// puts(str);
 		if (parse_line(file, qstring(str)) == 0) {
@@ -104,7 +104,7 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 	}
 	//
 	fclose(fp);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%d records sent to stats db through batching.", total_records_sent_to_db_through_batching);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "%d records sent to stats db through batching.", total_records_sent_to_db_through_batching);
 	return 0;
 }
 
@@ -114,7 +114,7 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
 
 	if (list.size() == 0) {
 		// nothing to parse.
-		DEBUG_PRINT_WARN(__LOGTAG__, "list.size() == 0 : %s", current_file.string().c_str());
+		debug_print_warn(__LOGTAG__, "list.size() == 0 : %s", current_file.string().c_str());
 		return 0;
 	}
 
@@ -124,7 +124,7 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
 		list[x].replace(single_quote, single_hash);
 	}
 	if (list[0] == "count") {
-		DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "processing count stats ...");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "processing count stats ...");
 		if (append_count_stats(batch_count_stats_values, list) == 0) {
 			count_stats_counter++;
 		}
@@ -134,7 +134,7 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
 			}
 		}
 	} else if (list[0] == "open") {
-		DEBUG_PRINT(LOG_LEVEL_3, __LOGTAG__, "processing open stats ...");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "processing open stats ...");
 		if (append_open_stats(batch_open_stats_values, list) == 0) {
 			open_stats_counter++;
 		}
@@ -144,7 +144,7 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
 			}
 		}
 	} else {
-		DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats ... %s", list[0].c_str());
+		debug_print_warn(__LOGTAG__, "Unrecognised stats ... %s", list[0].c_str());
 	}
 
 	return 0;
@@ -168,7 +168,7 @@ int qstats_crawler::batch_send_count_stats(fs::path current_file) {
 	qstring sql_script = insert_header + batch_count_stats_values;
 	sql_script += ";";
 	if (pgsql_client.execute_query(sql_script) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "pgsql_client.execute_query failed. returning !!!");
+		debug_print_error(__LOGTAG__, "pgsql_client.execute_query failed. returning !!!");
 		batch_count_stats_values.clear();
 		count_stats_counter = 0;
 
@@ -192,7 +192,7 @@ int qstats_crawler::batch_send_count_stats(fs::path current_file) {
 
 int qstats_crawler::append_count_stats(qstring& values, std::vector<qstring>& list) {
 	if (list.size() != 18) {
-		DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats format ... size 16!=%d", list.size());
+		debug_print_warn(__LOGTAG__, "Unrecognised stats format ... size 16!=%d", list.size());
 		return 1;
 	}
 
@@ -215,7 +215,7 @@ int qstats_crawler::append_count_stats(qstring& values, std::vector<qstring>& li
 
 int qstats_crawler::parse_count_stats(fs::path current_file, std::vector<qstring>& list) {
 	if (list.size() != 18) {
-		DEBUG_PRINT_WARN(__LOGTAG__, "Unrecognised stats format ... size 18!=%d", list.size());
+		debug_print_warn(__LOGTAG__, "Unrecognised stats format ... size 18!=%d", list.size());
 		return 1;
 	}
 
@@ -243,7 +243,7 @@ int qstats_crawler::parse_count_stats(fs::path current_file, std::vector<qstring
 												   list[10].c_str(), list[11].c_str(), list[12].c_str(), list[13].c_str(), list[14].c_str(), list[15].c_str(), list[16].c_str(), list[17].c_str());
 	qstring sql_script = insert_header + insert_values;
 
-	//    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "%.*s", sql_script.length(), sql_script.c_str());
+	//    debug_print(LOG_LEVEL_0, __LOGTAG__, "%.*s", sql_script.length(), sql_script.c_str());
 	pgsql_client.execute_query(sql_script);
 	return 0;
 }

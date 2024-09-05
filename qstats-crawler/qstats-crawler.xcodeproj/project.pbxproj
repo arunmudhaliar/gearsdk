@@ -159,6 +159,7 @@
 				556ABACC2B0A8AAD00D688DB /* CopyFiles */,
 				555BA6FF2C3AEEFD00E23A51 /* Embed Libraries */,
 				55CB70452C77D30B00E05D37 /* ShellScript */,
+				551CDD372C8A0BE400ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -202,6 +203,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD372C8A0BE400ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=(\"libpgsql\" \"qpgsql\")\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/libpgsql/include\" -I\"${SRCROOT}/qpgsql\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\"\ndone\n";
+		};
 		55CB70452C77D30B00E05D37 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -365,6 +383,7 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -389,6 +408,7 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",

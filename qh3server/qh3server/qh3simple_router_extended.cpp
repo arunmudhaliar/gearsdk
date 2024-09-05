@@ -17,22 +17,22 @@ int qh3simple_router::run() {
 	PTHREAD_NAME(qstring::format_string("router-%s", config.port.c_str()).c_str());
 
 #if FORK_QH3_SERVER
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Forking enabled !!!");
+	debug_print_important2(__LOGTAG__, "Forking enabled !!!");
 #else
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Forking disabled !!!");
+	debug_print_important2(__LOGTAG__, "Forking disabled !!!");
 #endif
 	// router object needs to be inited first, since this info is needed by child
 	// qh3server child process
-	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	freeaddrinfo(router);
-	if (getaddrinfo(config.host.c_str(), config.port.c_str(), &hints, &router) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host");
+	if (getaddrinfo(config.host.c_str(), config.port.c_str(), &HINTS, &router) != 0) {
+		debug_print_error(__LOGTAG__, "failed to resolve host");
 		return -1;
 	}
 	// return
 	freeaddrinfo(router_return);
-	if (getaddrinfo(config.host.c_str(), qstring::format_string("%d", config.router_port_return).c_str(), &hints, &router_return) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to resolve host (port_return)");
+	if (getaddrinfo(config.host.c_str(), qstring::format_string("%d", config.router_port_return).c_str(), &HINTS, &router_return) != 0) {
+		debug_print_error(__LOGTAG__, "failed to resolve host (port_return)");
 		freeaddrinfo(router);
 		router = nullptr;
 		return -1;
@@ -45,7 +45,7 @@ int qh3simple_router::run() {
 	}
 	sock = socket(router->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create socket");
+		debug_print_error(__LOGTAG__, "failed to create socket");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -54,7 +54,7 @@ int qh3simple_router::run() {
 	}
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make socket non-blocking");
+		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -64,7 +64,7 @@ int qh3simple_router::run() {
 	}
 
 	if (bind(sock, router->ai_addr, router->ai_addrlen) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect socket");
+		debug_print_error(__LOGTAG__, "failed to connect socket");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -79,7 +79,7 @@ int qh3simple_router::run() {
 	}
 	sock_return = socket(router_return->ai_family, SOCK_DGRAM, 0);
 	if (sock_return < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create sock_return");
+		debug_print_error(__LOGTAG__, "failed to create sock_return");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -89,7 +89,7 @@ int qh3simple_router::run() {
 	}
 
 	if (fcntl(sock_return, F_SETFL, O_NONBLOCK) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make sock_return non-blocking");
+		debug_print_error(__LOGTAG__, "failed to make sock_return non-blocking");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -100,7 +100,7 @@ int qh3simple_router::run() {
 	}
 
 	if (bind(sock_return, router_return->ai_addr, router_return->ai_addrlen) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect sock_return");
+		debug_print_error(__LOGTAG__, "failed to connect sock_return");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -113,10 +113,10 @@ int qh3simple_router::run() {
 
 	mainloop = ev_default_loop(0);
 
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Creating  command center !!!");
+	debug_print_important2(__LOGTAG__, "Creating  command center !!!");
 	// command server
 	if (spawn_qh3server_command_server<U, V>(config.host, config.command_port, config) == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create command server !!!");
+		debug_print_error(__LOGTAG__, "failed to create command server !!!");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -138,14 +138,14 @@ int qh3simple_router::run() {
 	while (spawned_servers < NO_OF_SERVERS_TO_SPAWN) {
 		overflow++;
 		if (overflow > 1000) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
-			DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
-			DEBUG_PRINT_ERROR(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+			debug_print_error(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+			debug_print_error(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
+			debug_print_error(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
 			break;
 		}
 		int free_port = next_available_port(config.host, range, index);
 		if (free_port == 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "NO PORT AVAILABLE !!!");
+			debug_print_error(__LOGTAG__, "NO PORT AVAILABLE !!!");
 			break;
 		}
 		bool fork_result = false;  // only valid inside FORK_QH3_SERVER preprocessor
@@ -164,7 +164,7 @@ int qh3simple_router::run() {
 		} else {
 			if (parent_process_id == getpid()) {
 				// allow the parent to continue
-				DEBUG_PRINT_ERROR(__LOGTAG__, "forking failed, allowing parent(pid:%d) to continue !!!", parent_process_id);
+				debug_print_error(__LOGTAG__, "forking failed, allowing parent(pid:%d) to continue !!!", parent_process_id);
 				continue;
 			}
 		}
@@ -179,7 +179,7 @@ int qh3simple_router::run() {
 	//
 
 	if (child_process_id != 0) {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Star router !!!");
+		debug_print_important2(__LOGTAG__, "Star router !!!");
 
 #if ENABLE_ZK
 		GX_DELETE(qzk);
@@ -192,7 +192,7 @@ int qh3simple_router::run() {
 			router = nullptr;
 			close(sock_return);
 			close(sock);
-			DEBUG_PRINT_ERROR(__LOGTAG__, "zk failed to connect !!!, Exiting.");
+			debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 			GX_DELETE(qzk);
 			return -1;
 		}
@@ -200,12 +200,12 @@ int qh3simple_router::run() {
 		GX_DELETE(zkconfig);
 		zkconfig = DEBUG_NEW serverconfig(qzk, nullptr);
 #if PROD_BUILD
-		fs::path config_path(config.rootDir / "configs/prod/runtime-config.json");
+		fs::path config_path(config.root_dir / "configs/prod/runtime-config.json");
 #else
-		fs::path config_path(config.rootDir / "configs/dev/runtime-config.json");
+		fs::path config_path(config.root_dir / "configs/dev/runtime-config.json");
 #endif
 		if (!zkconfig->load(config_path, qzk, "/qh3router")) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+			debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
 			GX_DELETE(zkconfig);
 			return false;
 		}
@@ -214,7 +214,7 @@ int qh3simple_router::run() {
 		GX_DELETE(hiredis);
 		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port);
 		if (hiredis->connect_redis() != 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create redis connection !!!");
+			debug_print_error(__LOGTAG__, "failed to create redis connection !!!");
 			freeaddrinfo(router);
 			freeaddrinfo(router_return);
 			router_return = nullptr;
@@ -250,7 +250,7 @@ int qh3simple_router::run() {
 
 		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, this);
 		if (hiredis_async->connect_async_redis(mainloop) != 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
+			debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 			GX_DELETE(hiredis_async);
 			freeaddrinfo(router);
 			freeaddrinfo(router_return);
@@ -283,26 +283,26 @@ int qh3simple_router::run() {
 		close(sock_return);
 		close(sock);
 		shutdown_zk();
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Stop router !!!");
+		debug_print_important2(__LOGTAG__, "Stop router !!!");
 		return 0;
 	} else {
 		freeaddrinfo(router);
 		router = nullptr;
 		freeaddrinfo(router_return);
 		router_return = nullptr;
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Child process exiting !!!");
+		debug_print_important2(__LOGTAG__, "Child process exiting !!!");
 		return 0;
 	}
 }
 
 template <typename U, typename V>
 route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config) {
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
 	new_config->command_server = true;
 	new_config->ref = this;
 
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
+		debug_print_error(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
 		return nullptr;
 	}
@@ -314,7 +314,7 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 
 	GX_DELETE(command_route);
 	command_route = DEBUG_NEW route(host, port, server_counter++);
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3 command server: %s:%s id-%d", host.c_str(), port.c_str(), command_route->server_id);
+	debug_print_important2(__LOGTAG__, "spawned qh3 command server: %s:%s id-%d", host.c_str(), port.c_str(), command_route->server_id);
 	command_route->create_bridge(mainloop, command_route, nullptr);
 	command_route->refresh_hb_timestamp(mainloop);
 	return command_route;
@@ -323,29 +323,29 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 template <typename U, typename V>
 int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result) {
 #if FORK_QH3_SERVER
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
 	fork_result = false;
 	child_process_id = fork();
 	if (child_process_id < 0) {
 		fork_result = false;
-		DEBUG_PRINT_ERROR(__LOGTAG__, "fork failed !!!");
+		debug_print_error(__LOGTAG__, "fork failed !!!");
 		return -1;
 	}
 	if (child_process_id == 0) {
 		fork_result = true;
 		// Code executed by the child process
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
 		server_config_in* new_config =
-			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
 		if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+			debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 			GX_DELETE(new_config);
 			return -1;
 		}
 
 		// Wait for the thread to finish
 		if (pthread_join(new_config->run_thread_id, nullptr) != 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not join thread: %s - %d", strerror(errno), errno);
+			debug_print_error(__LOGTAG__, "spawn_qh3server - could not join thread: %s - %d", strerror(errno), errno);
 		}
 
 		fflush(stdout);	 // Flush output
@@ -353,25 +353,25 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 	} else if (child_process_id > 0) {
 		fork_result = true;
 		// Code executed by the parent process
-		DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
 		route* child = DEBUG_NEW route(host, port, server_counter++);
 		child->child_process_id = child_process_id;
 		routes.push_back(child);
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
+		debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
 		child->create_bridge(mainloop, child, nullptr);
 		return 0;
 	}
 #else
 	fork_result = false;
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.rootDir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
 		return -1;
 	}
 	route* child = DEBUG_NEW route(host, port, server_counter++);
 	routes.push_back(child);
-	DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
+	debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
 	child->create_bridge(mainloop, child, nullptr);
 	return 0;
 #endif
@@ -386,17 +386,17 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	qstring& mongodb_uri = config->mongodb_uri;
 	qstring& redis_ip = config->redis_ip;
 	uint16_t redis_port = config->redis_port;
-	fs::path& rootDir = config->rootDir;
+	fs::path& root_dir = config->root_dir;
 	qstring& zk_uri = config->zk_uri;
 	if (config->command_server) {
 		PTHREAD_NAME(U::get_server_name());
 		U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
-		new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
 		GX_DELETE(new_server);
 	} else {
 		PTHREAD_NAME(V::get_server_name());
 		V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-		new_server->run(host.c_str(), port.c_str(), rootDir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
 		GX_DELETE(new_server);
 	}
 	GX_DELETE(config);

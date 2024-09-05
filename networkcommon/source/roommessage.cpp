@@ -28,16 +28,16 @@ bool message_room_base::deserialize(rapidjson::Value& obj) {
 		if (obj.HasMember("sig") && obj["sig"].IsUint()) {
 			signature = (unsigned short) obj["sig"].GetUint();
 		} else {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s - message dont have sig", get_type().c_str());
+			debug_print_important2(__LOGTAG__, "%s - message dont have sig", get_type().c_str());
 		}
 		if (obj.HasMember("t_crc") && obj["t_crc"].IsInt64()) {
 			cached_type_string_crc = obj["t_crc"].GetInt64();
 			DEBUG_ASSERT(__LOGTAG__, cached_type_string_crc == get_type_crc(), __FUNCTION__);
 		} else {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s - message dont have t_crc", get_type().c_str());
+			debug_print_important2(__LOGTAG__, "%s - message dont have t_crc", get_type().c_str());
 		}
 	} else {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "%s - message dont have sig or t_crc", get_type().c_str());
+		debug_print_important(__LOGTAG__, "%s - message dont have sig or t_crc", get_type().c_str());
 	}
 	return true;
 }
@@ -45,23 +45,23 @@ bool message_room_base::deserialize(rapidjson::Value& obj) {
 int message_room_base::deserialize_header(ssize_t len, uint8_t* buf, unsigned short& sig, unsigned long& t_crc, rapidjson::Document& doc) {
 	doc.Parse((char*) buf, len);
 	if (doc.HasParseError()) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "message_room_base::deserialize_header failed while parsing json string %.*s", len, buf);
+		debug_print_error(__LOGTAG__, "message_room_base::deserialize_header failed while parsing json string %.*s", len, buf);
 		return -1;
 	}
 	if (doc.IsObject()) {
 		if (doc.HasMember("sig") && doc["sig"].IsUint()) {
 			sig = (unsigned short) doc["sig"].GetUint();
 		} else {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room message dont have sig - %.*s", len, buf);
+			debug_print_important2(__LOGTAG__, "room message dont have sig - %.*s", len, buf);
 		}
 		if (doc.HasMember("t_crc") && doc["t_crc"].IsInt64()) {
 			t_crc = doc["t_crc"].GetInt64();
 		} else {
-			DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "room message dont have t_crc - %.*s", len, buf);
+			debug_print_important2(__LOGTAG__, "room message dont have t_crc - %.*s", len, buf);
 			return -3;
 		}
 	} else {
-		DEBUG_PRINT_IMPORTANT(__LOGTAG__, "room message dont have sig or t_crc - %.*s", len, buf);
+		debug_print_important(__LOGTAG__, "room message dont have sig or t_crc - %.*s", len, buf);
 		return -2;
 	}
 	return 0;

@@ -399,6 +399,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -425,6 +426,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -570,6 +572,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Debug;
@@ -599,6 +602,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Release;

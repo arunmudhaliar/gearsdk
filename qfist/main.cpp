@@ -341,7 +341,7 @@ void request_qh3(WorkData* data) {
 			UNUSED(request);
 			bool validate = response->validate();
 			if (!validate) {
-				// DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				// debug_print_error(__LOGTAG__, "crc fail !!!");
 			}
 			WorkData* data = static_cast<WorkData*>(arg);
 			data->result = 1 + (success && validate);
@@ -351,7 +351,7 @@ void request_qh3(WorkData* data) {
 			app_state.total_data_transferred.fetch_add(total_size);
 			// std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
 			// std::cout << "<";
-			// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
+			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
 			finish_and_destroy_work(data);
 		},
 		0);
@@ -448,7 +448,7 @@ void parse_arguments(int argc, char* argv[]) {
 		app_state.host = request_ip_parts[0];
 		app_state.port = request_ip_parts[1];
 	} else {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
+		debug_print_error(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
 	}
 	//
 
@@ -477,7 +477,7 @@ void parse_arguments(int argc, char* argv[]) {
 				app_state.host = request_ip_parts[0];
 				app_state.port = request_ip_parts[1];
 			} else {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
+				debug_print_error(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
 			}
 		} else if (strcmp(argv[i], "--single-mode") == 0) {
 			app_state.single_request = true;
@@ -552,7 +552,7 @@ void single_mode() {
 			UNUSED(request);
 			bool validate = response->validate();
 			if (!validate) {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				debug_print_error(__LOGTAG__, "crc fail !!!");
 			}
 			WorkData* data = static_cast<WorkData*>(arg);
 			data->result = 1 + (success && validate);
@@ -562,7 +562,7 @@ void single_mode() {
 			app_state.total_data_transferred.fetch_add(total_size);
 			// std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
 			// std::cout << "<";
-			// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
+			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
 			std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
 			std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
 			finish_and_destroy_work(data);

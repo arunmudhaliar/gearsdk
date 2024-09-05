@@ -69,8 +69,8 @@ void discord_util::set_web_hook(const qstring& web_hook) {
 }
 
 int discord_util::send(const qstring& msg, int retry_count) {
-	const int max_retries = 5;
-	const int base_delay_ms = 1000;	 // base delay in milliseconds for exponential backoff
+	const int MAX_RETRIES = 5;
+	const int BASE_DELAY_MS = 1000;	 // base delay in milliseconds for exponential backoff
 
 	try {
 		dpp::cluster bot(""); /* Normally, you put your bot token in here, but it's not required for webhooks. */
@@ -91,8 +91,8 @@ int discord_util::send(const qstring& msg, int retry_count) {
 	} catch (const std::exception& e) {
 		std::string error_message = e.what();
 		if (error_message.find("You are being rate limited.") != std::string::npos) {
-			if (retry_count < max_retries) {
-				int delay = base_delay_ms * (1 << retry_count);	 // Exponential backoff
+			if (retry_count < MAX_RETRIES) {
+				int delay = BASE_DELAY_MS * (1 << retry_count);	 // Exponential backoff
 				std::cerr << "Rate limited. Retrying after " << delay << " milliseconds" << std::endl;
 				std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 				return send(msg, retry_count + 1);
@@ -108,7 +108,7 @@ int discord_util::send(const qstring& msg, int retry_count) {
 
 void discord_util::send_async(const qstring& msg) {
 	if (!discord_util::inited) {
-		//        DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "issue initialize_webhook_url");
+		//        debug_print(LOG_LEVEL_0, __LOGTAG__, "issue initialize_webhook_url");
 		// Ensure the static variable is initialized before creating threads
 		//        pthread_once(&discord_util::init_once, initialize_webhook_url);
 		initialize_webhook_url();

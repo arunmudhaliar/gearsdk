@@ -5,9 +5,9 @@
 
 class gxcrc32 {
    public:
-	static const unsigned int CrcSeed = 0xFFFFFFFF;
-	static unsigned int crcData;		  // crc data checksum so far.
-	static const unsigned int CrcTable[]; /*=
+	static const unsigned int CRC_SEED = 0xFFFFFFFF;
+	static unsigned int crc_data;		   // crc data checksum so far.
+	static const unsigned int CRC_TABLE[]; /*=
 	 {
 		 0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419,
 		 0x706AF48F, 0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4,
@@ -150,14 +150,14 @@ class gxcrc32 {
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	static int Calc(unsigned char* data);
+	static int calc(unsigned char* data);
 
 	/// <summary>
 	/// Calculates the CRC32 value
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	static int Calc(unsigned char* data, int offset, int len, bool isBinary = false);
+	static int calc(unsigned char* data, int offset, int len, bool is_binary = false);
 
 	///// <summary>
 	///// Calculates the CRC32 value
@@ -198,7 +198,7 @@ class gxcrc32 {
 	/// <param name = "bval">
 	/// the byte is taken as the lower 8 bits of bval
 	/// </param>
-	static void Update(int bval);
+	static void update(int bval);
 
 	/// <summary>
 	/// Updates the checksum with the bytes taken from the array.
@@ -217,7 +217,7 @@ class gxcrc32 {
 	/// <param name="buffer">
 	/// buffer an array of bytes
 	/// </param>
-	static void Update(unsigned char* buffer);
+	static void update(unsigned char* buffer);
 
 	/// <summary>
 	/// Adds the byte array to the data checksum.
@@ -231,7 +231,7 @@ class gxcrc32 {
 	/// <param name = "len">
 	/// the length of the data
 	/// </param>
-	static void Update(unsigned char* buf, int off, int len, bool isBinary);
+	static void update(unsigned char* buf, int off, int len, bool is_binary);
 
 	///// <summary>
 	///// Adds the byte array to the data checksum.
