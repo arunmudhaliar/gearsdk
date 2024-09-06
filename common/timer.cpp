@@ -44,9 +44,9 @@ void timer::update() {
 #if PLATFORM == PLATFORM_MAC
 	cur_time = CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
-	curTime = (double) timeGetTime() / 1000.0;
+	cur_time = (double) timeGetTime() / 1000.0;
 #elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-	curTime = (double) _getTime() / 1000.0;
+	cur_time = (double) _getTime() / 1000.0;
 #endif
 	timer_dt_in_sec = (float) (cur_time - timer_previous_time);
 	if (timer_dt_in_sec <= 0.0f) {
@@ -70,9 +70,9 @@ void timer::update(float target_fps) {
 #if PLATFORM == PLATFORM_MAC
 	cur_time = CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
-	curTime = (double) timeGetTime() / 1000.0;
+	cur_time = (double) timeGetTime() / 1000.0;
 #elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-	curTime = (double) _getTime() / 1000.0;
+	cur_time = (double) _getTime() / 1000.0;
 #endif
 	timer_dt_in_sec = (float) (cur_time - timer_previous_time);
 	if (timer_dt_in_sec <= 0.0f) {
@@ -82,9 +82,9 @@ void timer::update(float target_fps) {
 #if PLATFORM == PLATFORM_MAC
 		cur_time = CFAbsoluteTimeGetCurrent();
 #elif defined(GEAR_WINDOWS)
-		curTime = (double) timeGetTime() / 1000.0;
+		cur_time = (double) timeGetTime() / 1000.0;
 #elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-		curTime = (double) _getTime() / 1000.0;
+		cur_time = (double) _getTime() / 1000.0;
 #endif
 		timer_dt_in_sec = (float) (cur_time - timer_previous_time);
 	}
