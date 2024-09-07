@@ -13,6 +13,8 @@
 #include <string>	// For string handling
 #include <uv.h>
 #include <vector>  // For std::vector>
+#include <chrono>
+#include <thread>
 
 // Constants
 
@@ -81,6 +83,7 @@ struct AppState {
 	std::atomic<int> summary_requests {0};
 	std::atomic<int> summary_successful_requests {0};
 	double summary_cumulative_response_time;
+	std::atomic<int> connection_establishment_timeout {(int)CONNECTION_ESTABLISHMENT_TIMEOUT};
 
 	// Total run metrics
 	std::atomic<int> total_successful_requests {0};
@@ -191,6 +194,12 @@ void write_summary_to_csv(const qstring& filename) {
 	csv_file.close();
 }
 
+void print_open_fds_count() {
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "lsof -p %d | wc -l", getpid());
+    system(cmd);
+}
+
 // Calculate and print statistics
 void print_summary() {
 	if (app_state.summary_requests == 0) {
@@ -247,6 +256,8 @@ void print_summary() {
 
 	write_summary_to_csv(app_state.export_csv_filename);
 
+	// print_open_fds_count();
+
 	// Reset summary counters
 	app_state.summary_requests = 0;
 	app_state.summary_successful_requests = 0;
@@ -289,6 +300,63 @@ void finish_and_destroy_work(WorkData* data) {
 	if (data->result > 1) {
 		app_state.summary_successful_requests++;
 	}
+
+	// double current_average_response_time = (app_state.summary_requests > 0) ? (app_state.summary_cumulative_response_time / app_state.summary_requests) : 0.0;
+	// double connection_establishment_timeout = static_cast<double>(app_state.connection_establishment_timeout);
+	// double summary_cumulative_response_time_in_sec = current_average_response_time * 0.001;
+	// double half_way_mark_response_time = summary_cumulative_response_time_in_sec * 0.5;
+	// double half_way_mark = connection_establishment_timeout * 0.5;
+	// if (half_way_mark_response_time > half_way_mark) {
+	// 	double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * 1.25;
+	// 	std::cout << "+Updated connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec  << "s from " << app_state.connection_establishment_timeout << "s [" << summary_cumulative_response_time_in_sec << "] " <<
+	// 	"half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
+	// 	<< std::endl;
+	// 	app_state.connection_establishment_timeout = next_connection_establishment_timeout_in_sec;
+	// } else if (half_way_mark_response_time < half_way_mark && half_way_mark>CONNECTION_ESTABLISHMENT_TIMEOUT*0.6) {
+	// 	double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * 0.95;
+	// 	std::cout << "-Updated connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec  << "s from " << app_state.connection_establishment_timeout << "s [" << summary_cumulative_response_time_in_sec << "] " <<
+	// 	"half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
+	// 	<< std::endl;
+	// 	app_state.connection_establishment_timeout = next_connection_establishment_timeout_in_sec;
+	// }
+
+	const double INCREASE_SCALE = 1.25; // Scale factor to increase timeout
+	const double DECREASE_SCALE = 0.95; // Scale factor to decrease timeout
+	const double MIN_TIMEOUT = 1.0; // Minimum allowed timeout
+	const double THRESHOLD_RATIO = 0.6; // Ratio for threshold comparison
+
+	// Calculate average response time in seconds
+	double current_average_response_time = (app_state.summary_requests > 0) 
+		? (app_state.summary_cumulative_response_time / app_state.summary_requests * 0.001) 
+		: 0.0;
+
+	double connection_establishment_timeout = static_cast<double>(app_state.connection_establishment_timeout);
+
+	// Calculate halfway marks
+	double half_way_mark_response_time = current_average_response_time * 0.5;
+	double half_way_mark = connection_establishment_timeout * 0.5;
+
+	// Adjust timeout based on response times
+	if (half_way_mark_response_time > half_way_mark) {
+		double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * INCREASE_SCALE;
+		std::cout << "\r" << "+connection_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+				<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
+				<< current_average_response_time
+				<< " half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
+				<< "      "  // Adding extra spaces at the end to clear any remaining old output
+				<< std::flush;
+		app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+	} else if (half_way_mark_response_time < half_way_mark && half_way_mark > (CONNECTION_ESTABLISHMENT_TIMEOUT * THRESHOLD_RATIO)) {
+		double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * DECREASE_SCALE;
+		std::cout << "\r" << "-connection_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+				<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
+				<< current_average_response_time
+				<< " half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
+				<< "      "  // Adding extra spaces at the end to clear any remaining old output
+				<< std::flush;
+		app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+	}
+
 
 	// // Print percentiles when buffer is full (amudaliar) - disabled this due to bug. it keeps on printing once the count is reached.
 	// if (app_state.response_times_count == WINDOW_SIZE) {
@@ -354,7 +422,7 @@ void request_qh3(WorkData* data) {
 			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
 			finish_and_destroy_work(data);
 		},
-		0);
+		0, app_state.connection_establishment_timeout);
 
 	if (result == 0) {
 		app_state.total_requests++;
@@ -370,8 +438,9 @@ void prepareRequest(WorkData* data, int request_index) {
 
 // Worker to handle requests
 void request_worker(uv_timer_t* handle) {
-	int num_requests = 0;  // NOTE: parallel request is buggy. so forcing it to 1 req.
+	int num_requests = 0;
 	while (num_requests <= 0) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		num_requests = static_cast<int>((rand() % app_state.max_parallel_requests) * app_state.request_weightage);
 	}
 
@@ -568,6 +637,7 @@ void single_mode() {
 			finish_and_destroy_work(data);
 		},
 		0,
+		app_state.connection_establishment_timeout,
 		[](void* arg) {
 			UNUSED(arg);
 			app_state.exit_signal = true;
@@ -610,6 +680,26 @@ void multi_mode() {
 
 int main(int argc, char* argv[]) {
 	std::cout << "qfist: v0.1\nSTARTED...\n";
+	struct rlimit limit;
+    if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+        std::cout << "fd Soft limit: " << limit.rlim_cur << std::endl;
+        std::cout << "fd Hard limit: " << limit.rlim_max << std::endl;
+    } else {
+        std::cerr << "Error getting file descriptor limits" << std::endl;
+    }
+	long open_max = sysconf(_SC_OPEN_MAX);
+    if (open_max != -1) {
+        std::cout << "Maximum number of open file descriptors: " << open_max << std::endl;
+    } else {
+        std::cerr << "Error getting maximum file descriptors" << std::endl;
+    }
+	std::cout << "FD_SETSIZE: " << FD_SETSIZE << std::endl;
+
+	// struct rlimit limit;
+    // limit.rlim_cur = 4096; // Soft limit
+    // limit.rlim_max = 4096; // Hard limit
+    // setrlimit(RLIMIT_NOFILE, &limit);
+
 	srand(static_cast<unsigned int>(time(nullptr)));  // Seed the random number generator
 
 	// Initialize app_state

@@ -206,6 +206,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 			// callback_invoked.set_value();    // Will lead to memory leak since the main thread will exit immediately after this.
 		},
 		1,
+		CONNECTION_ESTABLISHMENT_TIMEOUT,
 		[&callback_invoked](void* arg) {
 			// Cleanup logic, if necessary
 			// debug_raw(LOG_LEVEL_0, "Cleaning up thread.");

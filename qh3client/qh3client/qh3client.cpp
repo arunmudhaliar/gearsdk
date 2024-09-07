@@ -465,7 +465,7 @@ void qh3client::connection_establishment_timeout_cb(EV_P_ ev_timer* w, int reven
 	ev_break(EV_A_ EVBREAK_ONE);
 }
 
-int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_helper_cb response_cb) {
+int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_helper_cb response_cb, float connection_timeout) {
 	this->on_prepare_client_send();
 	this->http_request = data_get;
 	this->response_cb = response_cb;
@@ -581,8 +581,8 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	conn_io->bridge = this;
 
 	// Initialize connection establishment timeout timer
-	ev_timer_init(&conn_io->connection_establishment_timeout_timer, qh3client::connection_establishment_timeout_cb, CONNECTION_ESTABLISHMENT_TIMEOUT, 0.0);	 // 10 seconds timeout
-	conn_io->connection_establishment_timeout_timer.data = this;																							 // Store pointer to the client object
+	ev_timer_init(&conn_io->connection_establishment_timeout_timer, qh3client::connection_establishment_timeout_cb, connection_timeout, 0.0);  // 10 seconds timeout
+	conn_io->connection_establishment_timeout_timer.data = this;																			   // Store pointer to the client object
 
 	ev_io watcher;
 

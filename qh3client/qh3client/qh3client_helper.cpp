@@ -14,22 +14,23 @@
 
 using namespace client;
 
-template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry,
+template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout,
 															 type_qh3client_helper_finalize_cb finalize_cb = nullptr);
-template int qh3client_helper::send_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
+template int qh3client_helper::send_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout);
 
 #if PLATFORM == PLATFORM_ANDROID
 #include "qh3client-android.h"
 template int qh3client_helper::send_async_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry,
-																	 type_qh3client_helper_finalize_cb finalize_cb = nullptr);
-template int qh3client_helper::send_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
+																	 float connection_establishment_timeout, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
+template int qh3client_helper::send_request<qh3client_android>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout);
 #endif
 
 template <typename T>
-int qh3client_helper::send_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, type_qh3client_helper_cb async_cb, int retry) {
+int qh3client_helper::send_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout) {
 	std::shared_ptr<qh3_req_obj> req_obj(DEBUG_NEW qh3_req_obj(HOST, PORT, data_getorpost), [](qh3_req_obj* obj) { GX_DELETE(obj); });
 	req_obj->async_cb = async_cb;
 	req_obj->retry = retry;
+	req_obj->connection_establishment_timeout = connection_establishment_timeout;
 
 #if PTHREAD_IMPL
 	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*) thread_data_t::create(req_obj)) < 0) {
@@ -55,12 +56,14 @@ int qh3client_helper::send_request(const qstring HOST, const qstring PORT, const
 }
 
 template <typename T>
-int qh3client_helper::send_async_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb) {
+int qh3client_helper::send_async_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, void* arg, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout,
+										 type_qh3client_helper_finalize_cb finalize_cb) {
 	std::shared_ptr<qh3_req_obj> req_obj(DEBUG_NEW qh3_req_obj(HOST, PORT, data_getorpost), [](qh3_req_obj* obj) { GX_DELETE(obj); });
 	req_obj->async_cb = async_cb;
 	req_obj->finalize_cb = finalize_cb;
 	req_obj->arg = arg;
 	req_obj->retry = retry;
+	req_obj->connection_establishment_timeout = connection_establishment_timeout;
 #if PTHREAD_IMPL
 	if (pthread_create(&req_obj->run_thread_id, nullptr, qh3client_helper::run_internal<T>, (void*) thread_data_t::create(req_obj)) < 0) {
 		debug_print_error(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
@@ -118,7 +121,7 @@ void* qh3client_helper::run_internal(void* data) {
 			debug_print(LOG_LEVEL_0, __LOGTAG__, "run_internal : retrying - %d", x);
 		}
 		T* new_client = DEBUG_NEW T(req_obj->host, req_obj->port, req_obj->arg);
-		new_client->send_request(req_obj->data, req_obj->async_cb);
+		new_client->send_request(req_obj->data, req_obj->async_cb, req_obj->connection_establishment_timeout);
 		response_received = new_client->conn_io->res_received;
 		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
 			debug_print(LOG_LEVEL_3, __LOGTAG__, "send_request returned with response_received %d", response_received);

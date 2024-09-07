@@ -9,6 +9,7 @@
 #include "sdktypes.hpp"
 
 #include <cmath>
+#include <inttypes.h>  // Include this for PRIu64
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
@@ -81,6 +82,22 @@ void print_common_info() {
 #if DEBUG
 	debug_print(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
 #endif
+
+	// fd limits info
+	struct rlimit limit;
+	if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+		debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "fd Soft limit: %" PRIu64 "", limit.rlim_cur);
+		debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "fd Hard limit: %" PRIu64 "", limit.rlim_max);
+	} else {
+		debug_print_warn(__DEFAULT_LOG_TAG__, "Error getting fd limits");
+	}
+	long open_max = sysconf(_SC_OPEN_MAX);
+	if (open_max != -1) {
+		debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "Maximum number of open fd: %ld", open_max);
+	} else {
+		debug_print_warn(__DEFAULT_LOG_TAG__, "Error getting maximum fd");
+	}
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "FD_SETSIZE: %ld", FD_SETSIZE);
 }
 
 int number_of_digits(unsigned int num) {
