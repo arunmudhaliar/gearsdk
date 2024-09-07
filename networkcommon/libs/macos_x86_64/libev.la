@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/amudaliar/Desktop/workshop/libev/build/lib'
+libdir='/Users/amudaliar/Desktop/ev_mac_out/lib'
