@@ -381,12 +381,12 @@ int essentials::get_process_used_mem() {
 	// linux file contains this-process info
 	FILE* file = fopen("/proc/self/status", "r");
 	if (file == nullptr) {
-		return currRealMem;
+		return curr_real_mem;
 	}
 	// read the entire file
 	while (fscanf(file, " %1023s", buffer) == 1) {
 		if (strcmp(buffer, "VmRSS:") == 0) {
-			fscanf(file, " %d", &currRealMem);
+			fscanf(file, " %d", &curr_real_mem);
 			break;
 		}
 	}
@@ -397,13 +397,13 @@ int essentials::get_process_used_mem() {
 
 long long essentials::get_total_ram() {
 #if PLATFORM == PLATFORM_LINUX
-	struct sysinfo memInfo;
-	if (sysinfo(&memInfo) == -1)
+	struct sysinfo mem_info;
+	if (sysinfo(&mem_info) == -1)
 		return 0;
-	//    uint64_t total_ram = ((uint64_t)memInfo.totalram * memInfo.mem_unit)/1024;
-	long long total_phys_mem = memInfo.totalram;
+	//    uint64_t total_ram = ((uint64_t)mem_info.totalram * mem_info.mem_unit)/1024;
+	long long total_phys_mem = mem_info.totalram;
 	// Multiply in next statement to avoid int overflow on right hand side...
-	total_phys_mem *= memInfo.mem_unit;
+	total_phys_mem *= mem_info.mem_unit;
 	return total_phys_mem / (1024 * 1024);
 #else
 	return 0;
@@ -412,12 +412,12 @@ long long essentials::get_total_ram() {
 
 long long essentials::get_used_mem() {
 #if PLATFORM == PLATFORM_LINUX
-	struct sysinfo memInfo;
-	if (sysinfo(&memInfo) == -1)
+	struct sysinfo mem_info;
+	if (sysinfo(&mem_info) == -1)
 		return 0;
-	long long phys_mem_used = memInfo.totalram - memInfo.freeram;
+	long long phys_mem_used = mem_info.totalram - mem_info.freeram;
 	// Multiply in next statement to avoid int overflow on right hand side...
-	phys_mem_used *= memInfo.mem_unit;
+	phys_mem_used *= mem_info.mem_unit;
 	return phys_mem_used / (1024 * 1024);
 #else
 	return 0;
