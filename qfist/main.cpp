@@ -1,5 +1,6 @@
 #include "../qh3client/qh3client/qh3client_helper.hpp"
 
+#include <sys/resource.h>
 #include <algorithm>  // For std::sort
 #include <atomic>	  // For std::atomic
 #include <cstddef>	  // For std::size_t
@@ -320,7 +321,7 @@ void finish_and_destroy_work(WorkData* data) {
 	// 	app_state.connection_establishment_timeout = next_connection_establishment_timeout_in_sec;
 	// }
 
-	const double INCREASE_SCALE = 1.25; // Scale factor to increase timeout
+	const double INCREASE_SCALE = 1.35; // Scale factor to increase timeout
 	const double DECREASE_SCALE = 0.95; // Scale factor to decrease timeout
 	const double MIN_TIMEOUT = 1.0; // Minimum allowed timeout
 	const double THRESHOLD_RATIO = 0.6; // Ratio for threshold comparison
