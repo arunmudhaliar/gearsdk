@@ -58,3 +58,27 @@ Pre-requisites
 
         brew install googletest
         brew install pkg-config # Required for make to find gtest
+
+
+    **Build libuv**
+
+    For building libuv from source, follow the below steps:
+
+    .. code-block:: shell
+
+        # Clone the libuv repository
+        git clone https://github.com/libuv/libuv.git
+        cd libuv
+
+        # Set up the environment variables for the toolchain
+        export NDK_PATH=<ndk path>
+        export TOOLCHAIN=$NDK_PATH/build/cmake/android.toolchain.cmake
+
+        # Build the library for different architectures
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=armeabi-v7a -DANDROID_PLATFORM=android-24
+        cmake --build .
+
+        # Clean the build directory and follow the below steps for different architectures followed by 'cmake --build .' command'
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=x86 -DANDROID_PLATFORM=android-24
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=x86_64 -DANDROID_PLATFORM=android-24
