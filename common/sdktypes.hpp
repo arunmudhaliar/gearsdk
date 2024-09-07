@@ -160,6 +160,9 @@ extern "C" DECLSPEC void debug_warn(int log_level, const char* tag, const char* 
 extern "C" DECLSPEC void debug_warn_cond(const char* tag, bool condition, const char* format, ...);	 ///< Conditional warning
 extern "C" DECLSPEC void debug_print_warn(const char* tag, const char* format, ...);
 extern "C" DECLSPEC void debug_print_error(const char* tag, const char* format, ...);
+/**
+ * @brief Don't use this function directly, instead use the macro 'DEBUG_ASSERT'.
+ */
 extern "C" DECLSPEC void debug_assert_internal(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...);
 extern "C" DECLSPEC void debug_print_important(const char* tag, const char* format, ...);		 ///< Print important debug info
 extern "C" DECLSPEC void debug_print_important2(const char* tag, const char* format, ...);		 ///< Print important debug info
@@ -198,6 +201,8 @@ typedef enum { STR2INT_SUCCESS, STR2INT_OVERFLOW, STR2INT_UNDERFLOW, STR2INT_INC
  *
  * @param[in] s Input string to be converted.
  *
+ * @param[slen] slen length of the string to be converted.
+ *
  *     The format is the same as strtol,
  *     except that the following are inconvertible:
  *
@@ -211,7 +216,7 @@ typedef enum { STR2INT_SUCCESS, STR2INT_OVERFLOW, STR2INT_UNDERFLOW, STR2INT_INC
  *
  * @return Indicates if the operation succeeded, or why it failed.
  */
-extern "C" DECLSPEC str2int_errno str2int(int* out, const char* s, int base);
+extern "C" DECLSPEC str2int_errno str2int(int* out, const char* s, size_t slen, int base);
 
 typedef void (*type_debug_warn_or_err_cb)(const char*);
 /**

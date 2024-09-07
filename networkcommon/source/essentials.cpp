@@ -256,7 +256,7 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 			redis_ip = rg;
 		} else if (strcmp(lf, "--rp") == 0) {
 			int tmp = 0;
-			if (gsdk::str2int(&tmp, rg, 10) != gsdk::STR2INT_SUCCESS) {
+			if (gsdk::str2int(&tmp, rg, strlen(rg), 10) != gsdk::STR2INT_SUCCESS) {
 				debug_print_error(tag, "Unable to parse redis port, defaulting to %d !!!", tmp);
 			}
 			redis_port = tmp;

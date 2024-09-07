@@ -7,6 +7,9 @@
 //
 
 #include "timer.hpp"
+
+#include <chrono>
+#include <thread>
 #if PLATFORM == PLATFORM_MAC
 #include <CoreFoundation/CFDate.h>
 #elif defined(GEAR_WINDOWS)
@@ -17,7 +20,6 @@
 #include <time.h>
 static long _getTime(void) {
 	struct timeval now;
-
 	gettimeofday(&now, NULL);
 	return (long) (now.tv_sec * 1000 + now.tv_usec / 1000);
 }
@@ -25,38 +27,34 @@ static long _getTime(void) {
 #error Unknown Platform
 #endif
 
-float timer::timer_fps = 0.0f;					// frames
-float timer::timer_dt_in_sec = 0.0f;			// in sec
+double timer::timer_fps = 0.0;					// frames
+double timer::timer_dt_in_sec = 0.0;			// in sec
 int timer::timer_dt_in_milli_sec = 0;			// in milli sec
-float timer::timer_elapsed_time_in_sec = 0.0f;	// in sec
+double timer::timer_elapsed_time_in_sec = 0.0;	// in sec
 double timer::timer_previous_time = 0.0f;
-float timer::timer_averaging_time = 0.5f;  // in sec
-double timer::timer_last_time = 0.0f;
+double timer::timer_averaging_time = 0.5;  // in sec
+double timer::timer_last_time = 0.0;
 int timer::timer_frame_count = 0;
-float timer::timer_time_scale = 0.0f;
+double timer::timer_time_scale = 0.0;
 
 void timer::init() {
 	reset();
 }
 
 void timer::update() {
-	double cur_time = 0.0;
-#if PLATFORM == PLATFORM_MAC
-	cur_time = CFAbsoluteTimeGetCurrent();
-#elif defined(GEAR_WINDOWS)
-	cur_time = (double) timeGetTime() / 1000.0;
-#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-	cur_time = (double) _getTime() / 1000.0;
-#endif
-	timer_dt_in_sec = (float) (cur_time - timer_previous_time);
-	if (timer_dt_in_sec <= 0.0f) {
-		timer_dt_in_sec = 0.03f;
+	double cur_time = get_current_time_in_sec();
+	timer_dt_in_sec = cur_time - timer_previous_time;
+	if (timer_dt_in_sec <= 0.0) {
+		timer_dt_in_sec = MIN_FRAME_TIME_SEC;
 	}
-	timer_dt_in_milli_sec = (int) (timer_dt_in_sec * 1000.0f);
+	timer_dt_in_milli_sec = static_cast<int>(timer_dt_in_sec * 1000.0f);
 	timer_elapsed_time_in_sec += timer_dt_in_sec;
+	// Calculate FPS only if the averaging time interval has passed
+	double time_since_last_avg = cur_time - timer_last_time;
+	if (time_since_last_avg >= timer_averaging_time) {
+		// Calculate frames per second (FPS)
+		timer_fps = timer_frame_count / static_cast<double>(time_since_last_avg);
 
-	if (((float) (cur_time - timer_last_time)) >= timer_averaging_time) {
-		timer_fps = timer_frame_count / ((float) (cur_time - timer_last_time));
 		timer_frame_count = 0;
 		timer_last_time = cur_time;
 	} else {
@@ -65,48 +63,31 @@ void timer::update() {
 	timer_previous_time = cur_time;
 }
 
-void timer::update(float target_fps) {
-	double cur_time = 0.0;
-#if PLATFORM == PLATFORM_MAC
-	cur_time = CFAbsoluteTimeGetCurrent();
-#elif defined(GEAR_WINDOWS)
-	cur_time = (double) timeGetTime() / 1000.0;
-#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-	cur_time = (double) _getTime() / 1000.0;
-#endif
-	timer_dt_in_sec = (float) (cur_time - timer_previous_time);
-	if (timer_dt_in_sec <= 0.0f) {
-		timer_dt_in_sec = 0.03f;
+void timer::update(double target_fps) {
+	double cur_time = get_current_time_in_sec();
+	timer_dt_in_sec = cur_time - timer_previous_time;
+	if (timer_dt_in_sec <= 0.0) {
+		timer_dt_in_sec = MIN_FRAME_TIME_SEC;
 	}
-	while (timer_dt_in_sec < (1.0f / target_fps)) {
-#if PLATFORM == PLATFORM_MAC
-		cur_time = CFAbsoluteTimeGetCurrent();
-#elif defined(GEAR_WINDOWS)
-		cur_time = (double) timeGetTime() / 1000.0;
-#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-		cur_time = (double) _getTime() / 1000.0;
-#endif
-		timer_dt_in_sec = (float) (cur_time - timer_previous_time);
+	while (timer_dt_in_sec < (1.0 / target_fps)) {
+		// Sleep for a short duration to prevent busy-waiting
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		cur_time = get_current_time_in_sec();
+		timer_dt_in_sec = cur_time - timer_previous_time;
 	}
-	timer_dt_in_milli_sec = (int) (timer_dt_in_sec * 1000.0f);
+	timer_dt_in_milli_sec = static_cast<int>(timer_dt_in_sec * 1000.0f);
 	timer_elapsed_time_in_sec += timer_dt_in_sec;
-	timer_fps = 1.0f / timer_dt_in_sec;
+	timer_fps = 1.0 / timer_dt_in_sec;
 	timer_previous_time = cur_time;
 }
 
 void timer::reset() {
-	timer_time_scale = 1.0f;
-	timer_fps = 0.0f;
-	timer_dt_in_sec = 0.0f;
+	timer_time_scale = 1.0;
+	timer_fps = 0.0;
+	timer_dt_in_sec = 0.0;
 	timer_dt_in_milli_sec = 0;
-	timer_elapsed_time_in_sec = 0.0f;
-#if PLATFORM == PLATFORM_MAC
-	timer_previous_time = CFAbsoluteTimeGetCurrent();
-#elif defined(GEAR_WINDOWS)
-	timer_previous_time = (double) timeGetTime() / 1000.0;
-#elif PLATFORM == PLATFORM_ANDROID || PLATFORM == PLATFORM_LINUX
-	timer_previous_time = (double) _getTime() / 1000.0;
-#endif
+	timer_elapsed_time_in_sec = 0.0;
+	timer_previous_time = get_current_time_in_sec();
 	timer_last_time = timer_previous_time;
 }
 

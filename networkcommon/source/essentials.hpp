@@ -269,7 +269,7 @@ struct qaddress {
 	int set(const qstring& ip, const qstring& port) {
 		this->ip = ip;
 		int tmp = 0;
-		if (gsdk::str2int(&tmp, port.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+		if (gsdk::str2int(&tmp, port.c_str(), port.length(), 10) != gsdk::STR2INT_SUCCESS) {
 			debug_print_error("qaddress", "Unable to parse port !!! - %s", port.c_str());
 			return -1;
 		}
@@ -286,7 +286,7 @@ struct qaddress {
 		ip.split(".", array);
 		for (auto n : array) {
 			int v = 0;
-			if (gsdk::str2int(&v, n.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+			if (gsdk::str2int(&v, n.c_str(), n.length(), 10) != gsdk::STR2INT_SUCCESS) {
 				debug_print_error("qaddress", "Unable to serialise value !!! - %s", n.c_str());
 				return -1;
 			}

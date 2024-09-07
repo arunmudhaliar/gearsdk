@@ -52,7 +52,7 @@ int serverconfig::get_int32(const qstring& key, const int32_t DEFAULT_VALUE) {
 		return DEFAULT_VALUE;
 	}
 	int result = DEFAULT_VALUE;
-	if (gsdk::str2int(&result, itr->second.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
+	if (gsdk::str2int(&result, itr->second.c_str(), itr->second.length(), 10) != gsdk::STR2INT_SUCCESS) {
 		debug_print_error(__LOGTAG__, "Unable to parse %s value - %s. setting default value of %d !!!.", key.c_str(), itr->second.c_str(), DEFAULT_VALUE);
 	}
 	return result;

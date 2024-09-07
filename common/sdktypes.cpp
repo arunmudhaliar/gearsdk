@@ -8,6 +8,7 @@
 
 #include "sdktypes.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <time.h>
 #include <unistd.h>
@@ -86,69 +87,70 @@ int number_of_digits(unsigned int num) {
 	if (num == 0) {
 		return 1;
 	}
-	int len = 0;
-	unsigned int n = num;
-	while (n != 0) {
-		len++;
-		n /= 10;
-	}
-	return len;
+	return static_cast<int>(std::log10(num)) + 1;
 }
 
 void debug_raw(int log_level, const char* format, ...) {
 	if (log_level > LOG_LEVEL) {
 		return;
 	}
+
+	// Format the log message
 	char buffer[LOGBUFFER_SIZE + 1];
-	va_list v;
-	va_start(v, format);
-	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-#if PLATFORM == PLATFORM_MAC
-	fprintf(stderr, "[%d] %s\n", getpid(), buffer);
-#elif PLATFORM == PLATFORM_ANDROID
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, args);
+	va_end(args);
+
+#if PLATFORM == PLATFORM_ANDROID
+	// Android-specific logging
 	__android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
 #else
+	// General case for other platforms
 	fprintf(stderr, "[%d] %s\n", getpid(), buffer);
 #endif
-	va_end(v);
 }
 
 void debug_print(int log_level, const char* tag, const char* format, ...) {
 	if (log_level > LOG_LEVEL) {
 		return;
 	}
-	time_t givemetime = time(NULL);
+	time_t current_time = time(NULL);
+	struct tm time_info;
+	localtime_r(&current_time, &time_info);	 // Thread-safe localtime variant
+	char time_buffer[20];					 // Buffer for time in "YYYY-MM-DD HH:MM:SS" format
+	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &time_info);
+
 	char buffer[LOGBUFFER_SIZE + 1];
-	va_list v;
-	va_start(v, format);
-	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-#if PLATFORM == PLATFORM_MAC
-	fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
-#elif PLATFORM == PLATFORM_ANDROID
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, args);
+	va_end(args);
+#if PLATFORM == PLATFORM_ANDROID
 	__android_log_print(ANDROID_LOG_INFO, tag, "%s", buffer);
 #else
-	fprintf(stderr, "%s : [%d] [%s] %s\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer);
+	fprintf(stderr, "%s : [%d] [%s] %s\n", time_buffer, getpid(), tag, buffer);
 #endif
-	va_end(v);
 }
 
 void debug_print2_internal(int log_level, const char* tag, const char* file, const char* function, int line, const char* format, ...) {
 	if (log_level > LOG_LEVEL) {
 		return;
 	}
-	time_t givemetime = time(NULL);
+	time_t current_time = time(NULL);
+	struct tm* time_info = localtime(&current_time);
+	char time_buffer[20];  // Enough for "YYYY-MM-DD HH:MM:SS"
+	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", time_info);
 	char buffer[LOGBUFFER_SIZE + 1];
-	va_list v;
-	va_start(v, format);
-	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
-#if PLATFORM == PLATFORM_MAC
-	fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
-#elif PLATFORM == PLATFORM_ANDROID
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, args);
+	va_end(args);
+#if PLATFORM == PLATFORM_ANDROID
 	__android_log_print(ANDROID_LOG_INFO, tag, "%s\t\t(%s : %s:%d)", buffer, file, function, line);
 #else
-	fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", strtok(ctime(&givemetime), "\n"), getpid(), tag, buffer, file, function, line);
+	fprintf(stderr, "%s : [%d] [%s] %s\t\t(%s : %s:%d)\n", time_buffer, getpid(), tag, buffer, file, function, line);
 #endif
-	va_end(v);
 }
 
 type_debug_warn_or_err_cb global_warn_cb = nullptr;
@@ -246,7 +248,7 @@ void debug_print_important2(const char* tag, const char* format, ...) {
 }
 
 void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len) {
-	if (log_level > LOG_LEVEL) {
+	if (log_level > LOG_LEVEL || scid == nullptr || scid_len == 0) {
 		return;
 	}
 	fprintf(stderr, "[%d] SCID: ", getpid());
@@ -257,23 +259,28 @@ void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len) {
 }
 
 namespace gsdk {
-str2int_errno str2int(int* out, const char* s, int base) {
-	if (out == nullptr || s == nullptr) {
+str2int_errno str2int(int* out, const char* s, size_t slen, int base) {
+	if (out == nullptr || s == nullptr || slen == 0 || s[0] == '\0' || isspace(s[0])) {
+		return STR2INT_INCONVERTIBLE;
+	}
+	if (std::strlen(s) > slen) {
 		return STR2INT_INCONVERTIBLE;
 	}
 	char* end = nullptr;
-	if (s[0] == '\0' || isspace(s[0]))
-		return STR2INT_INCONVERTIBLE;
 	errno = 0;
 	long l = strtol(s, &end, base);
-	/* Both checks are needed because INT_MAX == LONG_MAX is possible. */
-	if (l > INT_MAX || (errno == ERANGE && l == LONG_MAX))
+	// Check for overflow and underflow
+	if ((errno == ERANGE && l == LONG_MAX) || l > INT_MAX) {
 		return STR2INT_OVERFLOW;
-	if (l < INT_MIN || (errno == ERANGE && l == LONG_MIN))
+	}
+	if ((errno == ERANGE && l == LONG_MIN) || l < INT_MIN) {
 		return STR2INT_UNDERFLOW;
-	if (*end != '\0')
+	}
+	// Ensure the entire string was converted
+	if (*end != '\0') {
 		return STR2INT_INCONVERTIBLE;
-	*out = (int) l;
+	}
+	*out = static_cast<int>(l);
 	return STR2INT_SUCCESS;
 }
 }  // namespace gsdk
