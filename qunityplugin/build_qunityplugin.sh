@@ -15,8 +15,8 @@ elif [ "$UNAME" == "Darwin" ]; then
     echo "Running on macOS"
     
     # Update library paths using install_name_tool for libev and libquiche
-    install_name_tool -change /Users/amudaliar/Desktop/ev_mac_out/lib/libev.4.dylib @rpath/libev.4.dylib ./release_build/libqunityplugin.dylib
-    install_name_tool -change /Users/amudaliar/Documents/PROJECTS/PERSONAL/quiche/target/release/deps/libquiche.dylib @rpath/libquiche.dylib ./release_build/libqunityplugin.dylib
+    # install_name_tool -change /Users/amudaliar/Desktop/ev_mac_out/lib/libev.4.dylib @rpath/libev.4.dylib ./release_build/libqunityplugin.dylib
+    # install_name_tool -change /Users/amudaliar/Documents/PROJECTS/PERSONAL/quiche/target/release/deps/libquiche.dylib @rpath/libquiche.dylib ./release_build/libqunityplugin.dylib
 
     # Verify the updated library paths with otool
     otool -L ./release_build/libqunityplugin.dylib
