@@ -8,10 +8,10 @@
 
 #include "sdktypes.hpp"
 
-#include <sys/resource.h>
 #include <cmath>
 #include <inttypes.h>  // Include this for PRIu64
 #include <iostream>
+#include <sys/resource.h>
 #include <time.h>
 #include <unistd.h>
 

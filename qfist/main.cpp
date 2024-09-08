@@ -27,6 +27,9 @@
 #define COLOR_YELLOW "\033[33m"
 #define COLOR_ORANGE "\033[38;5;208m"  // 256-color mode code for orange
 #define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_CYAN "\033[36m"
+
 
 #define JSON_FILE "users.json"
 // #define REQUEST_URL "https://google.com"
@@ -49,6 +52,7 @@ struct WorkData {
 	}
 	uv_timeval64_t start_time;
 	short result;
+	int summary_id = 0;
 	qstring api;
 	qstring payload;
 };
@@ -81,10 +85,14 @@ struct AppState {
 	bool single_request = false;  // Flag to enable single request mode
 
 	// New variables for summary tracking
+	std::atomic<int> summary_count {0};
 	std::atomic<int> summary_requests {0};
 	std::atomic<int> summary_successful_requests {0};
+	std::atomic<int> connection_establishment_timeout_in_sec_on_start_of_low_success_percentage {(int)CONNECTION_ESTABLISHMENT_TIMEOUT};
+	std::atomic<bool> low_success_percentage_triggered {false};
 	double summary_cumulative_response_time;
 	std::atomic<int> connection_establishment_timeout {(int)CONNECTION_ESTABLISHMENT_TIMEOUT};
+	std::atomic<int> recovering_avg_response_time_strem {0};
 
 	// Total run metrics
 	std::atomic<int> total_successful_requests {0};
@@ -206,11 +214,11 @@ void print_summary() {
 	if (app_state.summary_requests == 0) {
 		return;
 	}
-	double success_percentage, average_response_time;
+	double summary_success_percentage, average_response_time;
 	double elapsed_seconds = elapsed_seconds_since_app_launch();
 
 	// Summary period metrics
-	success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
+	summary_success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
 	average_response_time = (app_state.summary_requests > 0) ? (app_state.summary_cumulative_response_time / app_state.summary_requests) : 0.0;
 
 	// Total run metrics
@@ -226,11 +234,11 @@ void print_summary() {
 
 	// Determine color for success percentage
 	std::string color;
-	if (success_percentage < 70) {
+	if (summary_success_percentage < 70) {
 		color = COLOR_RED;
-	} else if (success_percentage < 80) {
+	} else if (summary_success_percentage < 80) {
 		color = COLOR_ORANGE;
-	} else if (success_percentage < 100) {
+	} else if (summary_success_percentage < 100) {
 		color = COLOR_YELLOW;
 	} else {
 		color = COLOR_RESET;
@@ -249,7 +257,7 @@ void print_summary() {
 	std::cout << "Data Transfer Rate: " << data_transfer_rate_kb << " KB/s\n";
 
 	std::cout << "\tSummary Period Requests: " << app_state.summary_requests << '\n';
-	std::cout << "\tSummary Period Success: " << color << app_state.summary_successful_requests << " (" << success_percentage << "%)" << COLOR_RESET << "\n";
+	std::cout << "\tSummary Period Success: " << color << app_state.summary_successful_requests << " (" << summary_success_percentage << "%)" << COLOR_RESET << "\n";
 	std::cout << "\tSummary Period Avg Response Time: " << average_response_time << " ms\n";
 	std::cout << "\tRequests Per Second: " << rps << "\n";
 	print_percentiles();
@@ -263,6 +271,7 @@ void print_summary() {
 	app_state.summary_requests = 0;
 	app_state.summary_successful_requests = 0;
 	app_state.summary_cumulative_response_time = 0.0;
+	app_state.summary_count++;
 	uv_gettimeofday(&app_state.summary_start_time);
 }
 
@@ -299,33 +308,19 @@ void finish_and_destroy_work(WorkData* data) {
 	// Update summary statistics
 	app_state.summary_cumulative_response_time += response_time;
 	if (data->result > 1) {
-		app_state.summary_successful_requests++;
+		if (data->summary_id == app_state.summary_count) {
+			app_state.summary_successful_requests++;
+		} else {
+			std::cout << "\r" << COLOR_CYAN << "response received for old summary ID: " << data->summary_id << " current summry ID: " << app_state.summary_count << COLOR_RESET << std::flush;
+		}
 	}
 
-	// double current_average_response_time = (app_state.summary_requests > 0) ? (app_state.summary_cumulative_response_time / app_state.summary_requests) : 0.0;
-	// double connection_establishment_timeout = static_cast<double>(app_state.connection_establishment_timeout);
-	// double summary_cumulative_response_time_in_sec = current_average_response_time * 0.001;
-	// double half_way_mark_response_time = summary_cumulative_response_time_in_sec * 0.5;
-	// double half_way_mark = connection_establishment_timeout * 0.5;
-	// if (half_way_mark_response_time > half_way_mark) {
-	// 	double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * 1.25;
-	// 	std::cout << "+Updated connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec  << "s from " << app_state.connection_establishment_timeout << "s [" << summary_cumulative_response_time_in_sec << "] " <<
-	// 	"half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
-	// 	<< std::endl;
-	// 	app_state.connection_establishment_timeout = next_connection_establishment_timeout_in_sec;
-	// } else if (half_way_mark_response_time < half_way_mark && half_way_mark>CONNECTION_ESTABLISHMENT_TIMEOUT*0.6) {
-	// 	double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * 0.95;
-	// 	std::cout << "-Updated connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec  << "s from " << app_state.connection_establishment_timeout << "s [" << summary_cumulative_response_time_in_sec << "] " <<
-	// 	"half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
-	// 	<< std::endl;
-	// 	app_state.connection_establishment_timeout = next_connection_establishment_timeout_in_sec;
-	// }
-
-	const double INCREASE_SCALE = 1.35; // Scale factor to increase timeout
+	const double INCREASE_SCALE = 1.5; // Scale factor to increase timeout
 	const double DECREASE_SCALE = 0.95; // Scale factor to decrease timeout
 	const double MIN_TIMEOUT = 1.0; // Minimum allowed timeout
 	const double THRESHOLD_RATIO = 0.6; // Ratio for threshold comparison
-
+	const double SUCCESS_PERCENTAGE_THRESHOLD = 80.0; // Success percentage threshold
+	const int MAX_ALLOWED_TIMEOUT_MULTIPLIER_ON_LOW_SUCCESS = 3; // Maximum allowed multiplier for timeout
 	// Calculate average response time in seconds
 	double current_average_response_time = (app_state.summary_requests > 0) 
 		? (app_state.summary_cumulative_response_time / app_state.summary_requests * 0.001) 
@@ -334,30 +329,59 @@ void finish_and_destroy_work(WorkData* data) {
 	double connection_establishment_timeout = static_cast<double>(app_state.connection_establishment_timeout);
 
 	// Calculate halfway marks
-	double half_way_mark_response_time = current_average_response_time * 0.5;
+	double curr_half_way_mark_response_time = current_average_response_time * 0.5;
 	double half_way_mark = connection_establishment_timeout * 0.5;
-
+	double current_summary_success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
+	bool low_success_percentage = current_summary_success_percentage && current_summary_success_percentage < SUCCESS_PERCENTAGE_THRESHOLD;
 	// Adjust timeout based on response times
-	if (half_way_mark_response_time > half_way_mark) {
-		double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * INCREASE_SCALE;
-		std::cout << "\r" << "+connection_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+	if (curr_half_way_mark_response_time > half_way_mark /*|| low_success_percentage*/) {
+		double next_connection_establishment_timeout_in_sec = CONNECTION_ESTABLISHMENT_TIMEOUT;
+		if (low_success_percentage) {
+			double max_timeout_allowed = static_cast<double>(app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage * MAX_ALLOWED_TIMEOUT_MULTIPLIER_ON_LOW_SUCCESS);
+			if (!app_state.low_success_percentage_triggered) {
+				app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage = connection_establishment_timeout;
+				app_state.low_success_percentage_triggered = true;
+				std::cout << COLOR_RED << "Low success percentage detected. Starting connection_establishment_timeout: " << app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage << "s, max_time_out_allowed: " << max_timeout_allowed << COLOR_RESET << "\n" << std::flush;
+			}
+			next_connection_establishment_timeout_in_sec = MIN(connection_establishment_timeout * INCREASE_SCALE, max_timeout_allowed);
+		} else {
+			next_connection_establishment_timeout_in_sec = connection_establishment_timeout * INCREASE_SCALE;
+			if (app_state.low_success_percentage_triggered) {
+				std::cout << COLOR_GREEN << "Success percentage recovered. Resetting connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec << "s\n" <<  COLOR_RESET << std::flush;
+				app_state.low_success_percentage_triggered = false;
+			}
+		}
+		std::cout << "\r" << COLOR_ORANGE << "+conn_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
 				<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
 				<< current_average_response_time
-				<< " half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
+				<< " curr_half_way_mark_response_time: " << curr_half_way_mark_response_time << " half_way_mark: " << half_way_mark
+				<< " curr_summary_success_percent: " << current_summary_success_percentage
 				<< "      "  // Adding extra spaces at the end to clear any remaining old output
+				<< COLOR_RESET
 				<< std::flush;
 		app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
-	} else if (half_way_mark_response_time < half_way_mark && half_way_mark > (CONNECTION_ESTABLISHMENT_TIMEOUT * THRESHOLD_RATIO)) {
-		double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * DECREASE_SCALE;
-		std::cout << "\r" << "-connection_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
-				<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
-				<< current_average_response_time
-				<< " half_way_mark_response_time: " << half_way_mark_response_time << " half_way_mark: " << half_way_mark
-				<< "      "  // Adding extra spaces at the end to clear any remaining old output
-				<< std::flush;
-		app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+		app_state.recovering_avg_response_time_strem = 0;
+	} else if (curr_half_way_mark_response_time < half_way_mark && half_way_mark > (CONNECTION_ESTABLISHMENT_TIMEOUT * THRESHOLD_RATIO)) {
+		app_state.recovering_avg_response_time_strem++;
+		if (app_state.recovering_avg_response_time_strem>100) {
+			double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * DECREASE_SCALE;
+			if (!low_success_percentage) {
+				if (app_state.low_success_percentage_triggered) {
+					std::cout << COLOR_GREEN << "Success percentage recovered. Resetting connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec << "s\n" <<  COLOR_RESET << std::flush;
+					app_state.low_success_percentage_triggered = false;
+				}
+			}
+			std::cout << "\r" << COLOR_YELLOW << "-conn_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+					<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
+					<< current_average_response_time
+					<< " curr_half_way_mark_response_time: " << curr_half_way_mark_response_time << " half_way_mark: " << half_way_mark
+					<< " curr_summary_success_percent: " << current_summary_success_percentage
+					<< "      "  // Adding extra spaces at the end to clear any remaining old output
+					<< COLOR_RESET
+					<< std::flush;
+			app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+		}
 	}
-
 
 	// // Print percentiles when buffer is full (amudaliar) - disabled this due to bug. it keeps on printing once the count is reached.
 	// if (app_state.response_times_count == WINDOW_SIZE) {
@@ -435,6 +459,7 @@ void prepareRequest(WorkData* data, int request_index) {
 	const auto& request = app_state.requests[request_index];
 	data->api = request.first;
 	data->payload = request.second;
+	data->summary_id = app_state.summary_count;
 }
 
 // Worker to handle requests
