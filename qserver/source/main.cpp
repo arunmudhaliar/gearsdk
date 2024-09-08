@@ -37,18 +37,18 @@ int32_t main(int32_t argc, const char* argv[]) {
 	gsdk::set_assert_callback(assert_callback);
 	qstring host = "127.0.0.1";
 	qstring port = "4000";
-	qstring mongodb_uri = "mongodb://13.233.45.2:27017";	// "mongodb://192.168.0.230:27017";
+	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  // "mongodb://192.168.0.230:27017";
 	qstring redis_ip = "13.233.45.2";
 	qstring zk_uri = "13.233.45.2:2181";
 	uint16_t redis_port = 6379;
-	fs::path rootDir;
-	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
+	fs::path root_dir;
+	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, root_dir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
 		discord_util::shutdown();
 		exit(0);
 	}
 	gameserver server;
-	server.run(host, port, rootDir, redis_ip, redis_port);
+	server.run(host, port, root_dir, redis_ip, redis_port);
 
 	// dummy run loop
 	struct ev_loop* loop = ev_default_loop(0);
@@ -69,6 +69,6 @@ int32_t main(int32_t argc, const char* argv[]) {
 	ev_run(loop, 0);
 
 	discord_util::shutdown();
-	
+
 	return 0;
 }

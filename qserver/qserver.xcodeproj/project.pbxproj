@@ -259,6 +259,7 @@
 				555F45BE2BA63EFC0077ADEE /* ShellScript */,
 				5595E1252BB08BAB00FA2618 /* ShellScript */,
 				555BA6F72C3AEE2000E23A51 /* Embed Libraries */,
+				551CDD3A2C8E180E00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -305,6 +306,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD3A2C8E180E00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=()\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/qh3server\" -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/../common/uthash\" -I\"${SRCROOT}/../common/rapidjson\" -I\"${SRCROOT}/../common/nvwa\" -I\"${SRCROOT}/../common/zlib\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\" -I\"${SRCROOT}/../networkcommon/source/quiche\" -I\"${SRCROOT}/../qhiredis/hiredis\"\ndone\n";
+		};
 		555F45BE2BA63EFC0077ADEE /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -569,7 +587,7 @@
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;
@@ -599,7 +617,7 @@
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;

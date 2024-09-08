@@ -49,32 +49,32 @@ class room_interface {
 
 struct roomconfig {
 	roomconfig(const roomconfig& room_config)
-		: min_players(room_config.min_players), max_players(room_config.max_players), bet_amountx(room_config.bet_amountx), reward_multiplierx(room_config.reward_multiplierx), allow_join_after_start(room_config.allow_join_after_start) {}
+		: MIN_PLAYERS(room_config.MIN_PLAYERS), MAX_PLAYERS(room_config.MAX_PLAYERS), BET_AMOUNTX(room_config.BET_AMOUNTX), REWARD_MULTIPLIERX(room_config.REWARD_MULTIPLIERX), ALLOW_JOIN_AFTER_START(room_config.ALLOW_JOIN_AFTER_START) {}
 	roomconfig(int min_players, int max_players, intx bet_amountx, intx reward_multiplierx, bool allow_join_after_start)
-		: min_players(min_players), max_players(max_players), bet_amountx(bet_amountx), reward_multiplierx(reward_multiplierx), allow_join_after_start(allow_join_after_start) {}
-	roomconfig(const msg_room_config* room_config_msg) : min_players(room_config_msg->min), max_players(room_config_msg->max), allow_join_after_start(room_config_msg->allow_after_start) {}
-	const int min_players = 1;
-	const int max_players = 1;
-	const intx bet_amountx = 0;	 // Note: bet_amountx & reward_multiplierx are in fixed point values
-	const intx reward_multiplierx = FX_TWO;
-	const bool allow_join_after_start = false;
+		: MIN_PLAYERS(min_players), MAX_PLAYERS(max_players), BET_AMOUNTX(bet_amountx), REWARD_MULTIPLIERX(reward_multiplierx), ALLOW_JOIN_AFTER_START(allow_join_after_start) {}
+	roomconfig(const msg_room_config* room_config_msg) : MIN_PLAYERS(room_config_msg->min), MAX_PLAYERS(room_config_msg->max), ALLOW_JOIN_AFTER_START(room_config_msg->allow_after_start) {}
+	const int MIN_PLAYERS = 1;
+	const int MAX_PLAYERS = 1;
+	const intx BET_AMOUNTX = 0;	 // Note: bet_amountx & reward_multiplierx are in fixed point values
+	const intx REWARD_MULTIPLIERX = FX_TWO;
+	const bool ALLOW_JOIN_AFTER_START = false;
 };
 
 // MARK: -
 class room : public room_interface, public qtimer_sceduler {
    private:
-	room() : creation_time(0), room_config(roomconfig(1, 1, 0, FX_TWO, false)) {}
+	room() : CREATION_TIME(0), ROOM_CONFIG(roomconfig(1, 1, 0, FX_TWO, false)) {}
 
    public:
-	enum states { room_uninitialised, room_waiting, room_start, room_end };
+	enum states { ROOM_UNINITIALISED, ROOM_WAITING, ROOM_START, ROOM_END };
 	room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~room();
 
 	ssize_t try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val = 0);
 	ssize_t remove_connection(conn_io* qconnection);
 	player* get_player(conn_io* qconnection);
-	inline bool is_min_capacity_reached() { return (int) playermap.size() >= room_config.min_players; }
-	inline bool is_max_capacity_reached() { return (int) playermap.size() >= room_config.max_players; }
+	inline bool is_min_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MIN_PLAYERS; }
+	inline bool is_max_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MAX_PLAYERS; }
 	inline ssize_t get_playermap_count() { return playermap.size(); }
 	states get_state() { return state; }
 	const qstring& get_state_string();
@@ -85,15 +85,15 @@ class room : public room_interface, public qtimer_sceduler {
 
 	std::map<unsigned, player*> playermap;
 	std::map<unsigned, ev_tstamp> disconnected_players_hash_after_room_start;
-	const int room_id = 0;
-	const ev_tstamp creation_time;
+	const int ROOM_ID = 0;
+	const ev_tstamp CREATION_TIME;
 
 	void pass_message_to_room(player* p, const qstring& msg);
 
 	void broadcast(const qstring& msg);
 	void broadcast_except(player* p, const qstring& msg);
 	void sendto(player* p, const qstring& msg);
-	inline const roomconfig& get_room_config() { return room_config; }
+	inline const roomconfig& get_room_config() { return ROOM_CONFIG; }
 
 	qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
 
@@ -117,8 +117,8 @@ class room : public room_interface, public qtimer_sceduler {
 	void send_event_player_add_or_remove(player* p, bool add);
 	void send_event_room_start_or_end(bool room_start);
 
-	const roomconfig room_config;
-	states state = room_uninitialised;
+	const roomconfig ROOM_CONFIG;
+	states state = ROOM_UNINITIALISED;
 	roomserver_interface* roomserverinterface;
 	static int room_id_counter;
 	qstring states_string[4] = {"uninitialised", "waiting", "start", "end"};

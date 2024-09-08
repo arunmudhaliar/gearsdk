@@ -9,8 +9,8 @@
 #include "roomserver.hpp"
 
 // MARK: - roomserver
-void roomserver::on_timer_check_zombie_rooms(qtimer& qtimer_) {
-	UNUSED(qtimer_);
+void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
+	UNUSED(timer);
 	if (waiting_rooms.size()) {
 		std::vector<room*> zombies;
 		for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
@@ -70,9 +70,9 @@ void roomserver::on_network_server_end() {
 
 void roomserver::onroom_pre_start(room* r) {
 	// check and delete the room from waiting list
-	int oldSz = (int) waiting_rooms.size();
+	int old_sz = (int) waiting_rooms.size();
 	waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), r), waiting_rooms.end());
-	if (oldSz <= (int) waiting_rooms.size()) {
+	if (old_sz <= (int) waiting_rooms.size()) {
 		debug_print_error(__LOGTAG__, "onroom_pre_start: coudn't find the room in waiting rooms list. CHECK !!!");
 		return;
 	}
@@ -92,11 +92,11 @@ void roomserver::onroom_pre_start(room* r) {
 
 	if (std::find(rooms.begin(), rooms.end(), r) == rooms.end()) {
 		rooms.push_back(r);
-		debug_print_important(__LOGTAG__, "room : removed from waiting list and pushed to rooms list %d", r->room_id);
+		debug_print_important(__LOGTAG__, "room : removed from waiting list and pushed to rooms list %d", r->ROOM_ID);
 		// update the room status on redis
 		long long count_room_of_this_type = 0;
 		const qstring& rkey = r->get_room_signature("room:", host_id, port_id);
-		if (r->room_id == 0) {
+		if (r->ROOM_ID == 0) {
 			int rresult = this->hiredis->set_value(rkey, "1");
 			debug_warn_cond(__LOGTAG__, rresult != 0, "hiredis set_value failed for key %s, result %d", rkey.c_str(), rresult);
 		} else {
@@ -166,22 +166,22 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 	}
 
 	// check if he was part of any active room.
-	room* room_ = nullptr;
+	room* room_ptr = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {
-		room_ = iterator->second;
+		room_ptr = iterator->second;
 	}
-	if (room_ == nullptr) {
+	if (room_ptr == nullptr) {
 		debug_print_important2(__LOGTAG__, "on_message returning !!!, connection %0x not part of any room.", qconnection->cid_hash_val);
 		// connection was not part of any room so far
 		return;
 	}
-	player* player_ = room_->get_player(qconnection);
-	if (player_ == nullptr) {
+	player* player_ptr = room_ptr->get_player(qconnection);
+	if (player_ptr == nullptr) {
 		debug_print_error(__LOGTAG__, "player not found in the room !!!");
 		return;
 	}
-	room_->pass_message_to_room(player_, qstring(buf, recv_len));
+	room_ptr->pass_message_to_room(player_ptr, qstring(buf, recv_len));
 }
 
 void roomserver::onconnection_connect(conn_io* qconnection) {
@@ -195,9 +195,9 @@ void roomserver::onconnection_connected(conn_io* qconnection) {
 
 room* roomserver::find_room(int room_id) {
 	for (auto it = rooms.cbegin(); it != rooms.cend(); it++) {
-		room* _room = *it;
-		if (_room->room_id == room_id) {
-			return _room;
+		room* room_ptr = *it;
+		if (room_ptr->ROOM_ID == room_id) {
+			return room_ptr;
 		}
 	}
 	return nullptr;
@@ -206,25 +206,25 @@ room* roomserver::find_room(int room_id) {
 void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg) {
 	const msg_room_config& room_config_msg = room_match_request_msg.room_config;
 	// check if he was part of any active room.
-	room* room_ = nullptr;
+	room* room_ptr = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {
-		room_ = iterator->second;
+		room_ptr = iterator->second;
 	}
 	// check if he was a disconnected player or not
-	if (room_ == nullptr && room_match_request_msg.room_id >= 0) {
+	if (room_ptr == nullptr && room_match_request_msg.room_id >= 0) {
 		room* found_room = find_room(room_match_request_msg.room_id);
-		if (found_room != nullptr && found_room->get_state() < room::room_end) {
+		if (found_room != nullptr && found_room->get_state() < room::ROOM_END) {
 			if (found_room->is_cid_hash_in_disconnected_players_hash_list(room_match_request_msg.prev_cid_hash_val)) {
-				room_ = found_room;
-				debug_print(LOG_LEVEL_0, __LOGTAG__, "found previous room:%d for connection %0x. previous connection %0x", found_room->room_id, qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
+				room_ptr = found_room;
+				debug_print(LOG_LEVEL_0, __LOGTAG__, "found previous room:%d for connection %0x. previous connection %0x", found_room->ROOM_ID, qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
 			}
 		} else {
 			debug_print_important2(__LOGTAG__, "on_connection: reconnection failed for connection %0x  (prev:%0x)!!!. either prev room was destroyed or in end state.", qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
 		}
 	}
 	bool connection_added_to_room = false;
-	if (room_ == nullptr) {
+	if (room_ptr == nullptr) {
 		// may be a new connection.
 		// so get a waiting room for him
 		// search existing waiting rooms.
@@ -234,11 +234,11 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 			ssize_t new_count = waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);
 			connection_added_to_room = new_count > old_count;
 			if (connection_added_to_room) {
-				room_ = waiting_room;
-				connection_map[qconnection->cid_hash_val] = room_;
-				if (room_->get_state() == room::states::room_waiting) {
+				room_ptr = waiting_room;
+				connection_map[qconnection->cid_hash_val] = room_ptr;
+				if (room_ptr->get_state() == room::states::ROOM_WAITING) {
 					debug_print_important2(__LOGTAG__, "on_connection: add to waiting room, map[after add sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
-				} else if (room_->get_state() >= room::states::room_start) {
+				} else if (room_ptr->get_state() >= room::states::ROOM_START) {
 					debug_print_important2(__LOGTAG__, "on_connection: added to room, map[after add sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
 				}
 				break;
@@ -246,14 +246,15 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		}
 	} else {
 		// check if he still in the room or not
-		player* already_in_room = room_->get_player(qconnection);
+		player* already_in_room = room_ptr->get_player(qconnection);
 		if (already_in_room) {
-			debug_print_important2(__LOGTAG__, "on_connection: already part of PREV room %d of user [m-sz:%d] !!! - connection %0x, returning.", room_->room_id, qconnection->cid_hash_val, connection_map.size(), qconnection->cid_hash_val);
+			debug_print_important2(__LOGTAG__, "on_connection: already part of PREV room %d of user [m-sz:%d] !!! - connection %0x, returning.", room_ptr->ROOM_ID, qconnection->cid_hash_val, connection_map.size(),
+								   qconnection->cid_hash_val);
 			return;
 		}
 		// check if he can be added back to the same room.
-		ssize_t old_count = room_->get_playermap_count();
-		ssize_t new_count = room_->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
+		ssize_t old_count = room_ptr->get_playermap_count();
+		ssize_t new_count = room_ptr->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
 		if (new_count == -2) {	// already part of the room
 			debug_print_error(__LOGTAG__, "on_connection: this can not happen !!!, returning.");
 			return;
@@ -263,7 +264,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 			// remove from old list
 			debug_print_important2(__LOGTAG__, "on_connection: can't be added to his prev room, remove him from old hash list");
 			connection_map.erase(iterator);
-			room_ = nullptr;
+			room_ptr = nullptr;
 		} else {
 			debug_print_important2(__LOGTAG__, "on_connection: add player to PREV room of user [m-sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
 		}
@@ -272,55 +273,55 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 	if (!connection_added_to_room) {
 		room* waiting_room = create_waiting_room(&room_config_msg);
 		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);	// no need to check for limit since he is our first user in this room.
-		room_ = waiting_room;
-		connection_map[qconnection->cid_hash_val] = room_;
+		room_ptr = waiting_room;
+		connection_map[qconnection->cid_hash_val] = room_ptr;
 		debug_print_important2(__LOGTAG__, "on_connection: add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
 	}
 }
 
 room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
-	room* room_ = create_room(room_config_msg);
+	room* room_ptr = create_room(room_config_msg);
 
-	waiting_rooms.push_back(room_);
+	waiting_rooms.push_back(room_ptr);
 	long long count_waiting_room_of_this_type = 0;
-	const qstring& key = room_->get_room_signature("wroom:", host_id, port_id);
+	const qstring& key = room_ptr->get_room_signature("wroom:", host_id, port_id);
 	int result = this->hiredis->incr_by(key, 1, count_waiting_room_of_this_type);
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", key.c_str(), result);
 	result = this->hiredis->expire_key(key, 1 * 60);  // 1 minute(s)
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
-	return room_;
+	return room_ptr;
 }
 
 void roomserver::onconnection_destroy(conn_io* qconnection) {
-	room* room_ = nullptr;
+	room* room_ptr = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {
-		room_ = iterator->second;
+		room_ptr = iterator->second;
 	}
-	if (room_ == nullptr) {
+	if (room_ptr == nullptr) {
 		debug_print_error(__LOGTAG__, "qconnection not in any room !!! - %0x, [cnt %d]", qconnection->cid_hash_val, connection_map.size());
 		return;
 	}
 	connection_map.erase(iterator);
 
 	debug_print_important2(__LOGTAG__, "after-qconnection removed %d, %0x", connection_map.size(), qconnection->cid_hash_val);
-	room_->remove_connection(qconnection);
-	if (room_->get_state() == room::room_end && room_->get_playermap_count() == 0) {
+	room_ptr->remove_connection(qconnection);
+	if (room_ptr->get_state() == room::ROOM_END && room_ptr->get_playermap_count() == 0) {
 		// delete the room, if the state is in 'END' and player count is zero.
 		ssize_t waiting_room_size = waiting_rooms.size();
-		waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), room_), waiting_rooms.end());
+		waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), room_ptr), waiting_rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (waiting_room_size == (ssize_t) waiting_rooms.size()), "check this");	// still in waiting room ???
 		ssize_t rooms_size = rooms.size();
-		rooms.erase(std::remove(rooms.begin(), rooms.end(), room_), rooms.end());
+		rooms.erase(std::remove(rooms.begin(), rooms.end(), room_ptr), rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (rooms_size > (ssize_t) rooms.size()), "check this");	// still in waiting room ???
 
 		// update the room status on redis
 		long long count_room_of_this_type = 0;
-		const qstring& rkey = room_->get_room_signature("room:", host_id, port_id);
+		const qstring& rkey = room_ptr->get_room_signature("room:", host_id, port_id);
 		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
 		debug_warn_cond(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
 
-		GX_DELETE(room_);
+		GX_DELETE(room_ptr);
 		debug_print_important2(__LOGTAG__, "room size %d", rooms.size());
 	}
 }
