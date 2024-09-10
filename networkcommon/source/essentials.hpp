@@ -130,6 +130,12 @@ class essentials {
 	static uLong mod_crc32_z(uLong adler, const Bytef* buf, z_size_t len);
 
 	static bool get_json_string(rapidjson::Document& obj, qstring& output);
+
+	// uv cleanups
+	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);
+
+   private:
+	static void close_uv_handle_callback(uv_handle_t* handle, void* arg);
 };
 
 // h3 structs

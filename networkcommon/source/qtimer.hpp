@@ -103,7 +103,6 @@ class qtimer_sceduler {
 	qtimer* schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);
 	void cancel_timer(qtimer* timer);
 	bool cancel_and_destroy_timer(qtimer* timer);
-	void shutdown_mainloop();  // carefull
 	bool is_timer_present_in_list(qtimer* timer);
 
    private:

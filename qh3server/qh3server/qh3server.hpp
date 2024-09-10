@@ -71,6 +71,11 @@ struct conn_io_qh3 {
 	~conn_io_qh3() {
 		if (bridge) {
 			uv_timer_stop(&timer);
+			if (!uv_is_closing((uv_handle_t*) &timer)) {
+				uv_close((uv_handle_t*) &timer, nullptr);
+				// Run the loop again to process the cleanup
+				uv_run(bridge->get_mainloop(), UV_RUN_ONCE);
+			}
 		}
 		if (conn) {
 			bool is_closed = quiche_conn_is_closed(conn);

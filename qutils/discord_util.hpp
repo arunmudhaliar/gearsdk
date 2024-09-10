@@ -80,9 +80,10 @@ class discord_util {
 
 	static void shutdown();
 
-   private:
-	static std::atomic<bool> inited;	   ///< Flag indicating whether the class has been initialized.
 	static void initialize_webhook_url();  ///< Initializes the webhook URL.
+
+   private:
+	static std::atomic<bool> inited;  ///< Flag indicating whether the class has been initialized.
 
 	/**
 	 * @brief Internal function for sending messages asynchronously.

@@ -26,6 +26,7 @@ std::atomic<int> discord_util::active_requests(0);
 const int discord_util::MAX_CONCURRENT_REQUESTS = 5;
 
 void discord_util::request_worker() {
+	PTHREAD_NAME("discord_util_worker");
 	while (!done) {
 		std::unique_lock<std::mutex> lock(queue_mutex);
 		queue_cv.wait(lock, [] { return !request_queue.empty() || done; });
@@ -128,6 +129,10 @@ void discord_util::send_async(const qstring& msg) {
 }
 
 void discord_util::shutdown() {
+	if (!inited) {
+		return;
+	}
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "discord_util shut down");
 	done = true;
 	queue_cv.notify_all();	// Wake up all worker threads to shut down
 	for (auto& t : worker_threads) {

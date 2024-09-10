@@ -507,6 +507,33 @@ bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
 	return true;
 }
 
+void essentials::close_uv_handle_callback(uv_handle_t* handle, void* arg) {
+	if (!uv_is_closing(handle)) {
+		uv_close(handle, nullptr);
+	}
+}
+
+bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
+	if (loop == nullptr) {
+		debug_print_important(__LOGTAG__, "loop pointer is null, Nothing to delete. returning !!!");
+		return true;
+	}
+	//	uv_print_all_handles(loop, stderr);
+	uv_walk(loop, close_uv_handle_callback, nullptr);
+	uv_run(loop, UV_RUN_NOWAIT);  // Run pending callbacks
+	if (uv_loop_alive(loop)) {
+		debug_print_error(__LOGTAG__, "The loop still has active handles!");
+		return false;
+	}
+	//	int result = uv_loop_close(loop);
+	//	if (result == UV_EBUSY) {
+	//		debug_print_warn(__LOGTAG__, "uv_loop_close returned UV_EBUSY !!!");
+	//	}
+	// Note: No need to call uv_loop_close, since uv_loop_delete call uv_loop_close internally.
+	uv_loop_delete(loop);
+	return true;
+}
+
 bool conn_io_req_res::has_crc_header() {
 	header* crc_header = get_header("crc");
 	return crc_header != nullptr;

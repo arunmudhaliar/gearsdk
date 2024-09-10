@@ -10,7 +10,7 @@
 
 qh3server::~qh3server() {
 	GX_DELETE(relay_through_router_info);
-	debug_print_important2(logtag.c_str(), "qh3server destroyed !!!");
+	debug_print_important2(logtag.c_str(), "qh3server destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
 }
 
 void qh3server::debug_log(const uint8_t* line, void* argp) {
@@ -135,6 +135,11 @@ uint8_t* qh3server::gen_cid(uint8_t* cid, size_t cid_len) {
 struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 										   struct sockaddr_storage* peer_original_client_addr) {
 	const char* const_logtag = logtag.c_str();
+
+	if (!uv_loop_alive(mainloop)) {
+		debug_print_error(const_logtag, "mainloop is not alive, returning. !!!");
+		return nullptr;
+	}
 
 	if (scid_len != LOCAL_CONN_ID_LEN) {
 		debug_print_error(const_logtag, "failed, scid length too short");
@@ -893,6 +898,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qtimer_uv* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
 
 	on_run_started();
+
 	// ev_loop(mainloop, 0);
 	uv_run(mainloop, UV_RUN_DEFAULT);
 
@@ -927,8 +933,17 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	router_hb_scheduler.cancel_and_destroy_timer(router_hb_timer);
 	close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
 
+	// Run the loop again to process the cleanup for any pending handles.
+	uv_run(mainloop, UV_RUN_ONCE);
+
 	// ev_loop_destroy(mainloop);
-	uv_loop_delete(mainloop);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "pre-cleanup and destroy %s:%s", host_id.c_str(), port_id.c_str());
+	if (!essentials::cleanup_and_destroy_uv_loop(mainloop)) {
+		debug_print_error(__LOGTAG__, "Failed to delete mainloop !!!");
+	} else {
+		mainloop = nullptr;
+	}
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "post-cleanup and destroy %s:%s", host_id.c_str(), port_id.c_str());
 
 	freeaddrinfo(local);
 
@@ -944,6 +959,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	GX_DELETE(relay_through_router_info);
 	GX_DELETE(logger);
 	GX_DELETE(stats_logger);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting from run loop %s:%s", host_id.c_str(), port_id.c_str());
 	return 0;
 }
 
@@ -988,6 +1004,7 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	ev_run(wait_loop, 0);
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);
+	debug_print_important(const_logtag, "services finish successfully !!!");
 }
 
 qtimer_uv* qh3server::router_hb_loop(qtimer_uv_scheduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {

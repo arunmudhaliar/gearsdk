@@ -92,7 +92,3 @@ qtimer* qtimer_sceduler::schedule_repeat_timer(type_qtimer_cb timeout_callback, 
 	timers.push_back(timer);
 	return timer;
 }
-
-void qtimer_sceduler::shutdown_mainloop() {
-	ev_break(EV_A_ EVBREAK_ONE);
-}

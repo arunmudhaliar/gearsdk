@@ -539,6 +539,8 @@ void* qnetworkserver::run_internal(void* data) {
 	runserverconfig* run_config = reinterpret_cast<runserverconfig*>(data);
 	qstring host = run_config->host;
 	qstring port = run_config->port;
+	qstring thread_name = qstring::format_string("qnetworkserver %s:%s", host.c_str(), port.c_str());
+	PTHREAD_NAME(thread_name.c_str());
 	qnetworkserver* thiz = run_config->thiz;
 	thiz->host_id = host;
 	thiz->port_id = port;

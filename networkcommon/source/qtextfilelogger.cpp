@@ -280,10 +280,13 @@ int qlogfile::flush(bool check_for_log_file_size) {
 qtextfilelogger::qtextfilelogger() : qtimer_uv_scheduler() {}
 
 qtextfilelogger::~qtextfilelogger() {
-	if (log_loop) {
-		uv_loop_delete(log_loop);
-		log_loop = nullptr;
-	}
+	//	if (log_loop) {
+	//		if (!essentials::cleanup_and_destroy_uv_loop(log_loop)) {
+	//			debug_print_error(__LOGTAG__, "Failed to delete log_loop !!!");
+	//		} else {
+	//			log_loop = nullptr;
+	//		}
+	//	}
 }
 
 int qtextfilelogger::start_session(const qstring& path, float flush_time, uint64_t max_size_of_file) {
@@ -338,6 +341,15 @@ void* qtextfilelogger::run_log_session(void* data) {
 	logger->logtimer = nullptr;	 // scheduler will delete the timer;
 	config->finished = true;
 	GX_DELETE(logger->logfile);
+
+	if (logger->log_loop) {
+		if (!essentials::cleanup_and_destroy_uv_loop(logger->log_loop)) {
+			debug_print_error(__LOGTAG__, "Failed to delete log_loop !!!");
+		} else {
+			logger->log_loop = nullptr;
+		}
+	}
+
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "file logger exiting ...");
 	if (logger->log_session_mutex.unlock(__FUNCTION__) != 0) {
 		config->pthread_return_value = -1;
@@ -362,9 +374,13 @@ uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const cha
 }
 
 int qtextfilelogger::end_session() {
-	if (logtimer == nullptr)
+	if (logtimer == nullptr) {
 		return -1;
-	cancel_and_destroy_timer(logtimer);
-	logtimer = nullptr;
+	}
+	async_cancel_and_destroy_timer(logtimer, [&](bool timer_deleted) {
+		if (timer_deleted) {
+			logtimer = nullptr;
+		}
+	});
 	return 0;
 }
