@@ -410,7 +410,7 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 		debug_print_error(__LOGTAG__, "message_parser::parse failed while parsing json string %.*s", len, buf);
 		return nullptr;
 	}
-	if (msg->deserialize(obj)) {
+	if (msg != nullptr && msg->deserialize(obj)) {
 		return msg;
 	} else {
 		GX_DELETE(msg);

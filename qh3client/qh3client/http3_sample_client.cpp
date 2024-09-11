@@ -45,7 +45,6 @@ void http3_sample_client::init_connection() {
 	//        if (live_connections<30) {
 	//            debug_print_important(__LOGTAG__, "issue create_connections");
 	//            create_connections();
-	//            //shutdown_mainloop();
 	//        }
 	//        }, 3);
 	//    //
