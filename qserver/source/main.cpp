@@ -30,6 +30,7 @@ void assert_callback(const char* msg) {
 
 int32_t main(int32_t argc, const char* argv[]) {
 	init_gsdk();
+	discord_util::initialize_webhook_url();
 	gsdk::servercommon::init_server_common();
 	discord_util::set_web_hook(DISCORD_WEBHOOK);
 	gsdk::set_warn_callback(warn_callback);
@@ -53,8 +54,8 @@ int32_t main(int32_t argc, const char* argv[]) {
 	// dummy run loop
 	struct ev_loop* loop = ev_default_loop(0);
 	ev_tstamp creation_time = ev_now(loop);
-	qtimer_sceduler scheduler;
-	scheduler.set_ev_lopp(loop);
+	qtimer_scheduler scheduler;
+	scheduler.set_loop(loop);
 	scheduler.schedule_repeat_timer(
 		[&server, loop, creation_time](qtimer& timer) {
 			UNUSED(timer);

@@ -382,6 +382,7 @@
 					"$(PROJECT_DIR)/libs/macos",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
@@ -407,6 +408,7 @@
 					"$(PROJECT_DIR)/libs/macos",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = (

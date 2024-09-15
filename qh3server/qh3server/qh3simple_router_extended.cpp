@@ -263,8 +263,8 @@ int qh3simple_router::run() {
 			return -1;
 		}
 
-		qtimer_sceduler unresponsive_routes_scheduler;
-		unresponsive_routes_scheduler.set_ev_lopp(mainloop);
+		qtimer_scheduler unresponsive_routes_scheduler;
+		unresponsive_routes_scheduler.set_loop(mainloop);
 		qtimer* unresponsive_timer = check_and_remove_unresponsive_routes(unresponsive_routes_scheduler);
 
 		ev_loop(mainloop, 0);

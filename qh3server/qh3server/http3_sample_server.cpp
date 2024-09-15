@@ -90,8 +90,8 @@ void http3_sample_server::on_server_uninitialise() {
 		qzk->shutdown();
 		debug_print_important(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
 		struct ev_loop* wait_loop = ev_loop_new();
-		qtimer_sceduler wait_scheduler;
-		wait_scheduler.set_ev_lopp(wait_loop);
+		qtimer_scheduler wait_scheduler;
+		wait_scheduler.set_loop(wait_loop);
 		qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
 			[this, wait_loop](qtimer& timer) {
 				UNUSED(timer);
@@ -199,8 +199,13 @@ void http3_sample_server::parse_shutdown_test(conn_io_req_res::header* path_head
 							   path_header->value.c_str());
 	}
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
-	// ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
+	debug_print_important(const_logtag, "uv_stop called on main thread %s:%s", host_id.c_str(), port_id.c_str());
+#if USE_UV_MAIN_LOOP
 	uv_stop(conn_io->bridge->get_mainloop());
+//	uv_run(conn_io->bridge->get_mainloop(), UV_RUN_ONCE);
+#else
+	ev_break(conn_io->bridge->get_mainloop(), EVBREAK_ONE);
+#endif
 }
 
 void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {

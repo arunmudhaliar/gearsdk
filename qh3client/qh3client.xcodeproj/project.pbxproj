@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551CDD3C2C97375F00ED9D65 /* libuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD3B2C97375A00ED9D65 /* libuv.a */; };
 		555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; };
 		555BA6EE2C3AEC8000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */; };
@@ -52,6 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551CDD3B2C97375A00ED9D65 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
 		555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_client.cpp; sourceTree = "<group>"; };
 		556AB6C02AF5703D00D688DB /* http3_sample_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = http3_sample_client.hpp; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 				555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */,
 				55A4ADD52AEFA56B00BC4CED /* Security.framework in Frameworks */,
 				55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */,
+				551CDD3C2C97375F00ED9D65 /* libuv.a in Frameworks */,
 				55CB70282C77B3EF00E05D37 /* libquiche.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -136,6 +139,7 @@
 		55A4ADC92AEFA51900BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				551CDD3B2C97375A00ED9D65 /* libuv.a */,
 				55CB70242C77B3B000E05D37 /* libquiche.dylib */,
 				55CB70272C77B3EF00E05D37 /* libquiche.dylib */,
 				555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */,
@@ -395,6 +399,7 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
@@ -422,6 +427,7 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;

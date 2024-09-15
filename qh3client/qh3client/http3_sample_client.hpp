@@ -17,7 +17,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "http3_sample_client"
 
-class http3_sample_client : public qtimer_sceduler {
+class http3_sample_client : public qtimer_scheduler {
    public:
 	http3_sample_client() {}
 	http3_sample_client(const qstring& host, const qstring& port);

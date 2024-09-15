@@ -15,7 +15,7 @@ typedef struct {
 	qstring port;
 	struct ev_loop* loop;
 	http3_sample_client client;
-	qtimer_sceduler scheduler;
+	qtimer_scheduler scheduler;
 	ev_tstamp creation_time;
 } app_state_t;
 
@@ -64,11 +64,11 @@ int main(int argc, const char* argv[]) {
 	app_state.loop = ev_default_loop(0);
 
 	app_state.client.set_server_info(app_state.host, app_state.port);
-	app_state.client.set_ev_lopp(app_state.loop);
+	app_state.client.set_loop(app_state.loop);
 	app_state.client.init_connection();
 
 	app_state.creation_time = ev_now(app_state.loop);
-	app_state.scheduler.set_ev_lopp(app_state.loop);
+	app_state.scheduler.set_loop(app_state.loop);
 
 	qtimer* keep_alive_loop = app_state.scheduler.schedule_repeat_timer(
 		[&](qtimer& timer) {
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[]) {
 			debug_print_important(__LOGTAG__, "client alive - t:%5.2fs", ev_now(app_state.loop) - app_state.creation_time);
 
 			//        http3_sample_client client(host, "4004");
-			//        client.set_ev_lopp(loop);
+			//        client.set_loop(loop);
 			//        client.init_connection();
 			ev_break(app_state.loop, EVBREAK_ONE);
 		},

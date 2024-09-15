@@ -3,11 +3,11 @@
 qtimer.hpp and qtimer.cpp
 ==========================
 
-The `qtimer` and `qtimer_sceduler` classes are designed for managing and scheduling timers using the `libev` event loop. The `qtimer` class represents a single timer, while the `qtimer_sceduler` class handles the scheduling and management of multiple timers.
+The `qtimer` and `qtimer_scheduler` classes are designed for managing and scheduling timers using the `libev` event loop. The `qtimer` class represents a single timer, while the `qtimer_scheduler` class handles the scheduling and management of multiple timers.
 
 **Header File: `qtimer.hpp`**
 
-The header file defines two classes: `qtimer` and `qtimer_sceduler`. 
+The header file defines two classes: `qtimer` and `qtimer_scheduler`. 
 
 **Class: `qtimer`**
 
@@ -27,16 +27,16 @@ The `qtimer` class provides functionalities to create and manage timers. Key com
   - **`float delay`**: Time interval between timer events.
   - **`void* data`**: User-defined data passed to the callback.
 
-**Class: `qtimer_sceduler`**
+**Class: `qtimer_scheduler`**
 
-The `qtimer_sceduler` class manages a collection of `qtimer` instances. Key components include:
+The `qtimer_scheduler` class manages a collection of `qtimer` instances. Key components include:
 
 - **Constructor and Destructor**
-  - **`qtimer_sceduler()`**: Initializes the scheduler.
-  - **`virtual ~qtimer_sceduler()`**: Cleans up all managed timers.
+  - **`qtimer_scheduler()`**: Initializes the scheduler.
+  - **`virtual ~qtimer_scheduler()`**: Cleans up all managed timers.
 
 - **Methods**
-  - **`void set_ev_lopp(struct ev_loop* loop)`**: Sets the event loop for the scheduler.
+  - **`void set_loop(struct ev_loop* loop)`**: Sets the event loop for the scheduler.
   - **`qtimer* schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr)`**: Schedules a one-time timer.
   - **`qtimer* schedule_count_timer(type_qtimer_cb timeout_callback, float delay, int count, void* data = nullptr)`**: Schedules a timer that fires a specified number of times.
   - **`qtimer* schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr)`**: Schedules a repeating timer.
@@ -47,7 +47,7 @@ The `qtimer_sceduler` class manages a collection of `qtimer` instances. Key comp
 
 **Example Usage**
 
-Here's a simple example demonstrating how to use the `qtimer` and `qtimer_sceduler` classes:
+Here's a simple example demonstrating how to use the `qtimer` and `qtimer_scheduler` classes:
 
 .. code-block:: cpp
 
@@ -60,8 +60,8 @@ Here's a simple example demonstrating how to use the `qtimer` and `qtimer_scedul
 
     int main() {
         struct ev_loop* loop = ev_default_loop(0);
-        qtimer_sceduler scheduler;
-        scheduler.set_ev_lopp(loop);
+        qtimer_scheduler scheduler;
+        scheduler.set_loop(loop);
 
         // Schedule a one-time timer
         scheduler.schedule_timer([](qtimer& timer) {
@@ -82,5 +82,5 @@ Here's a simple example demonstrating how to use the `qtimer` and `qtimer_scedul
         return 0;
     }
 
-This example demonstrates the creation of a `qtimer_sceduler`, setting an event loop, and scheduling various types of timers.
+This example demonstrates the creation of a `qtimer_scheduler`, setting an event loop, and scheduling various types of timers.
 

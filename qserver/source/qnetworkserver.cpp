@@ -716,8 +716,8 @@ void* qnetworkserver::run_internal(void* data) {
 
 	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
-	qtimer_sceduler wait_scheduler;
-	wait_scheduler.set_ev_lopp(wait_loop);
+	qtimer_scheduler wait_scheduler;
+	wait_scheduler.set_loop(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
 		[thiz, wait_loop](qtimer& timer) {
 			UNUSED(timer);
@@ -744,8 +744,8 @@ void qnetworkserver::exit_services_gracefully() {
 	int status = logger.end_session();
 	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
-	qtimer_sceduler wait_scheduler;
-	wait_scheduler.set_ev_lopp(wait_loop);
+	qtimer_scheduler wait_scheduler;
+	wait_scheduler.set_loop(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
 		[this, wait_loop, &status](qtimer& timer) {
 			UNUSED(timer);

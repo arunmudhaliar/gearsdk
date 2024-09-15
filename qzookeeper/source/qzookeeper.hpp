@@ -8,7 +8,7 @@
  * The qzookeeper class implements the interface_qzookeeper interface, which defines the methods for registering and
  * unregistering value change callbacks.
  *
- * The qzookeeper class also inherits from the qtimer_sceduler class, which provides functionality for scheduling
+ * The qzookeeper class also inherits from the qtimer_scheduler class, which provides functionality for scheduling
  * timer events.
  *
  * @copyright 2024 homenet25
@@ -79,7 +79,7 @@ class interface_qzookeeper {
 	virtual void unregister_value_change_callback(type_qzk_value_changed callback, void* context) = 0;
 };
 
-class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
+class qzookeeper : public qtimer_scheduler, public interface_qzookeeper {
    public:
 	qzookeeper(const qstring& name);
 	~qzookeeper();

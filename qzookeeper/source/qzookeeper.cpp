@@ -186,7 +186,7 @@ int qzookeeper::retry_with_backoff(std::function<int()> operation, int max_retri
 	return ZOPERATIONTIMEOUT;  // If all retries fail, return timeout
 }
 
-qzookeeper::qzookeeper(const qstring& name) : qtimer_sceduler(), NAME(name), WNAME(qstring::format_string("%s-watcher", name.c_str())) {
+qzookeeper::qzookeeper(const qstring& name) : qtimer_scheduler(), NAME(name), WNAME(qstring::format_string("%s-watcher", name.c_str())) {
 	retry_in_progress = false;
 	connection_in_progress = false;
 	running = false;
@@ -289,7 +289,7 @@ void* qzookeeper::connect_internal(void* data) {
 	}
 
 	thiz->mainloop = ev_loop_new(0);
-	thiz->set_ev_lopp(thiz->mainloop);
+	thiz->set_loop(thiz->mainloop);
 
 	thiz->connection_check_timer = thiz->schedule_repeat_timer(
 		[thiz, logtag](qtimer& timer) {

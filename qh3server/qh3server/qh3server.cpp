@@ -78,7 +78,11 @@ ssize_t qh3server::flush_egress(struct conn_io_qh3* conn_io) {
 	double t = quiche_conn_timeout_as_nanos(conn_io->conn) / 1e9f;
 
 	conn_io->timer.repeat = t;
-	uv_timer_start(&conn_io->timer, timeout_cb, t * 1000, 0);  // Replaces ev_timer_again
+#if USE_UV_MAIN_LOOP
+	uv_timer_start(&conn_io->timer, timeout_cb, t * 1000, 0);
+#else
+	ev_timer_again(conn_io->bridge->get_mainloop(), &conn_io->timer);
+#endif
 	return total_bytes_sent;
 }
 
@@ -135,11 +139,12 @@ uint8_t* qh3server::gen_cid(uint8_t* cid, size_t cid_len) {
 struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 										   struct sockaddr_storage* peer_original_client_addr) {
 	const char* const_logtag = logtag.c_str();
-
+#if USE_UV_MAIN_LOOP
 	if (!uv_loop_alive(mainloop)) {
 		debug_print_error(const_logtag, "mainloop is not alive, returning. !!!");
 		return nullptr;
 	}
+#endif
 
 	if (scid_len != LOCAL_CONN_ID_LEN) {
 		debug_print_error(const_logtag, "failed, scid length too short");
@@ -158,15 +163,23 @@ struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8
 		return NULL;
 	}
 	memcpy(new_conn_io->cid, scid, LOCAL_CONN_ID_LEN);
+#if USE_UV_MAIN_LOOP
 	new_conn_io->creation_time = uv_now(mainloop);
+#else
+	new_conn_io->creation_time = ev_now(mainloop);
+#endif
 	new_conn_io->sock = conns->sock;
 	new_conn_io->conn = conn;
 	HASH_VALUE(scid, scid_len, new_conn_io->cid_hash_val);
 	memcpy(&new_conn_io->peer_addr, peer_addr, peer_addr_len);
 	new_conn_io->peer_addr_len = peer_addr_len;
 
-	// ev_init(&new_conn_io->timer, timeout_cb);
+#if USE_UV_MAIN_LOOP
 	uv_timer_init(mainloop, &new_conn_io->timer);
+#else
+	ev_init(&new_conn_io->timer, timeout_cb);
+#endif
+
 	new_conn_io->timer.data = new_conn_io;
 	HASH_ADD(hh, conns->h, cid, LOCAL_CONN_ID_LEN, new_conn_io);
 
@@ -195,14 +208,19 @@ int qh3server::for_each_header(const uint8_t* name, size_t name_len, const uint8
 	return 0;
 }
 
-void qh3server::recv_cb(uv_poll_t* handle, int status, int events) {
+#if USE_UV_MAIN_LOOP
+void qh3server::recv_cb(uv_poll_t* w, int status, int events) {
 	UNUSED(events);
 	// debug_raw(LOG_LEVEL_0, "recv_cb");
 	if (status < 0) {
 		debug_print_error(__LOGTAG__, "failed to recv");
 		return;
 	}
-	qh3server* server = reinterpret_cast<qh3server*>(handle->data);
+#else
+void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
+	UNUSED(revents);
+#endif
+	qh3server* server = reinterpret_cast<qh3server*>(w->data);
 	struct connections* conns = server->conns;
 	struct conn_io_qh3 *tmp, *conn_io = NULL;
 	const char* const_logtag = server->logtag.c_str();
@@ -639,9 +657,13 @@ void qh3server::destroy_connection(struct conn_io_qh3* conn_io) {
 	GX_DELETE(conn_io);
 }
 
-void qh3server::timeout_cb(uv_timer_t* handle) {
-	// UNUSED(revents);
-	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) handle->data;
+#if USE_UV_MAIN_LOOP
+void qh3server::timeout_cb(uv_timer_t* w) {
+#else
+void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(revents);
+#endif
+	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) w->data;
 	quiche_conn_on_timeout(conn_io->conn);
 	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", conn_io->cid_hash_val);
 	conn_io->bridge->flush_egress(conn_io);
@@ -661,7 +683,6 @@ void qh3server::timeout_cb(uv_timer_t* handle) {
 }
 
 int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return) {
-	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	app_directory = root_dir;
 	host_id = host;
 	port_id = port;
@@ -678,6 +699,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 						 "quiche log is enabled. Perfomance may get "
 						 "affected due to excess logs !!!");
 	}
+
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
 		debug_print_error(const_logtag, "failed to resolve host - port[%s]", port.c_str());
@@ -772,18 +795,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	conns = &c;
 
+#if USE_UV_MAIN_LOOP
 	mainloop = uv_loop_new();
-	//		uv_udp_init(mainloop, &c.udp_handle);
-	//		int rc;
-	//		if ((rc = uv_udp_open(&c.udp_handle, c.sock))) {
-	//			// logger_stderr("udp open error: %s", uv_strerror(rc));
-	//			return 1;
-	//		}
-	//
-	//		if ((rc = uv_udp_bind(&c.udp_handle, c.local_addr, UV_UDP_REUSEADDR))) {
-	//			// logger_stderr("udp bind error: %s", uv_strerror(rc));
-	//			return 1;
-	//		}
 
 	int poll_status = uv_poll_init_socket(mainloop, &c.poll_handle, sock);
 	if (poll_status < 0) {
@@ -794,9 +807,13 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	if (poll_start_status < 0) {
 		debug_print_error(const_logtag, "Poll start error: %s", uv_strerror(poll_start_status));
 	}
-	//	 ev_io_init(&watcher, recv_cb, sock, EV_READ);
-	//	 ev_io_start(mainloop, &watcher);
-	//	 watcher.data = this;
+#else
+	ev_io watcher;
+	mainloop = ev_loop_new();
+	ev_io_init(&watcher, recv_cb, sock, EV_READ);
+	ev_io_start(mainloop, &watcher);
+	watcher.data = this;
+#endif
 
 	//
 	GX_DELETE(logger);
@@ -807,7 +824,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	if (!on_server_pre_init()) {
 		debug_print_error(const_logtag, "on_server_pre_init failed !!!, Exiting.");
 		on_server_uninitialise();
-		stop_services_and_report(sock, command_center_feedback_port);
+		stop_services_and_report(sock, command_center_feedback_port, 3.0f);
 		GX_DELETE(stats_logger);
 		GX_DELETE(logger);
 		close(sock);
@@ -815,147 +832,74 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		GX_DELETE(relay_through_router_info);
 		return -1;
 	}
+
+	// logs and stats service
 	qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
 	qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
-
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
 	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
-	//
 
-	qtimer_uv_scheduler close_dangling_connections_scheduler;
-	close_dangling_connections_scheduler.set_uv_loop(mainloop);
-	qtimer_uv* dangling_connections_check_timer = close_dangling_connections_scheduler.schedule_repeat_timer(
-		[this, const_logtag](qtimer_uv& timer) {
-			UNUSED(timer);
-			//			debug_print(LOG_LEVEL_0, __LOGTAG__, "dangling_connections_check_timer callback");
-			int dangling_connections = 0;
-			int dangling_with_response = 0;
-			int flushed_on_exit = 0;
-			struct conn_io_qh3 *tmp, *conn_io = NULL;
-			HASH_ITER(hh, conns->h, conn_io, tmp) {
-				// ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
-				uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000;	// Elapsed time in seconds
-				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {	// DROP_CONNECTION_AFTER seconds after connection
-					// creation time.
-					bool is_closed = quiche_conn_is_closed(conn_io->conn);
-					if (!is_closed) {
-						debug_print(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
-						ssize_t sent_bytes = flush_egress(conn_io);
-						if (sent_bytes) {
-							DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
-							flushed_on_exit++;
-						}
-					}
+	// dangling connection check timer
+	TIMER_SCHEDuLER_TYPE close_dangling_connections_scheduler;
+	close_dangling_connections_scheduler.set_loop(mainloop);
+	TIMER_TYPE* dangling_connections_check_timer = dangling_connections_check_loop(close_dangling_connections_scheduler, 3.0f);
 
-					if (conn_io->http_response->get_payload().buffer.length() > 3) {
-						dangling_with_response++;
-					}
-					debug_print(LOG_LEVEL_4, const_logtag, "closing dangling connection !!!");
-					Stats stats;
-					PathStats path_stats;
-					quiche_conn_stats(conn_io->conn, &stats);
-					quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-					debug_print(LOG_LEVEL_4, const_logtag,
-								"dangling connection force closed, recv=%zu sent=%zu "
-								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
-								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, (uv_now(mainloop) - conn_io->creation_time) / 1000);
-					HASH_DELETE(hh, conns->h, conn_io);
-					if (!is_closed) {
-						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
-						if (close_result < 0) {
-							debug_print_error(const_logtag, "failed to close dangling connection, err %d", close_result);
-						}
-					}
-					GX_DELETE(conn_io);
-					dangling_connections++;
-				}
-			}
-			if (dangling_connections > 0) {
-				if (dangling_connections < 10) {
-					debug_print(LOG_LEVEL_0, const_logtag,
-								"Force closed %d dangling connections, with "
-								"response %d. flushed_on_exit(%d)",
-								dangling_connections, dangling_with_response, flushed_on_exit);
-				} else if (dangling_connections >= 10 && dangling_connections < 20) {
-					debug_print_important2(const_logtag,
-										   "Force closed %d dangling connections, "
-										   "with response %d. flushed_on_exit(%d)",
-										   dangling_connections, dangling_with_response, flushed_on_exit);
-				} else if (dangling_connections >= 20) {
-					debug_print_warn(const_logtag,
-									 "Force closed %d dangling connections, with "
-									 "response %d. flushed_on_exit(%d)",
-									 dangling_connections, dangling_with_response, flushed_on_exit);
-				}
-			}
-		},
-		3);
-	//
-
-	qtimer_uv_scheduler router_hb_scheduler;
-	router_hb_scheduler.set_uv_loop(mainloop);
-	qtimer_uv* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
+	// router hb timer
+	TIMER_SCHEDuLER_TYPE router_hb_scheduler;
+	router_hb_scheduler.set_loop(mainloop);
+	TIMER_TYPE* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
 
 	on_run_started();
 
-	// ev_loop(mainloop, 0);
+	// main event loop
+#if USE_UV_MAIN_LOOP
 	uv_run(mainloop, UV_RUN_DEFAULT);
-
-	// destroy connections
-	struct conn_io_qh3 *tmp, *conn_io = NULL;
-	int pending_connections = 0;
-	HASH_ITER(hh, conns->h, conn_io, tmp) {
-		ssize_t sent_bytes = flush_egress(conn_io);
-		if (sent_bytes) {
-			DEBUG_PRINT2(LOG_LEVEL_3, const_logtag, "force close --> try flush : sent bytes %zd", sent_bytes);
-		}
-		if (quiche_conn_is_closed(conn_io->conn)) {
-			debug_print(LOG_LEVEL_0, const_logtag, "force close : connection is already closed");
-		}
-		Stats stats;
-		PathStats path_stats;
-		quiche_conn_stats(conn_io->conn, &stats);
-		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-		debug_print(LOG_LEVEL_3, const_logtag, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
-		HASH_DELETE(hh, conns->h, conn_io);
-		GX_DELETE(conn_io);
-		pending_connections++;
-	}
-	if (pending_connections > 0) {
-		debug_print(LOG_LEVEL_0, const_logtag, "Force closed %d pending connections.", pending_connections);
-	}
+#else
+	ev_loop(mainloop, 0);
+#endif
+	// destroy pending connections
+	destroy_pending_connections();
 	//
 
 	on_run_end();
 	on_server_uninitialise();
 
+	// timer cleanups
 	router_hb_scheduler.cancel_and_destroy_timer(router_hb_timer);
 	close_dangling_connections_scheduler.cancel_and_destroy_timer(dangling_connections_check_timer);
 
-	// Run the loop again to process the cleanup for any pending handles.
-	uv_run(mainloop, UV_RUN_ONCE);
+	// ------------- cleanups starts from here -------------
+	// ------------- cleanups starts from here -------------
+	// ------------- cleanups starts from here -------------
 
-	// ev_loop_destroy(mainloop);
+	// cleaning and destroying main event loop
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "pre-cleanup and destroy %s:%s", host_id.c_str(), port_id.c_str());
+#if USE_UV_MAIN_LOOP
 	if (!essentials::cleanup_and_destroy_uv_loop(mainloop)) {
 		debug_print_error(__LOGTAG__, "Failed to delete mainloop !!!");
 	} else {
 		mainloop = nullptr;
 	}
+#else
+	ev_loop_destroy(mainloop);
+#endif
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "post-cleanup and destroy %s:%s", host_id.c_str(), port_id.c_str());
 
-	freeaddrinfo(local);
-
+	// quiche cleanups
 	quiche_h3_config_free(http3_config);
 	quiche_config_free(config);
 
+	// logs and stats shutdown command (async)
 	get_stats_loggeer()->end_session();
 	get_file_logger()->end_session();
 
-	stop_services_and_report(sock, command_center_feedback_port);
+	// async shutdown of services
+	stop_services_and_report(sock, command_center_feedback_port, 3.0f);
 
+	// destroying vars
 	close(sock);
+	freeaddrinfo(local);
 	GX_DELETE(relay_through_router_info);
 	GX_DELETE(logger);
 	GX_DELETE(stats_logger);
@@ -963,12 +907,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	return 0;
 }
 
-void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedback_port) {
+void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedback_port, float interval) {
 	const char* const_logtag = logtag.c_str();
 	debug_print_important(const_logtag, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
-	qtimer_sceduler wait_scheduler;
-	wait_scheduler.set_ev_lopp(wait_loop);
+	qtimer_scheduler wait_scheduler;
+	wait_scheduler.set_loop(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
 		[this, wait_loop, const_logtag, sock, command_center_feedback_port](qtimer& timer) {
 			UNUSED(timer);
@@ -999,7 +943,7 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 				ev_break(wait_loop, EVBREAK_ONE);
 			}
 		},
-		3);
+		interval);
 
 	ev_run(wait_loop, 0);
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
@@ -1007,12 +951,119 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	debug_print_important(const_logtag, "services finish successfully !!!");
 }
 
-qtimer_uv* qh3server::router_hb_loop(qtimer_uv_scheduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
+void qh3server::destroy_pending_connections() {
+	const char* const_logtag = logtag.c_str();
+	struct conn_io_qh3 *tmp, *conn_io = NULL;
+	int pending_connections = 0;
+	HASH_ITER(hh, conns->h, conn_io, tmp) {
+		ssize_t sent_bytes = flush_egress(conn_io);
+		if (sent_bytes) {
+			DEBUG_PRINT2(LOG_LEVEL_3, const_logtag, "force close --> try flush : sent bytes %zd", sent_bytes);
+		}
+		if (quiche_conn_is_closed(conn_io->conn)) {
+			debug_print(LOG_LEVEL_0, const_logtag, "force close : connection is already closed");
+		}
+		Stats stats;
+		PathStats path_stats;
+		quiche_conn_stats(conn_io->conn, &stats);
+		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+		debug_print(LOG_LEVEL_3, const_logtag, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+		HASH_DELETE(hh, conns->h, conn_io);
+		GX_DELETE(conn_io);
+		pending_connections++;
+	}
+	if (pending_connections > 0) {
+		debug_print(LOG_LEVEL_0, const_logtag, "Force closed %d pending connections.", pending_connections);
+	}
+	//
+}
+
+TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& close_dangling_connections_scheduler, float interval) {
+	const char* const_logtag = logtag.c_str();
+	TIMER_TYPE* dangling_connections_check_timer = close_dangling_connections_scheduler.schedule_repeat_timer(
+		[this, const_logtag](TIMER_TYPE& timer) {
+			UNUSED(timer);
+			//            debug_print(LOG_LEVEL_0, __LOGTAG__, "dangling_connections_check_timer callback");
+			int dangling_connections = 0;
+			int dangling_with_response = 0;
+			int flushed_on_exit = 0;
+			struct conn_io_qh3 *tmp, *conn_io = NULL;
+			HASH_ITER(hh, conns->h, conn_io, tmp) {
+#if USE_UV_MAIN_LOOP
+				uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000;	// Elapsed time in seconds
+#else
+				ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
+#endif
+				if (elapsed > DROP_CONNECTION_AFTER && conn_io->timer.repeat == 0) {  // DROP_CONNECTION_AFTER seconds after connection
+					// creation time.
+					bool is_closed = quiche_conn_is_closed(conn_io->conn);
+					if (!is_closed) {
+						debug_print(LOG_LEVEL_4, const_logtag, "dangling : try flush : connection is still open");
+						ssize_t sent_bytes = flush_egress(conn_io);
+						if (sent_bytes) {
+							DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "dangling : try flush : sent bytes %zd", sent_bytes);
+							flushed_on_exit++;
+						}
+					}
+
+					if (conn_io->http_response->get_payload().buffer.length() > 3) {
+						dangling_with_response++;
+					}
+					debug_print(LOG_LEVEL_4, const_logtag, "closing dangling connection !!!");
+					Stats stats;
+					PathStats path_stats;
+					quiche_conn_stats(conn_io->conn, &stats);
+					quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+#if USE_UV_MAIN_LOOP
+					uint64_t elapsed = (uv_now(mainloop) - conn_io->creation_time) / 1000;	// Elapsed time in seconds
+#else
+					ev_tstamp elapsed = ev_now(mainloop) - conn_io->creation_time;
+#endif
+					debug_print(LOG_LEVEL_4, const_logtag,
+								"dangling connection force closed, recv=%zu sent=%zu "
+								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
+								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, elapsed);
+					HASH_DELETE(hh, conns->h, conn_io);
+					if (!is_closed) {
+						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
+						if (close_result < 0) {
+							debug_print_error(const_logtag, "failed to close dangling connection, err %d", close_result);
+						}
+					}
+					GX_DELETE(conn_io);
+					dangling_connections++;
+				}
+			}
+			if (dangling_connections > 0) {
+				if (dangling_connections < 10) {
+					debug_print(LOG_LEVEL_0, const_logtag,
+								"Force closed %d dangling connections, with "
+								"response %d. flushed_on_exit(%d)",
+								dangling_connections, dangling_with_response, flushed_on_exit);
+				} else if (dangling_connections >= 10 && dangling_connections < 20) {
+					debug_print_important2(const_logtag,
+										   "Force closed %d dangling connections, "
+										   "with response %d. flushed_on_exit(%d)",
+										   dangling_connections, dangling_with_response, flushed_on_exit);
+				} else if (dangling_connections >= 20) {
+					debug_print_warn(const_logtag,
+									 "Force closed %d dangling connections, with "
+									 "response %d. flushed_on_exit(%d)",
+									 dangling_connections, dangling_with_response, flushed_on_exit);
+				}
+			}
+		},
+		interval);
+
+	return dangling_connections_check_timer;
+}
+
+TIMER_TYPE* qh3server::router_hb_loop(TIMER_SCHEDuLER_TYPE& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
 	float router_hb_interval_in_sec = get_router_hb_interval_in_sec();
 	debug_print_important(__LOGTAG__, "router_hb_interval_in_sec timer %5.1f", router_hb_interval_in_sec);
 	const char* const_logtag = logtag.c_str();
-	qtimer_uv* router_hb_timer = router_hb_scheduler.schedule_repeat_timer(
-		[this, const_logtag, host, sock, command_center_feedback_port](qtimer_uv& timer) {
+	TIMER_TYPE* router_hb_timer = router_hb_scheduler.schedule_repeat_timer(
+		[this, const_logtag, host, sock, command_center_feedback_port](TIMER_TYPE& timer) {
 			int new_timer_val = get_router_hb_interval_in_sec();
 			float diff = new_timer_val - timer.delay;
 			if (GX_ABS(diff) > 1.0f) {

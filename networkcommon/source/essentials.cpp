@@ -519,7 +519,7 @@ bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
 		return true;
 	}
 	//	uv_print_all_handles(loop, stderr);
-	uv_walk(loop, close_uv_handle_callback, nullptr);
+	uv_walk(loop, close_uv_handle_callback, loop);
 	uv_run(loop, UV_RUN_NOWAIT);  // Run pending callbacks
 	if (uv_loop_alive(loop)) {
 		debug_print_error(__LOGTAG__, "The loop still has active handles!");

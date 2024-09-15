@@ -31,8 +31,8 @@ void qh3simple_router::shutdown_zk() {
 		qzk->shutdown();
 		debug_print_important(__LOGTAG__, "waiting for qh3simple_router services to finish !!!");
 		struct ev_loop* wait_loop = ev_loop_new();
-		qtimer_sceduler wait_scheduler;
-		wait_scheduler.set_ev_lopp(wait_loop);
+		qtimer_scheduler wait_scheduler;
+		wait_scheduler.set_loop(wait_loop);
 		qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
 			[this, wait_loop](qtimer& timer) {
 				UNUSED(timer);
@@ -308,7 +308,7 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
 	//
 }
 
-qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_sceduler& scheduler) {
+qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_scheduler& scheduler) {
 	int timer_unresponsive_route_check_in_sec = zkconfig->get_int32("router/timer_unresponsive_route_check_in_sec", TIMER_UNRESPONSIVE_ROUTE_CHECK_IN_SECONDS);
 	debug_print_important(__LOGTAG__, "check_and_remove_unresponsive_routes timer %d", timer_unresponsive_route_check_in_sec);
 	qtimer* timer = scheduler.schedule_repeat_timer(

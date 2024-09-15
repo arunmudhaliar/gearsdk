@@ -52,7 +52,7 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 
 	room* find_room(int room_id);
 
-	qtimer_sceduler scheduler;
+	qtimer_scheduler scheduler;
 	std::vector<room*> waiting_rooms;
 	std::vector<room*> rooms;
 	std::map<unsigned, room*> connection_map;

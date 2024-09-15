@@ -9,11 +9,17 @@
 #ifndef qh3server_hpp
 #define qh3server_hpp
 
+#define USE_UV_MAIN_LOOP 0
+
 extern "C" {
 #include <fcntl.h>
 #include <quiche.h>
 #include <uthash.h>
+#if USE_UV_MAIN_LOOP
 #include <uv.h>
+#else
+#include <ev.h>
+#endif
 }
 
 #include "../../common/sdktypes.hpp"
@@ -35,6 +41,19 @@ extern "C" {
 #define DROP_CONNECTION_AFTER 45.0f	 // in seconds
 
 #define DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS 20.0f
+
+#if USE_UV_MAIN_LOOP
+#define EVENT_LOOP_TYPE uv_loop_t
+#define EVENT_TIMER_TYPE uv_timer_t
+#define TIMER_SCHEDuLER_TYPE qtimer_uv_scheduler
+#define TIMER_TYPE qtimer_uv
+#else
+#define EVENT_LOOP_TYPE struct ev_loop
+#define EVENT_TIMER_TYPE ev_timer
+#define TIMER_SCHEDuLER_TYPE qtimer_scheduler
+#define TIMER_TYPE qtimer
+#endif
+
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
 
@@ -43,7 +62,7 @@ class bridge_h3_connection {
    public:
 	virtual ssize_t flush_egress(struct conn_io_qh3* conn_io) = 0;
 	virtual void destroy_connection(struct conn_io_qh3* conn_io) = 0;
-	inline virtual uv_loop_t* get_mainloop() = 0;
+	inline virtual EVENT_LOOP_TYPE* get_mainloop() = 0;
 	virtual void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) = 0;
 	virtual void parse(struct conn_io_qh3* conn_io) = 0;
 	virtual bool is_log_quiche() = 0;
@@ -53,8 +72,10 @@ class bridge_h3_connection {
 // MARK: -
 struct connections {
 	int sock;
+#if USE_UV_MAIN_LOOP
 	uv_poll_t poll_handle;
 	uv_udp_t udp_handle;
+#endif
 	struct sockaddr* local_addr = nullptr;
 	socklen_t local_addr_len;
 	struct conn_io_qh3* h = nullptr;
@@ -70,19 +91,24 @@ struct conn_io_qh3 {
 	}
 	~conn_io_qh3() {
 		if (bridge) {
+#if USE_UV_MAIN_LOOP
 			uv_timer_stop(&timer);
 			if (!uv_is_closing((uv_handle_t*) &timer)) {
 				uv_close((uv_handle_t*) &timer, nullptr);
 				// Run the loop again to process the cleanup
 				uv_run(bridge->get_mainloop(), UV_RUN_ONCE);
 			}
+#else
+			ev_timer_stop(bridge->get_mainloop(), &timer);
+#endif
 		}
 		if (conn) {
 			bool is_closed = quiche_conn_is_closed(conn);
 			if (!is_closed) {
 				int close_result = quiche_conn_close(conn, true, 0, NULL, 0);
 				if (close_result < 0) {
-					debug_print_error(__LOGTAG__, "failed to close connection, err %d", close_result);
+					bool is_draining = quiche_conn_is_draining(conn);
+					debug_print(LOG_LEVEL_0, __LOGTAG__, "failed to close connection, err %d, draining %d", close_result, is_draining);
 				}
 			}
 			quiche_conn_free(conn);
@@ -91,7 +117,7 @@ struct conn_io_qh3 {
 		GX_DELETE(http_response);
 		GX_DELETE(http_request);
 	}
-	uv_timer_t timer;
+	EVENT_TIMER_TYPE timer;
 	int sock;
 	uint8_t cid[LOCAL_CONN_ID_LEN];
 	Connection* conn = nullptr;
@@ -134,12 +160,12 @@ class qh3server : public bridge_h3_connection {
 	Config* config = nullptr;
 	Config* http3_config = nullptr;
 	struct connections* conns = nullptr;
-	uv_loop_t* mainloop = nullptr;
+	EVENT_LOOP_TYPE* mainloop = nullptr;
 
 	static void debug_log(const uint8_t* line, void* argp);
 	ssize_t flush_egress(struct conn_io_qh3* conn_io) final;
 	void destroy_connection(struct conn_io_qh3* conn_io) final;
-	inline uv_loop_t* get_mainloop() final { return mainloop; }
+	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }
 	inline bool is_log_quiche() override { return false; }
 	float get_router_hb_interval_in_sec() override { return DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS; }
 	void parse(struct conn_io_qh3* conn_io) override;
@@ -150,14 +176,20 @@ class qh3server : public bridge_h3_connection {
 	struct conn_io_qh3* create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 									struct sockaddr_storage* peer_original_client_addr);
 	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
+#if USE_UV_MAIN_LOOP
 	static void recv_cb(uv_poll_t* handle, int status, int events);
 	static void timeout_cb(uv_timer_t* handle);
+#else
+	static void recv_cb(EV_P_ ev_io* w, int revents);
+	static void timeout_cb(EV_P_ ev_timer* w, int revents);
+#endif
 
 	void send_in_chunks(struct conn_io_qh3* conn_io);
 
-	qtimer_uv* router_hb_loop(qtimer_uv_scheduler& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port);
-
-	void stop_services_and_report(int sock, uint16_t command_center_feedback_port);
+	void destroy_pending_connections();
+	TIMER_TYPE* router_hb_loop(TIMER_SCHEDuLER_TYPE& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port);
+	TIMER_TYPE* dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& close_dangling_connections_scheduler, float interval);
+	void stop_services_and_report(int sock, uint16_t command_center_feedback_port, float interval);
 
 	uint8_t out[MAX_DATAGRAM_SIZE + ORIGINAL_CLIENT_ADDR_SZ];
 	uint8_t buf[65535];

@@ -21,8 +21,8 @@
 
 // // USAGE
 // struct ev_loop* loop = ev_default_loop(0);
-// qtimer_sceduler scheduler;
-// scheduler.set_ev_lopp(loop);
+// qtimer_scheduler scheduler;
+// scheduler.set_loop(loop);
 // scheduler.schedule_timer([&scheduler](qtimer& timer){
 //     debug_print(LOG_LEVEL_0, __LOGTAG__, "first timer - timeout");
 //     qtimer* repeat_timer = scheduler.schedule_repeat_timer([](qtimer& timer){
@@ -92,12 +92,12 @@ class qtimer {
 	void* data = nullptr;
 };
 
-class qtimer_sceduler {
+class qtimer_scheduler {
    public:
-	qtimer_sceduler();
-	virtual ~qtimer_sceduler();
+	qtimer_scheduler();
+	virtual ~qtimer_scheduler();
 
-	void set_ev_lopp(struct ev_loop* loop) { this->loop = loop; }
+	void set_loop(struct ev_loop* loop) { this->loop = loop; }
 	qtimer* schedule_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);
 	qtimer* schedule_count_timer(type_qtimer_cb timeout_callback, float delay, int count, void* data = nullptr);
 	qtimer* schedule_repeat_timer(type_qtimer_cb timeout_callback, float delay, void* data = nullptr);

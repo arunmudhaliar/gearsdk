@@ -61,7 +61,7 @@ struct roomconfig {
 };
 
 // MARK: -
-class room : public room_interface, public qtimer_sceduler {
+class room : public room_interface, public qtimer_scheduler {
    private:
 	room() : CREATION_TIME(0), ROOM_CONFIG(roomconfig(1, 1, 0, FX_TWO, false)) {}
 

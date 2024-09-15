@@ -80,9 +80,9 @@ int main(int argc, const char* argv[]) {
 
 	do_crawl(root_dir, file_pattern, host, port);
 
-	qtimer_sceduler scheduler;
+	qtimer_scheduler scheduler;
 	struct ev_loop* loop = ev_default_loop(0);
-	scheduler.set_ev_lopp(loop);
+	scheduler.set_loop(loop);
 
 	qtimer* keep_alive_loop = scheduler.schedule_repeat_timer(
 		[loop, root_dir, file_pattern, host, port](qtimer& timer) {

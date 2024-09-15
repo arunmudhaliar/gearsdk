@@ -14,7 +14,7 @@ int room::room_id_counter = 0;
 
 // MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) : ROOM_ID(room::room_id_counter++), CREATION_TIME(ev_now(interface->get_netowrk_main_loop())), ROOM_CONFIG(room_config), roomserverinterface(interface) {
-	set_ev_lopp(roomserverinterface->get_netowrk_main_loop());
+	set_loop(roomserverinterface->get_netowrk_main_loop());
 	set_state(ROOM_WAITING);
 }
 

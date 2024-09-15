@@ -322,7 +322,7 @@ void* qtextfilelogger::run_log_session(void* data) {
 	logger->log_loop = uv_loop_new();
 	uv_timeval64_t creation_time;
 	uv_gettimeofday(&creation_time);  // Get current time
-	logger->set_uv_loop(logger->log_loop);
+	logger->set_loop(logger->log_loop);
 	logger->logtimer = logger->schedule_repeat_timer(
 		[logger, creation_time](qtimer_uv& timer) {
 			UNUSED(timer);

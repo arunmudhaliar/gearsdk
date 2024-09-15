@@ -32,7 +32,7 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 }
 
 void roomserver::on_network_server_begin() {
-	scheduler.set_ev_lopp(get_mainloop());
+	scheduler.set_loop(get_mainloop());
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
 	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
 	debug_print_important2(__LOGTAG__, "start");

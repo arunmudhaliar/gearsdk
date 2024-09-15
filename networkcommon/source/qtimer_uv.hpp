@@ -74,7 +74,7 @@ class qtimer_uv_scheduler {
 	qtimer_uv_scheduler();
 	virtual ~qtimer_uv_scheduler();
 
-	void set_uv_loop(uv_loop_t* loop) { this->loop = loop; }
+	void set_loop(uv_loop_t* loop) { this->loop = loop; }
 	qtimer_uv* schedule_timer(type_qtimer_uv_cb timeout_callback, float delay, void* data = nullptr);
 	qtimer_uv* schedule_count_timer(type_qtimer_uv_cb timeout_callback, float delay, int count, void* data = nullptr);
 	qtimer_uv* schedule_repeat_timer(type_qtimer_uv_cb timeout_callback, float delay, void* data = nullptr);
