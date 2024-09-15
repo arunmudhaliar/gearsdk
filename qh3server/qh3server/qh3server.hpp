@@ -9,7 +9,7 @@
 #ifndef qh3server_hpp
 #define qh3server_hpp
 
-#define USE_UV_MAIN_LOOP 0
+#define USE_UV_MAIN_LOOP 1
 
 extern "C" {
 #include <fcntl.h>
