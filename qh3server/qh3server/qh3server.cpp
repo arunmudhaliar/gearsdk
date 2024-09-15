@@ -796,6 +796,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	conns = &c;
 
 #if USE_UV_MAIN_LOOP
+	debug_print_important(const_logtag, "USE_UV_MAIN_LOOP is enabled");
 	mainloop = uv_loop_new();
 
 	int poll_status = uv_poll_init_socket(mainloop, &c.poll_handle, sock);
