@@ -1024,13 +1024,22 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 								"dangling connection force closed, recv=%zu sent=%zu "
 								"lost=%zu rtt=%" PRIu64 "ns cwnd=%zu elapsed:%10.2fs",
 								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, elapsed);
-					HASH_DELETE(hh, conns->h, conn_io);
+
 					if (!is_closed) {
 						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
 						if (close_result < 0) {
-							debug_print_error(const_logtag, "failed to close dangling connection, err %d", close_result);
+							conn_io->skip_destroy_counter++;
+							if (conn_io->skip_destroy_counter < 3) {
+								continue;
+							}
+							bool is_draining = quiche_conn_is_draining(conn_io->conn);
+							if (!is_draining) {
+								debug_print_error(const_logtag, "failed to close dangling connection, err %d", close_result);
+							}
 						}
 					}
+
+					HASH_DELETE(hh, conns->h, conn_io);
 					GX_DELETE(conn_io);
 					dangling_connections++;
 				}

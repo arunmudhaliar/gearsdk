@@ -108,7 +108,9 @@ struct conn_io_qh3 {
 				int close_result = quiche_conn_close(conn, true, 0, NULL, 0);
 				if (close_result < 0) {
 					bool is_draining = quiche_conn_is_draining(conn);
-					debug_print(LOG_LEVEL_0, __LOGTAG__, "failed to close connection, err %d, draining %d", close_result, is_draining);
+					if (!is_draining) {
+						debug_print_error(__LOGTAG__, "failed to close connection, err %d, draining %d", close_result, is_draining);
+					}
 				}
 			}
 			quiche_conn_free(conn);
@@ -133,6 +135,7 @@ struct conn_io_qh3 {
 	int64_t stream_id = -1;
 	qstring original_client_serialised_buffer;
 	unsigned cid_hash_val = 0;
+	uint8_t skip_destroy_counter = 0;
 };
 
 // MARK: -
@@ -212,6 +215,7 @@ class qh3server : public bridge_h3_connection {
 	virtual ~qh3server();
 	qtextfilelogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
+	unsigned int get_live_connection_count() { return HASH_COUNT(conns->h); }
 
 	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
 };

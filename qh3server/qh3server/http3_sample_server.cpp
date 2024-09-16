@@ -225,7 +225,10 @@ void http3_sample_server::parse_whoami(conn_io_req_res::header* path_header, str
 							   "validation not possible !!!",
 							   path_header->value.c_str());
 	}
-	const char* res_string = "{\"name\" : \"http3_sample_server\"}";
+	char res_string[256];  // Allocate a buffer large enough to hold the final string
+	memset(res_string, 0, sizeof(res_string));
+	snprintf(res_string, sizeof(res_string), "{\"name\" : \"%s\", \"active_connections\" : %u}", get_server_name(), get_live_connection_count());
+
 	conn_io->http_response->set_payload(qstring(res_string, strlen(res_string)));
 	qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), res_string);
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
