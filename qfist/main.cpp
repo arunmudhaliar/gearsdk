@@ -85,6 +85,7 @@ struct AppState {
 	uv_timeval64_t summary_start_time;
 	bool exit_signal;			  // Flag to signal exit
 	bool single_request = false;  // Flag to enable single request mode
+	int single_request_index = 0;
 
 	// New variables for summary tracking
 	std::atomic<int> summary_count {0};
@@ -202,7 +203,6 @@ void write_summary_to_csv(const qstring& filename) {
 
 	// Write the summary data
 	csv_file << format_elapsed_time(elapsed_seconds) << "," << app_state.total_requests << "," << total_success_percentage << "," << total_average_response_time << "," << data_transfer_rate_kb << "," << rps << "\n";
-
 	csv_file.close();
 }
 
@@ -262,11 +262,15 @@ void print_summary() {
 	std::cout << "\tSummary Period Requests: " << app_state.summary_requests << '\n';
 	std::cout << "\tSummary Period Success: " << color << app_state.summary_successful_requests << " (" << summary_success_percentage << "%)" << COLOR_RESET << "\n";
 	std::cout << "\tSummary Period Avg Response Time: " << average_response_time << " ms\n";
-	std::cout << "\tRequests Per Second: " << rps << "\n";
+	if (!app_state.single_request) {
+		std::cout << "\tRequests Per Second: " << rps << "\n";
+	}
 	print_percentiles();
 	// std::cout << std::endl;
 
-	write_summary_to_csv(app_state.export_csv_filename);
+	if (!app_state.single_request) {
+		write_summary_to_csv(app_state.export_csv_filename);
+	}
 
 	// print_open_fds_count();
 
@@ -437,9 +441,7 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 
 void request_qh3(WorkData* data) {
 	// Track the worker by associating WorkData* with the current thread ID
-	data->connection_establishment_timeout_in_sec = app_state.connection_establishment_timeout;	// for debugging purposes
     app_state.workers_map[data] = std::this_thread::get_id();
-	uv_gettimeofday(&data->start_time);
 	int result = qh3client_helper::send_async_request<client::qh3client>(
 		app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
 		[&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
@@ -469,10 +471,12 @@ void request_qh3(WorkData* data) {
 }
 
 void prepareRequest(WorkData* data, int request_index) {
-	const auto& request = app_state.requests[request_index];
+	const auto& request = app_state.requests[request_index % app_state.requests.size()];
 	data->api = request.first;
 	data->payload = request.second;
 	data->summary_id = app_state.summary_count;
+	uv_gettimeofday(&data->start_time);
+	data->connection_establishment_timeout_in_sec = app_state.connection_establishment_timeout;	// for debugging purposes
 }
 
 // Worker to handle requests
@@ -546,6 +550,24 @@ std::string get_timestamp() {
 	return oss.str();
 }
 
+void print_usage(const char* program_name) {
+    std::cout << "Usage: " << program_name << " [options]\n\n";
+    std::cout << "Options:\n";
+	std::cout << "  --server <host:port>      Server address in the form of host:port (default: " << REQUEST_IP << ")\n";
+    std::cout << "  --single-mode             Enable single request mode and send the 0th api index from requests.json (default: off)\n";
+    std::cout << "  --single-request <index>  Enable single request mode and send a single request with the specified api index from requests.json (default: off)\n";
+	std::cout << "  --exit-after <seconds>    [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
+    std::cout << "  --max-parallel <n>        [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
+	std::cout << "  --tmin <ms>               [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
+    std::cout << "  --tmax <ms>               [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
+    std::cout << "  --weight <weight>         [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
+    std::cout << "  --summary-interval <s>    [optional] Summary interval in seconds (default: " << SUMMARY_INTERVAL << ")\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "  " << program_name << " --server 127.0.0.1:4004 --exit-after 10\n";
+	std::cout << "  " << program_name << " --server 127.0.0.1:4010 --single-request 5\n";
+}
+
 // Function to parse command line arguments
 void parse_arguments(int argc, char* argv[]) {
 	app_state.min_timeout_ms = MIN_TIMEOUT_MS;
@@ -597,6 +619,9 @@ void parse_arguments(int argc, char* argv[]) {
 			}
 		} else if (strcmp(argv[i], "--single-mode") == 0) {
 			app_state.single_request = true;
+		} else if (strcmp(argv[i], "--single-request") == 0 && i + 1 < argc) {
+			app_state.single_request = true;
+			app_state.single_request_index = atoi(argv[++i]);
 		}
 	}
 }
@@ -660,7 +685,7 @@ void cleanup() {
 
 void single_mode() {
 	WorkData* data = DEBUG_NEW WorkData();
-	prepareRequest(data, 0);
+	prepareRequest(data, app_state.single_request_index);
 	int result = qh3client_helper::send_async_request<client::qh3client>(
 		app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
 		[&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
@@ -679,8 +704,9 @@ void single_mode() {
 			// std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
 			// std::cout << "<";
 			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
-			std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
-			std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
+			std::cout << "\nResponse: status " << data->result << " \n" << payload.buffer.c_str() << "\n" << std::endl;
+			// std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
+			// std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
 			finish_and_destroy_work(data);
 		},
 		0,
@@ -726,6 +752,14 @@ void multi_mode() {
 }
 
 int main(int argc, char* argv[]) {
+	// Check for --help flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        }
+    }
+
 	std::cout << "qfist: v0.1\nSTARTED...\n";
 	struct rlimit limit;
     if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
