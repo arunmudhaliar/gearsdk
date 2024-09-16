@@ -13,6 +13,7 @@
 #include <sstream>	// For std::ostringstream
 #include <string>	// For string handling
 #include <uv.h>
+#include <unordered_map>
 #include <vector>  // For std::vector>
 #include <chrono>
 #include <thread>
@@ -55,6 +56,7 @@ struct WorkData {
 	int summary_id = 0;
 	qstring api;
 	qstring payload;
+	int connection_establishment_timeout_in_sec = 0;	// only used for debugging purposes
 };
 
 struct AppState {
@@ -104,6 +106,7 @@ struct AppState {
 	qstring export_csv_filename = "summary.csv";
 
 	std::mutex response_time_mutex;
+	std::unordered_map<WorkData*, std::thread::id> workers_map;
 };
 
 // Global App State
@@ -315,7 +318,7 @@ void finish_and_destroy_work(WorkData* data) {
 		}
 	}
 
-	const double INCREASE_SCALE = 1.5; // Scale factor to increase timeout
+	const double INCREASE_SCALE = 3.0; // Scale factor to increase timeout
 	const double DECREASE_SCALE = 0.95; // Scale factor to decrease timeout
 	const double MIN_TIMEOUT = 1.0; // Minimum allowed timeout
 	const double THRESHOLD_RATIO = 0.6; // Ratio for threshold comparison
@@ -388,12 +391,19 @@ void finish_and_destroy_work(WorkData* data) {
 	//     print_percentiles();
 	// }
 
+	// Check if the worker exists in the map before erasing
+	auto it = app_state.workers_map.find(data);
+	if (it != app_state.workers_map.end()) {
+		app_state.workers_map.erase(it);
+	} else {
+		std::cout << COLOR_RED << "Worker not found in map!" << COLOR_RESET << std::endl;
+	}
+
 	GX_DELETE(data);
 }
 
 std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* filename) {
 	std::vector<std::pair<qstring, qstring>> requests;
-
 	FILE* fp = fopen(filename, "r");
 	if (!fp) {
 		std::cerr << "Failed to open file " << filename << std::endl;
@@ -426,6 +436,9 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 }
 
 void request_qh3(WorkData* data) {
+	// Track the worker by associating WorkData* with the current thread ID
+	data->connection_establishment_timeout_in_sec = app_state.connection_establishment_timeout;	// for debugging purposes
+    app_state.workers_map[data] = std::this_thread::get_id();
 	uv_gettimeofday(&data->start_time);
 	int result = qh3client_helper::send_async_request<client::qh3client>(
 		app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
@@ -492,7 +505,15 @@ void request_worker(uv_timer_t* handle) {
 void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
 	if (app_state.finished_requests < app_state.total_requests) {
-		std::cout << "Waiting for pending requests to finish... pending :" << (app_state.total_requests - app_state.finished_requests) << "\n";
+		std::cout << "Waiting for pending requests to finish... pending: " << (app_state.total_requests - app_state.finished_requests) << " workers:" << app_state.workers_map.size() << std::endl;
+		
+		// Print worker data
+		for (const auto& worker : app_state.workers_map) {
+			WorkData* data = worker.first;
+			std::cout << "Worker connection establishment timeout (in sec): " << data->connection_establishment_timeout_in_sec << "s" << std::endl;
+		}
+		//
+
 		uv_timer_start(&app_state.exit_timer, exit_after_delay, 2 * 1000, 0);
 
 		uv_timer_stop(&app_state.request_timer);
@@ -506,7 +527,7 @@ void exit_after_delay(uv_timer_t* handle) {
 	uv_stop(app_state.loop);  // Stop the loop
 
 	print_summary();
-	std::cout << "\nFINISHED.\n\n";
+	std::cout << "\nFINISHED.\n\n" << std::endl;
 }
 
 // Timer callback to print summary periodically
