@@ -109,7 +109,7 @@ int qsocket_sendMessage(unsigned long guid_crc, const char* buffer, unsigned lon
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "qsocket_sendMessage failed - guid_crc not exist %d", guid_crc);
 		return -1;
 	}
-	return it->second->sendMessage((uint8_t*) buffer, size, flush);
+	return it->second->send_message((uint8_t*) buffer, size, flush);
 }
 
 int qsocket_close(unsigned long guid_crc) {

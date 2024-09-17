@@ -19,7 +19,7 @@ class networkclient_tester {
 	static void send_msg_timer_cb(EV_P_ ev_timer* w, int revents);
 	static void delete_cb(EV_P_ ev_timer* w, int revents);
 	static void shutdown_cb(EV_P_ ev_timer* w, int revents);
-	std::vector<gameclient*> clientList;
+	std::vector<gameclient*> client_list;
 };
 
 #endif /* networkclient_tester_hpp */

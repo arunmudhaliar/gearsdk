@@ -27,7 +27,7 @@ void gameclient::onconnect(conn_io_client* qconnection) {
 	msg->serialize(doc, doc.GetAllocator());
 	essentials::get_json_string(doc, msg_room_config_packet);
 	debug_print(LOG_LEVEL_2, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
-	sendMessage(msg_room_config_packet, true);
+	send_message(msg_room_config_packet, true);
 	GX_DELETE(msg);
 }
 
@@ -38,6 +38,6 @@ void gameclient::test_send_shutdown_event() {
 	msg->serialize(doc, doc.GetAllocator());
 	essentials::get_json_string(doc, msg_room_server_shutdown_packet);
 	debug_print(LOG_LEVEL_2, __LOGTAG__, "room shutdown --> %s", msg_room_server_shutdown_packet.c_str());
-	sendMessage(msg_room_server_shutdown_packet, true);
+	send_message(msg_room_server_shutdown_packet, true);
 	GX_DELETE(msg);
 }

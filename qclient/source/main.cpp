@@ -30,9 +30,9 @@ int32_t main(int32_t argc, const char* argv[]) {
 	if (argc == 3) {
 		host = argv[1];
 		port = argv[2];
-		const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+		const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 		struct addrinfo* peer = nullptr;
-		if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
+		if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &peer) != 0) {
 			debug_print_error(__LOGTAG__, "Failed to resolve host. Exiting !!!");
 			debug_print_important2(__LOGTAG__, "Usage : <executable> 'ip address' 'port'");
 			return -1;
