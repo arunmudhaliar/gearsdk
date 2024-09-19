@@ -24,6 +24,7 @@ class message_room_base : public message_base {
 	unsigned short signature = 0x7A9B;
 	unsigned long cached_type_string_crc = 0;
 	static int deserialize_header(ssize_t len, uint8_t* buf, unsigned short& sig, unsigned long& t_crc, rapidjson::Document& doc);
+	static int deserialize_first_hi_message(ssize_t len, uint8_t* buf, rapidjson::Document& doc);
 };
 
 class msg_room_match_request : public message_room_base {

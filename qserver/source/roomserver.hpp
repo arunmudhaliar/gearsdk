@@ -63,7 +63,10 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	qtimer* waiting_room_check_zombie_timer = nullptr;
 
    private:
-	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0) };
+	enum conn_flags {
+        FLAG_ROOM_CONFIG_RECEIVED = (1 << 0),
+        FLAG_FIRST_HI_RECEIVED = (1 << 1)
+    };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
 
 	void do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg);

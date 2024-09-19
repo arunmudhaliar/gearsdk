@@ -348,15 +348,15 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		quiche_conn_application_proto(qconnection->conn, &app_proto, &app_proto_len);
 
-		debug_print(LOG_LEVEL_2, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
 		qconnection->bridge->event_connect(qconnection);
 
-		const static uint8_t HI[] = "Hi";
+		const static uint8_t HI[] = "{\"m\":\"hi\"}";
 		if (quiche_conn_stream_send(qconnection->conn, 4, HI, sizeof(HI), false) < 0) {
 			debug_print_error(__LOGTAG__, "failed to send Hi request");
 			return;
 		}
-		debug_print(LOG_LEVEL_2, __LOGTAG__, "sent Hi request");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "sent Hi request");
 	}
 
 	if (quiche_conn_is_established(qconnection->conn)) {
@@ -459,7 +459,7 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		return;
 	} else {
 		if (quiche_conn_is_established(qconnection->conn)) {
-			debug_print(LOG_LEVEL_2, __LOGTAG__, "connection not closed");
+			debug_print(LOG_LEVEL_3, __LOGTAG__, "connection not closed");
 		}
 	}
 }
@@ -483,7 +483,7 @@ void qnetworkclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* q
 
 void qnetworkclient::onreleaseconnection(conn_io_client* qconnection) {
 	UNUSED(qconnection);
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "Connection about to release !!!");
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "Connection about to release !!!");
 }
 
 qnetworkclient::qnetworkclient() {
@@ -494,12 +494,12 @@ qnetworkclient::qnetworkclient() {
 	DEBUG_ASSERT(__LOGTAG__, (close_mutex.init("close") == 0), "qnetworkclient Constructor - CHECK !!!");
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.init("run_config_data") == 0), "qnetworkclient Constructor - CHECK !!!");
 #endif
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "qnetworkclient created !!!");
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "qnetworkclient created !!!");
 }
 
 qnetworkclient::~qnetworkclient() {
 	release_connection(mainloop, qclient_connection);
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "qnetworkclient destroyed !!!");
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "qnetworkclient destroyed !!!");
 }
 
 void* qnetworkclient::run_internal(void* data) {

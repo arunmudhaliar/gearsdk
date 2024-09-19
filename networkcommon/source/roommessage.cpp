@@ -67,6 +67,30 @@ int message_room_base::deserialize_header(ssize_t len, uint8_t* buf, unsigned sh
 	return 0;
 }
 
+int message_room_base::deserialize_first_hi_message(ssize_t len, uint8_t* buf, rapidjson::Document& doc) {
+	doc.Parse((char*) buf, len);
+	if (doc.HasParseError()) {
+		debug_print_error(__LOGTAG__, "message_room_base::deserialize_first_hi_message failed while parsing json string %.*s", len, buf);
+		return -1;
+	}
+	if (doc.IsObject()) {
+		if (doc.HasMember("m") && doc["m"].IsString()) {
+			qstring first_hi = doc["m"].GetString();
+			if (first_hi.compare("hi") != 0) {
+				debug_print_important(__LOGTAG__, "deserialize_first_hi_message dont have `hi` message - %.*s", len, buf);
+				return -4;
+			}
+		} else {
+			debug_print_important(__LOGTAG__, "deserialize_first_hi_message dont have m field - %.*s", len, buf);
+			return -3;
+		}
+	} else {
+		debug_print_important(__LOGTAG__, "deserialize_first_hi_message is not an object - %.*s", len, buf);
+		return -2;
+	}
+	return 0;
+}
+
 // MARK: - msg_room_match_request
 DEFINE_MESSAGE_PRE_REQUISITES(msg_room_match_request)
 msg_room_match_request::msg_room_match_request() : message_room_base(msg_room_match_request::get_type_string_crc()) {}

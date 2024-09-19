@@ -147,12 +147,18 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 			}
 		}
 		if (itr_found != new_connections.end()) {
+            rapidjson::Document doc;
+            // check if its the first 'hi' message from client.
+            int parse_hi_result = message_room_base::deserialize_first_hi_message(recv_len, buf, doc);
+            if (parse_hi_result == 0) {
+                return;     // no need to handle.
+            }
+            
 			unsigned short sig = 0;
 			unsigned long t_crc = 0;
-			rapidjson::Document doc;
 			int parse_result = message_room_base::deserialize_header(recv_len, buf, sig, t_crc, doc);
 			if (parse_result != 0) {
-				debug_warn(LOG_LEVEL_0, __LOGTAG__, "room message header parse failed !!!. returning.");
+                debug_warn(LOG_LEVEL_0, __LOGTAG__, "room message header parse failed !!!. returning.");
 				return;
 			}
 			auto handler = message_handlers.find(t_crc);
@@ -299,7 +305,7 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 		room_ptr = iterator->second;
 	}
 	if (room_ptr == nullptr) {
-		debug_print_error(__LOGTAG__, "qconnection not in any room !!! - %0x, [cnt %d]", qconnection->cid_hash_val, connection_map.size());
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "qconnection not in any room !!! - %0x, [cnt %d]", qconnection->cid_hash_val, connection_map.size());
 		return;
 	}
 	connection_map.erase(iterator);
