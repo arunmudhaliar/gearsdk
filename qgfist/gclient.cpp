@@ -38,7 +38,7 @@ void gclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnect
 }
 
 void gclient::onreleaseconnection(conn_io_client* qconnection) {
-	async_onreleaseconnection.data = DEBUG_NEW std::tuple<gclient*, conn_io_client*>(this, qconnection);
+	async_onreleaseconnection.data = DEBUG_NEW std::tuple<gclient*, unsigned>(this, qconnection->cid_hash_val);
 	uv_async_send(&async_onreleaseconnection);
 }
 
@@ -70,11 +70,11 @@ void gclient::async_qclient_onmessage_cb(uv_async_t* handle) {
 }
 
 void gclient::async_qclient_onreleaseconnection_cb(uv_async_t* handle) {
-	std::tuple<gclient*, conn_io_client*> *data = static_cast<std::tuple<gclient*, conn_io_client*>*>(handle->data);
+	std::tuple<gclient*, unsigned> *data = static_cast<std::tuple<gclient*, unsigned>*>(handle->data);
 	gclient* client = std::get<0>(*data);
-	conn_io_client* qconnection = std::get<1>(*data);
+    unsigned cid_hash_val = std::get<1>(*data);
 	if (client->onreleaseconnection_cb) {
-		client->onreleaseconnection_cb(client, qconnection);
+		client->onreleaseconnection_cb(client, cid_hash_val);
 	}
 	GX_DELETE(data);
 }

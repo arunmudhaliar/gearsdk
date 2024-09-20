@@ -235,10 +235,10 @@ int qnetworkclient::release_connection(struct ev_loop* loop, conn_io_client* qco
 		qconnection->release();
 		onreleaseconnection(qconnection);
 		GX_DELETE(qclient_connection);
-		debug_print(LOG_LEVEL_0, __LOGTAG__, "Connection released !!!");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "Connection released !!!");
 	} else {
 		ret_val = -1;
-		debug_print_error(__LOGTAG__, "Already destroyed.. Ignoring...");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "Already destroyed.. Ignoring...");
 	}
 	return ret_val;
 }
@@ -591,7 +591,7 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	ev_loop(thiz->mainloop, 0);
 
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "run_internal loop released !!!");
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "run_internal loop released !!!");
 	thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
 
 	ev_loop_destroy(thiz->mainloop);

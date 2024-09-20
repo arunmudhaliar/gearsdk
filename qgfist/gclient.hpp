@@ -22,7 +22,7 @@ using namespace client;
 class gclient;
 typedef std::function<void(gclient* c, conn_io_client* qconnection)> type_qclient_onconnect_cb;
 typedef std::function<void(gclient* c, ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection)> type_qclient_onmessage_cb;
-typedef std::function<void(gclient* c, conn_io_client* qconnection)> type_qclient_onreleaseconnection_cb;
+typedef std::function<void(gclient* c, unsigned cid_hash_val)> type_qclient_onreleaseconnection_cb;
 typedef std::function<void(gclient* c, conn_io_client* qconnection)> type_qclient_onclose_cb;
 
 class gclient : public qnetworkclient {

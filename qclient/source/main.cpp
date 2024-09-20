@@ -24,7 +24,7 @@ int32_t main(int32_t argc, const char* argv[]) {
 	init_gsdk();
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "version %s(%d)", version_string.c_str(), version_code);
 	print_common_info();
-	qstring host = "127.0.0.1";
+	qstring host = "15.206.79.30";
 	//    qstring host = "192.168.0.230";
 	qstring port = "4000";
 	if (argc == 3) {

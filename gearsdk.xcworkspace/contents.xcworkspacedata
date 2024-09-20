@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:qgfist/qgfist.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:qsampleserver/qsampleserver.xcodeproj">
    </FileRef>
    <FileRef

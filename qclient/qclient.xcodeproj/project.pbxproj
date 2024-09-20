@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551CDD792C9DF77700ED9D65 /* qnetworkclient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F592B7799EE00064250 /* qnetworkclient.cpp */; };
 		555BA6F92C3AEE8900E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; };
 		555BA6FA2C3AEEAA00E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEE2B0AB4FB00D688DB /* libz.a */; };
@@ -50,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551CDD752C9DF76200ED9D65 /* libqclient-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqclient-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		555BA6F82C3AEE8900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		556ABAEE2B0AB4FB00D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574873F2AE957ED00C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -74,6 +76,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		551CDD732C9DF76200ED9D65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372A02AC2AB4A00F0095E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -126,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				55B372A32AC2AB4A00F0095E /* qclient */,
+				551CDD752C9DF76200ED9D65 /* libqclient-st.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -146,7 +156,34 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		551CDD712C9DF76200ED9D65 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		551CDD742C9DF76200ED9D65 /* qclient-st */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 551CDD782C9DF76300ED9D65 /* Build configuration list for PBXNativeTarget "qclient-st" */;
+			buildPhases = (
+				551CDD712C9DF76200ED9D65 /* Headers */,
+				551CDD722C9DF76200ED9D65 /* Sources */,
+				551CDD732C9DF76200ED9D65 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "qclient-st";
+			productName = "qclient-st";
+			productReference = 551CDD752C9DF76200ED9D65 /* libqclient-st.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		55B372A22AC2AB4A00F0095E /* qclient */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55B372AA2AC2AB4A00F0095E /* Build configuration list for PBXNativeTarget "qclient" */;
@@ -175,6 +212,9 @@
 			attributes = {
 				LastUpgradeCheck = 1420;
 				TargetAttributes = {
+					551CDD742C9DF76200ED9D65 = {
+						CreatedOnToolsVersion = 14.2;
+					};
 					55B372A22AC2AB4A00F0095E = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -194,6 +234,7 @@
 			projectRoot = "";
 			targets = (
 				55B372A22AC2AB4A00F0095E /* qclient */,
+				551CDD742C9DF76200ED9D65 /* qclient-st */,
 			);
 		};
 /* End PBXProject section */
@@ -236,6 +277,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		551CDD722C9DF76200ED9D65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				551CDD792C9DF77700ED9D65 /* qnetworkclient.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B3729F2AC2AB4A00F0095E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -251,6 +300,56 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		551CDD762C9DF76300ED9D65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"USE_PTHREAD=1",
+					"LOG_LEVEL=2",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/zlib\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		551CDD772C9DF76300ED9D65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/zlib\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		55B372A82AC2AB4A00F0095E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -437,6 +536,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		551CDD782C9DF76300ED9D65 /* Build configuration list for PBXNativeTarget "qclient-st" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551CDD762C9DF76300ED9D65 /* Debug */,
+				551CDD772C9DF76300ED9D65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		55B3729E2AC2AB4A00F0095E /* Build configuration list for PBXProject "qclient" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
