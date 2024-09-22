@@ -28,7 +28,7 @@ CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=default -W -Wall 
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=default -fPIC
 
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
-RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -ffunction-sections -fdata-sections
+RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -DNDEBUG -ffunction-sections -fdata-sections
 RELEASE_CXXFLAGS += -fmessage-length=0  -std=gnu++1z
 RELEASE_CXXFLAGS += -Wno-trigraphs -Os -fno-common -Wno-missing-field-initializers -Werror=return-type -Wunreachable-code 
 RELEASE_CXXFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function 

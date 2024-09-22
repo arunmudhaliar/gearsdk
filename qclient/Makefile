@@ -26,7 +26,7 @@ CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections
 
 # Debug and Release specific flags are better placed in their respective build rules
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1 -D_DEBUG_NEW_FILENAME_LEN=128
-RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
+RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
