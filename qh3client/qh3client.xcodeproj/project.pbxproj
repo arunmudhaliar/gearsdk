@@ -15,7 +15,6 @@
 		556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7012AF586C000D688DB /* qh3client_helper.cpp */; };
 		556AB71E2B024A4600D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB71D2B024A4600D688DB /* libz.a */; };
 		5574F2142B1FA8DD007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2132B1FA8DD007C93AA /* debug_new.cpp */; };
-		55A4ADB62AEF82AB00BC4CED /* main_h3_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */; };
 		55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */; };
 		55A4ADCE2AEFA54D00BC4CED /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCD2AEFA54000BC4CED /* libquiche.a */; };
 		55A4ADCF2AEFA55900BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCC2AEFA53400BC4CED /* libev.a */; };
@@ -63,7 +62,6 @@
 		556AB71D2B024A4600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574F2132B1FA8DD007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		55A4ADB22AEF82AA00BC4CED /* qh3client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3client; sourceTree = BUILT_PRODUCTS_DIR; };
-		55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_client.cpp; sourceTree = "<group>"; };
 		55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55A4ADCC2AEFA53400BC4CED /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
 		55A4ADCD2AEFA54000BC4CED /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
@@ -123,7 +121,6 @@
 			isa = PBXGroup;
 			children = (
 				55A72F532B752CFC00064250 /* qh3client.entitlements */,
-				55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */,
 				55A4ADDB2AEFBED800BC4CED /* qh3client.cpp */,
 				55A4ADDC2AEFBED800BC4CED /* qh3client.hpp */,
 				55A9CD172B66A89C006CAD14 /* qh3client-android.h */,
@@ -252,7 +249,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A4ADB62AEF82AB00BC4CED /* main_h3_client.cpp in Sources */,
 				55A4ADDD2AEFBED800BC4CED /* qh3client.cpp in Sources */,
 				556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */,
 				556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */,
@@ -389,6 +385,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"LOG_LEVEL=2",
+					"_DEBUG_NEW_FILENAME_LEN=128",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (

@@ -14,8 +14,6 @@
 #include <zlib.h>
 
 using namespace client;
-// std::atomic<int> http3_sample_client::live_connections = 0;
-// std::atomic<int> http3_sample_client::total_connections_returned = 0;
 
 http3_sample_client::http3_sample_client(const qstring& host, const qstring& port) : host(host), port(port) {}
 
@@ -26,32 +24,7 @@ void http3_sample_client::set_server_info(const qstring& host, const qstring& po
 	this->port = port;
 }
 
-void http3_sample_client::init_connection() {
-	//    qh3client_helper::send_request(host, port, getorpost_reqdata("/whoami", "{}"),
-	//        [this](conn_io_response* response) {
-	//            if (response->responses.size()){
-	//                debug_print(LOG_LEVEL_0, __LOGTAG__,"response %.*s", (int) response->responses[0]->len, response->responses[0]->buf);
-	//            }
-	//        });
-	// user_get
-
-	create_connections();
-
-	//    keep_alive_loop = schedule_repeat_timer([this](qtimer& timer) {
-	//        UNUSED(timer);
-	//        debug_print_important(__LOGTAG__, "check client, issued %d, returned %d, returned success %d, live %d",
-	//                              total_connections_issued.load(), total_connections_returned.load(),
-	//                              total_connections_returned_success.load(), live_connections.load());
-	//        if (live_connections<30) {
-	//            debug_print_important(__LOGTAG__, "issue create_connections");
-	//            create_connections();
-	//        }
-	//        }, 3);
-	//    //
-	//    //    ev_run(loop, 0);
-}
-
-void http3_sample_client::create_connections() {
+void http3_sample_client::create_connections(int count) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "create_connections");
 	rq_msg_user_get user_get_msg_rq;
 
@@ -63,18 +36,16 @@ void http3_sample_client::create_connections() {
 	qstring json_str;
 	user_get_msg_rq.get_json_string(json_str);
 
-	for (int x = 0; x < 1; x++) {
+	for (int x = 0; x < count; x++) {
 		qh3client_helper::send_async_request<client::qh3client>(
 			host, port, conn_io_req_res::create("/user_get", json_str), nullptr,
 			[this, x](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 				bool validate = response->validate();
-				//                assert(validate);
-				if (!validate) {
-					// debug_print_error(__LOGTAG__, "crc fail !!!");
-				}
+				assert(validate);
+				//				if (!validate) {
+				//					// debug_print_error(__LOGTAG__, "crc fail !!!");
+				//				}
 				conn_io_req_res::header* token_header = response->get_header("token");
-				live_connections--;
-				total_connections_returned++;
 				if (token_header == nullptr) {
 					this->on_login_complete("", false);
 					return;
@@ -102,8 +73,7 @@ void http3_sample_client::create_connections() {
 				session_token = token_header->value;
 				this->on_login_complete(token_header->value, token_header->value.length() > 0);
 			},
-			1);
-		live_connections++;
+			1, CONNECTION_ESTABLISHMENT_TIMEOUT, [&](void* arg) { total_connections_returned++; });
 		total_connections_issued++;
 	}
 }
@@ -139,14 +109,11 @@ void http3_sample_client::on_login_complete(const qstring& token, bool result) {
 	qh3client_helper::send_async_request<client::qh3client>(
 		host, port, req, nullptr,
 		[this](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
-			live_connections--;
 			total_connections_returned_success++;
-			total_connections_returned++;
 			const conn_io_req_res::payload& payload = response->get_payload();
 			debug_print_important(__LOGTAG__, "async B returned %s !!!", payload.buffer.c_str());
 		},
-		1);
-	live_connections++;
+		1, CONNECTION_ESTABLISHMENT_TIMEOUT, [&](void* arg) { total_connections_returned++; });
 	total_connections_issued++;
 	bson_free(json_string_data);
 }

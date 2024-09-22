@@ -56,8 +56,8 @@ int main(int argc, const char* argv[]) {
 	parse_arguments(argc, argv);
 	init_gsdk();
 
-	//    qstring host = "192.168.0.230";
-	//    qstring host = "54.173.204.159";
+	//	  qstring host = "192.168.0.230";
+	//    app_state.host = "15.206.79.30";  // override
 
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "host %s, port %s", app_state.host.c_str(), app_state.port.c_str());
 
@@ -65,7 +65,7 @@ int main(int argc, const char* argv[]) {
 
 	app_state.client.set_server_info(app_state.host, app_state.port);
 	app_state.client.set_loop(app_state.loop);
-	app_state.client.init_connection();
+	app_state.client.create_connections(60);
 
 	app_state.creation_time = ev_now(app_state.loop);
 	app_state.scheduler.set_loop(app_state.loop);
@@ -74,15 +74,12 @@ int main(int argc, const char* argv[]) {
 		[&](qtimer& timer) {
 			UNUSED(timer);
 			debug_print_important(__LOGTAG__, "client alive - t:%5.2fs", ev_now(app_state.loop) - app_state.creation_time);
-
-			//        http3_sample_client client(host, "4004");
-			//        client.set_loop(loop);
-			//        client.init_connection();
-			ev_break(app_state.loop, EVBREAK_ONE);
+			if (app_state.client.is_finished()) {
+				ev_break(app_state.loop, EVBREAK_ONE);
+			}
 		},
-		100);
+		3);
 	UNUSED(keep_alive_loop);
 	ev_run(app_state.loop, 0);
-	//    ev_loop_destroy(loop);    // this will cause leak, but no solution for now. Will fix this
 	return 0;
 }
