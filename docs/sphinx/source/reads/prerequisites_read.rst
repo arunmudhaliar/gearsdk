@@ -100,6 +100,10 @@ Pre-requisites
         apt install iproute2 -y
         apt-get install libcurl4-openssl-dev -y
 
+        apt-get install wget -y
+        apt-get install libreadline-dev -y
+        apt-get install zlib1g-dev -y
+
     **Install lldb-mi**
 
     `https://github.com/lldb-tools/lldb-mi <https://github.com/lldb-tools/lldb-mi>`_
