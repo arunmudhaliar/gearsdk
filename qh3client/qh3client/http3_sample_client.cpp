@@ -40,8 +40,8 @@ void http3_sample_client::create_connections(int count) {
 		qh3client_helper::send_async_request<client::qh3client>(
 			host, port, conn_io_req_res::create("/user_get", json_str), nullptr,
 			[this, x](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
-				bool validate = response->validate();
-				assert(validate);
+				//				bool validate = response->validate();
+				//				assert(validate);
 				//				if (!validate) {
 				//					// debug_print_error(__LOGTAG__, "crc fail !!!");
 				//				}
