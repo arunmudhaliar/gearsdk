@@ -82,3 +82,26 @@ Pre-requisites
         cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24
         cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=x86 -DANDROID_PLATFORM=android-24
         cmake .. -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN -DANDROID_ABI=x86_64 -DANDROID_PLATFORM=android-24
+
+.. note::
+    **Pre-requisites to setup dev environment using VSCode in linux**:
+        For building libuv from source, follow the below steps:
+
+    .. code-block:: shell
+
+        # May need administrative privillage, if so use 'sudo'
+        # Ex: sudo apt-get update && apt-get install make
+        apt-get update && apt-get install make
+        apt-get install build-essential -y
+        apt-get install libssl-dev -y
+        apt-get install libsasl2-dev -y
+        apt install libsnappy-dev -y
+        apt-get install libzstd-dev -y
+        apt install iproute2 -y
+        apt-get install libcurl4-openssl-dev -y
+
+    **Install lldb-mi**
+
+    `https://github.com/lldb-tools/lldb-mi <https://github.com/lldb-tools/lldb-mi>`_
+    
+    Download the lldb-mi from the above git link and follow the instructions to build. VScode requires 'lldb-mi' for debugging.
