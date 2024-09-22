@@ -22,7 +22,7 @@ DEBUG_DIR = debug_build
 RELEASE_DIR = release_build
 
 # Includes and flags
-INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/quiche"
+INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche"
 USER_DEFINES = -DLOG_LEVEL=2 -DTHREADED -DUSE_PTHREAD=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=default -W -Wall -MMD -MP -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=default -fPIC
@@ -40,7 +40,7 @@ RELEASE_CXXFLAGS += -g -fvisibility-inlines-hidden -Wno-sign-conversion
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
     LINUX_LIB_DIR = linux
-	LIBS = -L../networkcommon/libs/$(LINUX_LIB_DIR) -lev -L../networkcommon/libs/$(LINUX_LIB_DIR) -lquiche -lz
+	LIBS = -L../networkcommon/libs/$(LINUX_LIB_DIR) -lev -luv -L../networkcommon/libs/$(LINUX_LIB_DIR) -lquiche -lz
     LDFLAGS = -shared
 	RPATH_FLAGS = -Wl,-rpath,'$$ORIGIN/../networkcommon/libs/$(LINUX_LIB_DIR)'
     LIB_EXT = so
@@ -53,7 +53,7 @@ ifeq ($(UNAME), Darwin)
     RELEASE_CXXFLAGS += -Wbool-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -fasm-blocks -Winfinite-recursion -Wmove -Wcomma -Wblock-capture-autoreleasing -Wrange-loop-analysis -Wunguarded-availability
     ARCH := $(shell uname -m)
     MACOS_LIB_DIR = macos_$(ARCH)
-    LIBS = -L../networkcommon/libs/$(MACOS_LIB_DIR) -lev -L../networkcommon/libs/$(MACOS_LIB_DIR) -lquiche -lz -framework Security
+    LIBS = -L../networkcommon/libs/$(MACOS_LIB_DIR) -lev -luv -L../networkcommon/libs/$(MACOS_LIB_DIR) -lquiche -lz -framework Security
     LDFLAGS = -dynamiclib -install_name @rpath/libqunityplugin.dylib
     RPATH_FLAGS = -Wl,-rpath,@loader_path/
     LIB_EXT = dylib
