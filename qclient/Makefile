@@ -9,7 +9,7 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
-INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche"
+INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "../networkcommon/source/ev" -I "../networkcommon/source/uv" -I "../networkcommon/source/quiche"
 SRCDIR = ./source
 SRCS = $(SRCDIR)/main.cpp \
 $(SRCDIR)/networkclient_tester.cpp \
@@ -30,7 +30,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a ../common/libs/linux/libz.a
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture
@@ -44,7 +44,7 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security
 
 	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
 	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
