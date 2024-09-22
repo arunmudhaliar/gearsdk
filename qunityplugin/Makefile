@@ -25,12 +25,12 @@ RELEASE_DIR = release_build
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche"
 USER_DEFINES = -DLOG_LEVEL=2 -DTHREADED -DUSE_PTHREAD=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=default -W -Wall -MMD -MP -fPIC
-CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=default -fPIC
+# CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=default -fPIC
 
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -Os -DPROD_BUILD=1 -DNDEBUG -ffunction-sections -fdata-sections
 RELEASE_CXXFLAGS += -fmessage-length=0  -std=gnu++1z
-RELEASE_CXXFLAGS += -Wno-trigraphs -Os -fno-common -Wno-missing-field-initializers -Werror=return-type -Wunreachable-code 
+RELEASE_CXXFLAGS += -Wno-trigraphs -fno-common -Wno-missing-field-initializers -Werror=return-type -Wunreachable-code 
 RELEASE_CXXFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function 
 RELEASE_CXXFLAGS += -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-conversion
 RELEASE_CXXFLAGS += -Wenum-conversion -Wno-float-conversion -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof
@@ -41,7 +41,7 @@ UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
     LINUX_LIB_DIR = linux
 	LIBS = -L../networkcommon/libs/$(LINUX_LIB_DIR) -lev -luv -L../networkcommon/libs/$(LINUX_LIB_DIR) -lquiche -lz
-    LDFLAGS = -shared
+    LDFLAGS = -shared -Wl,--gc-sections
 	RPATH_FLAGS = -Wl,-rpath,'$$ORIGIN/../networkcommon/libs/$(LINUX_LIB_DIR)'
     LIB_EXT = so
 endif
@@ -67,11 +67,11 @@ ifeq ($(UNAME), Darwin)
 
     DEBUG_CXXFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
     RELEASE_CXXFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
-    LDFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS)
+    LDFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS) -Wl,-dead_strip
 endif
 
 DEBUG_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)
-RELEASE_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS) -Wl,-dead_strip
+RELEASE_LDFLAGS = $(LDFLAGS) $(RPATH_FLAGS)
 
 # Targets
 DEBUG_LIB = $(DEBUG_DIR)/libqunityplugin.$(LIB_EXT)
