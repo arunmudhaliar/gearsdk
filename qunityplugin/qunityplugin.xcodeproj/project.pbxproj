@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551CDD3E2C97432100ED9D65 /* libuv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD3D2C97432000ED9D65 /* libuv.dylib */; };
 		55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55294FFA2BD5914D0090816B /* libquiche.a */; };
 		555BA7102C3B135800E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA70F2C3B135800E23A51 /* libev.4.dylib */; };
 		555BA7112C3B135800E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA70F2C3B135800E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -36,6 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551CDD3D2C97432000ED9D65 /* libuv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.dylib; path = ../networkcommon/libs/macos/libuv.dylib; sourceTree = "<group>"; };
 		55294FF82BD591440090816B /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos/libev.dylib; sourceTree = "<group>"; };
 		55294FFA2BD5914D0090816B /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
 		555BA70F2C3B135800E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 				55A9CD3C2B6827CA006CAD14 /* libz.1.1.3.tbd in Frameworks */,
 				55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */,
 				555BA7102C3B135800E23A51 /* libev.4.dylib in Frameworks */,
+				551CDD3E2C97432100ED9D65 /* libuv.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +108,7 @@
 		55A847B62B617A6600001308 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				551CDD3D2C97432000ED9D65 /* libuv.dylib */,
 				555BA70F2C3B135800E23A51 /* libev.4.dylib */,
 				55294FFA2BD5914D0090816B /* libquiche.a */,
 				55A9CD392B6827AD006CAD14 /* libev.dylib */,
@@ -138,7 +142,6 @@
 				55A9CD2C2B68263E006CAD14 /* Sources */,
 				55A9CD2D2B68263E006CAD14 /* Frameworks */,
 				555BA7122C3B135800E23A51 /* Embed Libraries */,
-				555BA7132C3B187300E23A51 /* ShellScript */,
 				55CB70422C77C8DF00E05D37 /* ShellScript */,
 			);
 			buildRules = (
@@ -157,7 +160,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					55A9CD2E2B68263E006CAD14 = {
 						CreatedOnToolsVersion = 13.4;
@@ -183,23 +186,6 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		555BA7132C3B187300E23A51 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "install_name_tool -change /Users/amudaliar/Desktop/ev_mac_out/lib/libev.4.dylib @rpath/libev.4.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\ninstall_name_tool -change /Users/amudaliar/Documents/PROJECTS/PERSONAL/quiche/target/release/deps/libquiche.dylib @rpath/libquiche.dylib \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\notool -L ${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\n\n# Re-sign the binary\ncodesign --force --sign - \"${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}\"\n\necho \"Modification and re-signing complete.\"\n";
-		};
 		55CB70422C77C8DF00E05D37 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -215,7 +201,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT}/source \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -271,6 +257,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -288,7 +275,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -330,6 +317,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -341,7 +329,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -352,6 +340,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -378,6 +367,7 @@
 					"@rpath/libqunityplugin.dylib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -386,6 +376,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -412,6 +403,7 @@
 					"@rpath/libqunityplugin.dylib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

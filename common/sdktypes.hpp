@@ -119,7 +119,7 @@ namespace fs = std::__fs::filesystem;
 #define DEBUG_ASSERT(tag, expr, ...)                                                          \
 	do {                                                                                      \
 		if (!(expr)) {                                                                        \
-			DEBUG_ASSERT_INTERNAL(tag, #expr, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+			debug_assert_internal(tag, #expr, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); \
 			assert(expr);                                                                     \
 		}                                                                                     \
 	} while (0)
@@ -135,7 +135,7 @@ namespace fs = std::__fs::filesystem;
  */
 #define DEBUG_PRINT2(logLevel, tag, ...)                                                         \
 	do {                                                                                         \
-		DEBUG_PRINT2_INTERNAL(logLevel, tag, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+		debug_print2_internal(logLevel, tag, __FILENAME__, __FUNCTION__, __LINE__, __VA_ARGS__); \
 	} while (0)
 
 #if PLATFORM == PLATFORM_LINUX
@@ -151,19 +151,22 @@ extern "C" DECLSPEC int init_gsdk(JavaVM* JavaVM);	///< Initialize SDK for Andro
 #else
 extern "C" DECLSPEC int init_gsdk();  ///< Initialize SDK for other platforms
 #endif
-extern "C" DECLSPEC void print_common_info();												   ///< Print common information
-extern "C" DECLSPEC int number_of_digits(unsigned int num);									   ///< Get the number of digits in a number
-extern "C" DECLSPEC void DEBUG_RAW(int logLevel, const char* format, ...);					   ///< Raw debug print
-extern "C" DECLSPEC void DEBUG_PRINT(int logLevel, const char* tag, const char* format, ...);  ///< Debug print with tag
-extern "C" DECLSPEC void DEBUG_PRINT2_INTERNAL(int logLevel, const char* tag, const char* file, const char* function, int line, const char* format, ...);
-extern "C" DECLSPEC void DEBUG_WARN(int logLevel, const char* tag, const char* format, ...);		 ///< Warn with debug info
-extern "C" DECLSPEC void DEBUG_WARN_COND(const char* tag, bool condition, const char* format, ...);	 ///< Conditional warning
-extern "C" DECLSPEC void DEBUG_PRINT_WARN(const char* tag, const char* format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_ERROR(const char* tag, const char* format, ...);
-extern "C" DECLSPEC void DEBUG_ASSERT_INTERNAL(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...);
-extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT(const char* tag, const char* format, ...);		///< Print important debug info
-extern "C" DECLSPEC void DEBUG_PRINT_IMPORTANT2(const char* tag, const char* format, ...);		///< Print important debug info
-extern "C" DECLSPEC void DEBUG_PRINT_scid(int logLevel, const uint8_t* scid, size_t scid_len);	///< Print SCID information
+extern "C" DECLSPEC void print_common_info();													///< Print common information
+extern "C" DECLSPEC int number_of_digits(unsigned int num);										///< Get the number of digits in a number
+extern "C" DECLSPEC void debug_raw(int log_level, const char* format, ...);						///< Raw debug print
+extern "C" DECLSPEC void debug_print(int log_level, const char* tag, const char* format, ...);	///< Debug print with tag
+extern "C" DECLSPEC void debug_print2_internal(int log_level, const char* tag, const char* file, const char* function, int line, const char* format, ...);
+extern "C" DECLSPEC void debug_warn(int log_level, const char* tag, const char* format, ...);		 ///< Warn with debug info
+extern "C" DECLSPEC void debug_warn_cond(const char* tag, bool condition, const char* format, ...);	 ///< Conditional warning
+extern "C" DECLSPEC void debug_print_warn(const char* tag, const char* format, ...);
+extern "C" DECLSPEC void debug_print_error(const char* tag, const char* format, ...);
+/**
+ * @brief Don't use this function directly, instead use the macro 'DEBUG_ASSERT'.
+ */
+extern "C" DECLSPEC void debug_assert_internal(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...);
+extern "C" DECLSPEC void debug_print_important(const char* tag, const char* format, ...);		 ///< Print important debug info
+extern "C" DECLSPEC void debug_print_important2(const char* tag, const char* format, ...);		 ///< Print important debug info
+extern "C" DECLSPEC void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len);	 ///< Print SCID information
 
 namespace gsdk {
 
@@ -198,6 +201,8 @@ typedef enum { STR2INT_SUCCESS, STR2INT_OVERFLOW, STR2INT_UNDERFLOW, STR2INT_INC
  *
  * @param[in] s Input string to be converted.
  *
+ * @param[slen] slen length of the string to be converted.
+ *
  *     The format is the same as strtol,
  *     except that the following are inconvertible:
  *
@@ -211,7 +216,7 @@ typedef enum { STR2INT_SUCCESS, STR2INT_OVERFLOW, STR2INT_UNDERFLOW, STR2INT_INC
  *
  * @return Indicates if the operation succeeded, or why it failed.
  */
-extern "C" DECLSPEC str2int_errno str2int(int* out, const char* s, int base);
+extern "C" DECLSPEC str2int_errno str2int(int* out, const char* s, size_t slen, int base);
 
 typedef void (*type_debug_warn_or_err_cb)(const char*);
 /**

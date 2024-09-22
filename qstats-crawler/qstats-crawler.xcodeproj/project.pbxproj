@@ -66,8 +66,8 @@
 		5574F20A2B11D941007C93AA /* qstats-crawler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "qstats-crawler.h"; path = "qstats-crawler/qstats-crawler.h"; sourceTree = SOURCE_ROOT; };
 		5574F20B2B11D9AC007C93AA /* qstats-crawler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "qstats-crawler.cpp"; sourceTree = "<group>"; };
 		5574F21F2B20ECB2007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
-		55CB703D2C77C69400E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos_arm64/libuv.a; sourceTree = "<group>"; };
-		55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos_arm64/libuv.1.dylib; sourceTree = "<group>"; };
+		55CB703D2C77C69400E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
+		55CB703F2C77C6AB00E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +159,7 @@
 				556ABACC2B0A8AAD00D688DB /* CopyFiles */,
 				555BA6FF2C3AEEFD00E23A51 /* Embed Libraries */,
 				55CB70452C77D30B00E05D37 /* ShellScript */,
+				551CDD372C8A0BE400ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -176,7 +177,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					556ABACD2B0A8AAD00D688DB = {
 						CreatedOnToolsVersion = 13.4;
@@ -202,6 +203,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD372C8A0BE400ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=(\"libpgsql\" \"qpgsql\")\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/libpgsql/include\" -I\"${SRCROOT}/qpgsql\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\"\ndone\n";
+		};
 		55CB70452C77D30B00E05D37 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -269,6 +287,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -327,6 +346,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -349,7 +369,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "qstats-crawler/qstats-crawler.entitlements";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
@@ -364,7 +386,9 @@
 					"$(PROJECT_DIR)/libs/macos",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -373,7 +397,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "qstats-crawler/qstats-crawler.entitlements";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
@@ -388,7 +414,9 @@
 					"$(PROJECT_DIR)/libs/macos",
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",

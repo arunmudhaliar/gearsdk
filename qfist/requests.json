@@ -18,5 +18,9 @@
     {
         "api": "/user_get",
         "payload": "{\"pid\":\"\",\"token\":\"\",\"details\":{\"sys_name\":\"FreeBSD\",\"node_name\":\"freebsd-server.local\",\"release\":\"13.1-RELEASE\",\"arch\":\"i386\"}}"
+    },
+    {
+        "api": "/whoami",
+        "payload": "{}"
     }
 ]

@@ -13,7 +13,7 @@ qh3client_android::~qh3client_android() {}
 void qh3client_android::on_prepare_client_send() {
 	attachStatus = (gsdk::device::g_JavaVM)->AttachCurrentThread(&env, NULL);
 	if (attachStatus != JNI_OK) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "couldn't attach to jvm - %d !!!", attachStatus);
+		debug_print_error(__LOGTAG__, "couldn't attach to jvm - %d !!!", attachStatus);
 	}
 }
 

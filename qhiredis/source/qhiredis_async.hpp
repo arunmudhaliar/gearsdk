@@ -15,7 +15,7 @@
 #ifndef qhiredis_async_hpp
 #define qhiredis_async_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #include <adapters/libev.h>

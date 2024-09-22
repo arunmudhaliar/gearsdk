@@ -86,7 +86,7 @@ msg_room_config_list::msg_room_config_list(const msg_room_config_list& list) : m
 	rapidjson::Document obj;
 	obj.Parse((char*) result.c_str(), result.length());
 	if (obj.HasParseError()) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "msg_room_config_list::msg_room_config_list(copy constructor) failed while parsing json string %.*s", result.length(), (char*) result.c_str());
+		debug_print_error(__LOGTAG__, "msg_room_config_list::msg_room_config_list(copy constructor) failed while parsing json string %.*s", result.length(), (char*) result.c_str());
 		return;
 	}
 	deserialize(obj);
@@ -285,23 +285,23 @@ bool res_msg_gservers::deserialize(rapidjson::Value& obj) {
 	}
 
 	for (rapidjson::SizeType i = 0; i < obj.Size(); i++) {
-		const rapidjson::Value& serverObj = obj[i];
-		if (!serverObj.IsObject()) {
+		const rapidjson::Value& server_obj = obj[i];
+		if (!server_obj.IsObject()) {
 			return false;
 		}
 
 		qstring addr;
-		if (serverObj.HasMember("addr") && serverObj["addr"].IsString()) {
-			addr = serverObj["addr"].GetString();
+		if (server_obj.HasMember("addr") && server_obj["addr"].IsString()) {
+			addr = server_obj["addr"].GetString();
 		} else {
 			return false;
 		}
 
-		if (serverObj.HasMember("ports") && serverObj["ports"].IsArray()) {
-			const rapidjson::Value& portsArray = serverObj["ports"];
-			for (rapidjson::SizeType j = 0; j < portsArray.Size(); j++) {
-				if (portsArray[j].IsString()) {
-					gservers[addr].push_back(portsArray[j].GetString());
+		if (server_obj.HasMember("ports") && server_obj["ports"].IsArray()) {
+			const rapidjson::Value& ports_array = server_obj["ports"];
+			for (rapidjson::SizeType j = 0; j < ports_array.Size(); j++) {
+				if (ports_array[j].IsString()) {
+					gservers[addr].push_back(ports_array[j].GetString());
 				} else {
 					return false;
 				}
@@ -318,16 +318,16 @@ void res_msg_gservers::serialize(rapidjson::Value& obj, rapidjson::Document::All
 	message_base::serialize(obj, allocator);
 	obj.SetArray();
 	for (const auto& kv : gservers) {
-		rapidjson::Value serverObj(rapidjson::kObjectType);
-		serverObj.SetObject();
-		serverObj.AddMember("addr", rapidjson::Value().SetString(kv.first.c_str(), (uint) kv.first.length(), allocator), allocator);
+		rapidjson::Value server_obj(rapidjson::kObjectType);
+		server_obj.SetObject();
+		server_obj.AddMember("addr", rapidjson::Value().SetString(kv.first.c_str(), (uint) kv.first.length(), allocator), allocator);
 
-		rapidjson::Value portsArray(rapidjson::kArrayType);
+		rapidjson::Value ports_array(rapidjson::kArrayType);
 		for (const auto& port : kv.second) {
-			portsArray.PushBack(rapidjson::Value().SetString(port.c_str(), allocator), allocator);
+			ports_array.PushBack(rapidjson::Value().SetString(port.c_str(), allocator), allocator);
 		}
-		serverObj.AddMember("ports", portsArray, allocator);
-		obj.PushBack(serverObj, allocator);
+		server_obj.AddMember("ports", ports_array, allocator);
+		obj.PushBack(server_obj, allocator);
 	}
 }
 
@@ -381,11 +381,11 @@ void message_parser::register_message_type() {
 	unsigned long crc = T::get_type_string_crc();
 	std::map<unsigned long, type_room_message_create_cb>::iterator it = records.find(crc);
 	if (it != records.end()) {
-		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "message type already registered - %s !!!", T::get_type_string().c_str());
+		debug_warn(LOG_LEVEL_2, __LOGTAG__, "message type already registered - %s !!!", T::get_type_string().c_str());
 		return;
 	}
 	records[crc] = &T::create;
-	DEBUG_PRINT_IMPORTANT(__LOGTAG__, "message type registered - %s : crc %ld !!!", T::get_type_string().c_str(), crc);
+	debug_print_important(__LOGTAG__, "message type registered - %s : crc %ld !!!", T::get_type_string().c_str(), crc);
 }
 
 template <typename T>
@@ -393,7 +393,7 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 	unsigned long crc = T::get_type_string_crc();
 	std::map<unsigned long, type_room_message_create_cb>::iterator it = records.find(crc);
 	if (it == records.end()) {
-		DEBUG_WARN(LOG_LEVEL_2, __LOGTAG__, "message type not registered - %s. registering.. !!!", T::get_type_string().c_str());
+		debug_warn(LOG_LEVEL_2, __LOGTAG__, "message type not registered - %s. registering.. !!!", T::get_type_string().c_str());
 		register_message_type<T>();
 	}
 	message_base* new_msg = records[crc]();
@@ -407,10 +407,10 @@ T* message_parser::parse(ssize_t len, uint8_t* buf) {
 	obj.Parse((char*) buf, len);
 	if (obj.HasParseError()) {
 		GX_DELETE(new_msg);
-		DEBUG_PRINT_ERROR(__LOGTAG__, "message_parser::parse failed while parsing json string %.*s", len, buf);
+		debug_print_error(__LOGTAG__, "message_parser::parse failed while parsing json string %.*s", len, buf);
 		return nullptr;
 	}
-	if (msg->deserialize(obj)) {
+	if (msg != nullptr && msg->deserialize(obj)) {
 		return msg;
 	} else {
 		GX_DELETE(msg);

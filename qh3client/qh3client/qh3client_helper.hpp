@@ -21,7 +21,7 @@ namespace client {
 class qh3client_helper {
    public:
 	struct qh3_req_obj {
-		qh3_req_obj(const qstring host, const qstring port, const conn_io_req_res* data) : host(host), port(port), data(data) {}
+		qh3_req_obj(const qstring HOST, const qstring PORT, const conn_io_req_res* data) : host(HOST), port(PORT), data(data) {}
 		~qh3_req_obj() { GX_DELETE(data); }
 		qstring host;
 		qstring port;
@@ -31,6 +31,7 @@ class qh3client_helper {
 		type_qh3client_helper_finalize_cb finalize_cb = nullptr;
 		void* arg = nullptr;
 		int retry = 0;
+		float connection_establishment_timeout = CONNECTION_ESTABLISHMENT_TIMEOUT;
 	};
 
 	struct thread_data_t {
@@ -40,9 +41,10 @@ class qh3client_helper {
 	};
 
 	template <typename T>
-	static int send_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry);
+	static int send_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout = CONNECTION_ESTABLISHMENT_TIMEOUT);
 	template <typename T>
-	static int send_async_request(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
+	static int send_async_request(const qstring HOST, const qstring PORT, const conn_io_req_res* data_getorpost, void* arg, type_qh3client_helper_cb async_cb, int retry,
+								  float connection_establishment_timeout = CONNECTION_ESTABLISHMENT_TIMEOUT, type_qh3client_helper_finalize_cb finalize_cb = nullptr);
 
    private:
 	template <typename T>

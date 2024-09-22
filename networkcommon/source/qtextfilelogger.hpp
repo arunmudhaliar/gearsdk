@@ -11,7 +11,7 @@
 
 #include "essentials.hpp"
 #include "qbuffer.hpp"
-#include "qtimer.hpp"
+#include "qtimer_uv.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qtextfilelogger"
@@ -23,7 +23,7 @@
 
 class qlogfile {
    public:
-	enum log_lvls { level_0, level_1, level_2, level_3, level_4 };
+	enum log_lvls { LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4 };
 
 	qlogfile(const qstring& path, uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
 	~qlogfile();
@@ -33,7 +33,7 @@ class qlogfile {
 	qbuffer* create_new_record(uint64_t buffer_size, std::vector<qbuffer*>& list);
 
 	static bool file_exists(const qstring& filename);
-	static void get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs=true);
+	static void get_all_log_files(fs::path& path, std::vector<fs::path>& files, bool print_error_logs = true);
 
    private:
 	int finalise_logfile();
@@ -50,7 +50,7 @@ class qlogfile {
 	qmutex log_mutex;
 };
 
-class qtextfilelogger : public qtimer_sceduler {
+class qtextfilelogger : public qtimer_uv_scheduler {
    public:
 	qtextfilelogger();
 	virtual ~qtextfilelogger();
@@ -62,7 +62,7 @@ class qtextfilelogger : public qtimer_sceduler {
 		uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES;
 		qtextfilelogger* logger = nullptr;
 		bool finished = true;
-		int pthread_returnValue = 0;
+		int pthread_return_value = 0;
 	};
 	int start_session(const qstring& path, float flush_time = 60.0f, uint64_t max_size_of_file = MAX_LOG_FILE_SIZE_IN_BYTES);
 	uint64_t log(qlogfile::log_lvls lvl, const char* tag, const char* format, ...);
@@ -73,9 +73,9 @@ class qtextfilelogger : public qtimer_sceduler {
 	qmutex log_session_mutex;
 	pthread_t log_thread_id;
 	qlog_config config;
-	struct ev_loop* log_loop = nullptr;
+	uv_loop_t* log_loop = nullptr;
 	qlogfile* logfile = nullptr;
-	qtimer* logtimer = nullptr;
+	qtimer_uv* logtimer = nullptr;
 	char log_record_buffer[SINGLE_LOG_RECORD_LENGTH + 1];
 };
 #endif /* qtextfilelogger_hpp */

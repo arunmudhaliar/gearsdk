@@ -14,7 +14,7 @@
 #ifndef qmongo_hpp
 #define qmongo_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 

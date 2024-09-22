@@ -14,21 +14,21 @@ qstatslogger::qstatslogger() : qtextfilelogger() {
 
 qstatslogger::~qstatslogger() {}
 
-void qstatslogger::init(const qstring& install_os_, const qstring& device_name_, const qstring& device_model_, const int total_ram_) {
-	install_os = install_os_;
-	device_name = device_name_;
-	device_model = device_model_;
-	total_ram = total_ram_;
-	inited = true;
+void qstatslogger::init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int TOTAL_RAM) {
+	this->install_os = install_os;
+	this->device_name = device_name;
+	this->device_model = device_model;
+	this->total_ram = TOTAL_RAM;
+	this->inited = true;
 }
 
 size_t qstatslogger::log_stats(const qstring& buffer) {
 	if (logfile == nullptr) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "stats file not created yet !!!");
+		debug_print_error(__LOGTAG__, "stats file not created yet !!!");
 		return -1;
 	}
 	if (inited == false) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "stats not inited yet !!!");
+		debug_print_error(__LOGTAG__, "stats not inited yet !!!");
 	}
 	return logfile->log_buffer(buffer.c_str(), buffer.length());
 }

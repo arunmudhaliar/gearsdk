@@ -39,14 +39,15 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://18.208.130.48:27017";	//"mongodb://192.168.0.230:27017"
-	qstring redis_ip = "18.208.130.48";
-	qstring zk_uri = "18.208.130.48:2181";
+	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  //"mongodb://192.168.0.230:27017"
+	qstring redis_ip = "13.233.45.2";
+	qstring zk_uri = "13.233.45.2:2181";
 
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
 	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
+		discord_util::shutdown();
 		exit(0);
 	}
 
@@ -57,8 +58,10 @@ int main(int argc, const char* argv[]) {
 	http3_sample_router router(config);
 	router.run<http3_command_server, http3_sample_server>();
 
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
+	discord_util::shutdown();
+
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main suspending for 5 seconds !!!");
 	sleep(5);
-	DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "main exiting !!!");
 	return 0;
 }

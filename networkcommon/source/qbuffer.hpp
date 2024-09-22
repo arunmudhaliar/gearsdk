@@ -9,7 +9,7 @@
 #ifndef qbuffer_hpp
 #define qbuffer_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #include <stdint.h>
@@ -21,7 +21,7 @@
 struct qbuffer {
 	~qbuffer() {
 		GX_DELETE_ARY(data);
-		DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "Buffer destroyed.");
+		debug_print(LOG_LEVEL_5, __LOGTAG__, "Buffer destroyed.");
 	}
 	void allocate(ssize_t sz) {
 		GX_DELETE_ARY(data);

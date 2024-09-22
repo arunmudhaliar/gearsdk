@@ -8,7 +8,7 @@
  * The qzookeeper class implements the interface_qzookeeper interface, which defines the methods for registering and
  * unregistering value change callbacks.
  *
- * The qzookeeper class also inherits from the qtimer_sceduler class, which provides functionality for scheduling
+ * The qzookeeper class also inherits from the qtimer_scheduler class, which provides functionality for scheduling
  * timer events.
  *
  * @copyright 2024 homenet25
@@ -27,7 +27,7 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtimer.hpp"
@@ -79,7 +79,7 @@ class interface_qzookeeper {
 	virtual void unregister_value_change_callback(type_qzk_value_changed callback, void* context) = 0;
 };
 
-class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
+class qzookeeper : public qtimer_scheduler, public interface_qzookeeper {
    public:
 	qzookeeper(const qstring& name);
 	~qzookeeper();
@@ -182,7 +182,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @param state The state value to convert.
 	 * @return The string representation of the state value.
 	 */
-	static const char* state2String(int state);
+	static const char* state_to_string(int state);
 
 	/**
 	 * Converts the given state value to its corresponding string representation.
@@ -190,7 +190,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 * @param state The state value to convert.
 	 * @return The string representation of the state value.
 	 */
-	static const char* type2String(int state);
+	static const char* type_to_string(int state);
 
    private:
 	/**
@@ -211,9 +211,9 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	 *
 	 * This function closes the ZooKeeper connection and releases any resources associated with it.
 	 *
-	 * @param state The state of the ZooKeeper connection.
+	 * @param STATE The state of the ZooKeeper connection.
 	 */
-	void close_zk(const int state);
+	void close_zk(const int STATE);
 
 	const char* get_name() const;
 	const char* get_wname() const;
@@ -234,7 +234,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	static void my_stat_completion(int rc, const struct Stat* stat, const void* data);
 	static void my_data_completion(int rc, const char* value, int value_len, const struct Stat* stat, const void* data);
 	static void my_void_completion(int rc, const void* data);
-	static void dumpStat(const struct Stat* stat);
+	static void dump_stat(const struct Stat* stat);
 	static void millisleep(int ms);
 
 	/**
@@ -267,12 +267,12 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 
 	zhandle_t* zh = nullptr;
 	clientid_t myid;
-	const char* clientIdFile = nullptr;
+	const char* client_id_file = nullptr;
 
 	pthread_t zk_thread_id;
 	qstring connection_url;
-	const qstring name;
-	const qstring wname;
+	const qstring NAME;
+	const qstring WNAME;
 	std::atomic<bool> connection_in_progress;
 	std::atomic<bool> running;
 	struct ev_loop* mainloop = nullptr;
@@ -288,7 +288,7 @@ class qzookeeper : public qtimer_sceduler, public interface_qzookeeper {
 	qmutex reconnect_mutex;
 	std::mutex watcher_gaurd_mutex;
 	std::atomic<bool> retry_in_progress;
-	mutable std::timed_mutex nameMutex;
-	mutable std::timed_mutex wnameMutex;
+	mutable std::timed_mutex name_mutex;
+	mutable std::timed_mutex wname_mutex;
 };
 #endif /* qzookeeper_hpp */

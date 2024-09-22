@@ -89,7 +89,9 @@
         "__functional_base": "cpp",
         "functional": "cpp",
         "iterator": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "codecvt": "cpp",
+        "span": "cpp"
     },
     "editor.formatOnSave": false,
     "C_Cpp.formatting": "vcFormat",
@@ -99,6 +101,7 @@
         "**/.DS_Store": true,
         "**/DerivedData": true,
         "**/*.o": true,
+        "**/*.d": true,
         "**/*.dSYM": true,
         "**/sandbox": true,
     },

@@ -13,6 +13,7 @@ project("qunityplugin")
 
 # Add the directory to the include path
 include_directories("../../../../../../networkcommon/source/ev"
+        "../../../../../../networkcommon/source/uv"
         "../../../../../../networkcommon/source/quiche"
         "../../../../../../common/uthash"
         "../../../../../../common"
@@ -37,6 +38,10 @@ set_target_properties(quiche PROPERTIES IMPORTED_LOCATION
 add_library(ev SHARED IMPORTED)
 set_target_properties(ev PROPERTIES IMPORTED_LOCATION
         ${CMAKE_SOURCE_DIR}/../../../../../../networkcommon/libs/android/${ANDROID_ABI}/libev.so)
+
+add_library(uv SHARED IMPORTED)
+set_target_properties(uv PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../../../../../../networkcommon/libs/android/${ANDROID_ABI}/libuv.so)
 
 find_package(ZLIB REQUIRED)
 if(ZLIB_FOUND)
@@ -78,5 +83,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         log
         quiche
         ev
+        uv
         ${ZLIB_LIBRARIES}
         )

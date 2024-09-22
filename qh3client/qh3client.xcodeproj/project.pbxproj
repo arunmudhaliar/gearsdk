@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551CDD3C2C97375F00ED9D65 /* libuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD3B2C97375A00ED9D65 /* libuv.a */; };
 		555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; };
 		555BA6EE2C3AEC8000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */; };
@@ -14,7 +15,6 @@
 		556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 556AB7012AF586C000D688DB /* qh3client_helper.cpp */; };
 		556AB71E2B024A4600D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556AB71D2B024A4600D688DB /* libz.a */; };
 		5574F2142B1FA8DD007C93AA /* debug_new.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5574F2132B1FA8DD007C93AA /* debug_new.cpp */; };
-		55A4ADB62AEF82AB00BC4CED /* main_h3_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */; };
 		55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */; };
 		55A4ADCE2AEFA54D00BC4CED /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCD2AEFA54000BC4CED /* libquiche.a */; };
 		55A4ADCF2AEFA55900BC4CED /* libev.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADCC2AEFA53400BC4CED /* libev.a */; };
@@ -52,6 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551CDD3B2C97375A00ED9D65 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
 		555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		556AB6BF2AF5703D00D688DB /* http3_sample_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = http3_sample_client.cpp; sourceTree = "<group>"; };
 		556AB6C02AF5703D00D688DB /* http3_sample_client.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = http3_sample_client.hpp; sourceTree = "<group>"; };
@@ -61,7 +62,6 @@
 		556AB71D2B024A4600D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574F2132B1FA8DD007C93AA /* debug_new.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = debug_new.cpp; path = ../common/nvwa/debug_new.cpp; sourceTree = "<group>"; };
 		55A4ADB22AEF82AA00BC4CED /* qh3client */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qh3client; sourceTree = BUILT_PRODUCTS_DIR; };
-		55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main_h3_client.cpp; sourceTree = "<group>"; };
 		55A4ADCA2AEFA51900BC4CED /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55A4ADCC2AEFA53400BC4CED /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/macos/libev.a; sourceTree = "<group>"; };
 		55A4ADCD2AEFA54000BC4CED /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
@@ -73,8 +73,8 @@
 		55A4ADDE2AEFC0A200BC4CED /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		55A72F532B752CFC00064250 /* qh3client.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3client.entitlements; sourceTree = "<group>"; };
 		55A9CD172B66A89C006CAD14 /* qh3client-android.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "qh3client-android.h"; sourceTree = "<group>"; };
-		55CB70242C77B3B000E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_x86_64/libquiche.dylib; sourceTree = "<group>"; };
-		55CB70272C77B3EF00E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
+		55CB70242C77B3B000E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
+		55CB70272C77B3EF00E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +91,7 @@
 				555BA6ED2C3AEC8000E23A51 /* libev.4.dylib in Frameworks */,
 				55A4ADD52AEFA56B00BC4CED /* Security.framework in Frameworks */,
 				55A4ADCB2AEFA51900BC4CED /* CoreFoundation.framework in Frameworks */,
+				551CDD3C2C97375F00ED9D65 /* libuv.a in Frameworks */,
 				55CB70282C77B3EF00E05D37 /* libquiche.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -120,7 +121,6 @@
 			isa = PBXGroup;
 			children = (
 				55A72F532B752CFC00064250 /* qh3client.entitlements */,
-				55A4ADB52AEF82AB00BC4CED /* main_h3_client.cpp */,
 				55A4ADDB2AEFBED800BC4CED /* qh3client.cpp */,
 				55A4ADDC2AEFBED800BC4CED /* qh3client.hpp */,
 				55A9CD172B66A89C006CAD14 /* qh3client-android.h */,
@@ -136,6 +136,7 @@
 		55A4ADC92AEFA51900BC4CED /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				551CDD3B2C97375A00ED9D65 /* libuv.a */,
 				55CB70242C77B3B000E05D37 /* libquiche.dylib */,
 				55CB70272C77B3EF00E05D37 /* libquiche.dylib */,
 				555BA6EC2C3AEC8000E23A51 /* libev.4.dylib */,
@@ -163,6 +164,7 @@
 				55A4ADB02AEF82AA00BC4CED /* CopyFiles */,
 				5595E1232BB08B7B00FA2618 /* ShellScript */,
 				555BA6EF2C3AEC8000E23A51 /* Embed Libraries */,
+				551CDD392C8A311B00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -180,7 +182,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					55A4ADB12AEF82AA00BC4CED = {
 						CreatedOnToolsVersion = 13.4;
@@ -206,6 +208,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD392C8A311B00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\n\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories and files to exclude\nEXCLUDED_DIRS=(\"\")  # Add directories you want to exclude here\nEXCLUDED_FILES=(\"qh3client-android.cpp\" \"qh3client-android.h\")  # Add files to exclude here\n\n# Base find command for source files\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Exclude specific files\nfor file in \"${EXCLUDED_FILES[@]}\"; do\n    FIND_CMD+=\" ! -name \\\"${file}\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command and run clang-tidy on each file\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/../common/libbson-1.0\" -I\"${SRCROOT}/../common/uthash\" -I\"${SRCROOT}/../common/rapidjson\" -I\"${SRCROOT}/../common/nvwa\" -I\"${SRCROOT}/../common/zlib\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\" -I\"${SRCROOT}/../networkcommon/source/quiche\" -I\"usr/include/sys\" $(pkg-config --cflags gtest)\ndone\n";
+		};
 		5595E1232BB08B7B00FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -230,7 +249,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A4ADB62AEF82AB00BC4CED /* main_h3_client.cpp in Sources */,
 				55A4ADDD2AEFBED800BC4CED /* qh3client.cpp in Sources */,
 				556AB7032AF586C000D688DB /* qh3client_helper.cpp in Sources */,
 				556AB6C12AF5703D00D688DB /* http3_sample_client.cpp in Sources */,
@@ -275,6 +293,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -333,6 +352,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -355,14 +375,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/../common/nvwa/debug_new.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"LOG_LEVEL=2",
+					"_DEBUG_NEW_FILENAME_LEN=128",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -377,7 +400,9 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Debug;
@@ -386,8 +411,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = qh3client/qh3client.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "";
@@ -403,8 +430,10 @@
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
 					"\"$(SRCROOT)/../common/libs/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "";
 			};
 			name = Release;

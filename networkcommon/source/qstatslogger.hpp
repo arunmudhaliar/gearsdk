@@ -9,7 +9,7 @@
 #ifndef qstatslogger_hpp
 #define qstatslogger_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "qtextfilelogger.hpp"
 
 #undef __LOGTAG__
@@ -20,7 +20,7 @@ class qstatslogger : public qtextfilelogger {
 	qstatslogger();
 	~qstatslogger();
 
-	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int total_ram);
+	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int TOTAL_RAM);
 
 	size_t log_stats(const qstring& buffer);
 

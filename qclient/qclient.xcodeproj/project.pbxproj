@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551CDD792C9DF77700ED9D65 /* qnetworkclient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A72F592B7799EE00064250 /* qnetworkclient.cpp */; };
 		555BA6F92C3AEE8900E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; };
 		555BA6FA2C3AEEAA00E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F82C3AEE8900E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		556ABAEF2B0AB4FE00D688DB /* libz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 556ABAEE2B0AB4FB00D688DB /* libz.a */; };
@@ -50,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551CDD752C9DF76200ED9D65 /* libqclient-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqclient-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		555BA6F82C3AEE8900E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		556ABAEE2B0AB4FB00D688DB /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libz.a; path = ../common/libs/macos/libz.a; sourceTree = "<group>"; };
 		5574873F2AE957ED00C0F6CA /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -65,7 +67,7 @@
 		55A9CD3F2B701385006CAD14 /* qclient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qclient.entitlements; sourceTree = "<group>"; };
 		55B372A32AC2AB4A00F0095E /* qclient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qclient; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B372A62AC2AB4A00F0095E /* networkclient_tester.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = networkclient_tester.cpp; sourceTree = "<group>"; };
-		55CB703A2C77C1D400E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos_arm64/libquiche.dylib; sourceTree = "<group>"; };
+		55CB703A2C77C1D400E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
 		55D1C6D32AD3269800470E01 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/libquiche.a; sourceTree = "<group>"; };
 		55D1C6D42AD3269800470E01 /* libev.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libev.a; path = ../networkcommon/libs/libev.a; sourceTree = "<group>"; };
 		55D1C6D72AD326A500470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -74,6 +76,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		551CDD732C9DF76200ED9D65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B372A02AC2AB4A00F0095E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -126,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				55B372A32AC2AB4A00F0095E /* qclient */,
+				551CDD752C9DF76200ED9D65 /* libqclient-st.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -146,7 +156,34 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		551CDD712C9DF76200ED9D65 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		551CDD742C9DF76200ED9D65 /* qclient-st */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 551CDD782C9DF76300ED9D65 /* Build configuration list for PBXNativeTarget "qclient-st" */;
+			buildPhases = (
+				551CDD712C9DF76200ED9D65 /* Headers */,
+				551CDD722C9DF76200ED9D65 /* Sources */,
+				551CDD732C9DF76200ED9D65 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "qclient-st";
+			productName = "qclient-st";
+			productReference = 551CDD752C9DF76200ED9D65 /* libqclient-st.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		55B372A22AC2AB4A00F0095E /* qclient */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55B372AA2AC2AB4A00F0095E /* Build configuration list for PBXNativeTarget "qclient" */;
@@ -156,6 +193,7 @@
 				55B372A12AC2AB4A00F0095E /* CopyFiles */,
 				5595E1242BB08B9600FA2618 /* ShellScript */,
 				555BA6FB2C3AEEAA00E23A51 /* Embed Libraries */,
+				551CDD452C99C96F00ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -172,8 +210,11 @@
 		55B3729B2AC2AB4A00F0095E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1340;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
+					551CDD742C9DF76200ED9D65 = {
+						CreatedOnToolsVersion = 14.2;
+					};
 					55B372A22AC2AB4A00F0095E = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -193,11 +234,29 @@
 			projectRoot = "";
 			targets = (
 				55B372A22AC2AB4A00F0095E /* qclient */,
+				551CDD742C9DF76200ED9D65 /* qclient-st */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD452C99C96F00ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=()\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=* -- -I\"${SRCROOT}/../common\" -I\"${SRCROOT}/../common/uthash\" -I\"${SRCROOT}/../common/rapidjson\" -I\"${SRCROOT}/../common/nvwa\" -I\"${SRCROOT}/../common/zlib\" -I\"${SRCROOT}/../networkcommon/source/ev\" -I\"${SRCROOT}/../networkcommon/source/uv\" -I\"${SRCROOT}/../networkcommon/source/quiche\"\ndone\n";
+		};
 		5595E1242BB08B9600FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -218,6 +277,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		551CDD722C9DF76200ED9D65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				551CDD792C9DF77700ED9D65 /* qnetworkclient.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55B3729F2AC2AB4A00F0095E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -233,6 +300,56 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		551CDD762C9DF76300ED9D65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"USE_PTHREAD=1",
+					"LOG_LEVEL=2",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/zlib\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		551CDD772C9DF76300ED9D65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../common/nvwa\"",
+					"\"$(SRCROOT)/../networkcommon/source/ev\"",
+					"\"$(SRCROOT)/../networkcommon/source/quiche\"",
+					"\"$(SRCROOT)/../networkcommon/source/uv\"",
+					"\"$(SRCROOT)/../common/uthash\"",
+					"\"$(SRCROOT)/../common/zlib\"",
+					"\"$(SRCROOT)/../common\"",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		55B372A82AC2AB4A00F0095E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -267,6 +384,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -284,7 +402,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -326,6 +444,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -337,7 +456,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -350,6 +469,7 @@
 				CODE_SIGN_ENTITLEMENTS = qclient.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -366,7 +486,7 @@
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				OTHER_LDFLAGS = (
 					"-fsanitize=undefined",
 					"-fno-sanitize-recover=all",
@@ -376,6 +496,7 @@
 					"-fno-sanitize=alignment",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Debug;
@@ -386,6 +507,7 @@
 				CODE_SIGN_ENTITLEMENTS = qclient.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
@@ -396,7 +518,7 @@
 					"\"$(SRCROOT)/../common\"",
 				);
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/../networkcommon/libs/macos\"";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
 				OTHER_LDFLAGS = (
 					"-fsanitize=undefined",
 					"-fno-sanitize-recover=all",
@@ -406,6 +528,7 @@
 					"-fno-sanitize=alignment",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				WARNING_CFLAGS = "-Wno-noexcept-type";
 			};
 			name = Release;
@@ -413,6 +536,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		551CDD782C9DF76300ED9D65 /* Build configuration list for PBXNativeTarget "qclient-st" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551CDD762C9DF76300ED9D65 /* Debug */,
+				551CDD772C9DF76300ED9D65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		55B3729E2AC2AB4A00F0095E /* Build configuration list for PBXProject "qclient" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

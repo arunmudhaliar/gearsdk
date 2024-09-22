@@ -16,8 +16,8 @@
 class crypto_helper {
    public:
 	struct sha256_data {
-		sha256_data(const char* in_, int sz) {
-			in = in_;
+		sha256_data(const char* val, int sz) {
+			in = val;
 			size = sz;
 			memset(out, 0, sizeof(out));
 		}
@@ -27,8 +27,8 @@ class crypto_helper {
 		char out[SHA256_HASH_SIZE * 2];
 	};
 	struct sha256_salt {
-		sha256_salt(const char* salt_, int sz) {
-			salt = salt_;
+		sha256_salt(const char* salt_val, int sz) {
+			salt = salt_val;
 			size = sz;
 		}
 		const char* salt = nullptr;

@@ -43,7 +43,7 @@
 		55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55853CC72AC32A1E00901E52 /* sdktypes.cpp */; };
 		55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55B3730B2AC3263200F0095E /* sdktypes.hpp */; };
 		55E4D3152ACAF18B00555999 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55E4D3132ACAF18B00555999 /* timer.cpp */; };
-		55E4D3162ACAF18B00555999 /* timer.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3142ACAF18B00555999 /* timer.h */; };
+		55E4D3162ACAF18B00555999 /* timer.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3142ACAF18B00555999 /* timer.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,13 +81,13 @@
 		556AB7182AFA979000D688DB /* endian_check.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = endian_check.h; sourceTree = "<group>"; };
 		556AB7192AFA993200D688DB /* crypto_helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = crypto_helper.cpp; sourceTree = "<group>"; };
 		556AB71A2AFA993200D688DB /* crypto_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = crypto_helper.hpp; sourceTree = "<group>"; };
-		556ABAF82B0D276800D688DB /* qstring.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = qstring.h; sourceTree = "<group>"; };
+		556ABAF82B0D276800D688DB /* qstring.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = qstring.hpp; sourceTree = "<group>"; };
 		55853CC72AC32A1E00901E52 /* sdktypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sdktypes.cpp; sourceTree = "<group>"; };
 		55A72F702B93B14400064250 /* typex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = typex.h; sourceTree = "<group>"; };
 		55B372FA2AC325B200F0095E /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55B3730B2AC3263200F0095E /* sdktypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sdktypes.hpp; sourceTree = "<group>"; };
 		55E4D3132ACAF18B00555999 /* timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timer.cpp; sourceTree = "<group>"; };
-		55E4D3142ACAF18B00555999 /* timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timer.h; sourceTree = "<group>"; };
+		55E4D3142ACAF18B00555999 /* timer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timer.hpp; sourceTree = "<group>"; };
 		55E4D31F2ACAF4AC00555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -159,14 +159,14 @@
 			isa = PBXGroup;
 			children = (
 				55A72F702B93B14400064250 /* typex.h */,
-				556ABAF82B0D276800D688DB /* qstring.h */,
+				556ABAF82B0D276800D688DB /* qstring.hpp */,
 				556AB7192AFA993200D688DB /* crypto_helper.cpp */,
 				556AB71A2AFA993200D688DB /* crypto_helper.hpp */,
 				556AB7182AFA979000D688DB /* endian_check.h */,
 				556AB7112AFA8FBC00D688DB /* crypto */,
 				556AB6C22AF5736E00D688DB /* libbson-1.0 */,
 				55E4D3132ACAF18B00555999 /* timer.cpp */,
-				55E4D3142ACAF18B00555999 /* timer.h */,
+				55E4D3142ACAF18B00555999 /* timer.hpp */,
 				55B3730B2AC3263200F0095E /* sdktypes.hpp */,
 				55853CC72AC32A1E00901E52 /* sdktypes.cpp */,
 				55B372FB2AC325B200F0095E /* Products */,
@@ -201,7 +201,7 @@
 				556AB6E82AF5736E00D688DB /* bson-clock.h in Headers */,
 				556AB6E42AF5736E00D688DB /* bson-endian.h in Headers */,
 				556AB6E52AF5736E00D688DB /* bson-decimal128.h in Headers */,
-				55E4D3162ACAF18B00555999 /* timer.h in Headers */,
+				55E4D3162ACAF18B00555999 /* timer.hpp in Headers */,
 				556AB6F62AF5736E00D688DB /* bson-cmp.h in Headers */,
 				556AB7172AFA94B800D688DB /* cltypes.h in Headers */,
 				556AB6EF2AF5736E00D688DB /* bson-oid.h in Headers */,
@@ -244,6 +244,7 @@
 				55B372F72AC325B200F0095E /* Sources */,
 				55B372F82AC325B200F0095E /* Frameworks */,
 				55CB70482C77D52800E05D37 /* ShellScript */,
+				551CDD332C8656E200ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -260,7 +261,7 @@
 		55B372F22AC325B200F0095E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					55B372F92AC325B200F0095E = {
 						CreatedOnToolsVersion = 12.4;
@@ -286,6 +287,23 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		551CDD332C8656E200ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nif [ \"${RUN_CLANG_TIDY}\" = \"0\" ] || [ -z \"${RUN_CLANG_TIDY}\" ]; then\n    echo \"Disabled clang-tidy on project.\"\n    exit 0\nfi\nexport PATH=\"/usr/local/opt/llvm/bin:$PATH\"\n\n# Define directories to exclude\nEXCLUDED_DIRS=(\"crypto\" \"libbson-1.0\" \"nvwa\" \"rapidjson\" \"uthash\" \"zlib\")\n\n# Base find command\nFIND_CMD=\"find \\\"${SRCROOT}\\\" -type f \\( -name \\\"*.cpp\\\" -o -name \\\"*.c\\\" -o -name \\\"*.h\\\" -o -name \\\"*.hpp\\\" \\)\"\n\n# Exclude directories\nfor dir in \"${EXCLUDED_DIRS[@]}\"; do\n    FIND_CMD+=\" ! -path \\\"${SRCROOT}/${dir}/*\\\"\"\ndone\n\n# Complete the find command\nFIND_CMD+=\" -print\"\n\n# Execute the find command\neval \"$FIND_CMD\" | while read -r FILE; do\n    echo \"Running clang-tidy on $FILE\"\n    clang-tidy \"$FILE\" --checks='readability-identifier-naming' --fix --config-file=\"${SRCROOT}/../.clang-tidy\" -warnings-as-errors=*\ndone\n";
+		};
 		55CB70482C77D52800E05D37 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -354,6 +372,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -413,6 +432,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -435,6 +455,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -452,6 +473,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -460,6 +482,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = "PROD_BUILD=1";
@@ -473,6 +496,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_TIDY = 0;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

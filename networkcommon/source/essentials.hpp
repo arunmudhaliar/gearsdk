@@ -9,9 +9,9 @@
 #ifndef essentials_hpp
 #define essentials_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
-#include "../../common/timer.h"
+#include "../../common/timer.hpp"
 #include "qtimer.hpp"
 #include "qtimer_uv.hpp"
 
@@ -31,21 +31,25 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"
 
-#define EV_START_RECORD(timestamp_) unsigned long timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg) DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_);
-#define EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)                             \
-	DEBUG_PRINT_IMPORTANT(tag, formatted_msg, timer::getCurrentTimeInMilliSec() - timestamp_); \
-	timestamp_ = timer::getCurrentTimeInMilliSec()
-#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                         \
-	do {                                                                                           \
-		unsigned long elapsed_since_##timestamp_ = timer::getCurrentTimeInMilliSec() - timestamp_; \
-		if (elapsed_since_##timestamp_ > warn_after_ms) {                                          \
-			DEBUG_PRINT_IMPORTANT(tag, formatted_msg, elapsed_since_##timestamp_);                 \
-		}                                                                                          \
+#define DISABLE_PERF_READS (DEV_BUILD == 1)
+
+#if DISABLE_PERF_READS
+#define EV_START_RECORD(timestamp_)
+#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)
+#define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)
+#else
+#define EV_START_RECORD(timestamp_) unsigned long timestamp_ = timer::get_current_time_in_milli_sec()
+#define EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)                              \
+	do {                                                                                                \
+		unsigned long elapsed_since_##timestamp_ = timer::get_current_time_in_milli_sec() - timestamp_; \
+		if (elapsed_since_##timestamp_ > warn_after_ms) {                                               \
+			debug_print_important(tag, formatted_msg, elapsed_since_##timestamp_);                      \
+		}                                                                                               \
 	} while (false)
 #define EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms) \
 	EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms);              \
-	timestamp_ = timer::getCurrentTimeInMilliSec()
+	timestamp_ = timer::get_current_time_in_milli_sec()
+#endif
 
 class qmutex;
 class qmutexcondition {
@@ -55,10 +59,10 @@ class qmutexcondition {
 	int init(const std::string& name);
 	int signal(const char* msg = nullptr);
 	int broadcast(const char* msg = nullptr);
-	int conditionWait(qmutex& qmutex, const char* msg);
+	int condition_wait(qmutex& qmutex, const char* msg);
 
    private:
-	int tryInitIfNot();
+	int try_init_if_not();
 	bool inited = false;
 	pthread_cond_t cond;
 	std::string name;
@@ -69,25 +73,25 @@ class qmutex {
 	qmutex();
 	~qmutex();
 	int init(const std::string& name);
-	int tryLock(const char* lockedBy, const char* msg = nullptr);
-	int unLock(const char* msg = nullptr);
-	inline pthread_mutex_t* getMutexInternal() { return &mutex; }
-	void conditionalWait(const char* waiting_at);
-	void block(const char* blockedBy = nullptr);
-	void unBlock(const char* unblockedBy);
+	int try_lock(const char* locked_by, const char* msg = nullptr);
+	int unlock(const char* msg = nullptr);
+	inline pthread_mutex_t* get_mutex_internal() { return &mutex; }
+	void conditional_wait(const char* waiting_at);
+	void block(const char* blocked_by = nullptr);
+	void unblock(const char* unblocked_by);
 
    private:
-	int tryInitIfNot();
+	int try_init_if_not();
 	bool inited = false;
-	bool allowTask = true;
+	bool allow_task = true;
 	pthread_mutex_t mutex;
 	std::string name;
-	std::string blockedBy = "none";
-	std::string lockedBy = "none";
-	std::string waitingAT = "none";
-	std::string unblockedBy = "none";
+	std::string blocked_by = "none";
+	std::string locked_by = "none";
+	std::string waiting_at = "none";
+	std::string unblocked_by = "none";
 	qmutexcondition condition;
-	long blockCount = 0;
+	long block_count = 0;
 	int wanted = 0;
 	static int log_flag;
 };
@@ -95,7 +99,7 @@ class qmutex {
 class essentials {
    public:
 	int init_essentials();
-	static int32_t resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string_, unsigned version_code_, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir, qstring& redis_ip,
+	static int32_t resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string, unsigned version_code, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& root_dir, qstring& redis_ip,
 										 uint16_t& redis_port, qstring& zk_uri);
 
 	static time_t get_time_local();
@@ -110,7 +114,7 @@ class essentials {
 	static qstring get_device_arch();
 	static qstring get_device_release_str();
 
-	static int get_memory_info(int& currRealMem, int& peakRealMem, int& currVirtMem, int& peakVirtMem);
+	static int get_memory_info(int& curr_real_mem, int& peak_real_mem, int& curr_virt_mem, int& peak_virt_mem);
 	static long long get_total_ram();
 	static long long get_used_mem();
 	static int get_process_used_mem();
@@ -121,11 +125,17 @@ class essentials {
 
 	static unsigned long get_crc(const uint8_t* buffer, ssize_t len);
 
-	static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port);
-	static int update_port(struct sockaddr* sa, uint16_t newPort);
+	static int get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int PORT);
+	static int update_port(struct sockaddr* sa, uint16_t new_port);
 	static uLong mod_crc32_z(uLong adler, const Bytef* buf, z_size_t len);
 
 	static bool get_json_string(rapidjson::Document& obj, qstring& output);
+
+	// uv cleanups
+	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);
+
+   private:
+	static void close_uv_handle_callback(uv_handle_t* handle, void* arg);
 };
 
 // h3 structs
@@ -133,8 +143,8 @@ class essentials {
 struct conn_io_req_res {
 	typedef struct header {
 	   private:
-		header(const header& header_) : name(header_.name), value(header_.value) {}
-		header(const qstring& name_, const qstring& value_) : name(name_), value(value_) {}
+		header(const header& header) : name(header.name), value(header.value) {}
+		header(const qstring& name, const qstring& value) : name(name), value(value) {}
 
 	   public:
 		static header* create(const qstring& name, const qstring& value) {
@@ -148,7 +158,7 @@ struct conn_io_req_res {
 
 	typedef struct payload {
 		payload() {}
-		payload(const qstring& buffer_) : buffer(buffer_) {}
+		payload(const qstring& buffer) : buffer(buffer) {}
 		~payload() {}
 		qstring get_crc_string() const {
 			unsigned long crc = get_crc_value();
@@ -157,9 +167,9 @@ struct conn_io_req_res {
 		}
 
 		unsigned long get_crc_value() const {
-			unsigned long crc_ = crc32(0L, Z_NULL, 0);
-			crc_ = essentials::mod_crc32_z(crc_, (const unsigned char*) buffer.c_str(), buffer.length());
-			return crc_;
+			unsigned long crc = crc32(0L, Z_NULL, 0);
+			crc = essentials::mod_crc32_z(crc, (const unsigned char*) buffer.c_str(), buffer.length());
+			return crc;
 		}
 		unsigned long get_size() const { return buffer.length(); }
 		qstring buffer;
@@ -193,9 +203,9 @@ struct conn_io_req_res {
 
    public:
 	static conn_io_req_res* create() { return DEBUG_NEW conn_io_req_res(); }
-	static conn_io_req_res* create(const qstring& path, const qstring& payload_) {
+	static conn_io_req_res* create(const qstring& path, const qstring& payload) {
 		conn_io_req_res::header* new_header = conn_io_req_res::header::create(":path", path);
-		conn_io_req_res* new_rq_rs = DEBUG_NEW conn_io_req_res(*new_header, payload_);
+		conn_io_req_res* new_rq_rs = DEBUG_NEW conn_io_req_res(*new_header, payload);
 		GX_DELETE(new_header);
 		return new_rq_rs;
 	}
@@ -206,8 +216,8 @@ struct conn_io_req_res {
 		return new_rq_rs;
 	}
 	const payload& get_payload() const { return data; }
-	const payload& set_payload(const qstring& payload_) {
-		data.buffer = payload_;
+	const payload& set_payload(const qstring& payload) {
+		data.buffer = payload;
 		return data;
 	}
 	const payload& append_to_payload(const uint8_t* str, int len) {
@@ -217,22 +227,22 @@ struct conn_io_req_res {
 
 	void clear_payload() { data.buffer.clear(); }
 
-	header* add_or_get_header(const qstring& name_, const qstring& value_) {
+	header* add_or_get_header(const qstring& name, const qstring& value) {
 		unsigned long crc = crc32(0L, Z_NULL, 0);
-		crc = essentials::mod_crc32_z(crc, (const unsigned char*) name_.c_str(), name_.length());
+		crc = essentials::mod_crc32_z(crc, (const unsigned char*) name.c_str(), name.length());
 
 		std::map<unsigned long, header*>::iterator it = headers.find(crc);
 		if (it == headers.end()) {
-			header* data = header::create(name_, value_);
+			header* data = header::create(name, value);
 			headers[crc] = data;
 			return data;
 		}
 		return it->second;
 	}
 
-	header* get_header(const qstring& name_) const {
+	header* get_header(const qstring& name) const {
 		unsigned long crc = crc32(0L, Z_NULL, 0);
-		crc = essentials::mod_crc32_z(crc, (const unsigned char*) name_.c_str(), name_.length());
+		crc = essentials::mod_crc32_z(crc, (const unsigned char*) name.c_str(), name.length());
 		std::map<unsigned long, header*>::const_iterator it = headers.find(crc);
 		return it != headers.end() ? it->second : nullptr;
 	}
@@ -249,27 +259,27 @@ struct qaddress {
 		port = 0;
 		ip.clear();
 	}
-	qaddress(const qstring& ip_, uint16_t port_) : port(port_), ip(ip_) {}
-	qaddress(const qstring& ip_, const qstring& port_) { set(ip_, port_); }
+	qaddress(const qstring& ip, uint16_t port) : port(port), ip(ip) {}
+	qaddress(const qstring& ip, const qstring& port) { set(ip, port); }
 	qaddress(struct sockaddr& addr) { set(addr); }
 	qaddress(struct sockaddr* addr) { set(*addr); }
 	int set(struct sockaddr& addr) {
 		char name[INET6_ADDRSTRLEN];
 		char port[10];
 		if (getnameinfo(&addr, sizeof(sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV) != 0) {
-			DEBUG_PRINT_ERROR("qaddress", "Unable to parse sockaddr !!!");
+			debug_print_error("qaddress", "Unable to parse sockaddr !!!");
 			return -1;
 		}
 		return set(name, port);
 	}
-	int set(const qstring& ip_, const qstring& port_) {
-		ip = ip_;
+	int set(const qstring& ip, const qstring& port) {
+		this->ip = ip;
 		int tmp = 0;
-		if (gsdk::str2int(&tmp, port_.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
-			DEBUG_PRINT_ERROR("qaddress", "Unable to parse port !!! - %s", port_.c_str());
+		if (gsdk::str2int(&tmp, port.c_str(), port.length(), 10) != gsdk::STR2INT_SUCCESS) {
+			debug_print_error("qaddress", "Unable to parse port !!! - %s", port.c_str());
 			return -1;
 		}
-		port = (uint16_t) tmp;
+		this->port = (uint16_t) tmp;
 		return 0;
 	}
 
@@ -282,8 +292,8 @@ struct qaddress {
 		ip.split(".", array);
 		for (auto n : array) {
 			int v = 0;
-			if (gsdk::str2int(&v, n.c_str(), 10) != gsdk::STR2INT_SUCCESS) {
-				DEBUG_PRINT_ERROR("qaddress", "Unable to serialise value !!! - %s", n.c_str());
+			if (gsdk::str2int(&v, n.c_str(), n.length(), 10) != gsdk::STR2INT_SUCCESS) {
+				debug_print_error("qaddress", "Unable to serialise value !!! - %s", n.c_str());
 				return -1;
 			}
 			*((uint8_t*) (tmp + index)) = (uint8_t) v;
@@ -296,7 +306,7 @@ struct qaddress {
 	int deserialise(const uint8_t* buf, ssize_t len) {
 		const uint8_t* tmp = buf;
 		if (len < 6) {
-			DEBUG_PRINT_ERROR("qaddress", "Unable to de-serialise buffer !!! - length = %d", len);
+			debug_print_error("qaddress", "Unable to de-serialise buffer !!! - length = %d", len);
 			return -1;
 		}
 		uint32_t index = 0;

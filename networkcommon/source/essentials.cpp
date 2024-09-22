@@ -27,11 +27,11 @@ int qmutex::init(const std::string& name) {
 	this->name = name + "_mutex";
 	int ret_val = pthread_mutex_init(&mutex, nullptr);
 	if (ret_val != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "%s mutex init has failed: %s - %d", name.c_str(), strerror(errno), errno);
+		debug_print_error(__LOGTAG__, "%s mutex init has failed: %s - %d", name.c_str(), strerror(errno), errno);
 	} else {
 		inited = true;
 		condition.init(name);
-		DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex init", name.c_str());
+		debug_print(LOG_LEVEL_5, __LOGTAG__, "%s mutex init", name.c_str());
 	}
 	return ret_val;
 }
@@ -40,67 +40,67 @@ qmutex::~qmutex() {
 	if (inited) {
 		pthread_mutex_destroy(&mutex);
 	}
-	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s mutex destroyed", name.c_str());
+	debug_print(LOG_LEVEL_5, __LOGTAG__, "%s mutex destroyed", name.c_str());
 }
 
-int qmutex::tryInitIfNot() {
-	int retVal = 0;
+int qmutex::try_init_if_not() {
+	int ret_val = 0;
 	if (!inited) {
-		retVal = init("QMutex");
-		if (retVal != 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "tryInitIfNot failed (%s), %s", name.c_str());
+		ret_val = init("QMutex");
+		if (ret_val != 0) {
+			debug_print_error(__LOGTAG__, "try_init_if_not failed (%s), %s", name.c_str());
 		}
 	}
-	return retVal;
+	return ret_val;
 }
 
-int qmutex::tryLock(const char* lockedBy, const char* msg) {
-	int retVal = 0;
+int qmutex::try_lock(const char* locked_by, const char* msg) {
+	int ret_val = 0;
 	if (!inited) {
-		retVal = tryInitIfNot();
-		if (retVal != 0) {
-			return retVal;
+		ret_val = try_init_if_not();
+		if (ret_val != 0) {
+			return ret_val;
 		}
 	}
-	retVal = pthread_mutex_trylock(&mutex);
-	if (retVal != 0 && qmutex::log_flag) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to acuire lock(%s). Locked by %s, %s", name.c_str(), this->lockedBy.c_str(), (msg != nullptr) ? msg : "");
+	ret_val = pthread_mutex_trylock(&mutex);
+	if (ret_val != 0 && qmutex::log_flag) {
+		debug_print_error(__LOGTAG__, "failed to acuire lock(%s). Locked by %s, %s", name.c_str(), this->locked_by.c_str(), (msg != nullptr) ? msg : "");
 	} else {
-		this->lockedBy = (lockedBy != nullptr) ? lockedBy : "";
+		this->locked_by = (locked_by != nullptr) ? locked_by : "";
 	}
-	return retVal;
+	return ret_val;
 }
 
-int qmutex::unLock(const char* msg) {
-	int retVal = 0;
+int qmutex::unlock(const char* msg) {
+	int ret_val = 0;
 	if (!inited) {
-		retVal = tryInitIfNot();
-		if (retVal != 0) {
-			return retVal;
+		ret_val = try_init_if_not();
+		if (ret_val != 0) {
+			return ret_val;
 		}
 	}
-	retVal = pthread_mutex_unlock(&mutex);
-	if (retVal != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to unlock(%s), %s", name.c_str(), (msg != nullptr) ? msg : "");
+	ret_val = pthread_mutex_unlock(&mutex);
+	if (ret_val != 0) {
+		debug_print_error(__LOGTAG__, "failed to unlock(%s), %s", name.c_str(), (msg != nullptr) ? msg : "");
 	}
-	return retVal;
+	return ret_val;
 }
-void qmutex::conditionalWait(const char* waiting_at) {
+void qmutex::conditional_wait(const char* waiting_at) {
 	wanted++;
-	waitingAT = (waiting_at != nullptr) ? waiting_at : "";
-	while (!allowTask) {
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "%s Blocked by %s", name.c_str(), blockedBy.c_str());
-		DEBUG_ASSERT(__LOGTAG__, (condition.conditionWait(*this, __FUNCTION__) == 0), __FUNCTION__);
+	this->waiting_at = (waiting_at != nullptr) ? waiting_at : "";
+	while (!allow_task) {
+		debug_print_important2(__LOGTAG__, "%s Blocked by %s", name.c_str(), blocked_by.c_str());
+		DEBUG_ASSERT(__LOGTAG__, (condition.condition_wait(*this, __FUNCTION__) == 0), __FUNCTION__);
 	}
 	//    allowTask = false;
-	waitingAT = "";
+	this->waiting_at = "";
 	wanted--;
 }
 
-void qmutex::block(const char* blockedBy_) {
+void qmutex::block(const char* blocked_by) {
 	// block close
-	int result = tryLock(blockedBy_);
-	if (result != 0 && blockCount == 0 && allowTask == false) {
+	int result = try_lock(blocked_by);
+	if (result != 0 && block_count == 0 && allow_task == false) {
 		// safe return;
 		return;
 	} else {
@@ -108,32 +108,32 @@ void qmutex::block(const char* blockedBy_) {
 			DEBUG_ASSERT(__LOGTAG__, false, __FUNCTION__);
 		}
 	}
-	blockedBy = (blockedBy_ == nullptr) ? "???" : blockedBy_;
-	allowTask = false;
-	blockCount++;
-	DEBUG_ASSERT(__LOGTAG__, (unLock() == 0), __FUNCTION__);
+	this->blocked_by = (blocked_by == nullptr) ? "???" : blocked_by;
+	allow_task = false;
+	block_count++;
+	DEBUG_ASSERT(__LOGTAG__, (unlock() == 0), __FUNCTION__);
 	//
 }
 
-void qmutex::unBlock(const char* unblockedBy_) {
-	int result = tryLock(__FUNCTION__);
-	if (result != 0 && blockCount == 0 && allowTask == false) {
+void qmutex::unblock(const char* unblocked_by) {
+	int result = try_lock(__FUNCTION__);
+	if (result != 0 && block_count == 0 && allow_task == false) {
 		// safe return;
-		allowTask = true;  // Not sure of this. Data race conditions can cause.
-		unblockedBy = unblockedBy_ != nullptr ? unblockedBy_ : "";
+		allow_task = true;	// Not sure of this. Data race conditions can cause.
+		this->unblocked_by = unblocked_by != nullptr ? unblocked_by : "";
 		return;
 	} else {
 		if (result != 0 && wanted > 1) {
 			DEBUG_ASSERT(__LOGTAG__, false, __FUNCTION__);
 		}
-		allowTask = true;  // Not sure of this. Data race conditions can cause.
+		allow_task = true;	// Not sure of this. Data race conditions can cause.
 	}
-	//    DEBUG_ASSERT(__LOGTAG__, (tryLock(__FUNCTION__)==0), __FUNCTION__);
-	allowTask = true;
-	unblockedBy = unblockedBy_ != nullptr ? unblockedBy_ : "";
-	blockCount--;
+	//    DEBUG_ASSERT(__LOGTAG__, (try_lock(__FUNCTION__)==0), __FUNCTION__);
+	allow_task = true;
+	this->unblocked_by = unblocked_by != nullptr ? unblocked_by : "";
+	block_count--;
 	DEBUG_ASSERT(__LOGTAG__, (condition.signal() == 0), __FUNCTION__);
-	DEBUG_ASSERT(__LOGTAG__, (unLock() == 0), __FUNCTION__);
+	DEBUG_ASSERT(__LOGTAG__, (unlock() == 0), __FUNCTION__);
 }
 
 // MARK: - QMutexCondition
@@ -142,100 +142,100 @@ qmutexcondition::qmutexcondition() {
 }
 int qmutexcondition::init(const std::string& name) {
 	this->name = name + "_cond";
-	int retVal = pthread_cond_init(&cond, nullptr);
-	if (retVal != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "%s condition init has failed: %s - %d", name.c_str(), strerror(errno), errno);
+	int ret_val = pthread_cond_init(&cond, nullptr);
+	if (ret_val != 0) {
+		debug_print_error(__LOGTAG__, "%s condition init has failed: %s - %d", name.c_str(), strerror(errno), errno);
 	} else {
 		inited = true;
-		DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condtion init", name.c_str());
+		debug_print(LOG_LEVEL_5, __LOGTAG__, "%s condtion init", name.c_str());
 	}
-	return retVal;
+	return ret_val;
 }
 
-int qmutexcondition::tryInitIfNot() {
-	int retVal = 0;
+int qmutexcondition::try_init_if_not() {
+	int ret_val = 0;
 	if (!inited) {
-		retVal = init("QMutexCondition");
-		if (retVal != 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "tryInitIfNot failed (%s), %s", name.c_str());
+		ret_val = init("QMutexCondition");
+		if (ret_val != 0) {
+			debug_print_error(__LOGTAG__, "try_init_if_not failed (%s), %s", name.c_str());
 		}
 	}
-	return retVal;
+	return ret_val;
 }
 
 qmutexcondition::~qmutexcondition() {
 	if (inited) {
 		pthread_cond_destroy(&cond);
 	}
-	DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "%s condition destroyed", name.c_str());
+	debug_print(LOG_LEVEL_5, __LOGTAG__, "%s condition destroyed", name.c_str());
 }
 
 int qmutexcondition::signal(const char* msg) {
-	int retVal = 0;
+	int ret_val = 0;
 	if (!inited) {
-		retVal = tryInitIfNot();
-		if (retVal != 0) {
-			return retVal;
+		ret_val = try_init_if_not();
+		if (ret_val != 0) {
+			return ret_val;
 		}
 	}
 	int sig_req = pthread_cond_signal(&cond);
 	if (sig_req != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "SIGNAL failed %d on %s. %s", sig_req, name.c_str(), (msg != nullptr) ? msg : "");
+		debug_print_error(__LOGTAG__, "SIGNAL failed %d on %s. %s", sig_req, name.c_str(), (msg != nullptr) ? msg : "");
 	}
 	return sig_req;
 }
 int qmutexcondition::broadcast(const char* msg) {
-	int retVal = 0;
+	int ret_val = 0;
 	if (!inited) {
-		retVal = tryInitIfNot();
-		if (retVal != 0) {
-			return retVal;
+		ret_val = try_init_if_not();
+		if (ret_val != 0) {
+			return ret_val;
 		}
 	}
 	int broadcast_req = pthread_cond_broadcast(&cond);
 	if (broadcast_req != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "BROADCAST failed %d on %s. %s", broadcast_req, name.c_str(), (msg != nullptr) ? msg : "");
+		debug_print_error(__LOGTAG__, "BROADCAST failed %d on %s. %s", broadcast_req, name.c_str(), (msg != nullptr) ? msg : "");
 	}
 	return broadcast_req;
 }
 
-int qmutexcondition::conditionWait(qmutex& qmutex, const char* msg) {
-	int retVal = 0;
+int qmutexcondition::condition_wait(qmutex& qmutex, const char* msg) {
+	int ret_val = 0;
 	if (!inited) {
-		retVal = tryInitIfNot();
-		if (retVal != 0) {
-			return retVal;
+		ret_val = try_init_if_not();
+		if (ret_val != 0) {
+			return ret_val;
 		}
 	}
-	int wait_req = pthread_cond_wait(&cond, qmutex.getMutexInternal());
+	int wait_req = pthread_cond_wait(&cond, qmutex.get_mutex_internal());
 	if (wait_req != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "COND_WAIT failed %d for %s, %s", wait_req, name.c_str(), (msg != nullptr) ? msg : "");
+		debug_print_error(__LOGTAG__, "COND_WAIT failed %d for %s, %s", wait_req, name.c_str(), (msg != nullptr) ? msg : "");
 	}
 	return wait_req;
 }
 // END MARK: -
 
-int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string_, unsigned version_code_, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& rootDir, qstring& redis_ip,
+int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string, unsigned version_code, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& root_dir, qstring& redis_ip,
 										  uint16_t& redis_port, qstring& zk_uri) {
 	if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-		DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
-		DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
+		debug_print(LOG_LEVEL_0, tag, "version %s(%d)", version_string.c_str(), version_code);
+		debug_print_important2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>'");
 		return -1;
 	}
 
-	DEBUG_PRINT(LOG_LEVEL_0, tag, "version %s(%d)", version_string_.c_str(), version_code_);
+	debug_print(LOG_LEVEL_0, tag, "version %s(%d)", version_string.c_str(), version_code);
 
 	if (argc % 2 == 0) {
-		DEBUG_PRINT_ERROR(tag, "Failed to resolve arguments. Exiting !!!");
-		DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
+		debug_print_error(tag, "Failed to resolve arguments. Exiting !!!");
+		debug_print_important2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
 		return -1;
 	}
 
 	// default to root
-	rootDir = "";
+	root_dir = "";
 	if (argc > 0) {
-		fs::path executablePath(argv[0]);
-		rootDir = executablePath.parent_path();
+		fs::path executable_path(argv[0]);
+		root_dir = executable_path.parent_path();
 	}
 	//
 
@@ -249,15 +249,15 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 		} else if (strcmp(lf, "--p") == 0) {
 			port = rg;
 		} else if (strcmp(lf, "--certdir") == 0) {
-			rootDir = fs::path(rg);
+			root_dir = fs::path(rg);
 		} else if (strcmp(lf, "--db") == 0) {
 			mongodb_uri = rg;
 		} else if (strcmp(lf, "--rh") == 0) {
 			redis_ip = rg;
 		} else if (strcmp(lf, "--rp") == 0) {
 			int tmp = 0;
-			if (gsdk::str2int(&tmp, rg, 10) != gsdk::STR2INT_SUCCESS) {
-				DEBUG_PRINT_ERROR(tag, "Unable to parse redis port, defaulting to %d !!!", tmp);
+			if (gsdk::str2int(&tmp, rg, strlen(rg), 10) != gsdk::STR2INT_SUCCESS) {
+				debug_print_error(tag, "Unable to parse redis port, defaulting to %d !!!", tmp);
 			}
 			redis_port = tmp;
 		} else if (strcmp(lf, "--zk") == 0) {
@@ -266,21 +266,21 @@ int32_t essentials::resolve_cmd_line_args(const char* tag, int32_t argc, const c
 	}
 
 	// check host and port
-	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* peer = nullptr;
-	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-		DEBUG_PRINT_ERROR(tag, "Failed to resolve host. Exiting !!!");
-		DEBUG_PRINT_IMPORTANT2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
+	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &peer) != 0) {
+		debug_print_error(tag, "Failed to resolve host. Exiting !!!");
+		debug_print_important2(tag, "Usage : <executable> '--h <ip address>' '--p <port>' '--db <mongodb uri_string>' '--certdir <certpath>' '--rh <redis ip>' '--rp <redis port>' '--zk <zk uri_string>'");
 		return -1;
 	}
 	if (peer) {
 		freeaddrinfo(peer);
 		peer = nullptr;
 	}
-	DEBUG_PRINT_IMPORTANT(tag, "server %s:%s, mongodb_uri %s, redis %s:%d, zk_uri %s", host.c_str(), port.c_str(), mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri.c_str());
+	debug_print_important(tag, "server %s:%s, mongodb_uri %s, redis %s:%d, zk_uri %s", host.c_str(), port.c_str(), mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri.c_str());
 	//
 
-	DEBUG_PRINT_IMPORTANT(tag, "Root dir : %s", rootDir.c_str());
+	debug_print_important(tag, "Root dir : %s", root_dir.c_str());
 	return 0;
 }
 
@@ -335,37 +335,37 @@ qstring essentials::get_time_utc_postgresql_format() {
 	time_t now;
 	time(&now);
 	struct tm* tm = gmtime(&now);
-	char timestampStr[32];
-	snprintf(timestampStr, sizeof(timestampStr), "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-	return qstring(timestampStr);
+	char timestamp_str[32];
+	snprintf(timestamp_str, sizeof(timestamp_str), "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	return qstring(timestamp_str);
 }
 
 /*
  * Measures the current (and peak) resident and virtual memories
  * usage of your linux C process, in kB
  */
-int essentials::get_memory_info(int& currRealMem, int& peakRealMem, int& currVirtMem, int& peakVirtMem) {
+int essentials::get_memory_info(int& curr_real_mem, int& peak_real_mem, int& curr_virt_mem, int& peak_virt_mem) {
 	// stores each word in status file
 	char buffer[1024] = "";
 	// linux file contains this-process info
 	FILE* file = fopen("/proc/self/status", "r");
 	if (file == nullptr) {
-		currRealMem = peakRealMem = currVirtMem = peakVirtMem = 0;
+		curr_real_mem = peak_real_mem = curr_virt_mem = peak_virt_mem = 0;
 		return -1;
 	}
 	// read the entire file
 	while (fscanf(file, " %1023s", buffer) == 1) {
 		if (strcmp(buffer, "VmRSS:") == 0) {
-			fscanf(file, " %d", &currRealMem);
+			fscanf(file, " %d", &curr_real_mem);
 		}
 		if (strcmp(buffer, "VmHWM:") == 0) {
-			fscanf(file, " %d", &peakRealMem);
+			fscanf(file, " %d", &peak_real_mem);
 		}
 		if (strcmp(buffer, "VmSize:") == 0) {
-			fscanf(file, " %d", &currVirtMem);
+			fscanf(file, " %d", &curr_virt_mem);
 		}
 		if (strcmp(buffer, "VmPeak:") == 0) {
-			fscanf(file, " %d", &peakVirtMem);
+			fscanf(file, " %d", &peak_virt_mem);
 		}
 	}
 	fclose(file);
@@ -373,7 +373,7 @@ int essentials::get_memory_info(int& currRealMem, int& peakRealMem, int& currVir
 }
 
 int essentials::get_process_used_mem() {
-	int currRealMem = 0;
+	int curr_real_mem = 0;
 #if PLATFORM == PLATFORM_LINUX
 	// https://itecnote.com/tecnote/macos-memory-used-by-a-process-under-mac-os-x/
 	//  stores each word in status file
@@ -381,29 +381,29 @@ int essentials::get_process_used_mem() {
 	// linux file contains this-process info
 	FILE* file = fopen("/proc/self/status", "r");
 	if (file == nullptr) {
-		return currRealMem;
+		return curr_real_mem;
 	}
 	// read the entire file
 	while (fscanf(file, " %1023s", buffer) == 1) {
 		if (strcmp(buffer, "VmRSS:") == 0) {
-			fscanf(file, " %d", &currRealMem);
+			fscanf(file, " %d", &curr_real_mem);
 			break;
 		}
 	}
 	fclose(file);
 #endif
-	return currRealMem;
+	return curr_real_mem;
 }
 
 long long essentials::get_total_ram() {
 #if PLATFORM == PLATFORM_LINUX
-	struct sysinfo memInfo;
-	if (sysinfo(&memInfo) == -1)
+	struct sysinfo mem_info;
+	if (sysinfo(&mem_info) == -1)
 		return 0;
-	//    uint64_t total_ram = ((uint64_t)memInfo.totalram * memInfo.mem_unit)/1024;
-	long long total_phys_mem = memInfo.totalram;
+	//    uint64_t total_ram = ((uint64_t)mem_info.totalram * mem_info.mem_unit)/1024;
+	long long total_phys_mem = mem_info.totalram;
 	// Multiply in next statement to avoid int overflow on right hand side...
-	total_phys_mem *= memInfo.mem_unit;
+	total_phys_mem *= mem_info.mem_unit;
 	return total_phys_mem / (1024 * 1024);
 #else
 	return 0;
@@ -412,12 +412,12 @@ long long essentials::get_total_ram() {
 
 long long essentials::get_used_mem() {
 #if PLATFORM == PLATFORM_LINUX
-	struct sysinfo memInfo;
-	if (sysinfo(&memInfo) == -1)
+	struct sysinfo mem_info;
+	if (sysinfo(&mem_info) == -1)
 		return 0;
-	long long phys_mem_used = memInfo.totalram - memInfo.freeram;
+	long long phys_mem_used = mem_info.totalram - mem_info.freeram;
 	// Multiply in next statement to avoid int overflow on right hand side...
-	phys_mem_used *= memInfo.mem_unit;
+	phys_mem_used *= mem_info.mem_unit;
 	return phys_mem_used / (1024 * 1024);
 #else
 	return 0;
@@ -432,7 +432,7 @@ int essentials::get_all_child_folders(const fs::path& folder_path, std::vector<f
 			}
 		}
 	} catch (const fs::filesystem_error& e) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
+		debug_print_error(__LOGTAG__, "Error accessing the folder: %s", e.what());
 		return 1;
 	}
 	return 0;
@@ -446,17 +446,17 @@ int essentials::get_all_files(const fs::path& folder_path, std::vector<fs::path>
 			}
 		}
 	} catch (const fs::filesystem_error& e) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Error accessing the folder: %s", e.what());
+		debug_print_error(__LOGTAG__, "Error accessing the folder: %s", e.what());
 		return 1;
 	}
 	return 0;
 }
 
-int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int port) {
+int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* ip, const int PORT) {
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
+	addr.sin_port = htons(PORT);
 	if (inet_pton(AF_INET, ip, &(addr.sin_addr)) <= 0) {
 		perror("Invalid IP address");
 		return -1;
@@ -466,16 +466,16 @@ int essentials::get_addr_storage(struct sockaddr_storage& storage, const char* i
 	return 0;
 }
 
-int essentials::update_port(struct sockaddr* sa, uint16_t newPort) {
+int essentials::update_port(struct sockaddr* sa, uint16_t new_port) {
 	if (sa->sa_family == AF_INET) {
 		// IPv4
 		struct sockaddr_in* sa_in = (struct sockaddr_in*) sa;
-		sa_in->sin_port = htons(newPort);
+		sa_in->sin_port = htons(new_port);
 		return 0;
 	} else if (sa->sa_family == AF_INET6) {
 		// IPv6
 		struct sockaddr_in6* sa_in6 = (struct sockaddr_in6*) sa;
-		sa_in6->sin6_port = htons(newPort);
+		sa_in6->sin6_port = htons(new_port);
 		return 0;
 	} else {
 		// Unknown address family or unsupported type
@@ -493,9 +493,9 @@ uLong essentials::mod_crc32_z(uLong adler, const Bytef* buf, z_size_t len) {
 }
 
 unsigned long essentials::get_crc(const uint8_t* buffer, ssize_t len) {
-	unsigned long crc_ = crc32(0L, Z_NULL, 0);
-	crc_ = mod_crc32_z(crc_, (const unsigned char*) buffer, len);
-	return crc_;
+	unsigned long crc = crc32(0L, Z_NULL, 0);
+	crc = mod_crc32_z(crc, (const unsigned char*) buffer, len);
+	return crc;
 }
 
 bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
@@ -504,6 +504,33 @@ bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	obj.Accept(writer);
 	output = buffer.GetString();
+	return true;
+}
+
+void essentials::close_uv_handle_callback(uv_handle_t* handle, void* arg) {
+	if (!uv_is_closing(handle)) {
+		uv_close(handle, nullptr);
+	}
+}
+
+bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
+	if (loop == nullptr) {
+		debug_print_important(__LOGTAG__, "loop pointer is null, Nothing to delete. returning !!!");
+		return true;
+	}
+	//	uv_print_all_handles(loop, stderr);
+	uv_walk(loop, close_uv_handle_callback, loop);
+	uv_run(loop, UV_RUN_NOWAIT);  // Run pending callbacks
+	if (uv_loop_alive(loop)) {
+		debug_print_error(__LOGTAG__, "The loop still has active handles!");
+		return false;
+	}
+	//	int result = uv_loop_close(loop);
+	//	if (result == UV_EBUSY) {
+	//		debug_print_warn(__LOGTAG__, "uv_loop_close returned UV_EBUSY !!!");
+	//	}
+	// Note: No need to call uv_loop_close, since uv_loop_delete call uv_loop_close internally.
+	uv_loop_delete(loop);
 	return true;
 }
 
@@ -529,15 +556,15 @@ bool conn_io_req_res::validate() {
 		}
 		return false;
 	}
-	unsigned long crc_ = payload.get_crc_value();
+	unsigned long crc = payload.get_crc_value();
 	unsigned long crc_from_req = 0;
 	sscanf((const char*) crc_header->value.c_str(), "%8lx", &crc_from_req);
 
-	if (crc_from_req != crc_) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s", crc_, crc_from_req, payload.buffer.length(), crc_header->value.c_str());
+	if (crc_from_req != crc) {
+		debug_print_error(__LOGTAG__, "CRC validation Error %lu != %lu, payload sz %lu, crc_as_string %s", crc, crc_from_req, payload.buffer.length(), crc_header->value.c_str());
 		//        assert(crc_from_req == crc_);
 	}
-	//     DEBUG_PRINT_IMPORTANT(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
+	//     debug_print_important(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
 	//        crc_, crc_from_req, payload->len, crc_header->value);
-	return crc_from_req == crc_;
+	return crc_from_req == crc;
 }

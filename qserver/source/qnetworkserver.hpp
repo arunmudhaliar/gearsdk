@@ -84,18 +84,18 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 		qstring host;
 		qstring port;
 		qnetworkserver* thiz;
-		int pthread_returnValue;
+		int pthread_return_value;
 		bool finished = false;
 		int id = -1;
-		fs::path rootDir;
+		fs::path root_dir;
 		qstring redis_ip;
 		uint16_t redis_port;
 	};
-	static int runID;
+	static int run_id;
 
    public:
 	virtual ~qnetworkserver() {}
-	int run(qstring host, qstring port, fs::path executablePath, const qstring& redis_ip, const uint16_t redis_port);
+	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT);
 	void broadcast_message(const qstring& buffer, bool flush);
 	void network_server_begin();
 	void network_server_end();

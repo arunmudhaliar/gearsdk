@@ -9,7 +9,7 @@
 #ifndef qtextfile_hpp
 #define qtextfile_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #undef __LOGTAG__

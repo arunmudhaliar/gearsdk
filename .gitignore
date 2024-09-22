@@ -97,9 +97,7 @@ libqserver.a
 qsampleserver-app
 docker-qsampleserver
 qunitysdk.d
-libqunityplugin.dylib
 *.d
-qunityplugin/libqunityplugin.so
 qfist-app
 docs/sphinx/source/__pycache__
 docs/doxygen-build
@@ -111,3 +109,5 @@ other.xml
 docs/sphinx/source/plot_extension/__pycache__
 summary-*.csv
 IDEWorkspaceChecks.plist
+qgfist-app
+qunityplugin/release_build

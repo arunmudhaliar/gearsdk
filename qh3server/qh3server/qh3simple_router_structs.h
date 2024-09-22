@@ -22,18 +22,18 @@ class bridge_command_center {
 };
 
 struct server_config_in {
-	server_config_in(const qstring& host, const qstring& port, const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_, const fs::path& rootDir, struct addrinfo* router_, uint16_t command_port_,
-					 const qstring& router_port_, const qstring& zk_uri, uint16_t router_port_return)
+	server_config_in(const qstring& host, const qstring& port, const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_, const fs::path& root_dir, struct addrinfo* router, uint16_t command_port, const qstring& router_port,
+					 const qstring& zk_uri, uint16_t router_port_return)
 		: host(host),
 		  port(port),
 		  mongodb_uri(mongodb_uri),
 		  redis_ip(redis_ip),
 		  redis_port(redis_port_),
 		  zk_uri(zk_uri),
-		  rootDir(rootDir),
-		  router(router_),
-		  command_port(command_port_),
-		  router_port(router_port_),
+		  root_dir(root_dir),
+		  router(router),
+		  command_port(command_port),
+		  router_port(router_port),
 		  router_port_return(router_port_return) {}
 
 	server_config_in(const server_config_in& config)
@@ -43,7 +43,7 @@ struct server_config_in {
 		  redis_ip(config.redis_ip),
 		  redis_port(config.redis_port),
 		  zk_uri(config.zk_uri),
-		  rootDir(config.rootDir),
+		  root_dir(config.root_dir),
 		  command_server(config.command_server),
 		  command_port(config.command_port),
 		  command_feedback_port(config.command_feedback_port),
@@ -56,7 +56,7 @@ struct server_config_in {
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port = 6379;
 	qstring zk_uri = "127.0.0.1:2181";
-	fs::path rootDir = ".";
+	fs::path root_dir = ".";
 	pthread_t run_thread_id = 0;
 	struct addrinfo* router = nullptr;	// only for slaves
 	bool command_server = false;
@@ -85,8 +85,8 @@ struct route {
 	ev_tstamp last_hb_received_time = 0;
 };
 struct port_range {
-	const int min = 5100;
-	const int max = 5200;
+	const int MIN_VAL = 5100;
+	const int MAX_VAL = 5200;
 };
 
 #endif /* qh3simple_router_structs_h */

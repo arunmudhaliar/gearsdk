@@ -35,7 +35,7 @@ CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections
 
 # Debug and Release specific flags are better placed in their respective build rules
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
-RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1
+RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 # LDFLAGS = -shared -rdynamic
 UNAME := $(shell uname)
@@ -60,10 +60,10 @@ ifeq ($(UNAME),Darwin)
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 
-	DEBUG_CXXFLAGS += -mmacosx-version-min=14.2
-	RELEASE_CXXFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
-	LDFLAGS += -mmacosx-version-min=14.2
+	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
+	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
+	LDFLAGS += -mmacosx-version-min=12.4
 endif
 
 EXE = qserver-app

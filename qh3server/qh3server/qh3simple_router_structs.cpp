@@ -14,7 +14,7 @@
 void test_router_command_recv_cb(EV_P_ ev_io* w, int revents)  {
     UNUSED(revents);
     
-    DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "RECEIVED !!!");
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "RECEIVED !!!");
     route* route_client = (route*)w->data;
     static uint8_t buf_r[65535];
     while (1) {
@@ -28,11 +28,11 @@ void test_router_command_recv_cb(EV_P_ ev_io* w, int revents)  {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                DEBUG_PRINT(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+                debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
                 break;
             }
 
-            DEBUG_PRINT_ERROR(__LOGTAG__, "failed to read");
+            debug_print_error(__LOGTAG__, "failed to read");
             return;
         }
     }
@@ -42,28 +42,28 @@ void test_router_command_recv_cb(EV_P_ ev_io* w, int revents)  {
 ssize_t route::relay(uint8_t* buf, ssize_t len) {
 	ssize_t sent = sendto(bridge_sock, buf, len, 0, peer->ai_addr, peer->ai_addrlen);
 	if (sent != len) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to send");
+		debug_print_error(__LOGTAG__, "failed to send");
 		return -1;
 	}
 	return sent;
 }
 int route::create_bridge(struct ev_loop* loop, void* arg, void (*router_command_recv_cb_ptr)(EV_P_ ev_io* w, int revents)) {
-	const struct addrinfo hints = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
-	if (getaddrinfo(host.c_str(), port.c_str(), &hints, &peer) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "bridge - failed to resolve host");
+	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &peer) != 0) {
+		debug_print_error(__LOGTAG__, "bridge - failed to resolve host");
 		return -1;
 	}
 
 	bridge_sock = socket(peer->ai_family, SOCK_DGRAM, 0);
 	if (bridge_sock < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to create bridge socket");
+		debug_print_error(__LOGTAG__, "failed to create bridge socket");
 		freeaddrinfo(peer);
 		return -1;
 	}
 
 	if (fcntl(bridge_sock, F_SETFL, O_NONBLOCK) != 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "failed to make bridge socket non-blocking");
+		debug_print_error(__LOGTAG__, "failed to make bridge socket non-blocking");
 		freeaddrinfo(peer);
 		close_bridge_socket();
 		return -1;
@@ -71,7 +71,7 @@ int route::create_bridge(struct ev_loop* loop, void* arg, void (*router_command_
 
 	if (router_command_recv_cb_ptr != nullptr) {
 		if (bind(bridge_sock, peer->ai_addr, peer->ai_addrlen) < 0) {
-			DEBUG_PRINT_ERROR(__LOGTAG__, "failed to bind bridge socket - port[%s:%s]", host.c_str(), port.c_str());
+			debug_print_error(__LOGTAG__, "failed to bind bridge socket - port[%s:%s]", host.c_str(), port.c_str());
 			freeaddrinfo(peer);
 			close_bridge_socket();
 			return -1;
@@ -80,7 +80,7 @@ int route::create_bridge(struct ev_loop* loop, void* arg, void (*router_command_
 		ev_io_start(loop, &command_watcher);
 		this->arg = arg;
 		command_watcher.data = this;
-		DEBUG_PRINT_IMPORTANT2(__LOGTAG__, "Bridge socket enabled for receive in %s:%s", host.c_str(), port.c_str());
+		debug_print_important2(__LOGTAG__, "Bridge socket enabled for receive in %s:%s", host.c_str(), port.c_str());
 	}
 
 	return 0;
@@ -92,7 +92,7 @@ int route::close_bridge_socket() {
 	}
 	int result = close(bridge_sock);
 	if (result < 0) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Bridge socket closure failed: %s", strerror(errno));
+		debug_print_error(__LOGTAG__, "Bridge socket closure failed: %s", strerror(errno));
 	}
 	return result;
 }

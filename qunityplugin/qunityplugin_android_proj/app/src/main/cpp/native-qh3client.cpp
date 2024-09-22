@@ -42,15 +42,15 @@ JNIEXPORT jboolean JNICALL Java_com_gearsdk_qunityplugin_qh3client_1android_send
 			bool validate = response->validate();
 			//                assert(validate);
 			if (!validate) {
-				// DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				// debug_print_error(__LOGTAG__, "crc fail !!!");
 			}
 			conn_io_req_res::header* token_header = response->get_header("token");
 			if (token_header == nullptr) {
-				DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "No Token");
+				debug_print(LOG_LEVEL_0, __LOGTAG__, "No Token");
 			}
 
 			const conn_io_req_res::payload& payload = response->data;
-			DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned %s !!!", payload.buffer.c_str());
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned %s !!!", payload.buffer.c_str());
 
 			JNIEnv* env1 = (JNIEnv*) client_specific_data;
 

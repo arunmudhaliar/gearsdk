@@ -1,5 +1,6 @@
 #include "../qh3client/qh3client/qh3client_helper.hpp"
 
+#include <sys/resource.h>
 #include <algorithm>  // For std::sort
 #include <atomic>	  // For std::atomic
 #include <cstddef>	  // For std::size_t
@@ -12,7 +13,10 @@
 #include <sstream>	// For std::ostringstream
 #include <string>	// For string handling
 #include <uv.h>
+#include <unordered_map>
 #include <vector>  // For std::vector>
+#include <chrono>
+#include <thread>
 
 // Constants
 
@@ -24,6 +28,9 @@
 #define COLOR_YELLOW "\033[33m"
 #define COLOR_ORANGE "\033[38;5;208m"  // 256-color mode code for orange
 #define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_CYAN "\033[36m"
+
 
 #define JSON_FILE "users.json"
 // #define REQUEST_URL "https://google.com"
@@ -46,8 +53,10 @@ struct WorkData {
 	}
 	uv_timeval64_t start_time;
 	short result;
+	int summary_id = 0;
 	qstring api;
 	qstring payload;
+	int connection_establishment_timeout_in_sec = 0;	// only used for debugging purposes
 };
 
 struct AppState {
@@ -57,9 +66,9 @@ struct AppState {
 	uv_timer_t exit_timer;
 	uv_timer_t request_timer;
 	uv_timer_t summary_timer;
-	int total_requests;
+	std::atomic<int>  total_requests {0};
 	std::atomic<int> finished_requests {0};
-	double cumulative_response_time;
+	std::atomic<double> cumulative_response_time {0.0};
 	std::atomic<std::size_t> total_data_transferred;
 	// std::atomic<std::size_t> chunk_counter; // Atomic counter to avoid race conditions
 	double response_times[WINDOW_SIZE];			   // Circular buffer for response times
@@ -76,20 +85,29 @@ struct AppState {
 	uv_timeval64_t summary_start_time;
 	bool exit_signal;			  // Flag to signal exit
 	bool single_request = false;  // Flag to enable single request mode
+	int single_request_index = 0;
 
 	// New variables for summary tracking
-	int summary_requests;
-	int summary_successful_requests;
+	std::atomic<int> summary_count {0};
+	std::atomic<int> summary_requests {0};
+	std::atomic<int> summary_successful_requests {0};
+	std::atomic<int> connection_establishment_timeout_in_sec_on_start_of_low_success_percentage {(int)CONNECTION_ESTABLISHMENT_TIMEOUT};
+	std::atomic<bool> low_success_percentage_triggered {false};
 	double summary_cumulative_response_time;
+	std::atomic<int> connection_establishment_timeout {(int)CONNECTION_ESTABLISHMENT_TIMEOUT};
+	std::atomic<int> recovering_avg_response_time_strem {0};
 
 	// Total run metrics
 	std::atomic<int> total_successful_requests {0};
-	double total_cumulative_response_time;
+	std::atomic<double> total_cumulative_response_time  {0.0};
 
 	// Requests
 	std::vector<std::pair<qstring, qstring>> requests;
 
 	qstring export_csv_filename = "summary.csv";
+
+	std::mutex response_time_mutex;
+	std::unordered_map<WorkData*, std::thread::id> workers_map;
 };
 
 // Global App State
@@ -185,8 +203,13 @@ void write_summary_to_csv(const qstring& filename) {
 
 	// Write the summary data
 	csv_file << format_elapsed_time(elapsed_seconds) << "," << app_state.total_requests << "," << total_success_percentage << "," << total_average_response_time << "," << data_transfer_rate_kb << "," << rps << "\n";
-
 	csv_file.close();
+}
+
+void print_open_fds_count() {
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "lsof -p %d | wc -l", getpid());
+    system(cmd);
 }
 
 // Calculate and print statistics
@@ -194,11 +217,11 @@ void print_summary() {
 	if (app_state.summary_requests == 0) {
 		return;
 	}
-	double success_percentage, average_response_time;
+	double summary_success_percentage, average_response_time;
 	double elapsed_seconds = elapsed_seconds_since_app_launch();
 
 	// Summary period metrics
-	success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
+	summary_success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
 	average_response_time = (app_state.summary_requests > 0) ? (app_state.summary_cumulative_response_time / app_state.summary_requests) : 0.0;
 
 	// Total run metrics
@@ -214,11 +237,11 @@ void print_summary() {
 
 	// Determine color for success percentage
 	std::string color;
-	if (success_percentage < 70) {
+	if (summary_success_percentage < 70) {
 		color = COLOR_RED;
-	} else if (success_percentage < 80) {
+	} else if (summary_success_percentage < 80) {
 		color = COLOR_ORANGE;
-	} else if (success_percentage < 100) {
+	} else if (summary_success_percentage < 100) {
 		color = COLOR_YELLOW;
 	} else {
 		color = COLOR_RESET;
@@ -237,30 +260,43 @@ void print_summary() {
 	std::cout << "Data Transfer Rate: " << data_transfer_rate_kb << " KB/s\n";
 
 	std::cout << "\tSummary Period Requests: " << app_state.summary_requests << '\n';
-	std::cout << "\tSummary Period Success: " << color << app_state.summary_successful_requests << " (" << success_percentage << "%)" << COLOR_RESET << "\n";
+	std::cout << "\tSummary Period Success: " << color << app_state.summary_successful_requests << " (" << summary_success_percentage << "%)" << COLOR_RESET << "\n";
 	std::cout << "\tSummary Period Avg Response Time: " << average_response_time << " ms\n";
-	std::cout << "\tRequests Per Second: " << rps << "\n";
+	if (!app_state.single_request) {
+		std::cout << "\tRequests Per Second: " << rps << "\n";
+	}
 	print_percentiles();
 	// std::cout << std::endl;
 
-	write_summary_to_csv(app_state.export_csv_filename);
+	if (!app_state.single_request) {
+		write_summary_to_csv(app_state.export_csv_filename);
+	}
+
+	// print_open_fds_count();
 
 	// Reset summary counters
 	app_state.summary_requests = 0;
 	app_state.summary_successful_requests = 0;
 	app_state.summary_cumulative_response_time = 0.0;
+	app_state.summary_count++;
 	uv_gettimeofday(&app_state.summary_start_time);
 }
 
-std::mutex response_time_mutex;
+void atomic_add(std::atomic<double>& atomic_var, double value) {
+    double current = atomic_var.load(std::memory_order_relaxed);
+    double desired;
+    do {
+        desired = current + value;
+    } while (!atomic_var.compare_exchange_weak(current, desired, std::memory_order_relaxed));
+}
 
 void finish_and_destroy_work(WorkData* data) {
 	uv_timeval64_t end_time;
 	uv_gettimeofday(&end_time);
 
 	double response_time = (end_time.tv_sec - data->start_time.tv_sec) * 1000.0 + (end_time.tv_usec - data->start_time.tv_usec) / 1000.0;  // in milliseconds
-	std::lock_guard<std::mutex> lock(response_time_mutex);
-	app_state.total_cumulative_response_time += response_time;
+	std::lock_guard<std::mutex> lock(app_state.response_time_mutex);
+	atomic_add(app_state.total_cumulative_response_time, response_time);
 
 	if (data->result > 0) {
 		app_state.finished_requests++;
@@ -279,7 +315,79 @@ void finish_and_destroy_work(WorkData* data) {
 	// Update summary statistics
 	app_state.summary_cumulative_response_time += response_time;
 	if (data->result > 1) {
-		app_state.summary_successful_requests++;
+		if (data->summary_id == app_state.summary_count) {
+			app_state.summary_successful_requests++;
+		} else {
+			std::cout << "\r" << COLOR_CYAN << "response received for old summary ID: " << data->summary_id << " current summry ID: " << app_state.summary_count << COLOR_RESET << std::flush;
+		}
+	}
+
+	const double INCREASE_SCALE = 3.0; // Scale factor to increase timeout
+	const double DECREASE_SCALE = 0.95; // Scale factor to decrease timeout
+	const double MIN_TIMEOUT = 1.0; // Minimum allowed timeout
+	const double THRESHOLD_RATIO = 0.6; // Ratio for threshold comparison
+	const double SUCCESS_PERCENTAGE_THRESHOLD = 80.0; // Success percentage threshold
+	const int MAX_ALLOWED_TIMEOUT_MULTIPLIER_ON_LOW_SUCCESS = 3; // Maximum allowed multiplier for timeout
+	// Calculate average response time in seconds
+	double current_average_response_time = (app_state.summary_requests > 0) 
+		? (app_state.summary_cumulative_response_time / app_state.summary_requests * 0.001) 
+		: 0.0;
+
+	double connection_establishment_timeout = static_cast<double>(app_state.connection_establishment_timeout);
+
+	// Calculate halfway marks
+	double curr_half_way_mark_response_time = current_average_response_time * 0.5;
+	double half_way_mark = connection_establishment_timeout * 0.5;
+	double current_summary_success_percentage = (app_state.summary_requests > 0) ? (app_state.summary_successful_requests * 100.0 / app_state.summary_requests) : 0.0;
+	bool low_success_percentage = current_summary_success_percentage && current_summary_success_percentage < SUCCESS_PERCENTAGE_THRESHOLD;
+	// Adjust timeout based on response times
+	if (curr_half_way_mark_response_time > half_way_mark /*|| low_success_percentage*/) {
+		double next_connection_establishment_timeout_in_sec = CONNECTION_ESTABLISHMENT_TIMEOUT;
+		if (low_success_percentage) {
+			double max_timeout_allowed = static_cast<double>(app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage * MAX_ALLOWED_TIMEOUT_MULTIPLIER_ON_LOW_SUCCESS);
+			if (!app_state.low_success_percentage_triggered) {
+				app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage = connection_establishment_timeout;
+				app_state.low_success_percentage_triggered = true;
+				std::cout << COLOR_RED << "Low success percentage detected. Starting connection_establishment_timeout: " << app_state.connection_establishment_timeout_in_sec_on_start_of_low_success_percentage << "s, max_time_out_allowed: " << max_timeout_allowed << COLOR_RESET << "\n" << std::flush;
+			}
+			next_connection_establishment_timeout_in_sec = MIN(connection_establishment_timeout * INCREASE_SCALE, max_timeout_allowed);
+		} else {
+			next_connection_establishment_timeout_in_sec = connection_establishment_timeout * INCREASE_SCALE;
+			if (app_state.low_success_percentage_triggered) {
+				std::cout << COLOR_GREEN << "Success percentage recovered. Resetting connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec << "s\n" <<  COLOR_RESET << std::flush;
+				app_state.low_success_percentage_triggered = false;
+			}
+		}
+		std::cout << "\r" << COLOR_ORANGE << "+conn_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+				<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
+				<< current_average_response_time
+				<< " curr_half_way_mark_response_time: " << curr_half_way_mark_response_time << " half_way_mark: " << half_way_mark
+				<< " curr_summary_success_percent: " << current_summary_success_percentage
+				<< "      "  // Adding extra spaces at the end to clear any remaining old output
+				<< COLOR_RESET
+				<< std::flush;
+		app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+		app_state.recovering_avg_response_time_strem = 0;
+	} else if (curr_half_way_mark_response_time < half_way_mark && half_way_mark > (CONNECTION_ESTABLISHMENT_TIMEOUT * THRESHOLD_RATIO)) {
+		app_state.recovering_avg_response_time_strem++;
+		if (app_state.recovering_avg_response_time_strem>100) {
+			double next_connection_establishment_timeout_in_sec = connection_establishment_timeout * DECREASE_SCALE;
+			if (!low_success_percentage) {
+				if (app_state.low_success_percentage_triggered) {
+					std::cout << COLOR_GREEN << "Success percentage recovered. Resetting connection_establishment_timeout to " << next_connection_establishment_timeout_in_sec << "s\n" <<  COLOR_RESET << std::flush;
+					app_state.low_success_percentage_triggered = false;
+				}
+			}
+			std::cout << "\r" << COLOR_YELLOW << "-conn_establishment_timeout to " << std::fixed << std::setprecision(2) << next_connection_establishment_timeout_in_sec
+					<< "s from " << app_state.connection_establishment_timeout << "s, avg response time: "
+					<< current_average_response_time
+					<< " curr_half_way_mark_response_time: " << curr_half_way_mark_response_time << " half_way_mark: " << half_way_mark
+					<< " curr_summary_success_percent: " << current_summary_success_percentage
+					<< "      "  // Adding extra spaces at the end to clear any remaining old output
+					<< COLOR_RESET
+					<< std::flush;
+			app_state.connection_establishment_timeout = std::max(next_connection_establishment_timeout_in_sec, MIN_TIMEOUT);
+		}
 	}
 
 	// // Print percentiles when buffer is full (amudaliar) - disabled this due to bug. it keeps on printing once the count is reached.
@@ -287,12 +395,19 @@ void finish_and_destroy_work(WorkData* data) {
 	//     print_percentiles();
 	// }
 
+	// Check if the worker exists in the map before erasing
+	auto it = app_state.workers_map.find(data);
+	if (it != app_state.workers_map.end()) {
+		app_state.workers_map.erase(it);
+	} else {
+		std::cout << COLOR_RED << "Worker not found in map!" << COLOR_RESET << std::endl;
+	}
+
 	GX_DELETE(data);
 }
 
 std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* filename) {
 	std::vector<std::pair<qstring, qstring>> requests;
-
 	FILE* fp = fopen(filename, "r");
 	if (!fp) {
 		std::cerr << "Failed to open file " << filename << std::endl;
@@ -325,7 +440,8 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 }
 
 void request_qh3(WorkData* data) {
-	uv_gettimeofday(&data->start_time);
+	// Track the worker by associating WorkData* with the current thread ID
+    app_state.workers_map[data] = std::this_thread::get_id();
 	int result = qh3client_helper::send_async_request<client::qh3client>(
 		app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
 		[&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
@@ -333,7 +449,7 @@ void request_qh3(WorkData* data) {
 			UNUSED(request);
 			bool validate = response->validate();
 			if (!validate) {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				// debug_print_error(__LOGTAG__, "crc fail !!!");
 			}
 			WorkData* data = static_cast<WorkData*>(arg);
 			data->result = 1 + (success && validate);
@@ -343,10 +459,10 @@ void request_qh3(WorkData* data) {
 			app_state.total_data_transferred.fetch_add(total_size);
 			// std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
 			// std::cout << "<";
-			// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
+			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
 			finish_and_destroy_work(data);
 		},
-		0);
+		0, app_state.connection_establishment_timeout);
 
 	if (result == 0) {
 		app_state.total_requests++;
@@ -355,15 +471,19 @@ void request_qh3(WorkData* data) {
 }
 
 void prepareRequest(WorkData* data, int request_index) {
-	const auto& request = app_state.requests[request_index];
+	const auto& request = app_state.requests[request_index % app_state.requests.size()];
 	data->api = request.first;
 	data->payload = request.second;
+	data->summary_id = app_state.summary_count;
+	uv_gettimeofday(&data->start_time);
+	data->connection_establishment_timeout_in_sec = app_state.connection_establishment_timeout;	// for debugging purposes
 }
 
 // Worker to handle requests
 void request_worker(uv_timer_t* handle) {
-	int num_requests = 0;  // NOTE: parallel request is buggy. so forcing it to 1 req.
+	int num_requests = 0;
 	while (num_requests <= 0) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		num_requests = static_cast<int>((rand() % app_state.max_parallel_requests) * app_state.request_weightage);
 	}
 
@@ -389,7 +509,15 @@ void request_worker(uv_timer_t* handle) {
 void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
 	if (app_state.finished_requests < app_state.total_requests) {
-		std::cout << "Waiting for pending requests to finish... pending :" << (app_state.total_requests - app_state.finished_requests) << "\n";
+		std::cout << "Waiting for pending requests to finish... pending: " << (app_state.total_requests - app_state.finished_requests) << " workers:" << app_state.workers_map.size() << std::endl;
+		
+		// Print worker data
+		for (const auto& worker : app_state.workers_map) {
+			WorkData* data = worker.first;
+			std::cout << "Worker connection establishment timeout (in sec): " << data->connection_establishment_timeout_in_sec << "s" << std::endl;
+		}
+		//
+
 		uv_timer_start(&app_state.exit_timer, exit_after_delay, 2 * 1000, 0);
 
 		uv_timer_stop(&app_state.request_timer);
@@ -403,7 +531,7 @@ void exit_after_delay(uv_timer_t* handle) {
 	uv_stop(app_state.loop);  // Stop the loop
 
 	print_summary();
-	std::cout << "\nFINISHED.\n\n";
+	std::cout << "\nFINISHED.\n\n" << std::endl;
 }
 
 // Timer callback to print summary periodically
@@ -420,6 +548,24 @@ std::string get_timestamp() {
 	oss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
 
 	return oss.str();
+}
+
+void print_usage(const char* program_name) {
+    std::cout << "Usage: " << program_name << " [options]\n\n";
+    std::cout << "Options:\n";
+	std::cout << "  --server <host:port>      Server address in the form of host:port (default: " << REQUEST_IP << ")\n";
+    std::cout << "  --single-mode             Enable single request mode and send the 0th api index from requests.json (default: off)\n";
+    std::cout << "  --single-request <index>  Enable single request mode and send a single request with the specified api index from requests.json (default: off)\n";
+	std::cout << "  --exit-after <seconds>    [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
+    std::cout << "  --max-parallel <n>        [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
+	std::cout << "  --tmin <ms>               [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
+    std::cout << "  --tmax <ms>               [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
+    std::cout << "  --weight <weight>         [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
+    std::cout << "  --summary-interval <s>    [optional] Summary interval in seconds (default: " << SUMMARY_INTERVAL << ")\n";
+    std::cout << "\n";
+    std::cout << "Examples:\n";
+    std::cout << "  " << program_name << " --server 127.0.0.1:4004 --exit-after 10\n";
+	std::cout << "  " << program_name << " --server 127.0.0.1:4010 --single-request 5\n";
 }
 
 // Function to parse command line arguments
@@ -440,7 +586,7 @@ void parse_arguments(int argc, char* argv[]) {
 		app_state.host = request_ip_parts[0];
 		app_state.port = request_ip_parts[1];
 	} else {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
+		debug_print_error(__LOGTAG__, "Invalid request IP: %s", request_ip.c_str());
 	}
 	//
 
@@ -469,10 +615,13 @@ void parse_arguments(int argc, char* argv[]) {
 				app_state.host = request_ip_parts[0];
 				app_state.port = request_ip_parts[1];
 			} else {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
+				debug_print_error(__LOGTAG__, "Invalid request IP: %s. Defaulting to %s", request_ip.c_str(), REQUEST_IP);
 			}
 		} else if (strcmp(argv[i], "--single-mode") == 0) {
 			app_state.single_request = true;
+		} else if (strcmp(argv[i], "--single-request") == 0 && i + 1 < argc) {
+			app_state.single_request = true;
+			app_state.single_request_index = atoi(argv[++i]);
 		}
 	}
 }
@@ -536,7 +685,7 @@ void cleanup() {
 
 void single_mode() {
 	WorkData* data = DEBUG_NEW WorkData();
-	prepareRequest(data, 0);
+	prepareRequest(data, app_state.single_request_index);
 	int result = qh3client_helper::send_async_request<client::qh3client>(
 		app_state.host, app_state.port, conn_io_req_res::create(data->api, data->payload), data,
 		[&](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
@@ -544,7 +693,7 @@ void single_mode() {
 			UNUSED(request);
 			bool validate = response->validate();
 			if (!validate) {
-				DEBUG_PRINT_ERROR(__LOGTAG__, "crc fail !!!");
+				debug_print_error(__LOGTAG__, "crc fail !!!");
 			}
 			WorkData* data = static_cast<WorkData*>(arg);
 			data->result = 1 + (success && validate);
@@ -554,12 +703,14 @@ void single_mode() {
 			app_state.total_data_transferred.fetch_add(total_size);
 			// std::size_t current_chunk = app_state.chunk_counter.fetch_add(1);
 			// std::cout << "<";
-			// DEBUG_PRINT(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
-			std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
-			std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
+			// debug_print(LOG_LEVEL_0, __LOGTAG__, "async returned [%d, %d] %s !!!", success, validate, payload.buffer.c_str());
+			std::cout << "\nResponse: status " << data->result << " \n" << payload.buffer.c_str() << "\n" << std::endl;
+			// std::cout << "Total Requests: " << app_state.total_requests << "\tSuccess: " << app_state.total_successful_requests << " Finished: " << app_state.finished_requests << "\n";
+			// std::cout << "Total Avg Response Time: " << app_state.total_cumulative_response_time << " ms\n";
 			finish_and_destroy_work(data);
 		},
 		0,
+		app_state.connection_establishment_timeout,
 		[](void* arg) {
 			UNUSED(arg);
 			app_state.exit_signal = true;
@@ -601,7 +752,35 @@ void multi_mode() {
 }
 
 int main(int argc, char* argv[]) {
+	// Check for --help flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        }
+    }
+
 	std::cout << "qfist: v0.1\nSTARTED...\n";
+	struct rlimit limit;
+    if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+        std::cout << "fd Soft limit: " << limit.rlim_cur << std::endl;
+        std::cout << "fd Hard limit: " << limit.rlim_max << std::endl;
+    } else {
+        std::cerr << "Error getting file descriptor limits" << std::endl;
+    }
+	long open_max = sysconf(_SC_OPEN_MAX);
+    if (open_max != -1) {
+        std::cout << "Maximum number of open file descriptors: " << open_max << std::endl;
+    } else {
+        std::cerr << "Error getting maximum file descriptors" << std::endl;
+    }
+	std::cout << "FD_SETSIZE: " << FD_SETSIZE << std::endl;
+
+	// struct rlimit limit;
+    // limit.rlim_cur = 4096; // Soft limit
+    // limit.rlim_max = 4096; // Hard limit
+    // setrlimit(RLIMIT_NOFILE, &limit);
+
 	srand(static_cast<unsigned int>(time(nullptr)));  // Seed the random number generator
 
 	// Initialize app_state

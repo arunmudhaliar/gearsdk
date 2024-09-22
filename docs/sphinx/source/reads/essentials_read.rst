@@ -10,9 +10,9 @@ Includes
 
 The file includes several headers for common utilities and external libraries:
 
-- `../../common/qstring.h`
+- `../../common/qstring.hpp`
 - `../../common/sdktypes.hpp`
-- `../../common/timer.h`
+- `../../common/timer.hpp`
 - `qtimer.hpp`
 - `<map>`
 - `<netdb.h>`
@@ -31,8 +31,6 @@ Macros
 
 - `__LOGTAG__`: Defines the log tag for this file.
 - `EV_START_RECORD(timestamp_)`: Starts recording an event timestamp.
-- `EV_PRINT_ELAPSED(timestamp_, tag, formatted_msg)`: Prints the elapsed time since the timestamp.
-- `EV_PRINT_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg)`: Prints the elapsed time and clears the timestamp.
 - `EV_PRINT_IF_ELAPSED(timestamp_, tag, formatted_msg, warn_after_ms)`: Prints if the elapsed time exceeds a warning threshold.
 - `EV_PRINT_IF_ELAPSED_AND_CLEAR(timestamp_, tag, formatted_msg, warn_after_ms)`: Prints if the elapsed time exceeds a warning threshold and clears the timestamp.
 
@@ -59,12 +57,12 @@ Handles mutex operations.
 - `qmutex()`: Constructor.
 - `~qmutex()`: Destructor.
 - `int init(const std::string& name)`: Initializes the mutex.
-- `int tryLock(const char* lockedBy, const char* msg = nullptr)`: Tries to lock the mutex.
-- `int unLock(const char* msg = nullptr)`: Unlocks the mutex.
+- `int try_lock(const char* lockedBy, const char* msg = nullptr)`: Tries to lock the mutex.
+- `int unlock(const char* msg = nullptr)`: Unlocks the mutex.
 - `pthread_mutex_t* getMutexInternal()`: Returns the internal mutex.
-- `void conditionalWait(const char* waiting_at)`: Waits conditionally.
+- `void conditional_wait(const char* waiting_at)`: Waits conditionally.
 - `void block(const char* blockedBy = nullptr)`: Blocks the mutex.
-- `void unBlock(const char* unblockedBy)`: Unblocks the mutex.
+- `void unblock(const char* unblockedBy)`: Unblocks the mutex.
 
 essentials
 ----------

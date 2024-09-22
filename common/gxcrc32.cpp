@@ -1,8 +1,8 @@
-#include "gxcrc32.h"
+#include "gxcrc32.hpp"
 
-// const unsigned int gxCrc32::CrcSeed;
-unsigned int gxcrc32::crcData = 0;
-const unsigned int gxcrc32::CrcTable[] = {
+// const unsigned int gxCrc32::CRC_SEED;
+unsigned int gxcrc32::crc_data = 0;
+const unsigned int gxcrc32::CRC_TABLE[] = {
 	0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3, 0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988, 0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91, 0x1DB71064, 0x6AB020F2, 0xF3B97148,
 	0x84BE41DE, 0x1ADAD47D, 0x6DDDE4EB, 0xF4D4B551, 0x83D385C7, 0x136C9856, 0x646BA8C0, 0xFD62F97A, 0x8A65C9EC, 0x14015C4F, 0x63066CD9, 0xFA0F3D63, 0x8D080DF5, 0x3B6E20C8, 0x4C69105E, 0xD56041E4, 0xA2677172, 0x3C03E4D1, 0x4B04D447,
 	0xD20D85FD, 0xA50AB56B, 0x35B5A8FA, 0x42B2986C, 0xDBBBC9D6, 0xACBCF940, 0x32D86CE3, 0x45DF5C75, 0xDCD60DCF, 0xABD13D59, 0x26D930AC, 0x51DE003A, 0xC8D75180, 0xBFD06116, 0x21B4F4B5, 0x56B3C423, 0xCFBA9599, 0xB8BDA50F, 0x2802B89E,
@@ -104,14 +104,14 @@ public static string CalcToHex( string text )
 /// </summary>
 /// <param name="data"></param>
 /// <returns></returns>
-int gxcrc32::Calc(unsigned char* data) {
+int gxcrc32::calc(unsigned char* data) {
 	if ((int) strlen((char*) data) == 0)
 		return 0;
 
-	crcData = 0;
-	Update(data);
+	crc_data = 0;
+	update(data);
 
-	return (int) crcData;
+	return (int) crc_data;
 }
 
 /// <summary>
@@ -119,14 +119,14 @@ int gxcrc32::Calc(unsigned char* data) {
 /// </summary>
 /// <param name="data"></param>
 /// <returns></returns>
-int gxcrc32::Calc(unsigned char* data, int offset, int len, bool isBinary) {
+int gxcrc32::calc(unsigned char* data, int offset, int len, bool is_binary) {
 	// if( data == null )
 	//	return 0;
 
-	crcData = 0;
-	Update(data, offset, len, isBinary);
+	crc_data = 0;
+	update(data, offset, len, is_binary);
 
-	return (int) crcData;
+	return (int) crc_data;
 }
 
 ///// <summary>
@@ -139,10 +139,10 @@ int gxcrc32::Calc(unsigned char* data, int offset, int len, bool isBinary) {
 //	//if( data == null )
 //	//	return 0;
 
-//	crcData = 0;
+//	crc_data = 0;
 //	Update( data );
 
-//	return (int)crcData;
+//	return (int)crc_data;
 //}
 
 ///// <summary>
@@ -155,10 +155,10 @@ int gxcrc32::Calc(unsigned char* data, int offset, int len, bool isBinary) {
 //	if( text == NULL )
 //		return 0;
 
-//	crcData = 0;
+//	crc_data = 0;
 //	Update( text );
 
-//	return (int)crcData;
+//	return (int)crc_data;
 //}
 
 /// <summary>
@@ -167,10 +167,10 @@ int gxcrc32::Calc(unsigned char* data, int offset, int len, bool isBinary) {
 /// <param name = "bval">
 /// the byte is taken as the lower 8 bits of bval
 /// </param>
-void gxcrc32::Update(int bval) {
-	crcData ^= CrcSeed;
-	crcData = CrcTable[(crcData ^ bval) & 0xFF] ^ (crcData >> 8);
-	crcData ^= CrcSeed;
+void gxcrc32::update(int bval) {
+	crc_data ^= CRC_SEED;
+	crc_data = CRC_TABLE[(crc_data ^ bval) & 0xFF] ^ (crc_data >> 8);
+	crc_data ^= CRC_SEED;
 }
 
 /// <summary>
@@ -190,8 +190,8 @@ void gxcrc32::Update(int bval) {
 /// <param name="buffer">
 /// buffer an array of bytes
 /// </param>
-void gxcrc32::Update(unsigned char* buffer) {
-	Update(buffer, 0, (int) strlen((char*) buffer), false);
+void gxcrc32::update(unsigned char* buffer) {
+	update(buffer, 0, (int) strlen((char*) buffer), false);
 }
 
 /// <summary>
@@ -206,22 +206,22 @@ void gxcrc32::Update(unsigned char* buffer) {
 /// <param name = "len">
 /// the length of the data
 /// </param>
-void gxcrc32::Update(unsigned char* buf, int off, int len, bool isBinary) {
+void gxcrc32::update(unsigned char* buf, int off, int len, bool is_binary) {
 	if (buf == NULL) {
 		return;	 // throw new ArgumentNullException( "buf" );
 	}
 
-	if (off < 0 || len < 0 || (!isBinary && (off + len > (int) strlen((char*) buf)))) {
+	if (off < 0 || len < 0 || (!is_binary && (off + len > (int) strlen((char*) buf)))) {
 		return;	 // throw new ArgumentOutOfRangeException();
 	}
 
-	crcData ^= CrcSeed;
+	crc_data ^= CRC_SEED;
 
 	while (--len >= 0) {
-		crcData = CrcTable[(crcData ^ buf[off++]) & 0xFF] ^ (crcData >> 8);
+		crc_data = CRC_TABLE[(crc_data ^ buf[off++]) & 0xFF] ^ (crc_data >> 8);
 	}
 
-	crcData ^= CrcSeed;
+	crc_data ^= CRC_SEED;
 }
 
 ///// <summary>
@@ -248,12 +248,12 @@ void gxcrc32::Update(unsigned char* buf, int off, int len, bool isBinary) {
 //		return;//throw new ArgumentOutOfRangeException();
 //	}
 
-//	crcData ^= CrcSeed;
+//	crc_data ^= CRC_SEED;
 
 //	while( --len >= 0 )
 //	{
-//		crcData = CrcTable[ ( crcData ^ buf[ off++ ] ) & 0xFF ] ^ ( crcData >> 8 );
+//		crc_data = CRC_TABLE[ ( crc_data ^ buf[ off++ ] ) & 0xFF ] ^ ( crc_data >> 8 );
 //	}
 
-//	crcData ^= CrcSeed;
+//	crc_data ^= CRC_SEED;
 //}

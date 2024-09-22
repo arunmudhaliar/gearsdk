@@ -21,7 +21,7 @@
 #ifndef qhiredis_hpp
 #define qhiredis_hpp
 
-#include "../../common/qstring.h"
+#include "../../common/qstring.hpp"
 #include "../../common/sdktypes.hpp"
 
 #include <functional>
@@ -66,11 +66,11 @@ class qhiredis {
    public:
 	/**
 	 * @brief Constructs a `qhiredis` object.
-	 * @param name The name of the `qhiredis` object.
+	 * @param NAME The name of the `qhiredis` object.
 	 * @param redis_ip The IP address of the Redis server.
 	 * @param redis_port The port number of the Redis server.
 	 */
-	qhiredis(const qstring name, const qstring& redis_ip, uint16_t redis_port);
+	qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port);
 
 	/**
 	 * @brief Destroys the `qhiredis` object.
@@ -159,20 +159,20 @@ class qhiredis {
 	/**
 	 * @brief Increments the value of a key in Redis by a specified delta.
 	 * @param key The key name.
-	 * @param delta The delta value to increment by.
+	 * @param DELTA The delta value to increment by.
 	 * @param value The variable to store the incremented value.
 	 * @return 0 if the operation is successful, -1 otherwise.
 	 */
-	int incr_by(const qstring& key, const int delta, long long& value);
+	int incr_by(const qstring& key, const int DELTA, long long& value);
 
 	/**
 	 * @brief Decrements the value of a key in Redis by a specified delta.
 	 * @param key The key name.
-	 * @param delta The delta value to decrement by.
+	 * @param DELTA The delta value to decrement by.
 	 * @param value The variable to store the decremented value.
 	 * @return 0 if the operation is successful, -1 otherwise.
 	 */
-	int decr_by(const qstring& key, const int delta, long long& value);
+	int decr_by(const qstring& key, const int DELTA, long long& value);
 
 	/**
 	 * @brief Sets an expiry time for a key in Redis.
@@ -231,7 +231,7 @@ class qhiredis {
 	static void iterate_hash(redisContext* context, const char* hash_key, void* arg, type_redis_hash_iterator_field_value_cb callback);
 
 	redisContext* context = nullptr; /**< The Redis context. */
-	const qstring name;				 /**< The name of the `qhiredis` object. */
+	const qstring NAME;				 /**< The name of the `qhiredis` object. */
 	qstring redis_ip = "127.0.0.1";	 /**< The IP address of the Redis server. */
 	uint16_t redis_port;			 /**< The port number of the Redis server. */
 };

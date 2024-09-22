@@ -46,7 +46,7 @@ class functional_test_qh3client : public ::testing::TestWithParam<int> {
 // Test case for qh3client::send_request
 TEST_P(functional_test_qh3client, test_send_request) {
 	int iteration = GetParam();
-	// DEBUG_RAW(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
+	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
 	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
 										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
@@ -59,7 +59,7 @@ TEST_P(functional_test_qh3client, test_send_request) {
 	ParseResult ok = doc.Parse(json_str_object.c_str());
 	EXPECT_TRUE(ok) << "JSON Parse FAILED !!!";
 	if (!ok) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+		debug_print_error(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 	}
 	rq_msg_user_get user_get_msg_rq;
 	EXPECT_TRUE(user_get_msg_rq.deserialize(doc)) << "deserialize FAILED !!!";
@@ -82,9 +82,9 @@ TEST_P(functional_test_qh3client, test_send_request) {
 	EXPECT_TRUE(response_received) << "response_received is false !!!";	 // or EXPECT_FALSE if it should be false
 
 	const conn_io_req_res::payload& payload = new_client->conn_io->response->get_payload();
-	// DEBUG_RAW(LOG_LEVEL_0, "%.*s", payload.buffer.length(), payload.buffer.c_str());
+	// debug_raw(LOG_LEVEL_0, "%.*s", payload.buffer.length(), payload.buffer.c_str());
 
-	// Verify that DEBUG_PRINT was called with expected arguments
+	// Verify that debug_print was called with expected arguments
 	// (Use a logging mock or check log output if possible)
 
 	// Verify cleanup was called (depends on the implementation of on_post_send_cleanup)
@@ -99,7 +99,7 @@ TEST_P(functional_test_qh3client, test_send_request) {
 // Test case for qh3client_helper::send_request
 TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callback) {
 	int iteration = GetParam();
-	// DEBUG_RAW(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
+	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
 	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
 										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
@@ -112,7 +112,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 	ParseResult ok = doc.Parse(json_str_object.c_str());
 	EXPECT_TRUE(ok) << "JSON Parse FAILED !!!";
 	if (!ok) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+		debug_print_error(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 	}
 	rq_msg_user_get user_get_msg_rq;
 	EXPECT_TRUE(user_get_msg_rq.deserialize(doc)) << "deserialize FAILED !!!";
@@ -120,7 +120,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 	qstring json_str;
 	user_get_msg_rq.get_json_string(json_str);
 
-	// DEBUG_RAW(LOG_LEVEL_0, "JSON string: %s", json_str.c_str());
+	// debug_raw(LOG_LEVEL_0, "JSON string: %s", json_str.c_str());
 
 	std::promise<void> callback_invoked;
 	std::future<void> callback_future = callback_invoked.get_future();
@@ -135,7 +135,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 			bool validate = response->validate();
 			EXPECT_TRUE(validate) << "crc validation FAILED !!!";
 
-			// DEBUG_RAW(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
+			// debug_raw(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
 
 			conn_io_req_res::header* token_header = response->get_header("token");
 			if (token_header) {
@@ -155,14 +155,14 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 	// Assert
 	EXPECT_TRUE(success_flag);	// Ensure the request succeeded
 	// Perform the assertion after the async operation completes
-	// DEBUG_RAW(LOG_LEVEL_0, "Token value: %s", token_value.c_str());
+	// debug_raw(LOG_LEVEL_0, "Token value: %s", token_value.c_str());
 	EXPECT_TRUE(token_value.length() > 0) << "Token value should not be empty";
 }
 
 // Test case for qh3client_helper::send_async_request
 TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_callback) {
 	int iteration = GetParam();
-	// DEBUG_RAW(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
+	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
 	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
 										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
@@ -175,7 +175,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 	ParseResult ok = doc.Parse(json_str_object.c_str());
 	EXPECT_TRUE(ok) << "JSON Parse FAILED !!!";
 	if (!ok) {
-		DEBUG_PRINT_ERROR(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+		debug_print_error(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 	}
 	rq_msg_user_get user_get_msg_rq;
 	EXPECT_TRUE(user_get_msg_rq.deserialize(doc)) << "deserialize FAILED !!!";
@@ -183,7 +183,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 	qstring json_str;
 	user_get_msg_rq.get_json_string(json_str);
 
-	// DEBUG_RAW(LOG_LEVEL_0, "JSON string: %s", json_str.c_str());
+	// debug_raw(LOG_LEVEL_0, "JSON string: %s", json_str.c_str());
 
 	std::promise<void> callback_invoked;
 	std::future<void> callback_future = callback_invoked.get_future();
@@ -197,7 +197,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 			success_flag = success;
 			bool validate = response->validate();
 			EXPECT_TRUE(validate) << "crc validation FAILED !!!";
-			// DEBUG_RAW(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
+			// debug_raw(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
 			conn_io_req_res::header* token_header = response->get_header("token");
 			if (token_header) {
 				token_value = token_header->value;
@@ -205,10 +205,10 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 			// Notify the test that the callback was invoked
 			// callback_invoked.set_value();    // Will lead to memory leak since the main thread will exit immediately after this.
 		},
-		1,
+		1, CONNECTION_ESTABLISHMENT_TIMEOUT,
 		[&callback_invoked](void* arg) {
 			// Cleanup logic, if necessary
-			// DEBUG_RAW(LOG_LEVEL_0, "Cleaning up thread.");
+			// debug_raw(LOG_LEVEL_0, "Cleaning up thread.");
 			callback_invoked.set_value();  // Notify the test that the callback was invoked.
 										   // This needs to be done here else ther will be memory leaks on exit since the main will exit immediately.
 		});
@@ -221,7 +221,7 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 	// Assert
 	EXPECT_TRUE(success_flag) << "success_flag is FALSE !!!";  // Ensure the request succeeded
 	// Perform the assertion after the async operation completes
-	// DEBUG_RAW(LOG_LEVEL_0, "Token value: %s", token_value.c_str());
+	// debug_raw(LOG_LEVEL_0, "Token value: %s", token_value.c_str());
 	EXPECT_TRUE(token_value.length() > 0) << "Token value should not be empty";
 }
 

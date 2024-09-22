@@ -60,8 +60,8 @@ class bridge_h3client_connection {
 	virtual void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) = 0;
 	inline virtual struct ev_loop* get_mainloop() = 0;
 	inline virtual const struct conn_io_req_res* get_getorpost_http_request() = 0;
-	virtual int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
-	virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) = 0;
+	virtual int64_t send_get_http_request(const conn_io_req_res* data_getorpost, struct conn_io_qh3_client* conn_io) = 0;
+	virtual int64_t send_post_http_request(const conn_io_req_res* data_getorpost, struct conn_io_qh3_client* conn_io) = 0;
 };
 
 typedef std::function<void(conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success)> type_qh3client_helper_cb;
@@ -83,14 +83,14 @@ class qh3client : public bridge_h3client_connection {
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	static void connection_establishment_timeout_cb(EV_P_ ev_timer* w, int revents);
-	int64_t send_get_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
-	int64_t send_post_http_request(const conn_io_req_res* data_getorpost_, struct conn_io_qh3_client* conn_io) final;
+	int64_t send_get_http_request(const conn_io_req_res* data_getorpost, struct conn_io_qh3_client* conn_io) final;
+	int64_t send_post_http_request(const conn_io_req_res* data_getorpost, struct conn_io_qh3_client* conn_io) final;
 	virtual void on_prepare_client_send();
-	int send_request(const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb response_cb_);
+	int send_request(const conn_io_req_res* data_getorpost, type_qh3client_helper_cb response_cb, float connection_timeout = CONNECTION_ESTABLISHMENT_TIMEOUT);
 	virtual void on_post_send_cleanup();
 	virtual void* get_client_specific_data();
-	const qstring host;
-	const qstring port;
+	const qstring HOST;
+	const qstring PORT;
 	const conn_io_req_res* http_request = nullptr;
 	struct conn_io_qh3_client* conn_io = nullptr;
 	void* arg = nullptr;
