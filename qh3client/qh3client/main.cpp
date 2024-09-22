@@ -58,12 +58,12 @@ void parse_arguments(int argc, const char* argv[]) {
 }
 
 void print_usage(const char* program_name) {
-    fprintf(stderr, "Usage: %s [options]\n\n", program_name);
-    fprintf(stderr, "Options:\n");
-    fprintf(stderr, "  --server <host:port>      Server address in the form of host:port (default: %s)\n", DEFAULT_REQUEST_IP);
-    fprintf(stderr, "  --requests <count>        [optional] No of requests (default: %d)\n\n", DEFAULT_REQUEST_COUNT);
-    fprintf(stderr, "Example:\n");
-    fprintf(stderr, "  %s --server 127.0.0.1:4004 --requests 10\n", program_name);
+	fprintf(stderr, "Usage: %s [options]\n\n", program_name);
+	fprintf(stderr, "Options:\n");
+	fprintf(stderr, "  --server <host:port>      Server address in the form of host:port (default: %s)\n", DEFAULT_REQUEST_IP);
+	fprintf(stderr, "  --requests <count>        [optional] No of requests (default: %d)\n\n", DEFAULT_REQUEST_COUNT);
+	fprintf(stderr, "Example:\n");
+	fprintf(stderr, "  %s --server 127.0.0.1:4004 --requests 10\n", program_name);
 }
 
 int main(int argc, const char* argv[]) {
