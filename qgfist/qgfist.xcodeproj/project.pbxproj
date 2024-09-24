@@ -149,6 +149,7 @@
 				551CDD4C2C9D131F00ED9D65 /* Frameworks */,
 				551CDD4D2C9D131F00ED9D65 /* CopyFiles */,
 				551CDD832C9DFA7D00ED9D65 /* Embed Libraries */,
+				551CDD8B2CA1DFC300ED9D65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -190,6 +191,26 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		551CDD8B2CA1DFC300ED9D65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/opt/homebrew/bin:$PATH\"\n# clang-format\n# brew install clang-format # (If clang-format is not installed)\nfind ${SRCROOT} \\( -iname \"*.h\" -o -iname \"*.hpp\" -o -iname \"*.m\" -o -iname \"*.mm\" -o -iname \"*.c\" -o -iname \"*.cpp\" \\) -exec clang-format -i {} +\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		551CDD4B2C9D131F00ED9D65 /* Sources */ = {
@@ -325,6 +346,7 @@
 					"USE_PTHREAD=1",
 					"LOG_LEVEL=2",
 					"DEV_BUILD=1",
+					"_DEBUG_NEW_FILENAME_LEN=128",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (

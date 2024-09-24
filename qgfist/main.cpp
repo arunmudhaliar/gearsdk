@@ -1,18 +1,19 @@
-#include "../qclient/source/qnetworkclient.hpp"
 #include "../networkcommon/source/message.hpp"
 #include "../networkcommon/source/roommessage.hpp"
-
+#include "../qclient/source/qnetworkclient.hpp"
 #include "gclient.hpp"
 
-#include <iostream>
-#include <uv.h>
-#include <cstring>
-#include <sstream>
-#include <string>
-#include <unordered_map>
-#include <atomic>	  // For std::atomic
+#include <atomic>  // For std::atomic
 #include <chrono>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <stdlib.h>
+#include <string>
+#include <sys/resource.h>
 #include <thread>
+#include <unordered_map>
+#include <uv.h>
 
 // Constants
 
@@ -32,58 +33,49 @@
 #define MIN_TIMEOUT_MS 50	// Minimum timeout in milliseconds
 #define MAX_TIMEOUT_MS 300	// Maximum timeout in milliseconds
 #define DEFAULT_WEIGHTAGE 0.65f
-#define EXIT_AFTER 10		// Exit after this time in seconds
+#define EXIT_AFTER 10  // Exit after this time in seconds
 
 // Structs
 struct WorkData {
-	WorkData(uv_loop_t* loop, const type_qclient_onconnect_cb& onconnect_cb, 
-      const type_qclient_onmessage_cb& onmessage_cb, 
-      const type_qclient_onreleaseconnection_cb& onreleaseconnection_cb, 
-      const type_qclient_onclose_cb& onclose_cb) {
-        uv_gettimeofday(&start_time);
-        client = DEBUG_NEW gclient(loop, onconnect_cb, onmessage_cb, onreleaseconnection_cb, onclose_cb, this);
+	WorkData(uv_loop_t* loop, const type_qclient_onconnect_cb& onconnect_cb, const type_qclient_onmessage_cb& onmessage_cb, const type_qclient_onreleaseconnection_cb& onreleaseconnection_cb, const type_qclient_onclose_cb& onclose_cb) {
+		uv_gettimeofday(&start_time);
+		client = DEBUG_NEW gclient(loop, onconnect_cb, onmessage_cb, onreleaseconnection_cb, onclose_cb, this);
 	}
 
-    ~WorkData() {
-        GX_DELETE(client);
-    }
+	~WorkData() { GX_DELETE(client); }
 	uv_timeval64_t start_time = {0, 0};
-    gclient* client = nullptr;
+	gclient* client = nullptr;
 };
 
 struct AppState {
 	qstring host = "192.168.0.230";
 	qstring port = "4004";
 	uv_loop_t* loop;
-    uv_timer_t request_timer;
-    uv_timer_t exit_timer;
-    double request_weightage;
+	uv_timer_t request_timer;
+	uv_timer_t exit_timer;
+	uv_timer_t drain_timer;
+	double request_weightage;
 	int max_parallel_requests;
-    int min_timeout_ms;
+	int min_timeout_ms;
 	int max_timeout_ms;
-    int exit_after_seconds = 0;
-    bool exit_signal = false;			  // Flag to signal exit
-    std::unordered_map<WorkData*, std::thread::id> workers_map;
-	std::unordered_map<WorkData*, unsigned int> released_workers_map;
+	int exit_after_seconds = 0;
+	bool exit_signal = false;  // Flag to signal exit
+	std::unordered_map<WorkData*, std::thread::id> workers_map;
+	std::unordered_map<WorkData*, std::thread::id> released_workers_map;
 	std::atomic<size_t> total_workers {0};
 	std::atomic<size_t> total_workers_drained {0};
 };
 
 AppState app_state;
 
-
 void print_current_status() {
-	std::cout << "\r" << COLOR_CYAN 
-	<< "Total Workers: " << app_state.total_workers
-	<< ", Workers remaining: " << app_state.workers_map.size() 
-	<< ", Drain remaining: "<< app_state.released_workers_map.size()
-	<< ", Total Workers Drained: " << app_state.total_workers_drained
-	<< "      "  // Adding extra spaces at the end to clear any remaining old output
-	<< COLOR_RESET << std::flush;
+	std::cout << "\r" << COLOR_CYAN << "Total workers: " << app_state.total_workers << ", Active workers: " << app_state.workers_map.size() << ", Draining workers: " << app_state.released_workers_map.size()
+			  << ", Total workers drained: " << app_state.total_workers_drained << "      "	 // Adding extra spaces at the end to clear any remaining old output
+			  << COLOR_RESET << std::flush;
 }
 
 void request_qconnect(WorkData* data) {
-    app_state.workers_map[data] = std::this_thread::get_id();
+	app_state.workers_map[data] = std::this_thread::get_id();
 	gclient* client = data->client;
 	client->run(app_state.host, app_state.port);
 	app_state.total_workers++;
@@ -94,15 +86,15 @@ void drain_workers() {
 	std::vector<WorkData*> finished_list;
 	for (const auto& it : app_state.released_workers_map) {
 		WorkData* worker = it.first;
-		if (worker->client->is_runfinished()){
+		if (worker->client->is_runfinished()) {
 			finished_list.push_back(worker);
 		}
 	}
 
 	for (WorkData* worker : finished_list) {
 		app_state.released_workers_map.erase(worker);
-		GX_DELETE(worker);
 		app_state.total_workers_drained++;
+		GX_DELETE(worker);
 	}
 }
 
@@ -110,12 +102,11 @@ void finish_and_remove_work(WorkData* data) {
 	// Check if the worker exists in the map before erasing
 	auto it = app_state.workers_map.find(data);
 	if (it != app_state.workers_map.end()) {
+		app_state.released_workers_map[data] = it->second;
 		app_state.workers_map.erase(it);
-		app_state.released_workers_map[data] = 0;
 	} else {
 		std::cout << COLOR_RED << "Worker not found in map!" << COLOR_RESET << std::endl;
 	}
-    drain_workers();
 	print_current_status();
 }
 
@@ -147,6 +138,11 @@ void gclient_onclose_cb(gclient* c, conn_io_client* qconnection) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Connection closed", qconnection->cid_hash_val);
 }
 
+// Worker to handle drain
+void drain_worker(uv_timer_t* handle) {
+	drain_workers();
+}
+
 // Worker to handle requests
 void request_worker(uv_timer_t* handle) {
 	int num_requests = 0;
@@ -159,7 +155,6 @@ void request_worker(uv_timer_t* handle) {
 	for (int i = 0; i < num_requests; i++) {
 		WorkData* data = DEBUG_NEW WorkData(app_state.loop, gclient_onconnect_cb, gclient_onmessage_cb, gclient_onreleaseconnection_cb, gclient_onclose_cb);
 		request_qconnect(data);
-        // finish_and_remove_work(data);
 	}
 
 	// Calculate the next timeout interval between min_timeout_ms and max_timeout_ms
@@ -171,8 +166,8 @@ void request_worker(uv_timer_t* handle) {
 }
 
 void print_parameters() {
-    std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
-                << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+	std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
+			  << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
 }
 
 // Function to parse command line arguments
@@ -223,36 +218,35 @@ void initialize_app_state(AppState& app_state) {
 	app_state.host = "192.168.0.230";
 	app_state.port = "4004";
 	app_state.loop = nullptr;
-    app_state.max_parallel_requests = MAX_PARALLEL_REQUESTS;
-    app_state.request_weightage = DEFAULT_WEIGHTAGE;
-    app_state.min_timeout_ms = MIN_TIMEOUT_MS;
+	app_state.max_parallel_requests = MAX_PARALLEL_REQUESTS;
+	app_state.request_weightage = DEFAULT_WEIGHTAGE;
+	app_state.min_timeout_ms = MIN_TIMEOUT_MS;
 	app_state.max_timeout_ms = MAX_TIMEOUT_MS;
-    app_state.exit_after_seconds = EXIT_AFTER;
-    app_state.exit_signal = false;
+	app_state.exit_after_seconds = EXIT_AFTER;
+	app_state.exit_signal = false;
 }
 
-void print_summary() {
+void print_summary() {}
+
+void cleanup() {
+	if (!uv_is_active(reinterpret_cast<uv_handle_t*>(app_state.loop)) || uv_is_closing(reinterpret_cast<uv_handle_t*>(app_state.loop))) {
+		return;
+	}
+
+	uv_timer_stop(&app_state.request_timer);
+	uv_timer_stop(&app_state.drain_timer);
+	uv_timer_stop(&app_state.exit_timer);
+	uv_loop_close(app_state.loop);
 }
 
 // Timer callback to handle exit
 void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
+	std::cout << "exit_after_delay called\n" << std::flush;
+
 	uv_timer_stop(&app_state.request_timer);
 
 	drain_workers();
-	// std::vector<WorkData*> finished_list;
-	// for (const auto& it : app_state.released_workers_map) {
-	// 	WorkData* worker = it.first;
-	// 	if (worker->client->is_runfinished()){
-	// 		finished_list.push_back(worker);
-	// 	}
-	// }
-
-	// for (WorkData* worker : finished_list) {
-	// 	app_state.released_workers_map.erase(worker);
-	// 	GX_DELETE(worker);
-	// 	app_state.total_workers_drained++;
-	// }
 
 	if (app_state.workers_map.size() > 0) {
 		// std::cout << "\rWaiting for pending requests to finish... pending: " << app_state.workers_map.size() << std::flush;
@@ -269,6 +263,7 @@ void exit_after_delay(uv_timer_t* handle) {
 
 	print_current_status();
 	app_state.exit_signal = true;
+	//	cleanup();
 	uv_stop(app_state.loop);  // Stop the loop
 
 	print_summary();
@@ -276,35 +271,78 @@ void exit_after_delay(uv_timer_t* handle) {
 }
 
 void print_usage(const char* program_name) {
-    std::cout << "Usage: " << program_name << " [options]\n\n";
-    std::cout << "Options:\n";
+	std::cout << "Usage: " << program_name << " [options]\n\n";
+	std::cout << "Options:\n";
 	std::cout << "  --gserver <host:port>      Game server address in the form of host:port (default: " << GAME_SERVER_IP << ")\n";
-    std::cout << "  --exit-after <seconds>    [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
+	std::cout << "  --exit-after <seconds>    [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
 	std::cout << "  --max-parallel <n>        [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
-    std::cout << "  --weight <weight>         [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
-    std::cout << "  --tmin <ms>               [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
-    std::cout << "  --tmax <ms>               [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
-    std::cout << "\n";
-    std::cout << "Example:\n";
-    std::cout << "  " << program_name << " --gserver 127.0.0.1:4004\n";
+	std::cout << "  --weight <weight>         [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
+	std::cout << "  --tmin <ms>               [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
+	std::cout << "  --tmax <ms>               [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
+	std::cout << "\n";
+	std::cout << "Example:\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4004\n";
 }
 
-void cleanup() {
-    uv_timer_stop(&app_state.request_timer);
-    uv_timer_stop(&app_state.exit_timer);
-    uv_loop_close(app_state.loop);
+void check_uv_loop_limit() {
+	uv_loop_t* loops[100000] = {nullptr};  // Initialize array to nullptr
+	int i;
+	for (i = 0; i < 100000; i++) {
+		loops[i] = (uv_loop_t*) malloc(sizeof(uv_loop_t));
+		if (uv_loop_init(loops[i]) != 0) {
+			printf("Reached limit at %d loops\n", i);
+			break;
+		}
+	}
+
+	// Cleanup
+	for (int j = 0; j < i; j++) {
+		uv_loop_close(loops[j]);
+		free(loops[j]);
+	}
+}
+
+void check_file_descriptor_limit() {
+	struct rlimit limit;
+	getrlimit(RLIMIT_NOFILE, &limit);
+	printf("Current file descriptor limit: soft = %ld, hard = %ld\n", limit.rlim_cur, limit.rlim_max);
+
+	//    // Optionally, try to increase the limit
+	//    limit.rlim_cur = 10000;
+	//    limit.rlim_max = 10000;
+	//    setrlimit(RLIMIT_NOFILE, &limit);
+	//
+	//    getrlimit(RLIMIT_NOFILE, &limit);
+	//    printf("Updated file descriptor limit: soft = %ld, hard = %ld\n", limit.rlim_cur, limit.rlim_max);
+}
+
+void check_ev_loop_limit() {
+	struct ev_loop* loops[100000] = {nullptr};	// Initialize array to nullptr
+	int i;
+	for (i = 0; i < 100000; i++) {
+		loops[i] = ev_loop_new(0);
+		if (!loops[i]) {
+			printf("Reached limit at %d loops\n", i);
+			break;
+		}
+	}
+
+	// Cleanup
+	for (int j = 0; j < i; j++) {
+		ev_loop_destroy(loops[j]);
+	}
 }
 
 int main(int argc, char** argv) {
-    // Check for --help flag
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--help") == 0) {
-            print_usage(argv[0]);
-            return 0;
-        }
-    }
+	// Check for --help flag
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--help") == 0) {
+			print_usage(argv[0]);
+			return 0;
+		}
+	}
 
-    std::cout << "qgfist: v0.1\nSTARTED...\n";
+	std::cout << "qgfist: v0.1\nSTARTED...\n";
 	srand(static_cast<unsigned int>(time(nullptr)));  // Seed the random number generator
 
 	// Initialize app_state
@@ -312,35 +350,35 @@ int main(int argc, char** argv) {
 
 	// Parse command-line arguments to potentially override defaults
 	parse_arguments(argc, argv);
-    print_parameters();
+	print_parameters();
 
-    app_state.loop = uv_default_loop();
+	app_state.loop = uv_default_loop();
 
 	// Initialize timers
 	uv_timer_init(app_state.loop, &app_state.request_timer);
-    uv_timer_init(app_state.loop, &app_state.exit_timer);
+	uv_timer_init(app_state.loop, &app_state.drain_timer);
+	uv_timer_init(app_state.loop, &app_state.exit_timer);
 
-    // Start the request timer immediately
+	// Start the request timer immediately
 	uv_timer_start(&app_state.request_timer, request_worker, 0, 0);
+
+	// Start the drain timer immediately
+	uv_timer_start(&app_state.drain_timer, drain_worker, 1000, 3000);
 
 	// Start exit timer if specified
 	if (app_state.exit_after_seconds > 0) {
 		uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
 	}
 
-    // Connect to the game server
-    // connect_to_server(loop, ip.c_str(), port);
+	// Run the loop to handle async operations
+	uv_run(app_state.loop, UV_RUN_DEFAULT);
 
-    // Run the loop to handle async operations
-    uv_run(app_state.loop, UV_RUN_DEFAULT);
+	// Cleanup
+	cleanup();
 
 	// Wait for the exit signal
 	while (!app_state.exit_signal) {
 		uv_sleep(3000);
 	}
-
-    // Cleanup
-	cleanup();
-
-    return 0;
+	return 0;
 }

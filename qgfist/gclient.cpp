@@ -8,11 +8,12 @@
 
 #include "gclient.hpp"
 
-gclient::gclient(uv_loop_t* loop, type_qclient_onconnect_cb onconnect_cb, 
-      type_qclient_onmessage_cb onmessage_cb, 
-      type_qclient_onreleaseconnection_cb onreleaseconnection_cb, 
-      type_qclient_onclose_cb onclose_cb, void* arg): qnetworkclient(), 
-	  	onconnect_cb(onconnect_cb), onmessage_cb(onmessage_cb), onreleaseconnection_cb(onreleaseconnection_cb), onclose_cb(onclose_cb) {
+gclient::gclient(uv_loop_t* loop, type_qclient_onconnect_cb onconnect_cb, type_qclient_onmessage_cb onmessage_cb, type_qclient_onreleaseconnection_cb onreleaseconnection_cb, type_qclient_onclose_cb onclose_cb, void* arg)
+	: qnetworkclient(), onconnect_cb(onconnect_cb), onmessage_cb(onmessage_cb), onreleaseconnection_cb(onreleaseconnection_cb), onclose_cb(onclose_cb) {
+	async_onconnect.data = nullptr;
+	async_onmessage.data = nullptr;
+	async_onreleaseconnection.data = nullptr;
+	async_onclose.data = nullptr;
 	uv_async_init(loop, &async_onconnect, async_qclient_onconnect_cb);
 	uv_async_init(loop, &async_onmessage, async_qclient_onmessage_cb);
 	uv_async_init(loop, &async_onreleaseconnection, async_qclient_onreleaseconnection_cb);
@@ -21,34 +22,55 @@ gclient::gclient(uv_loop_t* loop, type_qclient_onconnect_cb onconnect_cb,
 }
 
 gclient::~gclient() {
-	uv_close(reinterpret_cast<uv_handle_t*>(&async_onconnect), nullptr);
-	uv_close(reinterpret_cast<uv_handle_t*>(&async_onmessage), nullptr);
-	uv_close(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection), nullptr);
-	uv_close(reinterpret_cast<uv_handle_t*>(&async_onclose), nullptr);
+	if (uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onconnect)) && !uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onconnect))) {
+		uv_close(reinterpret_cast<uv_handle_t*>(&async_onconnect), nullptr);
+	}
+	if (uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onmessage)) && !uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onmessage))) {
+		uv_close(reinterpret_cast<uv_handle_t*>(&async_onmessage), nullptr);
+	}
+	if (uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection)) && !uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection))) {
+		uv_close(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection), nullptr);
+	}
+	if (uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onclose)) && !uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onclose))) {
+		uv_close(reinterpret_cast<uv_handle_t*>(&async_onclose), nullptr);
+	}
+
+	drain_processed_messages();
 }
 
 void gclient::onconnect(conn_io_client* qconnection) {
+	connected++;
 	async_onconnect.data = DEBUG_NEW std::tuple<gclient*, conn_io_client*>(this, qconnection);
 	uv_async_send(&async_onconnect);
 }
 
 void gclient::onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+	if (!uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onmessage)) || uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onmessage))) {
+		return;
+	}
+	msg_cnt++;
 	async_onmessage.data = DEBUG_NEW std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>(this, recv_len, buf, qconnection);
 	uv_async_send(&async_onmessage);
 }
 
 void gclient::onreleaseconnection(conn_io_client* qconnection) {
+	if (!uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection)) || uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onreleaseconnection))) {
+		return;
+	}
 	async_onreleaseconnection.data = DEBUG_NEW std::tuple<gclient*, unsigned>(this, qconnection->cid_hash_val);
 	uv_async_send(&async_onreleaseconnection);
 }
 
 void gclient::onclose(conn_io_client* qconnection) {
+	if (!uv_is_active(reinterpret_cast<uv_handle_t*>(&async_onclose)) || uv_is_closing(reinterpret_cast<uv_handle_t*>(&async_onclose))) {
+		return;
+	}
 	async_onclose.data = DEBUG_NEW std::tuple<gclient*, conn_io_client*>(this, qconnection);
 	uv_async_send(&async_onclose);
 }
 
 void gclient::async_qclient_onconnect_cb(uv_async_t* handle) {
-	std::tuple<gclient*, conn_io_client*> *data = static_cast<std::tuple<gclient*, conn_io_client*>*>(handle->data);
+	std::tuple<gclient*, conn_io_client*>* data = static_cast<std::tuple<gclient*, conn_io_client*>*>(handle->data);
 	gclient* client = std::get<0>(*data);
 	conn_io_client* qconnection = std::get<1>(*data);
 	if (client->onconnect_cb) {
@@ -57,8 +79,15 @@ void gclient::async_qclient_onconnect_cb(uv_async_t* handle) {
 	GX_DELETE(data);
 }
 
+void gclient::drain_processed_messages() {
+	for (std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>* t : processed_message_tuples) {
+		GX_DELETE(t);
+	}
+	processed_message_tuples.clear();
+}
+
 void gclient::async_qclient_onmessage_cb(uv_async_t* handle) {
-	std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*> *data = static_cast<std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>*>(handle->data);
+	std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>* data = static_cast<std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>*>(handle->data);
 	gclient* client = std::get<0>(*data);
 	ssize_t recv_len = std::get<1>(*data);
 	uint8_t* buf = std::get<2>(*data);
@@ -66,13 +95,16 @@ void gclient::async_qclient_onmessage_cb(uv_async_t* handle) {
 	if (client->onmessage_cb) {
 		client->onmessage_cb(client, recv_len, buf, qconnection);
 	}
-	GX_DELETE(data);
+	client->drain_processed_messages();
+	client->processed_message_tuples.push_back(data);
+	//	GX_DELETE(data);
 }
 
 void gclient::async_qclient_onreleaseconnection_cb(uv_async_t* handle) {
-	std::tuple<gclient*, unsigned> *data = static_cast<std::tuple<gclient*, unsigned>*>(handle->data);
+	std::tuple<gclient*, unsigned>* data = static_cast<std::tuple<gclient*, unsigned>*>(handle->data);
 	gclient* client = std::get<0>(*data);
-    unsigned cid_hash_val = std::get<1>(*data);
+	client->released++;
+	unsigned cid_hash_val = std::get<1>(*data);
 	if (client->onreleaseconnection_cb) {
 		client->onreleaseconnection_cb(client, cid_hash_val);
 	}
@@ -80,8 +112,12 @@ void gclient::async_qclient_onreleaseconnection_cb(uv_async_t* handle) {
 }
 
 void gclient::async_qclient_onclose_cb(uv_async_t* handle) {
-	std::tuple<gclient*, conn_io_client*> *data = static_cast<std::tuple<gclient*, conn_io_client*>*>(handle->data);
+	std::tuple<gclient*, conn_io_client*>* data = static_cast<std::tuple<gclient*, conn_io_client*>*>(handle->data);
 	gclient* client = std::get<0>(*data);
+	if (client->released > 0) {
+		GX_DELETE(data);
+		return;	 // since an asynchtonous call this can get called after 'onreleaseconnection'
+	}
 	conn_io_client* qconnection = std::get<1>(*data);
 	if (client->onclose_cb) {
 		client->onclose_cb(client, qconnection);
