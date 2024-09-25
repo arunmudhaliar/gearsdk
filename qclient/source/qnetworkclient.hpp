@@ -50,12 +50,13 @@ class conn_io_client {
 	conn_io_client(bridge_qcommand* bridge, Config* config, int id);
 	~conn_io_client();
 
+    int close_socket();
 	void set_config(Config* config) { this->config = config; }
 	int id = -1;
 	ev_timer timer;
 	ev_timer send_timer;
 	ev_io watcher;
-	int sock;
+	int sock = -1;
 	struct sockaddr_storage local_addr;
 	socklen_t local_addr_len;
 	Connection* conn = nullptr;

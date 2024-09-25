@@ -37,9 +37,10 @@
 
 // Structs
 struct WorkData {
-	WorkData(uv_loop_t* loop, const type_qclient_onconnect_cb& onconnect_cb, const type_qclient_onmessage_cb& onmessage_cb, const type_qclient_onreleaseconnection_cb& onreleaseconnection_cb, const type_qclient_onclose_cb& onclose_cb) {
+	WorkData(uv_loop_t* loop, const type_qclient_onconnect_cb& onconnect_cb, const type_qclient_onmessage_cb& onmessage_cb, const type_qclient_onreleaseconnection_cb& onreleaseconnection_cb, const type_qclient_onclose_cb& onclose_cb,
+			 size_t worker_id) {
 		uv_gettimeofday(&start_time);
-		client = DEBUG_NEW gclient(loop, onconnect_cb, onmessage_cb, onreleaseconnection_cb, onclose_cb, this);
+		client = DEBUG_NEW gclient(loop, onconnect_cb, onmessage_cb, onreleaseconnection_cb, onclose_cb, worker_id);
 	}
 
 	~WorkData() { GX_DELETE(client); }
@@ -60,22 +61,43 @@ struct AppState {
 	int max_timeout_ms;
 	int exit_after_seconds = 0;
 	bool exit_signal = false;  // Flag to signal exit
-	std::unordered_map<WorkData*, std::thread::id> workers_map;
-	std::unordered_map<WorkData*, std::thread::id> released_workers_map;
+	std::unordered_map<size_t, std::shared_ptr<WorkData>> workers_map;
+	std::unordered_map<size_t, std::shared_ptr<WorkData>> released_workers_map;
 	std::atomic<size_t> total_workers {0};
 	std::atomic<size_t> total_workers_drained {0};
+	std::mutex workers_map_mutex;
+	uv_timeval64_t start_time;
 };
 
 AppState app_state;
 
+double elapsed_seconds_since_app_launch() {
+	uv_timeval64_t now;
+	uv_gettimeofday(&now);
+	double elapsed_seconds = (now.tv_sec - app_state.start_time.tv_sec) + (now.tv_usec - app_state.start_time.tv_usec) / 1000000.0;
+	return elapsed_seconds;
+}
+
+std::string format_elapsed_time(double elapsed_seconds) {
+	int hours = static_cast<int>(elapsed_seconds / 3600);
+	int minutes = static_cast<int>((elapsed_seconds - (hours * 3600)) / 60);
+	int seconds = static_cast<int>(elapsed_seconds) % 60;
+
+	std::ostringstream oss;
+	oss << std::setfill('0') << std::setw(2) << hours << ":" << std::setfill('0') << std::setw(2) << minutes << ":" << std::setfill('0') << std::setw(2) << seconds;
+
+	return oss.str();
+}
+
 void print_current_status() {
-	std::cout << "\r" << COLOR_CYAN << "Total workers: " << app_state.total_workers << ", Active workers: " << app_state.workers_map.size() << ", Draining workers: " << app_state.released_workers_map.size()
-			  << ", Total workers drained: " << app_state.total_workers_drained << "      "	 // Adding extra spaces at the end to clear any remaining old output
+	double elapsed_seconds = elapsed_seconds_since_app_launch();
+	std::cout << "\r" << format_elapsed_time(elapsed_seconds) << COLOR_CYAN << " Total workers: " << app_state.total_workers << "," << COLOR_GREEN << " Active workers: " << app_state.workers_map.size() << COLOR_CYAN
+			  << ", Draining workers: " << app_state.released_workers_map.size() << ", Total workers drained: " << app_state.total_workers_drained << "      "	// Adding extra spaces at the end to clear any remaining old output
 			  << COLOR_RESET << std::flush;
 }
 
-void request_qconnect(WorkData* data) {
-	app_state.workers_map[data] = std::this_thread::get_id();
+void request_qconnect(std::shared_ptr<WorkData> data) {
+	app_state.workers_map[data->client->get_user_data()] = data;
 	gclient* client = data->client;
 	client->run(app_state.host, app_state.port);
 	app_state.total_workers++;
@@ -83,26 +105,28 @@ void request_qconnect(WorkData* data) {
 }
 
 void drain_workers() {
-	std::vector<WorkData*> finished_list;
+	std::lock_guard<std::mutex> lock(app_state.workers_map_mutex);
+	std::vector<ssize_t> finished_list;
 	for (const auto& it : app_state.released_workers_map) {
-		WorkData* worker = it.first;
-		if (worker->client->is_runfinished()) {
-			finished_list.push_back(worker);
+		std::shared_ptr<WorkData> worker = it.second;
+		ssize_t worker_id = it.first;
+		if (worker->client->is_finished() && worker->client->is_runfinished()) {
+			finished_list.push_back(worker_id);
 		}
 	}
 
-	for (WorkData* worker : finished_list) {
-		app_state.released_workers_map.erase(worker);
+	for (const auto& worker_id : finished_list) {
+		app_state.released_workers_map.erase(worker_id);
 		app_state.total_workers_drained++;
-		GX_DELETE(worker);
 	}
 }
 
-void finish_and_remove_work(WorkData* data) {
+void finish_and_remove_work(ssize_t worker_id) {
+	std::lock_guard<std::mutex> lock(app_state.workers_map_mutex);
 	// Check if the worker exists in the map before erasing
-	auto it = app_state.workers_map.find(data);
+	auto it = app_state.workers_map.find(worker_id);
 	if (it != app_state.workers_map.end()) {
-		app_state.released_workers_map[data] = it->second;
+		app_state.released_workers_map[worker_id] = it->second;
 		app_state.workers_map.erase(it);
 	} else {
 		std::cout << COLOR_RED << "Worker not found in map!" << COLOR_RESET << std::endl;
@@ -126,20 +150,24 @@ void gclient_onconnect_cb(gclient* c, conn_io_client* qconnection) {
 }
 
 void gclient_onmessage_cb(gclient* c, ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+    UNUSED(c);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Received message: %.*s", qconnection->cid_hash_val, recv_len, buf);
 }
 
 void gclient_onreleaseconnection_cb(gclient* c, unsigned cid_hash_val) {
+    UNUSED(c);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Releasing connection", cid_hash_val);
-	finish_and_remove_work(static_cast<WorkData*>(c->get_user_data()));
+	finish_and_remove_work(c->get_user_data());
 }
 
 void gclient_onclose_cb(gclient* c, conn_io_client* qconnection) {
+    UNUSED(c);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Connection closed", qconnection->cid_hash_val);
 }
 
 // Worker to handle drain
 void drain_worker(uv_timer_t* handle) {
+    UNUSED(handle);
 	drain_workers();
 }
 
@@ -150,18 +178,13 @@ void request_worker(uv_timer_t* handle) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		num_requests = static_cast<int>((rand() % app_state.max_parallel_requests) * app_state.request_weightage);
 	}
-
-	// std::cout << " r:" << num_requests << " " << std::endl;
 	for (int i = 0; i < num_requests; i++) {
-		WorkData* data = DEBUG_NEW WorkData(app_state.loop, gclient_onconnect_cb, gclient_onmessage_cb, gclient_onreleaseconnection_cb, gclient_onclose_cb);
-		request_qconnect(data);
+		WorkData* data = DEBUG_NEW WorkData(app_state.loop, gclient_onconnect_cb, gclient_onmessage_cb, gclient_onreleaseconnection_cb, gclient_onclose_cb, app_state.total_workers);
+		request_qconnect(std::shared_ptr<WorkData>(data));
 	}
 
 	// Calculate the next timeout interval between min_timeout_ms and max_timeout_ms
 	int next_timeout_ms = app_state.min_timeout_ms + (rand() % (app_state.max_timeout_ms - app_state.min_timeout_ms + 1));
-
-	// std::cout << "next trigger in " << next_timeout_ms << "ms\n";
-	// Restart the timer with the calculated interval
 	uv_timer_start(handle, request_worker, next_timeout_ms, 0);	 // Set repeat interval to 0
 }
 
@@ -224,12 +247,13 @@ void initialize_app_state(AppState& app_state) {
 	app_state.max_timeout_ms = MAX_TIMEOUT_MS;
 	app_state.exit_after_seconds = EXIT_AFTER;
 	app_state.exit_signal = false;
+
+	// Get the current time
+	uv_gettimeofday(&app_state.start_time);
 }
 
-void print_summary() {}
-
 void cleanup() {
-	if (!uv_is_active(reinterpret_cast<uv_handle_t*>(app_state.loop)) || uv_is_closing(reinterpret_cast<uv_handle_t*>(app_state.loop))) {
+	if (uv_is_closing(reinterpret_cast<uv_handle_t*>(app_state.loop))) {
 		return;
 	}
 
@@ -243,7 +267,10 @@ void cleanup() {
 void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
 	std::cout << "exit_after_delay called\n" << std::flush;
-
+#if PLATFORM == PLATFORM_LINUX
+    std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
+#endif
+    
 	uv_timer_stop(&app_state.request_timer);
 
 	drain_workers();
@@ -266,7 +293,6 @@ void exit_after_delay(uv_timer_t* handle) {
 	//	cleanup();
 	uv_stop(app_state.loop);  // Stop the loop
 
-	print_summary();
 	std::cout << "\nFINISHED.\n\n" << std::endl;
 }
 
@@ -284,55 +310,6 @@ void print_usage(const char* program_name) {
 	std::cout << "  " << program_name << " --gserver 127.0.0.1:4004\n";
 }
 
-void check_uv_loop_limit() {
-	uv_loop_t* loops[100000] = {nullptr};  // Initialize array to nullptr
-	int i;
-	for (i = 0; i < 100000; i++) {
-		loops[i] = (uv_loop_t*) malloc(sizeof(uv_loop_t));
-		if (uv_loop_init(loops[i]) != 0) {
-			printf("Reached limit at %d loops\n", i);
-			break;
-		}
-	}
-
-	// Cleanup
-	for (int j = 0; j < i; j++) {
-		uv_loop_close(loops[j]);
-		free(loops[j]);
-	}
-}
-
-void check_file_descriptor_limit() {
-	struct rlimit limit;
-	getrlimit(RLIMIT_NOFILE, &limit);
-	printf("Current file descriptor limit: soft = %ld, hard = %ld\n", limit.rlim_cur, limit.rlim_max);
-
-	//    // Optionally, try to increase the limit
-	//    limit.rlim_cur = 10000;
-	//    limit.rlim_max = 10000;
-	//    setrlimit(RLIMIT_NOFILE, &limit);
-	//
-	//    getrlimit(RLIMIT_NOFILE, &limit);
-	//    printf("Updated file descriptor limit: soft = %ld, hard = %ld\n", limit.rlim_cur, limit.rlim_max);
-}
-
-void check_ev_loop_limit() {
-	struct ev_loop* loops[100000] = {nullptr};	// Initialize array to nullptr
-	int i;
-	for (i = 0; i < 100000; i++) {
-		loops[i] = ev_loop_new(0);
-		if (!loops[i]) {
-			printf("Reached limit at %d loops\n", i);
-			break;
-		}
-	}
-
-	// Cleanup
-	for (int j = 0; j < i; j++) {
-		ev_loop_destroy(loops[j]);
-	}
-}
-
 int main(int argc, char** argv) {
 	// Check for --help flag
 	for (int i = 1; i < argc; i++) {
@@ -343,6 +320,24 @@ int main(int argc, char** argv) {
 	}
 
 	std::cout << "qgfist: v0.1\nSTARTED...\n";
+	struct rlimit limit;
+	if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
+		std::cout << "fd Soft limit: " << limit.rlim_cur << std::endl;
+		std::cout << "fd Hard limit: " << limit.rlim_max << std::endl;
+	} else {
+		std::cerr << "Error getting file descriptor limits" << std::endl;
+	}
+	long open_max = sysconf(_SC_OPEN_MAX);
+	if (open_max != -1) {
+		std::cout << "Maximum number of open file descriptors: " << open_max << std::endl;
+	} else {
+		std::cerr << "Error getting maximum file descriptors" << std::endl;
+	}
+	std::cout << "FD_SETSIZE: " << FD_SETSIZE << std::endl;
+#if PLATFORM == PLATFORM_LINUX
+    std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
+#endif
+    
 	srand(static_cast<unsigned int>(time(nullptr)));  // Seed the random number generator
 
 	// Initialize app_state

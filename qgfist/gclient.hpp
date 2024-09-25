@@ -12,6 +12,8 @@
 #include "../qclient/source/qnetworkclient.hpp"
 
 #include <functional>
+#include <mutex>
+#include <queue>
 #include <tuple>
 #include <uv.h>
 
@@ -28,10 +30,11 @@ typedef std::function<void(gclient* c, conn_io_client* qconnection)> type_qclien
 
 class gclient : public qnetworkclient {
    public:
-	gclient(uv_loop_t* loop, type_qclient_onconnect_cb onconnect_cb, type_qclient_onmessage_cb onmessage_cb, type_qclient_onreleaseconnection_cb onreleaseconnection_cb, type_qclient_onclose_cb onclose_cb, void* arg = nullptr);
+	gclient(uv_loop_t* loop, type_qclient_onconnect_cb onconnect_cb, type_qclient_onmessage_cb onmessage_cb, type_qclient_onreleaseconnection_cb onreleaseconnection_cb, type_qclient_onclose_cb onclose_cb, size_t worker_id);
 	virtual ~gclient();
 
-	void* get_user_data() const { return user_data; }
+	size_t get_user_data() const { return worker_id; }
+	bool is_finished() { return finished; }
 
    protected:
 	void onconnect(conn_io_client* qconnection) override;
@@ -41,27 +44,13 @@ class gclient : public qnetworkclient {
 
    private:
 	gclient() = delete;
-	void drain_processed_messages();
 	type_qclient_onconnect_cb onconnect_cb = nullptr;
 	type_qclient_onmessage_cb onmessage_cb = nullptr;
 	type_qclient_onreleaseconnection_cb onreleaseconnection_cb = nullptr;
 	type_qclient_onclose_cb onclose_cb = nullptr;
 
-	static void async_qclient_onconnect_cb(uv_async_t* handle);
-	static void async_qclient_onmessage_cb(uv_async_t* handle);
-	static void async_qclient_onreleaseconnection_cb(uv_async_t* handle);
-	static void async_qclient_onclose_cb(uv_async_t* handle);
-
-	uv_async_t async_onconnect;
-	uv_async_t async_onmessage;
-	uv_async_t async_onreleaseconnection;
-	uv_async_t async_onclose;
-	void* user_data = nullptr;
-	std::atomic<int> released = {0};
-	std::atomic<int> connected = {0};
-	std::atomic<int> msg_cnt = {0};
-
-	std::vector<std::tuple<gclient*, ssize_t, uint8_t*, conn_io_client*>*> processed_message_tuples;
+	size_t worker_id = -1;
+	std::atomic<bool> finished = {false};
 };
 
 #endif /* gclient_hpp */

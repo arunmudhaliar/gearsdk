@@ -23,6 +23,7 @@ conn_io_client::~conn_io_client() {
 }
 
 void conn_io_client::release() {
+    close_socket();
 	if (peer) {
 		freeaddrinfo(peer);
 		peer = nullptr;
@@ -45,6 +46,19 @@ void conn_io_client::release() {
 	send_buffer.clear();
 }
 
+int conn_io_client::close_socket() {
+    if (sock<0) {
+        return -1;
+    }
+    int result = close(sock);
+    if (result < 0) {
+        debug_print_error(__LOGTAG__, "Socket closure failed - fd(%d): %s", sock, strerror(errno));
+    } else {
+        sock = -1;
+    }
+    return result;
+}
+
 int conn_io_client::connect(qstring host, qstring port) {
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 
@@ -63,6 +77,11 @@ int conn_io_client::connect(qstring host, qstring port) {
 		return -1;
 	}
 
+    if (sock>FD_SETSIZE) {
+        debug_print_error(__LOGTAG__, "sock fd LIMIT %d reached !!!, FD_SETSIZE(%d)", sock, FD_SETSIZE);
+        return -1;
+    }
+    
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
 		return -1;
@@ -565,7 +584,18 @@ void* qnetworkclient::run_internal(void* data) {
 		return nullptr;
 #endif
 	}
-	thiz->qclient_connection->connect(host, port);
+	int connection_result = thiz->qclient_connection->connect(host, port);
+    if (connection_result!=0) {
+        debug_print_error(__LOGTAG__, "failed to connect qconnection");
+        run_config_data->pthread_return_value = -1;
+        run_config_data->finished = true;
+#if USE_PTHREAD
+        DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+        pthread_exit(&run_config_data->pthread_return_value);
+#else
+        return nullptr;
+#endif
+    }
 
 	thiz->mainloop = ev_loop_new(0);
 
