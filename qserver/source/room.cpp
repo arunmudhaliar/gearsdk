@@ -19,14 +19,14 @@ room::room(roomserver_interface* interface, const roomconfig& room_config) : ROO
 }
 
 room::~room() {
-	debug_print_important(__LOGTAG__, "room destructor - %d", ROOM_ID);
 	kick_all_except(nullptr);
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_to_rem = (*it).second;
-		debug_print_important2(__LOGTAG__, "player %0x removed from %d", player_to_rem->qconnection->cid_hash_val, ROOM_ID);
+		debug_print_important2(__LOGTAG__, "room %d: player %0x: removed ", ROOM_ID, player_to_rem->qconnection->cid_hash_val);
 		onroom_player_removed(player_to_rem);
 		GX_DELETE(player_to_rem);
 	}
+	debug_print_important(__LOGTAG__, "room %d: destructor", ROOM_ID);
 }
 
 void room::onroom_create() {}
@@ -120,27 +120,27 @@ void room::pass_message_to_room(player* p, const qstring& msg) {
 }
 ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val) {
 	if (qconnection == nullptr) {
-		debug_print_error(__LOGTAG__, "try_add_connection: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "room %d: try_add_connection: qconnection == null !!!", ROOM_ID);
 		return -1;
 	}
 	if (playermap.find(qconnection->cid_hash_val) != playermap.end()) {
-		debug_print_error(__LOGTAG__, "qconnection already in the playermap !!!");
+		debug_print_error(__LOGTAG__, "room %d: qconnection already in the playermap !!!", ROOM_ID);
 		return -2;
 	}
 	bool reconnection = prev_cid_hash_val > 0 && is_cid_hash_in_disconnected_players_hash_list(prev_cid_hash_val);
 	if (!reconnection && state > ROOM_WAITING) {
 		if (!ROOM_CONFIG.ALLOW_JOIN_AFTER_START) {
-			debug_print_error(__LOGTAG__, "room not in waiting state and allow_join_after_start==false !!!");
+			debug_print_error(__LOGTAG__, "room %d: room not in waiting state and allow_join_after_start==false !!!", ROOM_ID);
 			return -3;
 		}
 	}
 	if ((int) playermap.size() >= ROOM_CONFIG.MAX_PLAYERS) {
-		debug_print_error(__LOGTAG__, "room max cpacity reached !!!");
+		debug_print_error(__LOGTAG__, "room %d: room max cpacity reached !!!", ROOM_ID);
 		return -4;
 	}
 	if (reconnection) {
 		if (!can_allow_reconnection(qconnection->cid_hash_val)) {
-			debug_print_warn(__LOGTAG__, "reconnection rejected !!!");
+			debug_print_warn(__LOGTAG__, "room %d: reconnection rejected !!!", ROOM_ID);
 			return -5;
 		}
 	}
@@ -152,9 +152,9 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 			debug_print_important(__LOGTAG__, "player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", qconnection->cid_hash_val, prev_cid_hash_val, disconnected_players_hash_after_room_start.size());
 			disconnected_players_hash_after_room_start.erase(it);
 		}
-		debug_print_important2(__LOGTAG__, "player %0x re-added to room %d", qconnection->cid_hash_val, ROOM_ID);
+		debug_print_important2(__LOGTAG__, "room %d: player %0x re-added", ROOM_ID, qconnection->cid_hash_val);
 	} else {
-		debug_print_important2(__LOGTAG__, "player %0x added to room %d", qconnection->cid_hash_val, ROOM_ID);
+		debug_print_important2(__LOGTAG__, "room %d: player %0x added", ROOM_ID, qconnection->cid_hash_val);
 	}
 	send_event_player_add_or_remove(player_ptr, true);
 	onroom_player_added(player_ptr);
@@ -162,13 +162,13 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 		if ((int) playermap.size() == ROOM_CONFIG.MAX_PLAYERS) {
 			set_state(ROOM_START);
 		} else {
-			debug_print_important2(__LOGTAG__, "start count down for room %d ...", ROOM_ID);
+			debug_print_important2(__LOGTAG__, "room %d: start count down  ...", ROOM_ID);
 			const int MAX_COUNT_DOWN = 5;
 			const float DELAY_BETWEEN_COUNT_DOWN = 1.5f;
 			cancel_and_destroy_timer(count_down_timer);
 			count_down_timer = schedule_count_timer(
 				[this](qtimer& timer) {
-					debug_print_important(__LOGTAG__, "count down %d room %d ...", timer.count, ROOM_ID);
+					debug_print_important(__LOGTAG__, "room %d: count down %d  ...", ROOM_ID, timer.count);
 					if (timer.count > 0) {
 						onroom_countdown_to_start(timer.count, MAX_COUNT_DOWN);
 					} else {
@@ -212,7 +212,7 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	player* removed_player = (*it).second;
 	send_event_player_add_or_remove(removed_player, false);
 	playermap.erase(it);
-	debug_print_important2(__LOGTAG__, "player %0x removed from %d", qconnection->cid_hash_val, ROOM_ID);
+	debug_print_important2(__LOGTAG__, "room %d: player %0x removed", ROOM_ID, qconnection->cid_hash_val);
 	onroom_player_removed(removed_player);
 	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
 
@@ -241,14 +241,14 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 }
 
 void room::kick_all_except(conn_io* qconnection) {
-	debug_print_important(__LOGTAG__, "room : kick all");
+	debug_print_important(__LOGTAG__, "room %d: kick all", ROOM_ID);
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ptr = it->second;
 		if (player_ptr->qconnection == qconnection) {  // to avoid recursive Close.
 			continue;
 		}
 		player_ptr->qconnection->close();
-		debug_print_important(__LOGTAG__, "room : kick player %0x", player_ptr->qconnection->cid_hash_val);
+		debug_print_important(__LOGTAG__, "room %d: kick player %0x", ROOM_ID, player_ptr->qconnection->cid_hash_val);
 	}
 }
 
@@ -267,19 +267,19 @@ void room::on_state_change(states prev_state) {
 		}
 		case ROOM_WAITING: {
 			if (prev_state == ROOM_UNINITIALISED) {
-				debug_print_important2(__LOGTAG__, "room - create %d", ROOM_ID);
+				debug_print_important2(__LOGTAG__, "room %d: create", ROOM_ID);
 				onroom_create();
 			}
 		} break;
 		case ROOM_START: {
 			roomserverinterface->onroom_pre_start(this);
-			debug_print_important2(__LOGTAG__, "room - start %d", ROOM_ID);
+			debug_print_important2(__LOGTAG__, "room %d: start", ROOM_ID);
 			send_event_room_start_or_end(true);
 			onroom_start();
 			break;
 		}
 		case ROOM_END: {
-			debug_print_important2(__LOGTAG__, "room - end %d", ROOM_ID);
+			debug_print_important2(__LOGTAG__, "room %d: end", ROOM_ID);
 			send_event_room_start_or_end(false);
 			onroom_end();
 			break;
@@ -288,7 +288,7 @@ void room::on_state_change(states prev_state) {
 }
 
 void room::print_info() {
-	debug_print_important2(__LOGTAG__, "room %d, state : %s, t:%4.2fs, p:%d", ROOM_ID, get_state_string().c_str(), since_creation(), playermap.size());
+	debug_print_important2(__LOGTAG__, "room %d: state : %s, t:%4.2fs, p:%d", ROOM_ID, get_state_string().c_str(), since_creation(), playermap.size());
 }
 
 ev_tstamp room::since_creation() {

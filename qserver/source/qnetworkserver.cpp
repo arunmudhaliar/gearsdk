@@ -58,7 +58,7 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		if (last_stream_s == s) {
 			continue;
 		}
-		debug_print(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len != (ssize_t) buflen) {
 			debug_print_error(__LOGTAG__, "send failure %d", sent_len);
@@ -66,7 +66,7 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		}
 		success = true;
 		last_stream_s = s;
-		debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) buf);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) buf);
 		break;
 	}
 
@@ -76,7 +76,7 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		next_s = (next_s + 1) + (next_s % 2);
 		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
 		if (sent_len == (ssize_t) buflen) {
-			debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
+			debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
 			last_stream_s = next_s;
 			success = true;
 		}
@@ -99,7 +99,7 @@ void conn_io::close() {
 	uint64_t s = 0;
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
-		debug_print(LOG_LEVEL_2, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		const char* byez = "byez\n";
 		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true);
 		debug_print_important(__LOGTAG__, "Close, sending 'byez'");
@@ -107,7 +107,7 @@ void conn_io::close() {
 			debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
 		}
 
-		debug_print_important(__LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
 		break;
 	}
 	quiche_stream_iter_free(writable);
@@ -266,7 +266,7 @@ void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnecti
 	onconnection_destroy(qconnection);
 	HASH_DELETE(hh, conns->h, qconnection);
 	GX_DELETE(qconnection);
-	debug_print_important(__LOGTAG__, "Connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
+	debug_print_important(__LOGTAG__, "connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
 
 void qnetworkserver::onconnection_destroy(conn_io* qconnection) {

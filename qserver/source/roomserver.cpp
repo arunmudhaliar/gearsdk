@@ -92,7 +92,7 @@ void roomserver::onroom_pre_start(room* r) {
 
 	if (std::find(rooms.begin(), rooms.end(), r) == rooms.end()) {
 		rooms.push_back(r);
-		debug_print_important(__LOGTAG__, "room : removed from waiting list and pushed to rooms list %d", r->ROOM_ID);
+		debug_print_important(__LOGTAG__, "room %d: removed from waiting list and pushed to rooms list", r->ROOM_ID);
 		// update the room status on redis
 		long long count_room_of_this_type = 0;
 		const qstring& rkey = r->get_room_signature("room:", host_id, port_id);
@@ -117,7 +117,7 @@ void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* 
 	const std::map<unsigned, ev_tstamp>::iterator& itr_found = *((std::map<unsigned, ev_tstamp>::iterator*) user_data);
 	qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
 	new_connections.erase(itr_found);
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
 	do_process_roomjoin(qconnection, rq);
 }
 
@@ -148,12 +148,14 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 		}
 		if (itr_found != new_connections.end()) {
             rapidjson::Document doc;
-            // check if its the first 'hi' message from client.
-            int parse_hi_result = message_room_base::deserialize_first_hi_message(recv_len, buf, doc);
-            if (parse_hi_result == 0) {
-                return;     // no need to handle.
-            }
-            
+			// check if its the first 'hi' message from client.
+			if ((qconnection->user_data & FLAG_FIRST_HI_RECEIVED) == 0) {
+				int parse_hi_result = message_room_base::deserialize_first_hi_message(recv_len, buf, doc);
+				if (parse_hi_result == 0) {
+					qconnection->user_data |= FLAG_FIRST_HI_RECEIVED;
+					return;     // no need to handle.
+				}
+			}
 			unsigned short sig = 0;
 			unsigned long t_crc = 0;
 			int parse_result = message_room_base::deserialize_header(recv_len, buf, sig, t_crc, doc);
@@ -243,9 +245,9 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 				room_ptr = waiting_room;
 				connection_map[qconnection->cid_hash_val] = room_ptr;
 				if (room_ptr->get_state() == room::states::ROOM_WAITING) {
-					debug_print_important2(__LOGTAG__, "on_connection: add to waiting room, map[after add sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
+					debug_print_important2(__LOGTAG__, "on_connection: add to waiting room %d, map[after add sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 				} else if (room_ptr->get_state() >= room::states::ROOM_START) {
-					debug_print_important2(__LOGTAG__, "on_connection: added to room, map[after add sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
+					debug_print_important2(__LOGTAG__, "on_connection: added to room %d, map[after add sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 				}
 				break;
 			}
@@ -262,17 +264,17 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		ssize_t old_count = room_ptr->get_playermap_count();
 		ssize_t new_count = room_ptr->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
 		if (new_count == -2) {	// already part of the room
-			debug_print_error(__LOGTAG__, "on_connection: this can not happen !!!, returning.");
+			debug_print_error(__LOGTAG__, "on_connection: room %d - this can not happen !!!, returning.", room_ptr->ROOM_ID);
 			return;
 		}
 		connection_added_to_room = new_count > old_count;
 		if (!connection_added_to_room) {
 			// remove from old list
-			debug_print_important2(__LOGTAG__, "on_connection: can't be added to his prev room, remove him from old hash list");
+			debug_print_important2(__LOGTAG__, "on_connection: can't be added to his prev room %d, remove him from old hash list", room_ptr->ROOM_ID);
 			connection_map.erase(iterator);
 			room_ptr = nullptr;
 		} else {
-			debug_print_important2(__LOGTAG__, "on_connection: add player to PREV room of user [m-sz:%d] !!! - connection %0x", connection_map.size(), qconnection->cid_hash_val);
+			debug_print_important2(__LOGTAG__, "on_connection: add player to PREV room %d of user [m-sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 		}
 	}
 	// create a new room and add him
@@ -281,7 +283,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);	// no need to check for limit since he is our first user in this room.
 		room_ptr = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_ptr;
-		debug_print_important2(__LOGTAG__, "on_connection: add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "on_connection: add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
 	}
 }
 
