@@ -60,7 +60,9 @@ struct AppState {
 	int min_timeout_ms;
 	int max_timeout_ms;
 	int exit_after_seconds = 0;
-	bool exit_signal = false;  // Flag to signal exit
+	bool exit_signal = false;	  // Flag to signal exit
+	bool single_request = false;  // Flag to enable single request mode
+	int single_request_connection_count = 1;
 	std::unordered_map<size_t, std::shared_ptr<WorkData>> workers_map;
 	std::unordered_map<size_t, std::shared_ptr<WorkData>> released_workers_map;
 	std::atomic<size_t> total_workers {0};
@@ -91,9 +93,10 @@ std::string format_elapsed_time(double elapsed_seconds) {
 
 void print_current_status() {
 	double elapsed_seconds = elapsed_seconds_since_app_launch();
-	std::cout << "\r" << format_elapsed_time(elapsed_seconds) << COLOR_CYAN << " Total workers: " << app_state.total_workers << "," << COLOR_GREEN << " Active workers: " << app_state.workers_map.size() << COLOR_CYAN
-			  << ", Draining workers: " << app_state.released_workers_map.size() << ", Total workers drained: " << app_state.total_workers_drained << "      "	// Adding extra spaces at the end to clear any remaining old output
-			  << COLOR_RESET << std::flush;
+	std::cout << (app_state.single_request ? "" : "\r") << format_elapsed_time(elapsed_seconds) << COLOR_CYAN << " Total workers: " << app_state.total_workers << "," << COLOR_GREEN << " Active workers: " << app_state.workers_map.size()
+			  << COLOR_CYAN << ", Draining workers: " << app_state.released_workers_map.size() << ", Total workers drained: " << app_state.total_workers_drained
+			  << "      "  // Adding extra spaces at the end to clear any remaining old output
+			  << COLOR_RESET << (app_state.single_request ? "\n" : "") << std::flush;
 }
 
 void request_qconnect(std::shared_ptr<WorkData> data) {
@@ -144,36 +147,36 @@ void gclient_onconnect_cb(gclient* c, conn_io_client* qconnection) {
 	qstring msg_room_config_packet;
 	msg->serialize(doc, doc.GetAllocator());
 	essentials::get_json_string(doc, msg_room_config_packet);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
+	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_3, __LOGTAG__, "room config --> %s", msg_room_config_packet.c_str());
 	c->send_message(msg_room_config_packet, true);
 	GX_DELETE(msg);
 }
 
 void gclient_onmessage_cb(gclient* c, ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
-    UNUSED(c);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Received message: %.*s", qconnection->cid_hash_val, recv_len, buf);
+	UNUSED(c);
+	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_3, __LOGTAG__, "gclient %x - Received message: %.*s", qconnection->cid_hash_val, recv_len, buf);
 }
 
 void gclient_onreleaseconnection_cb(gclient* c, unsigned cid_hash_val) {
-    UNUSED(c);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Releasing connection", cid_hash_val);
+	UNUSED(c);
+	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_3, __LOGTAG__, "gclient %x - Releasing connection", cid_hash_val);
 	finish_and_remove_work(c->get_user_data());
 }
 
 void gclient_onclose_cb(gclient* c, conn_io_client* qconnection) {
-    UNUSED(c);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "gclient %x - Connection closed", qconnection->cid_hash_val);
+	UNUSED(c);
+	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_3, __LOGTAG__, "gclient %x - Connection closed", qconnection->cid_hash_val);
 }
 
 // Worker to handle drain
 void drain_worker(uv_timer_t* handle) {
-    UNUSED(handle);
+	UNUSED(handle);
 	drain_workers();
 }
 
 // Worker to handle requests
 void request_worker(uv_timer_t* handle) {
-	int num_requests = 0;
+	int num_requests = app_state.single_request ? app_state.single_request_connection_count : 0;
 	while (num_requests <= 0) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		num_requests = static_cast<int>((rand() % app_state.max_parallel_requests) * app_state.request_weightage);
@@ -183,14 +186,20 @@ void request_worker(uv_timer_t* handle) {
 		request_qconnect(std::shared_ptr<WorkData>(data));
 	}
 
-	// Calculate the next timeout interval between min_timeout_ms and max_timeout_ms
-	int next_timeout_ms = app_state.min_timeout_ms + (rand() % (app_state.max_timeout_ms - app_state.min_timeout_ms + 1));
-	uv_timer_start(handle, request_worker, next_timeout_ms, 0);	 // Set repeat interval to 0
+	if (!app_state.single_request) {
+		// Calculate the next timeout interval between min_timeout_ms and max_timeout_ms
+		int next_timeout_ms = app_state.min_timeout_ms + (rand() % (app_state.max_timeout_ms - app_state.min_timeout_ms + 1));
+		uv_timer_start(handle, request_worker, next_timeout_ms, 0);	 // Set repeat interval to 0
+	}
 }
 
 void print_parameters() {
-	std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
-			  << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+	if (!app_state.single_request) {
+		std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
+				  << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+	} else {
+		std::cout << "SINGLE-SHOT-MODE, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+	}
 }
 
 // Function to parse command line arguments
@@ -232,6 +241,11 @@ void parse_arguments(int argc, char* argv[]) {
 		} else if (strcmp(argv[i], "--tmax") == 0 && i + 1 < argc) {
 			size_t val = atoi(argv[++i]);
 			app_state.max_timeout_ms = static_cast<int>(std::max(val, (size_t) 20));
+		} else if (strcmp(argv[i], "--single-mode") == 0) {
+			app_state.single_request = true;
+		} else if (strcmp(argv[i], "--single-request") == 0 && i + 1 < argc) {
+			app_state.single_request = true;
+			app_state.single_request_connection_count = std::max(atoi(argv[++i]), 1);
 		}
 	}
 }
@@ -247,6 +261,8 @@ void initialize_app_state(AppState& app_state) {
 	app_state.max_timeout_ms = MAX_TIMEOUT_MS;
 	app_state.exit_after_seconds = EXIT_AFTER;
 	app_state.exit_signal = false;
+	app_state.single_request = false;
+	app_state.single_request_connection_count = 1;
 
 	// Get the current time
 	uv_gettimeofday(&app_state.start_time);
@@ -268,9 +284,9 @@ void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
 	std::cout << "exit_after_delay called\n" << std::flush;
 #if PLATFORM == PLATFORM_LINUX
-    std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
+	std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
 #endif
-    
+
 	uv_timer_stop(&app_state.request_timer);
 
 	drain_workers();
@@ -299,15 +315,19 @@ void exit_after_delay(uv_timer_t* handle) {
 void print_usage(const char* program_name) {
 	std::cout << "Usage: " << program_name << " [options]\n\n";
 	std::cout << "Options:\n";
-	std::cout << "  --gserver <host:port>      Game server address in the form of host:port (default: " << GAME_SERVER_IP << ")\n";
-	std::cout << "  --exit-after <seconds>    [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
-	std::cout << "  --max-parallel <n>        [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
-	std::cout << "  --weight <weight>         [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
-	std::cout << "  --tmin <ms>               [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
-	std::cout << "  --tmax <ms>               [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
+	std::cout << "  --gserver <host:port>           Game server address in the form of host:port (default: " << GAME_SERVER_IP << ")\n";
+	std::cout << "  --single-mode                   Enable single request mode and send a single request (default: off)\n";
+	std::cout << "  --single-request <conn count>   Enable single request mode and send no:of <conn count> request (default: off)\n";
+	std::cout << "  --exit-after <seconds>          [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
+	std::cout << "  --max-parallel <n>              [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
+	std::cout << "  --weight <weight>               [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
+	std::cout << "  --tmin <ms>                     [optional] Minimum timeout in milliseconds (default: " << MIN_TIMEOUT_MS << ")\n";
+	std::cout << "  --tmax <ms>                     [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
 	std::cout << "\n";
-	std::cout << "Example:\n";
+	std::cout << "Examples:\n";
 	std::cout << "  " << program_name << " --gserver 127.0.0.1:4004\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4010 --single-mode\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4010 --single-request 5\n";
 }
 
 int main(int argc, char** argv) {
@@ -335,9 +355,9 @@ int main(int argc, char** argv) {
 	}
 	std::cout << "FD_SETSIZE: " << FD_SETSIZE << std::endl;
 #if PLATFORM == PLATFORM_LINUX
-    std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
+	std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
 #endif
-    
+
 	srand(static_cast<unsigned int>(time(nullptr)));  // Seed the random number generator
 
 	// Initialize app_state
