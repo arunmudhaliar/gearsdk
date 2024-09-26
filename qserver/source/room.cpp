@@ -149,7 +149,8 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 	if (reconnection) {
 		std::map<unsigned, ev_tstamp>::iterator it = disconnected_players_hash_after_room_start.find(prev_cid_hash_val);
 		if (it != disconnected_players_hash_after_room_start.end()) {
-			debug_print_important(__LOGTAG__, "player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", qconnection->cid_hash_val, prev_cid_hash_val, disconnected_players_hash_after_room_start.size());
+			debug_print_important(__LOGTAG__, "room %d: player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", ROOM_ID, qconnection->cid_hash_val, prev_cid_hash_val,
+								  disconnected_players_hash_after_room_start.size());
 			disconnected_players_hash_after_room_start.erase(it);
 		}
 		debug_print_important2(__LOGTAG__, "room %d: player %0x re-added", ROOM_ID, qconnection->cid_hash_val);
@@ -184,12 +185,12 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 
 player* room::get_player(conn_io* qconnection) {
 	if (qconnection == nullptr) {
-		debug_print_error(__LOGTAG__, "get_player: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection == null !!!", ROOM_ID);
 		return nullptr;
 	}
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		debug_print_error(__LOGTAG__, "get_player: qconnection not in the playermap !!! %s", qconnection->cid);
+		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection not in the playermap !!! %s", ROOM_ID, qconnection->cid);
 		return nullptr;
 	}
 	return (*it).second;
@@ -201,12 +202,12 @@ bool room::is_cid_hash_in_disconnected_players_hash_list(unsigned cid_hash) {
 
 ssize_t room::remove_connection(conn_io* qconnection) {
 	if (qconnection == nullptr) {
-		debug_print_error(__LOGTAG__, "remove_connection: qconnection == null !!!");
+		debug_print_error(__LOGTAG__, "room %d: f:remove_connection - qconnection == null !!!", ROOM_ID);
 		return -1;
 	}
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		debug_print_error(__LOGTAG__, "remove_connection: qconnection not in the playermap !!! %s", qconnection->cid);
+		debug_print_error(__LOGTAG__, "room %d: f:remove_connection - qconnection not in the playermap !!! %s", ROOM_ID, qconnection->cid);
 		return -1;
 	}
 	player* removed_player = (*it).second;
@@ -219,7 +220,7 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	if (state > ROOM_UNINITIALISED && state < ROOM_START && !is_min_capacity_reached()) {
 		cancel_and_destroy_timer(count_down_timer);
 		onroom_countdown_cancelled();
-		debug_print_important2(__LOGTAG__, "count down cancelled for room %d ...", ROOM_ID);
+		debug_print_important2(__LOGTAG__, "room %d: count down cancelled ...", ROOM_ID);
 	}
 
 	// player leaving between gameplay and gone below min threshold
@@ -300,7 +301,7 @@ const qstring& room::get_state_string() {
 }
 
 void room::broadcast(const qstring& msg) {
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "room %d: broadcast %s", ROOM_ID, msg.c_str());
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "room %d: f:broadcast %s", ROOM_ID, msg.c_str());
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ptr = it->second;
 		player_ptr->qconnection->sendmessage(msg, true);
@@ -310,7 +311,7 @@ void room::broadcast(const qstring& msg) {
 void room::broadcast_except(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it_except = playermap.find(p->qconnection->cid_hash_val);
 	if (it_except == playermap.end()) {
-		debug_warn(LOG_LEVEL_0, __LOGTAG__, "broadcast_except - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:broadcast_except - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
 		return;
 	}
 
@@ -326,7 +327,7 @@ void room::broadcast_except(player* p, const qstring& msg) {
 void room::sendto(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it = playermap.find(p->qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		debug_warn(LOG_LEVEL_0, __LOGTAG__, "sendto - player %0x not found in map, ignoring !!!", p->qconnection->cid_hash_val);
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:sendto - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
 		return;
 	}
 	p->qconnection->sendmessage(msg, true);
