@@ -243,7 +243,7 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 
 		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 		if (sent != written) {
-			debug_print_error(__LOGTAG__, "failed to send");
+			debug_print_error(__LOGTAG__, "f:flush_egress - failed to send");
 			return;
 		}
 
@@ -363,7 +363,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 				ssize_t sent = sendto(conns->sock, conns->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 				if (sent != written) {
-					debug_print_error(__LOGTAG__, "failed to send");
+					debug_print_error(__LOGTAG__, "version negotiation: failed to send");
 					continue;
 				}
 
@@ -389,13 +389,13 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				ssize_t written = quiche_retry(scid, scid_len, dcid, dcid_len, new_cid, Q_LOCAL_CONN_ID_LEN, token, token_len, version, conns->out, sizeof(conns->out));
 
 				if (written < 0) {
-					debug_print_warn(__LOGTAG__, "failed to create retry packet: %zd", written);
+					debug_print_warn(__LOGTAG__, "stateless retry: failed to create retry packet: %zd", written);
 					continue;
 				}
 
 				ssize_t sent = sendto(conns->sock, conns->out, written, 0, (struct sockaddr*) &peer_addr, peer_addr_len);
 				if (sent != written) {
-					debug_print_error(__LOGTAG__, "failed to send");
+					debug_print_error(__LOGTAG__, "stateless retry: failed to send");
 					continue;
 				}
 
