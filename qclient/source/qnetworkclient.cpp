@@ -23,7 +23,7 @@ conn_io_client::~conn_io_client() {
 }
 
 void conn_io_client::release() {
-    close_socket();
+	close_socket();
 	if (peer) {
 		freeaddrinfo(peer);
 		peer = nullptr;
@@ -47,16 +47,16 @@ void conn_io_client::release() {
 }
 
 int conn_io_client::close_socket() {
-    if (sock<0) {
-        return -1;
-    }
-    int result = close(sock);
-    if (result < 0) {
-        debug_print_error(__LOGTAG__, "Socket closure failed - fd(%d): %s", sock, strerror(errno));
-    } else {
-        sock = -1;
-    }
-    return result;
+	if (sock < 0) {
+		return -1;
+	}
+	int result = close(sock);
+	if (result < 0) {
+		debug_print_error(__LOGTAG__, "Socket closure failed - fd(%d): %s", sock, strerror(errno));
+	} else {
+		sock = -1;
+	}
+	return result;
 }
 
 int conn_io_client::connect(qstring host, qstring port) {
@@ -77,11 +77,11 @@ int conn_io_client::connect(qstring host, qstring port) {
 		return -1;
 	}
 
-    if (sock>FD_SETSIZE) {
-        debug_print_error(__LOGTAG__, "sock fd LIMIT %d reached !!!, FD_SETSIZE(%d)", sock, FD_SETSIZE);
-        return -1;
-    }
-    
+	if (sock > FD_SETSIZE) {
+		debug_print_error(__LOGTAG__, "sock fd LIMIT %d reached !!!, FD_SETSIZE(%d)", sock, FD_SETSIZE);
+		return -1;
+	}
+
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
 		return -1;
@@ -187,32 +187,89 @@ void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "%s", (char*) line);
 }
 
-void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnection) {
+void qnetworkclient::reset_sendto_retry_timer() {
+    ev_timer_stop(getmainloop(), &sendto_retry_timer);
+    sendto_retry_timer.repeat = SENDTO_INITIAL_RETRY_INTERVAL;
+    sendto_retry_count = 0;
+}
+
+void qnetworkclient::sendto_retry_cb(EV_P_ ev_timer* w, int revents) {
+	qnetworkclient* client = reinterpret_cast<qnetworkclient*>(w->data);
+	if (client == nullptr || client->qclient_connection == nullptr) {
+        if (client) {
+            client->reset_sendto_retry_timer();
+        }
+        debug_print_error(__LOGTAG__, "f:sendto_retry_cb - cancelling the re-send !!!");
+		return;
+	}
+
+	if (client->sendto_retry_count >= MAX_SENDTO_RETRY_COUNT) {
+        client->reset_sendto_retry_timer();
+		debug_print_error(__LOGTAG__, "f:sendto_retry_cb - all retry failed to send through socket. check netowrk !!!");
+		return;
+	}
+
+	conn_io_client* qconnection = client->qclient_connection;
+	client->sendto_retry_count++;
+    debug_print_important(__LOGTAG__, "f:sendto_retry_cb - retrying (%d) for connection id %d", client->sendto_retry_count, qconnection->id);
+	ssize_t bytes_sent = 0;
+	while (client->pending_socket_data_buffer.size()) {
+		socket_data* data = client->pending_socket_data_buffer.front();
+		ssize_t sent = sendto(data->sockfd, data->buf, data->len, data->flags, data->dest_addr, data->addrlen);
+		bytes_sent += sent;
+		if (sent < 0) {
+            client->sendto_retry_timer.repeat *= 1.25;
+            ev_timer_again(client->getmainloop(), &client->sendto_retry_timer);
+            return;
+		}
+		client->pending_socket_data_buffer.pop_front();
+		GX_DELETE(data);
+	}
+
+	// stop the retry timer on success.
+    client->reset_sendto_retry_timer();
+	debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:sendto_retry_cb - total bytes sent %ld", bytes_sent);
+}
+
+ssize_t qnetworkclient::socket_sendto(int sockfd, const void* buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) {
+	ssize_t sent = sendto(sockfd, buf, len, flags, dest_addr, addrlen);
+	if (sent < 0) {
+		debug_print_error(__LOGTAG__, "f:socket_sendto - failed to send");
+		socket_data* data = new socket_data(sockfd, buf, len, flags, dest_addr, addrlen);
+		pending_socket_data_buffer.push_back(data);
+		ev_timer_start(mainloop, &sendto_retry_timer);
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "f:socket_sendto - started retry timer.");
+	}
+	return sent;
+}
+
+ssize_t qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnection) {
+	ssize_t sent_bytes = 0;
 	SendInfo send_info;
 	while (true) {
 		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out), &send_info);
 
 		if (written == QUICHE_ERR_DONE) {
-			DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "done writing");
+			DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "f:flushegress - done writing");
 			break;
 		}
 
 		if (written < 0) {
-			debug_print_error(__LOGTAG__, "failed to create packet: %zd", written);
-			return;
+			debug_print_error(__LOGTAG__, "f:flushegress - failed to create packet: %zd", written);
+			return sent_bytes;
 		}
 
-		ssize_t sent = sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
-
+		ssize_t sent = socket_sendto(qconnection->sock, qconnection->egress_out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
+		sent_bytes += sent;
 		if (sent != written) {
-			debug_print_error(__LOGTAG__, "failed to send");
-			return;
+			debug_print_error(__LOGTAG__, "f:flushegress - failed to send");
+			return sent_bytes;
 		}
 
 #if LOG_LEVEL >= LOG_LEVEL_4
 		unsigned long send_bytes_crc = crc32(0L, Z_NULL, 0);
 		send_bytes_crc = essentials::mod_crc32_z(send_bytes_crc, reinterpret_cast<const uint8_t*>(qconnection->egress_out), sent);
-		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "sent %zd bytes - crc: %lx", sent, send_bytes_crc);
+		DEBUG_PRINT2(LOG_LEVEL_4, __LOGTAG__, "f:flushegress - sent %zd bytes - crc: %lx", sent, send_bytes_crc);
 #endif
 	}
 
@@ -221,6 +278,7 @@ void qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconnecti
 	qconnection->timer.repeat = t;
 	ev_timer_again(loop, &qconnection->timer);
 	debug_print(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
+	return sent_bytes;
 }
 
 void qnetworkclient::event_connect(conn_io_client* qconnection) {
@@ -404,7 +462,8 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 
 	if (qconnection->conn) {
-		qconnection->bridge->flushegress(loop, qconnection);
+		ssize_t bytes_sent = qconnection->bridge->flushegress(loop, qconnection);
+		debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:recv_cb - flushegress returned %ld", bytes_sent);
 	}
 }
 
@@ -431,7 +490,8 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 				debug_print(LOG_LEVEL_2, __LOGTAG__, "send_cb failed for %.*s, err %d", sd->size, sd->data, send_res);
 			} else {
 				successfully_sent.push_back(sd);
-				qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+				ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+				debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb - flushegress returned %ld", bytes_sent);
 			}
 		}
 
@@ -463,7 +523,8 @@ void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	DEBUG_PRINT2(LOG_LEVEL_5, __LOGTAG__, "timeout - %lx", qconnection->cid_hash_val);
 
 	quiche_conn_on_timeout(qconnection->conn);
-	qconnection->bridge->flushegress(loop, qconnection);
+	ssize_t bytes_sent = qconnection->bridge->flushegress(loop, qconnection);
+	debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:timeout_cb - flushegress returned %ld", bytes_sent);
 
 	if (quiche_conn_is_closed(qconnection->conn)) {
 		Stats stats;
@@ -519,6 +580,14 @@ qnetworkclient::qnetworkclient() {
 qnetworkclient::~qnetworkclient() {
 	release_connection(mainloop, qclient_connection);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "qnetworkclient destroyed !!!");
+}
+
+void qnetworkclient::destroy_pending_socket_data() {
+	while (pending_socket_data_buffer.size()) {
+		socket_data* data = pending_socket_data_buffer.front();
+		pending_socket_data_buffer.pop_front();
+		GX_DELETE(data);
+	}
 }
 
 void* qnetworkclient::run_internal(void* data) {
@@ -585,17 +654,17 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	}
 	int connection_result = thiz->qclient_connection->connect(host, port);
-    if (connection_result!=0) {
-        debug_print_error(__LOGTAG__, "failed to connect qconnection");
-        run_config_data->pthread_return_value = -1;
-        run_config_data->finished = true;
+	if (connection_result != 0) {
+		debug_print_error(__LOGTAG__, "failed to connect qconnection");
+		run_config_data->pthread_return_value = -1;
+		run_config_data->finished = true;
 #if USE_PTHREAD
-        DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-        pthread_exit(&run_config_data->pthread_return_value);
+		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
+		pthread_exit(&run_config_data->pthread_return_value);
 #else
-        return nullptr;
+		return nullptr;
 #endif
-    }
+	}
 
 	thiz->mainloop = ev_loop_new(0);
 
@@ -612,7 +681,11 @@ void* qnetworkclient::run_internal(void* data) {
 	ev_timer_again(thiz->mainloop, &thiz->qclient_connection->send_timer);
 	//    ev_timer_start(thiz->mainloop, &thiz->qclientConnection->send_timer);
 
-	thiz->flushegress(thiz->mainloop, thiz->qclient_connection);
+	ev_timer_init(&thiz->sendto_retry_timer, sendto_retry_cb, 1, SENDTO_INITIAL_RETRY_INTERVAL);
+	thiz->sendto_retry_timer.data = thiz;
+
+	ssize_t bytes_sent = thiz->flushegress(thiz->mainloop, thiz->qclient_connection);
+	debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:run_internal - flushegress returned %ld", bytes_sent);
 
 #if USE_PTHREAD
 	thiz->send_mutex.unblock(__FUNCTION__);
@@ -621,9 +694,13 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	ev_loop(thiz->mainloop, 0);
 
+	ev_timer_stop(thiz->mainloop, &thiz->sendto_retry_timer);
+
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "run_internal loop released !!!");
 	thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
-
+    
+    thiz->destroy_pending_socket_data();
+    
 	ev_loop_destroy(thiz->mainloop);
 
 	quiche_config_free(config);

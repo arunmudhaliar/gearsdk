@@ -10,6 +10,8 @@
 #define qnetworkclient_hpp
 
 extern "C" {
+#include <cstdlib>	// for malloc and free
+#include <cstring>	// for memcpy
 #include <ev.h>
 #include <fcntl.h>
 #include <quiche.h>
@@ -28,6 +30,9 @@ extern "C" {
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
 
+#define SENDTO_INITIAL_RETRY_INTERVAL 2
+#define MAX_SENDTO_RETRY_COUNT 4
+
 namespace client {
 struct qdata {
 	qdata(const uint8_t* data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
@@ -40,6 +45,27 @@ struct qdata {
 	bool fin = false;
 };
 
+struct socket_data {
+	socket_data(int sockfd, const void* buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen) : sockfd(sockfd), buf(buf), len(len), flags(flags), addrlen(addrlen) {
+		this->dest_addr = (struct sockaddr*) malloc(addrlen);
+		memcpy(this->dest_addr, dest_addr, addrlen);
+	}
+
+	~socket_data() {
+		if (dest_addr) {
+			free(dest_addr);
+		}
+	}
+
+	// Class members
+	int sockfd;
+	const void* buf;			 // Pointer to data buffer
+	size_t len;					 // Length of data
+	int flags;					 // Flags for sendto
+	struct sockaddr* dest_addr;	 // Dynamically allocated pointer for the destination address
+	socklen_t addrlen;			 // Length of the address
+};
+
 class bridge_qcommand;
 class conn_io_client {
    private:
@@ -50,7 +76,7 @@ class conn_io_client {
 	conn_io_client(bridge_qcommand* bridge, Config* config, int id);
 	~conn_io_client();
 
-    int close_socket();
+	int close_socket();
 	void set_config(Config* config) { this->config = config; }
 	int id = -1;
 	ev_timer timer;
@@ -88,7 +114,7 @@ enum con_state { STATE_OPEN, STATE_CONNECT, STATE_CLOSE };
 
 class bridge_qcommand {
    public:
-	virtual void flushegress(struct ev_loop* loop, conn_io_client* qconnection) = 0;
+	virtual ssize_t flushegress(struct ev_loop* loop, conn_io_client* qconnection) = 0;
 	virtual int release_connection(struct ev_loop* loop, conn_io_client* qconnection) = 0;
 	inline virtual struct ev_loop* getmainloop() = 0;
 
@@ -122,6 +148,13 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	struct ev_loop* mainloop = nullptr;
 	struct run_config run_config_data;
 
+	ev_timer sendto_retry_timer;
+	int sendto_retry_count = 0;
+	std::deque<socket_data*> pending_socket_data_buffer;
+
+    void reset_sendto_retry_timer();
+	void destroy_pending_socket_data();
+	ssize_t socket_sendto(int sockfd, const void* buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen);
 #if USE_PTHREAD
 	qmutex run_mutex;
 	qmutex close_mutex;
@@ -135,13 +168,14 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	static void send_cb(EV_P_ ev_timer* w, int revents);
+	static void sendto_retry_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
 
 	void setstate(con_state state);
 	con_state state = STATE_OPEN;
 
    protected:
-	void flushegress(struct ev_loop* loop, conn_io_client* qconnection) final;
+	ssize_t flushegress(struct ev_loop* loop, conn_io_client* qconnection) final;
 	int release_connection(struct ev_loop* loop, conn_io_client* qconnection) final;
 	void onconnect(conn_io_client* qconnection) override;
 	void onmessage(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) override;
