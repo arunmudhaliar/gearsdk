@@ -20,9 +20,10 @@ extern "C" {
 #include <pthread.h>
 #endif
 }
-
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+
+#include <deque>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
@@ -32,6 +33,10 @@ extern "C" {
 
 #define SENDTO_INITIAL_RETRY_INTERVAL 2
 #define MAX_SENDTO_RETRY_COUNT 4
+
+#define HEARTBEAT_INTERVAL 5.0f
+#define SEND_INTERVAL 0.2f
+#define CLIENT_IDLE_TIMEOUT_MS 30000
 
 namespace client {
 struct qdata {
@@ -93,6 +98,7 @@ class conn_io_client {
 	ssize_t send_message(const char* buf, size_t buflen, bool fin);
 	ssize_t send_message(const qstring& buffer, bool fin);
 	int connection_active();
+	void close_connection();  // Note: This function is not fully tested.
 	void release();
 
 	uint8_t recv_buf[65535];
@@ -100,6 +106,8 @@ class conn_io_client {
 
 	std::vector<qdata*> send_buffer;
 	unsigned cid_hash_val = 0;
+	bool issue_close = false;
+	bool fin_received = false;
 };
 
 class bridge_qconnection {
@@ -119,7 +127,7 @@ class bridge_qcommand {
 	inline virtual struct ev_loop* getmainloop() = 0;
 
 	virtual void event_connect(conn_io_client* qconnection) = 0;
-	virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) = 0;
+	virtual void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin) = 0;
 	virtual void event_close(conn_io_client* qconnection) = 0;
 	virtual int send_message(const qstring& buffer, bool flush) = 0;
 	virtual int send_message(const uint8_t* buffer, ssize_t size, bool flush) = 0;
@@ -151,8 +159,9 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	ev_timer sendto_retry_timer;
 	int sendto_retry_count = 0;
 	std::deque<socket_data*> pending_socket_data_buffer;
+	ev_timer heart_beat_timer;
 
-    void reset_sendto_retry_timer();
+	void reset_sendto_retry_timer();
 	void destroy_pending_socket_data();
 	ssize_t socket_sendto(int sockfd, const void* buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen);
 #if USE_PTHREAD
@@ -169,6 +178,7 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	static void send_cb(EV_P_ ev_timer* w, int revents);
 	static void sendto_retry_cb(EV_P_ ev_timer* w, int revents);
+	static void heart_beat_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
 
 	void setstate(con_state state);
@@ -183,7 +193,7 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	void onclose(conn_io_client* qconnection) override;
 	inline struct ev_loop* getmainloop() final { return mainloop; }
 	void event_connect(conn_io_client* qconnection) final;
-	void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) final;
+	void event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin) final;
 	void event_close(conn_io_client* qconnection) final;
 
 #if USE_PTHREAD

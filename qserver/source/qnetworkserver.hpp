@@ -44,6 +44,7 @@ class bridge_qpeerconnection {
    public:
 	virtual void flush_egress(struct ev_loop* loop, conn_io* qconnection) = 0;
 	virtual void destroy_connection(struct ev_loop* loop, conn_io* qconnection) = 0;
+	virtual void close_connection(conn_io* qconnection) = 0;
 	virtual void onconnection_connect(conn_io* qconnection) = 0;
 	virtual void onconnection_connected(conn_io* qconnection) = 0;
 	virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) = 0;
@@ -75,6 +76,7 @@ class conn_io {
 	uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 	uint64_t last_stream_s = 0;
 	int user_data = 0;
+	ev_tstamp last_heartbeat_time;
 };
 
 // MARK: -
@@ -100,12 +102,15 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void network_server_begin();
 	void network_server_end();
 	bool is_run();
+	inline size_t get_connection_count() { return conns ? HASH_COUNT(conns->h) : 0; }
 
    protected:
 	virtual void on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
 	virtual void on_network_server_end() = 0;
+	virtual void on_heartbeat_check();
 	void flush_egress(struct ev_loop* loop, conn_io* qconnection) final;
+	void close_connection(conn_io* qconnection) final;
 	void destroy_connection(struct ev_loop* loop, conn_io* qconnection) final;
 	void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override;
 	void onconnection_connect(conn_io* qconnection) override;
@@ -134,9 +139,13 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void recv_cb_internal(EV_P_ ev_io* w, int revents);
 	void force_disconnect_all();
 
+	void heartbeat_check();
+	static void heart_beat_check_cb(EV_P_ ev_timer* w, int revents);
+
 	Config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;
 	struct connections* conns = nullptr;
+	ev_timer heartbeat_check_timer;
 
 	static void* run_internal(void* data);
 

@@ -28,6 +28,14 @@ struct player {
 };
 
 // MARK: -
+struct disconnected_player {
+	unsigned hash;
+	ev_tstamp disconnection_time;
+	player* player_ptr;
+	UT_hash_handle hh;	// Handle for uthash
+};
+
+// MARK: -
 class room;
 class roomserver_interface {
    public:
@@ -70,7 +78,7 @@ class room : public room_interface, public qtimer_scheduler {
 	room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~room();
 
-	ssize_t try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val = 0);
+	ssize_t try_add_connection(conn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val = 0);
 	ssize_t remove_connection(conn_io* qconnection);
 	player* get_player(conn_io* qconnection);
 	inline bool is_min_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MIN_PLAYERS; }
@@ -84,20 +92,23 @@ class room : public room_interface, public qtimer_scheduler {
 	ev_tstamp since_creation();
 
 	std::map<unsigned, player*> playermap;
-	std::map<unsigned, ev_tstamp> disconnected_players_hash_after_room_start;
 	const int ROOM_ID = 0;
 	const ev_tstamp CREATION_TIME;
 
 	void pass_message_to_room(player* p, const qstring& msg);
-
 	void broadcast(const qstring& msg);
 	void broadcast_except(player* p, const qstring& msg);
 	void sendto(player* p, const qstring& msg);
 	inline const roomconfig& get_room_config() { return ROOM_CONFIG; }
-
 	qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
 
-	bool is_cid_hash_in_disconnected_players_hash_list(unsigned cid_hash);
+	// re-connection
+	void add_to_disconnected_players(player* player_ptr);
+	struct disconnected_player* find_in_disconnected_players(unsigned hash);
+	void print_disconnected_players();
+	void remove_from_disconnected_players(unsigned hash, bool delete_player);
+	void destroy_all_disconnected_players();
+	inline unsigned disconnected_players_count() { return HASH_COUNT(disconnected_players); }
 
    protected:
 	void onroom_create() override;
@@ -123,6 +134,7 @@ class room : public room_interface, public qtimer_scheduler {
 	static int room_id_counter;
 	qstring states_string[4] = {"uninitialised", "waiting", "start", "end"};
 	qtimer* count_down_timer = nullptr;	 // Note :- Do not try to access this timer outside the waiting period, since it may get destroyed by the scheduler.
+	disconnected_player* disconnected_players = nullptr;
 };
 
 #endif /* room_hpp */

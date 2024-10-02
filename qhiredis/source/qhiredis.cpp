@@ -281,7 +281,7 @@ int qhiredis::incr(const qstring& key, long long& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "INCR %b", key.c_str(), key.length());
 	if (reply != nullptr) {
 		value = reply->integer;
-		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "The incremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
 			debug_print_error(logtag, "Redis error: %s", context->errstr);
@@ -301,7 +301,7 @@ int qhiredis::decr(const qstring& key, long long& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "DECR %b", key.c_str(), key.length());
 	if (reply != nullptr) {
 		value = reply->integer;
-		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "The decremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
 			debug_print_error(logtag, "Redis error: %s", context->errstr);
@@ -321,7 +321,7 @@ int qhiredis::incr_by(const qstring& key, const int DELTA, long long& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "INCRBY %b %d", key.c_str(), key.length(), DELTA);
 	if (reply != nullptr) {
 		value = reply->integer;
-		printf("The incremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "The incremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
 			debug_print_error(logtag, "Redis error: %s", context->errstr);
@@ -341,7 +341,7 @@ int qhiredis::decr_by(const qstring& key, const int DELTA, long long& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "DECRBY %b %d", key.c_str(), key.length(), DELTA);
 	if (reply != nullptr) {
 		value = reply->integer;
-		printf("The decremented value of '%s' is: %lld\n", key.c_str(), reply->integer);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "The decremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
 			debug_print_error(logtag, "Redis error: %s", context->errstr);

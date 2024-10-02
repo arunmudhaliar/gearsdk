@@ -32,6 +32,7 @@ conn_io::conn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_len,
 	}
 	memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
 	HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
+	last_heartbeat_time = ev_now(bridge->get_mainloop());
 }
 
 conn_io::~conn_io() {
@@ -92,26 +93,35 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 }
 
 void conn_io::close() {
-	if (!quiche_conn_is_established(conn)) {
-		debug_print_important(__LOGTAG__, "Cant close !!!, connection not established.");
+	if (conn == nullptr || !quiche_conn_is_established(conn)) {
+		debug_print_important(__LOGTAG__, "f:close - Cant close !!!, connection not established. - connection %0x", cid_hash_val);
 		return;
 	}
 	uint64_t s = 0;
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
-		debug_print(LOG_LEVEL_3, __LOGTAG__, "stream %" PRIu64 " is writable", s);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - stream %" PRIu64 " is writable - connection %0x", s, cid_hash_val);
 		const char* byez = "byez\n";
 		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true);
-		debug_print_important(__LOGTAG__, "Close, sending 'byez'");
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - sending 'byez' - connection %0x", cid_hash_val);
 		if (bye_sent_len != 5) {
-			debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
+			debug_print_error(__LOGTAG__, "f:close - sending 'byez' failed !!! - connection %0x", cid_hash_val);
 		}
-
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
 		break;
 	}
 	quiche_stream_iter_free(writable);
 	bridge->flush_egress(bridge->get_mainloop(), this);
+
+	// closing the connection
+	if (!quiche_conn_is_closed(conn) && !quiche_conn_is_draining(conn)) {
+		int close_result = quiche_conn_close(conn, true, 0, nullptr, 0);
+		if (close_result < 0) {
+			debug_print_error(__LOGTAG__, "f:close - failed to close connection %0x, err %d", cid_hash_val, close_result);
+		} else {
+			debug_print_important(__LOGTAG__, "f:close - closing... connection %0x", cid_hash_val);
+		}
+	}
 }
 
 // MARK: - qnetworkserver
@@ -119,6 +129,7 @@ void qnetworkserver::debug_log(const uint8_t* line, void* argp) {
 	UNUSED(argp);
 	debug_print(LOG_LEVEL_2, __LOGTAG__, "%s", (char*) line);
 }
+
 void qnetworkserver::mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len) {
 	memcpy(token, "quiche", sizeof("quiche") - 1);
 	memcpy(token + sizeof("quiche") - 1, addr, addr_len);
@@ -185,15 +196,11 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 	}
 
 	qconnection->conn = conn;
-
 	memcpy(&qconnection->peer_addr, peer_addr, peer_addr_len);
 	qconnection->peer_addr_len = peer_addr_len;
-
 	ev_init(&qconnection->timer, timeout_cb);
 	qconnection->timer.data = qconnection;
-
 	HASH_ADD(hh, conns->h, cid, Q_LOCAL_CONN_ID_LEN, qconnection);
-
 	qconnection->bridge->onconnection_connect(qconnection);
 
 	return qconnection;
@@ -209,8 +216,8 @@ void qnetworkserver::onconnection_connected(conn_io* qconnection) {
 }
 
 void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) {
+#if DEV_BUILD && 0
 	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-
 	uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
 	memcpy(copybuf, buf, recv_len);
 	copybuf[recv_len] = '\0';
@@ -226,6 +233,7 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_i
 	qstring ss = qstring::format_string("HELLO from server-%d", qconnection->itrmsg++);
 	qconnection->sendmessage(ss, true);
 	*/
+#endif
 }
 
 void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
@@ -261,8 +269,13 @@ void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
 	debug_print(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 }
 
+void qnetworkserver::close_connection(conn_io* qconnection) {
+	qconnection->close();
+}
+
 void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnection) {
 	UNUSED(loop);
+	close_connection(qconnection);
 	onconnection_destroy(qconnection);
 	HASH_DELETE(hh, conns->h, qconnection);
 	GX_DELETE(qconnection);
@@ -412,6 +425,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				continue;
 			}
 
+#if DEV_BUILD && 0
+			debug_print_scid(LOG_LEVEL_0, scid, scid_len);
+			debug_print_hexadecimal_string(LOG_LEVEL_0, "dcid", dcid, dcid_len);
+			debug_print_hexadecimal_string(LOG_LEVEL_0, "Token:", token, token_len);
+#endif
 			qconnection = create_conn(dcid, dcid_len, odcid, odcid_len, conns->local_addr, conns->local_addr_len, &peer_addr, peer_addr_len);
 
 			if (qconnection == nullptr) {
@@ -462,7 +480,12 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 						debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
 					}
 				}
-				//                debug_print(LOG_LEVEL_0, __LOGTAG__, "\n\nREACHED ---> %s", buf);
+
+				// heart-beat from client
+				if (recv_len == 2 && conns->buf[0] == 'h' && conns->buf[1] == 'b') {
+					qconnection->last_heartbeat_time = ev_now(loop);
+					continue;
+				}
 				qconnection->bridge->onconnection_message(recv_len, conns->buf, qconnection);
 			}
 			quiche_stream_iter_free(readable);
@@ -532,9 +555,36 @@ void qnetworkserver::network_server_begin() {
 	on_network_server_begin();
 	on_network_server_init();
 }
+
 void qnetworkserver::network_server_end() {
 	on_network_server_end();
 }
+
+void qnetworkserver::on_heartbeat_check() {
+	debug_raw_no_newline(LOG_LEVEL_0, "\r", "connections %zu\t\t", get_connection_count());
+}
+
+void qnetworkserver::heartbeat_check() {
+	conn_io *tmp, *conn_io_ptr = NULL;
+	struct ev_loop* loop = get_mainloop();
+	HASH_ITER(hh, conns->h, conn_io_ptr, tmp) {
+		if (quiche_conn_is_closed(conn_io_ptr->conn)) {
+			continue;
+		}
+		ev_tstamp elapsed_since_last_hb = ev_now(loop) - conn_io_ptr->last_heartbeat_time;
+		if (elapsed_since_last_hb > 10.0) {
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "purging the connection due to inactivity -  connection %0x !!!", conn_io_ptr->cid_hash_val);
+			destroy_connection(loop, conn_io_ptr);
+		}
+	}
+	on_heartbeat_check();
+}
+void qnetworkserver::heart_beat_check_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(revents);
+	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
+	server->heartbeat_check();
+}
+
 void* qnetworkserver::run_internal(void* data) {
 	runserverconfig* run_config = reinterpret_cast<runserverconfig*>(data);
 	qstring host = run_config->host;
@@ -563,13 +613,12 @@ void* qnetworkserver::run_internal(void* data) {
 
 	thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", port.c_str()), qstring::format_string("%s:%s", host.c_str(), port.c_str()));
 
-	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
-
 	qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
 	thiz->logger.start_session(log_path, log_path.length());
 	//    quiche_enable_debug_logging(debug_log, nullptr);
 
 	struct addrinfo* local;
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
 		debug_print_error(__LOGTAG__, "failed to resolve host");
 		GX_DELETE(thiz->hiredis);
@@ -671,8 +720,6 @@ void* qnetworkserver::run_internal(void* data) {
 
 	thiz->conns = &c;
 
-	ev_io watcher;
-
 	thiz->mainloop = ev_loop_new(0);
 
 	thiz->hiredis_async = DEBUG_NEW qhiredis_async(run_config->redis_ip, run_config->redis_port, thiz);
@@ -688,16 +735,23 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
+	ev_io watcher;
 	ev_io_init(&watcher, recv_cb, sock, EV_READ);
 	ev_io_start(thiz->mainloop, &watcher);
 	watcher.data = thiz;
 
 	thiz->network_server_begin();
 
+	// heartbeat check timer
+	ev_init(&thiz->heartbeat_check_timer, heart_beat_check_cb);
+	thiz->heartbeat_check_timer.data = thiz;
+	thiz->heartbeat_check_timer.repeat = 10.0f;
+	ev_timer_again(thiz->mainloop, &thiz->heartbeat_check_timer);
+
 	ev_loop(thiz->mainloop, 0);
 
+	ev_timer_stop(thiz->mainloop, &thiz->heartbeat_check_timer);
 	thiz->network_server_end();
-
 	thiz->force_disconnect_all();
 
 	thiz->hiredis_async->disconnect_async_redis();
@@ -707,35 +761,9 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_loop_destroy(thiz->mainloop);
 
 	freeaddrinfo(local);
-
 	quiche_config_free(thiz->config);
 
 	thiz->exit_services_gracefully();
-	/*
-	thiz->logger.end_session();
-
-	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
-	struct ev_loop* wait_loop = ev_loop_new();
-	qtimer_scheduler wait_scheduler;
-	wait_scheduler.set_loop(wait_loop);
-	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
-		[thiz, wait_loop](qtimer& timer) {
-			UNUSED(timer);
-			int service_shutdown_cnt = 0;
-			if (thiz->logger.config.finished) {
-				debug_print_important(__LOGTAG__, "stats service finished !!!");
-				service_shutdown_cnt++;
-			}
-			if (service_shutdown_cnt >= 1) {
-				ev_break(wait_loop, EVBREAK_ONE);
-			}
-		},
-		3);
-	ev_run(wait_loop, 0);
-	wait_scheduler.cancel_and_destroy_timer(wait_timer);
-	ev_loop_destroy(wait_loop);
-*/
-
 	run_config->finished = true;
 	return 0;
 }

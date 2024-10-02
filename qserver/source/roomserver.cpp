@@ -19,7 +19,7 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 				zombies.push_back(waiting_room);
 			}
 		}
-		if (zombie_rooms != (ssize_t) zombies.size()) {
+		if (zombie_rooms != (size_t) zombies.size()) {
 			debug_print_important2(__LOGTAG__, "[%d] - zombies", zombies.size());
 			for (auto it = zombies.cbegin(); it != zombies.cend(); it++) {
 				room* zombie = *it;
@@ -74,6 +74,9 @@ void roomserver::onroom_pre_start(room* r) {
 	waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), r), waiting_rooms.end());
 	if (old_sz <= (int) waiting_rooms.size()) {
 		debug_print_error(__LOGTAG__, "f:onroom_pre_start - coudn't find the room in waiting rooms list. CHECK !!!");
+		if (r) {
+			r->print_info();
+		}
 		return;
 	}
 
@@ -193,11 +196,11 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 }
 
 void roomserver::onconnection_connect(conn_io* qconnection) {
-	debug_print_important2(__LOGTAG__, "f:onconnection_connect - incoming connection %0x", qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:onconnection_connect - incoming connection %0x", qconnection->cid_hash_val);
 }
 
 void roomserver::onconnection_connected(conn_io* qconnection) {
-	debug_print_important2(__LOGTAG__, "f:onconnection_connected - connected %0x", qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:onconnection_connected - connected %0x", qconnection->cid_hash_val);
 	new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
 }
 
@@ -223,7 +226,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 	if (room_ptr == nullptr && room_match_request_msg.room_id >= 0) {
 		room* found_room = find_room(room_match_request_msg.room_id);
 		if (found_room != nullptr && found_room->get_state() < room::ROOM_END) {
-			if (found_room->is_cid_hash_in_disconnected_players_hash_list(room_match_request_msg.prev_cid_hash_val)) {
+			if (found_room->find_in_disconnected_players(room_match_request_msg.prev_cid_hash_val)) {
 				room_ptr = found_room;
 				debug_print(LOG_LEVEL_0, __LOGTAG__, "f:do_process_roomjoin - found previous room:%d for connection %0x. previous connection %0x", found_room->ROOM_ID, qconnection->cid_hash_val, room_match_request_msg.prev_cid_hash_val);
 			}
@@ -240,7 +243,8 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
 			room* waiting_room = *it;
 			ssize_t old_count = waiting_room->get_playermap_count();
-			ssize_t new_count = waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);
+			bool replaced_by_disconnected_player = false;
+			ssize_t new_count = waiting_room->try_add_connection(qconnection, room_match_request_msg.pid, replaced_by_disconnected_player);
 			connection_added_to_room = new_count > old_count;
 			if (connection_added_to_room) {
 				room_ptr = waiting_room;
@@ -263,7 +267,8 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		}
 		// check if he can be added back to the same room.
 		ssize_t old_count = room_ptr->get_playermap_count();
-		ssize_t new_count = room_ptr->try_add_connection(qconnection, room_match_request_msg.pid, room_match_request_msg.prev_cid_hash_val);
+		bool replaced_by_disconnected_player = false;
+		ssize_t new_count = room_ptr->try_add_connection(qconnection, room_match_request_msg.pid, replaced_by_disconnected_player, room_match_request_msg.prev_cid_hash_val);
 		if (new_count == -2) {	// already part of the room
 			debug_print_error(__LOGTAG__, "f:do_process_roomjoin - room %d - this can not happen !!!, returning.", room_ptr->ROOM_ID);
 			return;
@@ -272,16 +277,23 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		if (!connection_added_to_room) {
 			// remove from old list
 			debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - can't be added to his prev room %d, remove him from old hash list", room_ptr->ROOM_ID);
-			connection_map.erase(iterator);
+			if (iterator != connection_map.end()) {
+				connection_map.erase(iterator);
+			}
 			room_ptr = nullptr;
 		} else {
+			if (iterator != connection_map.end()) {
+				connection_map.erase(iterator);
+			}
+			connection_map[qconnection->cid_hash_val] = room_ptr;  // update the connection map
 			debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - add player to PREV room %d of user [m-sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 		}
 	}
 	// create a new room and add him
 	if (!connection_added_to_room) {
 		room* waiting_room = create_waiting_room(&room_config_msg);
-		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid);	// no need to check for limit since he is our first user in this room.
+		bool replaced_by_disconnected_player = false;
+		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid, replaced_by_disconnected_player);	 // no need to check for limit since he is our first user in this room.
 		room_ptr = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_ptr;
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:do_process_roomjoin - add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
@@ -354,4 +366,15 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 		result = this->hiredis->expire_key(expired_key, 1 * 60);  // 1 minute(s)
 		debug_warn_cond(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", expired_key.c_str(), result);
 	}
+}
+
+void roomserver::on_heartbeat_check() {
+	size_t curr_conns = get_connection_count();
+	max_conns_reached = MAX(curr_conns, max_conns_reached);
+	size_t curr_rooms = rooms.size();
+	max_rooms_reached = MAX(curr_rooms, max_rooms_reached);
+	size_t curr_wrooms = waiting_rooms.size();
+	max_wrooms_reached = MAX(curr_wrooms, max_wrooms_reached);
+	debug_raw_no_newline(LOG_LEVEL_0, "\r", "connections %zu (max %zu), rooms %zu (max %zu), wrooms %zu (max %zu), conn map %zu\t\t", curr_conns, max_conns_reached, curr_rooms, max_rooms_reached, curr_wrooms, max_wrooms_reached,
+						 connection_map.size());
 }
