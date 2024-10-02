@@ -129,6 +129,27 @@ void debug_raw(int log_level, const char* format, ...) {
 #endif
 }
 
+void debug_raw_no_newline(int log_level, const char* prefix, const char* format, ...) {
+	if (log_level > LOG_LEVEL) {
+		return;
+	}
+
+	// Format the log message
+	char buffer[LOGBUFFER_SIZE + 1];
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, LOGBUFFER_SIZE, format, args);
+	va_end(args);
+
+#if PLATFORM == PLATFORM_ANDROID
+	// Android-specific logging
+	__android_log_print(ANDROID_LOG_INFO, "", "%s", buffer);
+#else
+	// General case for other platforms
+	fprintf(stderr, "%s[%d] %s", prefix, getpid(), buffer);
+#endif
+}
+
 void debug_print(int log_level, const char* tag, const char* format, ...) {
 	if (log_level > LOG_LEVEL) {
 		return;
@@ -272,6 +293,17 @@ void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len) {
 	fprintf(stderr, "[%d] SCID: ", getpid());
 	for (size_t i = 0; i < scid_len; ++i) {
 		fprintf(stderr, "%02x", scid[i]);
+	}
+	fprintf(stderr, "\n");
+}
+
+void debug_print_hexadecimal_string(int log_level, const char* prefix, const uint8_t* buf, size_t buf_len) {
+	if (log_level > LOG_LEVEL || buf == nullptr || buf_len == 0) {
+		return;
+	}
+	fprintf(stderr, "[%d] %s: ", getpid(), prefix);
+	for (size_t i = 0; i < buf_len; ++i) {
+		fprintf(stderr, "%02x", buf[i]);
 	}
 	fprintf(stderr, "\n");
 }

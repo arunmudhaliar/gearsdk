@@ -35,6 +35,7 @@ void conn_io_client::release() {
 	ev_io_stop(bridge->getmainloop(), &watcher);
 	ev_break(bridge->getmainloop(), EVBREAK_ONE);
 	if (conn) {
+		close_connection();
 		quiche_conn_free(conn);
 		conn = nullptr;
 	}
@@ -44,6 +45,19 @@ void conn_io_client::release() {
 		GX_DELETE(sd);
 	}
 	send_buffer.clear();
+}
+
+// Note: This function is not fully tested.
+void conn_io_client::close_connection() {
+	int con_active = connection_active();
+	if (con_active == 0) {
+		int close_result = quiche_conn_close(conn, true, 0, nullptr, 0);
+		if (close_result < 0) {
+			debug_print_error(__LOGTAG__, "f:close - failed to close connection %0x, err %d", cid_hash_val, close_result);
+		} else {
+			debug_print_important(__LOGTAG__, "f:close - closing... connection %0x", cid_hash_val);
+		}
+	}
 }
 
 int conn_io_client::close_socket() {
@@ -61,6 +75,8 @@ int conn_io_client::close_socket() {
 
 int conn_io_client::connect(qstring host, qstring port) {
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+
+	issue_close = false;
 
 	if (peer) {
 		freeaddrinfo(peer);
@@ -111,7 +127,9 @@ int conn_io_client::connect(qstring host, qstring port) {
 	HASH_VALUE(scid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 
 	conn = quiche_connect(host.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &local_addr, local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
-
+#if DEV_BUILD
+	debug_print_scid(LOG_LEVEL_0, scid, sizeof(scid));
+#endif
 	if (conn == NULL) {
 		debug_print_error(__LOGTAG__, "failed to create connection");
 		return -1;
@@ -127,11 +145,12 @@ int conn_io_client::connection_active() {
 	if (!quiche_conn_is_established(conn)) {
 		return -2;
 	}
-
 	if (quiche_conn_is_closed(conn)) {
 		return -3;
 	}
-
+	if (quiche_conn_is_draining(conn)) {
+		return -4;
+	}
 	return 0;
 }
 
@@ -142,21 +161,11 @@ ssize_t conn_io_client::send_message(const qstring& buffer, bool fin) {
 ssize_t conn_io_client::send_message(const char* buf, size_t buflen, bool fin) {
 	int conn_active = connection_active();
 	if (conn_active < 0) {
-		debug_print_important(__LOGTAG__, "Cant send !!!, conn is null or not active = %d", conn_active);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "Cant send !!!, conn not active = %d", conn_active);
 		return conn_active;
 	}
 
-	if (!quiche_conn_is_established(conn)) {
-		debug_print_important(__LOGTAG__, "Cant send !!!, connection not established - %s", (char*) buf);
-		return -2;
-	}
-
-	if (quiche_conn_is_closed(conn)) {
-		debug_print_important(__LOGTAG__, "Cant send !!!, connection closed - %s", (char*) buf);
-		return -3;
-	}
-
-	ssize_t result = -4;
+	ssize_t result = -5;
 	uint64_t s = 0;
 	StreamIter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
@@ -188,46 +197,46 @@ void qnetworkclient::debug_log(const uint8_t* line, void* argp) {
 }
 
 void qnetworkclient::reset_sendto_retry_timer() {
-    ev_timer_stop(getmainloop(), &sendto_retry_timer);
-    sendto_retry_timer.repeat = SENDTO_INITIAL_RETRY_INTERVAL;
-    sendto_retry_count = 0;
+	ev_timer_stop(getmainloop(), &sendto_retry_timer);
+	sendto_retry_timer.repeat = SENDTO_INITIAL_RETRY_INTERVAL;
+	sendto_retry_count = 0;
 }
 
 void qnetworkclient::sendto_retry_cb(EV_P_ ev_timer* w, int revents) {
 	qnetworkclient* client = reinterpret_cast<qnetworkclient*>(w->data);
 	if (client == nullptr || client->qclient_connection == nullptr) {
-        if (client) {
-            client->reset_sendto_retry_timer();
-        }
-        debug_print_error(__LOGTAG__, "f:sendto_retry_cb - cancelling the re-send !!!");
+		if (client) {
+			client->reset_sendto_retry_timer();
+		}
+		debug_print_error(__LOGTAG__, "f:sendto_retry_cb - cancelling the re-send !!!");
 		return;
 	}
 
 	if (client->sendto_retry_count >= MAX_SENDTO_RETRY_COUNT) {
-        client->reset_sendto_retry_timer();
+		client->reset_sendto_retry_timer();
 		debug_print_error(__LOGTAG__, "f:sendto_retry_cb - all retry failed to send through socket. check netowrk !!!");
 		return;
 	}
 
 	conn_io_client* qconnection = client->qclient_connection;
 	client->sendto_retry_count++;
-    debug_print_important(__LOGTAG__, "f:sendto_retry_cb - retrying (%d) for connection id %d", client->sendto_retry_count, qconnection->id);
+	debug_print_important(__LOGTAG__, "f:sendto_retry_cb - retrying (%d) for connection id %d", client->sendto_retry_count, qconnection->id);
 	ssize_t bytes_sent = 0;
 	while (client->pending_socket_data_buffer.size()) {
 		socket_data* data = client->pending_socket_data_buffer.front();
 		ssize_t sent = sendto(data->sockfd, data->buf, data->len, data->flags, data->dest_addr, data->addrlen);
 		bytes_sent += sent;
 		if (sent < 0) {
-            client->sendto_retry_timer.repeat *= 1.25;
-            ev_timer_again(client->getmainloop(), &client->sendto_retry_timer);
-            return;
+			client->sendto_retry_timer.repeat *= 1.25;
+			ev_timer_again(client->getmainloop(), &client->sendto_retry_timer);
+			return;
 		}
 		client->pending_socket_data_buffer.pop_front();
 		GX_DELETE(data);
 	}
 
 	// stop the retry timer on success.
-    client->reset_sendto_retry_timer();
+	client->reset_sendto_retry_timer();
 	debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:sendto_retry_cb - total bytes sent %ld", bytes_sent);
 }
 
@@ -286,7 +295,7 @@ void qnetworkclient::event_connect(conn_io_client* qconnection) {
 	onconnect(qconnection);
 }
 
-void qnetworkclient::event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+void qnetworkclient::event_msg_received(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin) {
 	onmessage(recv_len, buf, qconnection);
 }
 
@@ -340,6 +349,9 @@ int qnetworkclient::close() {
 			}
 		}
 	}
+//    if (qclient_connection) {
+//        qclient_connection->issue_close = true;
+//    }
 #if USE_PTHREAD
 	sendloop_mutex.unblock(__FUNCTION__);
 	send_mutex.unblock(__FUNCTION__);
@@ -456,7 +468,8 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 					debug_print(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
 				}
 			}
-			qconnection->bridge->event_msg_received(recv_len, qconnection->recv_buf, qconnection);
+			qconnection->fin_received = fin;
+			qconnection->bridge->event_msg_received(recv_len, qconnection->recv_buf, qconnection, fin);
 		}
 		quiche_stream_iter_free(readable);
 	}
@@ -487,7 +500,7 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 			qdata* sd = *it;
 			ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
 			if (sd->size != send_res) {
-				debug_print(LOG_LEVEL_2, __LOGTAG__, "send_cb failed for %.*s, err %d", sd->size, sd->data, send_res);
+				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received, qconnection->send_buffer.size());
 			} else {
 				successfully_sent.push_back(sd);
 				ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
@@ -505,11 +518,33 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 		}
 	}
 
+	//    if (qconnection->issue_close) {
+	//        ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+	//        debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb:issue_close - flushegress returned %ld", bytes_sent);
+	//        qconnection->close_connection();
+	//    }
+
 #if USE_PTHREAD
 	qconnection->bridge->get_send_mutex()->unblock(__FUNCTION__);
 	qconnection->bridge->get_close_mutex()->unblock(__FUNCTION__);
 	qconnection->bridge->get_sendloop_mutex()->unlock();
 #endif
+}
+
+void qnetworkclient::heart_beat_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(revents);
+	qnetworkclient* client = reinterpret_cast<qnetworkclient*>(w->data);
+	if (client == nullptr) {
+		return;
+	}
+	conn_io_client* qconnection = client->qclient_connection;
+	if (qconnection->conn == nullptr) {
+		return;
+	}
+	if (qconnection->connection_active() != 0) {
+		return;
+	}
+	client->send_message("hb", true);
 }
 
 void qnetworkclient::timeout_cb(EV_P_ ev_timer* w, int revents) {
@@ -620,7 +655,7 @@ void* qnetworkclient::run_internal(void* data) {
 
 	quiche_config_set_application_protos(config, reinterpret_cast<const uint8_t*>("\x0ahq-interop\x05hq-29\x05hq-28\x05hq-27\x08http/0.9"), 38);
 
-	quiche_config_set_max_idle_timeout(config, 30000);
+	quiche_config_set_max_idle_timeout(config, CLIENT_IDLE_TIMEOUT_MS);
 	quiche_config_set_max_recv_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);
 	quiche_config_set_max_send_udp_payload_size(config, Q_MAX_DATAGRAM_SIZE);
 	quiche_config_set_initial_max_data(config, 10000000);
@@ -677,12 +712,17 @@ void* qnetworkclient::run_internal(void* data) {
 
 	ev_init(&thiz->qclient_connection->send_timer, send_cb);
 	thiz->qclient_connection->send_timer.data = thiz->qclient_connection;
-	thiz->qclient_connection->send_timer.repeat = 0.2f;
+	thiz->qclient_connection->send_timer.repeat = SEND_INTERVAL;
 	ev_timer_again(thiz->mainloop, &thiz->qclient_connection->send_timer);
 	//    ev_timer_start(thiz->mainloop, &thiz->qclientConnection->send_timer);
 
 	ev_timer_init(&thiz->sendto_retry_timer, sendto_retry_cb, 1, SENDTO_INITIAL_RETRY_INTERVAL);
 	thiz->sendto_retry_timer.data = thiz;
+
+	ev_init(&thiz->heart_beat_timer, heart_beat_cb);
+	thiz->heart_beat_timer.data = thiz;
+	thiz->heart_beat_timer.repeat = HEARTBEAT_INTERVAL;
+	ev_timer_again(thiz->mainloop, &thiz->heart_beat_timer);
 
 	ssize_t bytes_sent = thiz->flushegress(thiz->mainloop, thiz->qclient_connection);
 	debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:run_internal - flushegress returned %ld", bytes_sent);
@@ -694,13 +734,15 @@ void* qnetworkclient::run_internal(void* data) {
 #endif
 	ev_loop(thiz->mainloop, 0);
 
+	ev_timer_stop(thiz->mainloop, &thiz->heart_beat_timer);
+
 	ev_timer_stop(thiz->mainloop, &thiz->sendto_retry_timer);
 
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "run_internal loop released !!!");
 	thiz->release_connection(thiz->mainloop, thiz->qclient_connection);
-    
-    thiz->destroy_pending_socket_data();
-    
+
+	thiz->destroy_pending_socket_data();
+
 	ev_loop_destroy(thiz->mainloop);
 
 	quiche_config_free(config);

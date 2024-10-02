@@ -26,10 +26,12 @@ room::~room() {
 		onroom_player_removed(player_to_rem);
 		GX_DELETE(player_to_rem);
 	}
+	destroy_all_disconnected_players();
 	debug_print_important(__LOGTAG__, "room %d: destructor", ROOM_ID);
 }
 
 void room::onroom_create() {}
+
 void room::onroom_start() {}
 
 void room::send_event_player_add_or_remove(player* p, bool add) {
@@ -118,7 +120,8 @@ bool room::can_allow_reconnection(unsigned cid_hash) {
 void room::pass_message_to_room(player* p, const qstring& msg) {
 	onroom_message(p, msg);
 }
-ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsigned prev_cid_hash_val) {
+ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val) {
+	replaced_by_disconnected_player = false;
 	if (qconnection == nullptr) {
 		debug_print_error(__LOGTAG__, "room %d: try_add_connection: qconnection == null !!!", ROOM_ID);
 		return -1;
@@ -127,7 +130,8 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 		debug_print_error(__LOGTAG__, "room %d: qconnection already in the playermap !!!", ROOM_ID);
 		return -2;
 	}
-	bool reconnection = prev_cid_hash_val > 0 && is_cid_hash_in_disconnected_players_hash_list(prev_cid_hash_val);
+	struct disconnected_player* disconnected_player_state = find_in_disconnected_players(prev_cid_hash_val);
+	bool reconnection = prev_cid_hash_val > 0 && disconnected_player_state != nullptr;
 	if (!reconnection && state > ROOM_WAITING) {
 		if (!ROOM_CONFIG.ALLOW_JOIN_AFTER_START) {
 			debug_print_error(__LOGTAG__, "room %d: room not in waiting state and allow_join_after_start==false !!!", ROOM_ID);
@@ -144,23 +148,30 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, unsig
 			return -5;
 		}
 	}
-	player* player_ptr = DEBUG_NEW player(qconnection, pid);
-	playermap[qconnection->cid_hash_val] = player_ptr;
+	player* player_ptr = nullptr;
+	// check on disconnection list
 	if (reconnection) {
-		std::map<unsigned, ev_tstamp>::iterator it = disconnected_players_hash_after_room_start.find(prev_cid_hash_val);
-		if (it != disconnected_players_hash_after_room_start.end()) {
-			debug_print_important(__LOGTAG__, "room %d: player %0x's entry hash (%0x) removed from disconnected hash list. count(%d)", ROOM_ID, qconnection->cid_hash_val, prev_cid_hash_val,
-								  disconnected_players_hash_after_room_start.size());
-			disconnected_players_hash_after_room_start.erase(it);
-		}
+		replaced_by_disconnected_player = true;
+		player_ptr = disconnected_player_state->player_ptr;
+		player_ptr->qconnection = qconnection;	// setting the new connection for player.
+		remove_from_disconnected_players(prev_cid_hash_val, false);
+		debug_print_important(__LOGTAG__, "room %d: player %0x's [prev_cid_hash_val hash (%0x)] entry removed from disconnected hash list. count(%d)", ROOM_ID, qconnection->cid_hash_val, prev_cid_hash_val, disconnected_players_count());
 		debug_print_important2(__LOGTAG__, "room %d: player %0x re-added", ROOM_ID, qconnection->cid_hash_val);
-	} else {
+	}
+
+	// if couldn't find on disconnection list, create new
+	if (player_ptr == nullptr) {
+		player_ptr = DEBUG_NEW player(qconnection, pid);
 		debug_print_important2(__LOGTAG__, "room %d: player %0x added", ROOM_ID, qconnection->cid_hash_val);
 	}
+	playermap[qconnection->cid_hash_val] = player_ptr;
 	send_event_player_add_or_remove(player_ptr, true);
 	onroom_player_added(player_ptr);
 	if (is_min_capacity_reached() && get_state() < ROOM_START) {
 		if ((int) playermap.size() == ROOM_CONFIG.MAX_PLAYERS) {
+			if (cancel_and_destroy_timer(count_down_timer)) {
+				count_down_timer = nullptr;
+			}
 			set_state(ROOM_START);
 		} else {
 			debug_print_important2(__LOGTAG__, "room %d: start count down  ...", ROOM_ID);
@@ -190,14 +201,73 @@ player* room::get_player(conn_io* qconnection) {
 	}
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
-		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection not in the playermap !!! %s", ROOM_ID, qconnection->cid);
+		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection not in the playermap !!! %0x", ROOM_ID, qconnection->cid_hash_val);
 		return nullptr;
 	}
 	return (*it).second;
 }
 
-bool room::is_cid_hash_in_disconnected_players_hash_list(unsigned cid_hash) {
-	return (disconnected_players_hash_after_room_start.find(cid_hash) != disconnected_players_hash_after_room_start.end());
+// Function to find a player by hash in the hash table
+struct disconnected_player* room::find_in_disconnected_players(unsigned hash) {
+	struct disconnected_player* found_player = nullptr;
+	HASH_FIND(hh, disconnected_players, &hash, sizeof(unsigned), found_player);
+	return found_player;
+}
+
+void room::remove_from_disconnected_players(unsigned hash, bool delete_player) {
+	struct disconnected_player* player_to_remove = nullptr;
+	HASH_FIND(hh, disconnected_players, &hash, sizeof(unsigned), player_to_remove);
+	if (player_to_remove) {
+		HASH_DEL(disconnected_players, player_to_remove);
+		if (delete_player) {
+			GX_DELETE(player_to_remove->player_ptr);
+		}
+		GX_DELETE(player_to_remove);
+		debug_print_important2(__LOGTAG__, "Removed player with hash: %u from disconnected_players", hash);
+	}
+}
+
+// Function to add a player to the hash table
+void room::add_to_disconnected_players(player* player_ptr) {
+	if (player_ptr == nullptr || player_ptr->qconnection == nullptr) {
+		debug_print_error(__LOGTAG__, "f:add_to_disconnected_player_list - player or qconnection NULL pointer ");
+		return;
+	}
+	// Allocate memory for the new disconnected_player entry
+	struct disconnected_player* new_player = DEBUG_NEW struct disconnected_player;
+	if (new_player == nullptr) {
+		debug_print_error(__LOGTAG__, "f:add_to_disconnected_player_list - Failed to allocate memory for disconnected_player");
+		return;
+	}
+
+	// Set the hash and player pointer
+	unsigned hash = player_ptr->qconnection->cid_hash_val;
+	new_player->hash = hash;
+	new_player->player_ptr = player_ptr;
+
+	// Add to the hash table using HASH_ADD
+	HASH_ADD(hh, disconnected_players, hash, sizeof(unsigned), new_player);
+	debug_print_important2(__LOGTAG__, "Added player with hash: %u to disconnected_players", hash);
+}
+
+void room::destroy_all_disconnected_players() {
+	unsigned total_disconnected_cids = disconnected_players_count();
+	struct disconnected_player *p = nullptr, *tmp = nullptr;
+	HASH_ITER(hh, disconnected_players, p, tmp) {
+		HASH_DEL(disconnected_players, p);
+		GX_DELETE(p->player_ptr);
+		GX_DELETE(p);
+	}
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "All (%d) disconnected players removed", total_disconnected_cids);
+}
+
+// Function to print all players in the hash table (for demonstration)
+void room::print_disconnected_players() {
+	struct disconnected_player *p = nullptr, *tmp = nullptr;
+	debug_print_important(__LOGTAG__, "Disconnected players");
+	HASH_ITER(hh, disconnected_players, p, tmp) {
+		printf("Hash: %u\n", p->hash);
+	}
 }
 
 ssize_t room::remove_connection(conn_io* qconnection) {
@@ -215,24 +285,31 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	playermap.erase(it);
 	debug_print_important2(__LOGTAG__, "room %d: player %0x removed", ROOM_ID, qconnection->cid_hash_val);
 	onroom_player_removed(removed_player);
-	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
+	//	GX_DELETE(removed_player);	// Better to cache this than delete. He may rejoin.
 
 	if (state > ROOM_UNINITIALISED && state < ROOM_START && !is_min_capacity_reached()) {
-		cancel_and_destroy_timer(count_down_timer);
+		if (cancel_and_destroy_timer(count_down_timer)) {
+			count_down_timer = nullptr;
+		}
 		onroom_countdown_cancelled();
 		debug_print_important2(__LOGTAG__, "room %d: count down cancelled ...", ROOM_ID);
 	}
 
-	// player leaving between gameplay and gone below min threshold
-	if (state >= ROOM_START && (int) playermap.size() < ROOM_CONFIG.MIN_PLAYERS) {
-		if ((int) playermap.size() > 0) {
-			if (!is_cid_hash_in_disconnected_players_hash_list(qconnection->cid_hash_val)) {
-				disconnected_players_hash_after_room_start[qconnection->cid_hash_val] = ev_now(roomserverinterface->get_netowrk_main_loop());
-			}
-		} else {
+	// player leaving between gameplay
+	if (state >= ROOM_START) {
+		if ((int) playermap.size() < ROOM_CONFIG.MIN_PLAYERS) {
 			set_state(ROOM_END);
 			kick_all_except(nullptr);
+		} else {
+			if (!find_in_disconnected_players(qconnection->cid_hash_val)) {
+				add_to_disconnected_players(removed_player);
+			}
 		}
+	}
+
+	// if not in disconnection list. Delete the player
+	if (!find_in_disconnected_players(qconnection->cid_hash_val)) {
+		GX_DELETE(removed_player);
 	}
 
 	//    if (playermap.size()==0 && state>=ROOM_START) {

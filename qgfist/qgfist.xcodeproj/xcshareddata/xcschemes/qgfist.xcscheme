@@ -53,12 +53,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "--gserver 15.206.79.30:4000 --max-parallel 10  --exit-after 60"
-            isEnabled = "NO">
+            argument = "--gserver 127.0.0.1:4000 --max-parallel 10  --exit-after 40"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--gserver 15.206.79.30:4000 --single-request 2"
-            isEnabled = "YES">
+            argument = "--gserver 127.0.0.1:4000 --single-request 1"
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

@@ -1,0 +1,26 @@
+[
+  {
+    "api": "onconnect-send",
+    "payload": "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f5159b\"}"
+  },
+  {
+    "api": "onconnect-send",
+    "payload": "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":3924555746,\"room_id\":0,\"pid\":\"57f5159b\"}"
+  },
+  {
+    "api": "onconnect-send",
+    "payload": "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f5159b\"}"
+  },
+  {
+    "api": "onconnect-send",
+    "payload": "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f5159b\"}"
+  },
+  {
+    "api": "onconnect-send",
+    "payload": "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f5159b\"}"
+  },
+  {
+    "api": "onconnect-close",
+    "payload": ""
+  }
+]

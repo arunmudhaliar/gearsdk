@@ -38,6 +38,7 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void onconnection_connected(conn_io* qconnection) override final;
 	void onconnection_destroy(conn_io* qconnection) override final;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_heartbeat_check() override;
 
 	void onroom_pre_start(room*) override final;
 	virtual room* create_room(const msg_room_config* room_config_msg) = 0;
@@ -57,7 +58,10 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	std::vector<room*> rooms;
 	std::map<unsigned, room*> connection_map;
 	std::map<unsigned, ev_tstamp> new_connections;
-	ssize_t zombie_rooms = 0;
+	size_t zombie_rooms = 0;
+	size_t max_conns_reached = 0;
+	size_t max_rooms_reached = 0;
+	size_t max_wrooms_reached = 0;
 
 	message_parser msg_parser;
 	qtimer* waiting_room_check_zombie_timer = nullptr;
