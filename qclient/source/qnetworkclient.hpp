@@ -20,9 +20,10 @@ extern "C" {
 #include <pthread.h>
 #endif
 }
-
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+
+#include <deque>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
