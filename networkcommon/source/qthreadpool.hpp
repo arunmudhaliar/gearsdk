@@ -17,7 +17,7 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "qthreadpool"
 
-template <typename qtask>
+template <typename Qtask>
 class qthreadpool {
    public:
 	explicit qthreadpool(size_t num_threads);
@@ -35,7 +35,7 @@ class qthreadpool {
 	static void* worker_thread(void* arg);
 
 	std::vector<pthread_t> workers;						  // Worker threads
-	std::queue<qtask> tasks;							  // Task queue
+	std::queue<Qtask> tasks;							  // Task queue
 	std::queue<std::function<void()>> main_thread_queue;  // Main thread callback queue
 	std::mutex queue_mutex;								  // Mutex for task queue
 	std::mutex main_thread_mutex;						  // Mutex for main thread queue
@@ -44,17 +44,17 @@ class qthreadpool {
 	std::atomic<bool> stop_flag;						  // Flag to stop the thread pool
 };
 
-template <typename qtask>
-qthreadpool<qtask>::qthreadpool(size_t num_threads) : stop_flag(false) {
+template <typename Qtask>
+qthreadpool<Qtask>::qthreadpool(size_t num_threads) : stop_flag(false) {
 	for (size_t i = 0; i < num_threads; ++i) {
 		workers.emplace_back();
 		pthread_create(&workers.back(), nullptr, &worker_thread, this);
 	}
 }
 
-template <typename qtask>
+template <typename Qtask>
 template <typename Func, typename Callback, typename... Args>
-auto qthreadpool<qtask>::enqueue(Func&& func, Callback&& callback, int task_id, Args&&... args) -> std::future<typename std::result_of<Func(Args...)>::type> {
+auto qthreadpool<Qtask>::enqueue(Func&& func, Callback&& callback, int task_id, Args&&... args) -> std::future<typename std::result_of<Func(Args...)>::type> {
 	using return_type = typename std::result_of<Func(Args...)>::type;
 
 	// Create a packaged task to wrap the function and its arguments
@@ -87,8 +87,8 @@ auto qthreadpool<qtask>::enqueue(Func&& func, Callback&& callback, int task_id, 
 }
 
 // Stop function to gracefully stop the thread pool
-template <typename qtask>
-void qthreadpool<qtask>::stop() {
+template <typename Qtask>
+void qthreadpool<Qtask>::stop() {
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex);
 		stop_flag = true;
@@ -106,16 +106,16 @@ void qthreadpool<qtask>::stop() {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "qthreadpool stopped");
 }
 
-template <typename qtask>
-qthreadpool<qtask>::~qthreadpool() {
+template <typename Qtask>
+qthreadpool<Qtask>::~qthreadpool() {
 	stop();	 // Ensure stop is called on destruction
 }
 
-template <typename qtask>
-void* qthreadpool<qtask>::worker_thread(void* arg) {
+template <typename Qtask>
+void* qthreadpool<Qtask>::worker_thread(void* arg) {
 	auto* pool = static_cast<qthreadpool*>(arg);
 	while (true) {
-		qtask task;
+		Qtask task;
 		{
 			std::unique_lock<std::mutex> lock(pool->queue_mutex);
 			pool->condition.wait(lock, [pool] { return pool->stop_flag || !pool->tasks.empty(); });
@@ -136,8 +136,8 @@ void* qthreadpool<qtask>::worker_thread(void* arg) {
 }
 
 // Method for processing callbacks in the main thread
-template <typename qtask>
-void qthreadpool<qtask>::process_in_main_thread() {
+template <typename Qtask>
+void qthreadpool<Qtask>::process_in_main_thread() {
 	while (true) {
 		std::function<void()> callback;
 		{

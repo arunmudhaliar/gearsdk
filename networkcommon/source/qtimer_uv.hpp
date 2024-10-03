@@ -80,15 +80,15 @@ class qtimer_uv_scheduler {
 	qtimer_uv* schedule_repeat_timer(type_qtimer_uv_cb timeout_callback, float delay, void* data = nullptr);
 	void cancel_timer(qtimer_uv* timer_uv);
 	bool cancel_and_destroy_timer(qtimer_uv* timer_uv);
-	void async_cancel_and_destroy_timer(qtimer_uv* timer_uv, const type_async_qtimer_uv_cancel_finalize_cb cb);
+	void async_cancel_and_destroy_timer(qtimer_uv* timer_uv, const type_async_qtimer_uv_cancel_finalize_cb CB);
 	bool is_timer_present_in_list(qtimer_uv* timer_uv);
 
    private:
 	struct async_qtimer_uv_cancel_tuple {
-		async_qtimer_uv_cancel_tuple(qtimer_uv_scheduler* scheduler, qtimer_uv* timer, const type_async_qtimer_uv_cancel_finalize_cb cb) : scheduler(scheduler), timer(timer), cb(cb) {}
+		async_qtimer_uv_cancel_tuple(qtimer_uv_scheduler* scheduler, qtimer_uv* timer, const type_async_qtimer_uv_cancel_finalize_cb CB) : scheduler(scheduler), timer(timer), CB(CB) {}
 		qtimer_uv_scheduler* scheduler = nullptr;
 		qtimer_uv* timer = nullptr;
-		const type_async_qtimer_uv_cancel_finalize_cb cb = nullptr;
+		const type_async_qtimer_uv_cancel_finalize_cb CB = nullptr;
 	};
 	struct qtimer_uv_scheduler_data {
 		qtimer_uv_scheduler_data(void* data, void* scheduler, const type_qtimer_uv_cb TIMEOUT_CALLBACK) : data(data), scheduler(scheduler), TIMEOUT_CALLBACK(TIMEOUT_CALLBACK) {}
