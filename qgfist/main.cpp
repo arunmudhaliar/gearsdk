@@ -37,6 +37,7 @@
 #define MAX_TIMEOUT_MS 300	// Maximum timeout in milliseconds
 #define DEFAULT_WEIGHTAGE 0.65f
 #define EXIT_AFTER 10  // Exit after this time in seconds
+#define WAIT_DELAY 20
 
 // Structs
 struct WorkData {
@@ -56,6 +57,7 @@ struct AppState {
 	qstring port = "4004";
 	uv_loop_t* loop;
 	uv_timer_t request_timer;
+	uv_timer_t wait_timer;
 	uv_timer_t exit_timer;
 	uv_timer_t drain_timer;
 	double request_weightage;
@@ -63,6 +65,7 @@ struct AppState {
 	int min_timeout_ms;
 	int max_timeout_ms;
 	int exit_after_seconds = 0;
+	int wait_seconds = 0;
 	bool exit_signal = false;	  // Flag to signal exit
 	bool single_request = false;  // Flag to enable single request mode
 	int single_request_index = 0;
@@ -226,7 +229,7 @@ void request_worker(uv_timer_t* handle) {
 void print_parameters() {
 	if (!app_state.single_request) {
 		std::cout << "Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
-				  << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+				  << ", Exit After=" << app_state.exit_after_seconds << "s, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << ", Wait Delay=" << app_state.wait_seconds << std::endl;
 	} else {
 		std::cout << "SINGLE-SHOT-MODE, game server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
 	}
@@ -259,6 +262,9 @@ void parse_arguments(int argc, char* argv[]) {
 			}
 		} else if (strcmp(argv[i], "--exit-after") == 0 && i + 1 < argc) {
 			app_state.exit_after_seconds = atoi(argv[++i]);
+		} else if (strcmp(argv[i], "--wait") == 0 && i + 1 < argc) {
+			size_t val = atoi(argv[++i]);
+			app_state.wait_seconds = static_cast<int>(std::max(val, (size_t) 20));
 		} else if (strcmp(argv[i], "--weight") == 0 && i + 1 < argc) {
 			double val = atof(argv[++i]);
 			app_state.request_weightage = std::max(val, 0.2);
@@ -327,7 +333,7 @@ void initialize_app_state(AppState& app_state) {
 	app_state.exit_signal = false;
 	app_state.single_request = false;
 	app_state.single_request_connection_count = 1;
-
+	app_state.wait_seconds = WAIT_DELAY;
 	// Get the current time
 	uv_gettimeofday(&app_state.start_time);
 
@@ -341,6 +347,7 @@ void cleanup() {
 	}
 
 	uv_timer_stop(&app_state.request_timer);
+	uv_timer_stop(&app_state.wait_timer);
 	uv_timer_stop(&app_state.drain_timer);
 	uv_timer_stop(&app_state.exit_timer);
 	uv_loop_close(app_state.loop);
@@ -380,12 +387,28 @@ void exit_after_delay(uv_timer_t* handle) {
 	std::cout << "\nFINISHED.\n\n" << std::endl;
 }
 
+// Timer callback to handle exit
+void wait_delay(uv_timer_t* handle) {
+	UNUSED(handle);
+	std::cout << "wait_delay called\n" << std::flush;
+#if PLATFORM == PLATFORM_LINUX
+	std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
+#endif
+	uv_timer_stop(&app_state.request_timer);
+
+	// Start exit timer if specified
+	if (app_state.exit_after_seconds > 0) {
+		uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
+	}
+}
+
 void print_usage(const char* program_name) {
 	std::cout << "Usage: " << program_name << " [options]\n\n";
 	std::cout << "Options:\n";
 	std::cout << "  --gserver <host:port>           Game server address in the form of host:port (default: " << GAME_SERVER_IP << ")\n";
 	std::cout << "  --single-mode                   Enable single request mode and send a single request (default: off)\n";
 	std::cout << "  --single-request <index>        Enable single request mode and send a single request with the specified index from requests.json (default: off)\n";
+	std::cout << "  --wait <seconds>                [optional] Wait before the exit timer (default: " << WAIT_DELAY << ")\n";
 	std::cout << "  --exit-after <seconds>          [optional] Exit after a certain number of seconds (default: " << EXIT_AFTER << ")\n";
 	std::cout << "  --max-parallel <n>              [optional] Maximum number of parallel requests (default: " << MAX_PARALLEL_REQUESTS << ")\n";
 	std::cout << "  --weight <weight>               [optional] Request weightage (default: " << DEFAULT_WEIGHTAGE << ")\n";
@@ -439,6 +462,7 @@ int main(int argc, char** argv) {
 
 	// Initialize timers
 	uv_timer_init(app_state.loop, &app_state.request_timer);
+	uv_timer_init(app_state.loop, &app_state.wait_timer);
 	uv_timer_init(app_state.loop, &app_state.drain_timer);
 	uv_timer_init(app_state.loop, &app_state.exit_timer);
 
@@ -448,9 +472,16 @@ int main(int argc, char** argv) {
 	// Start the drain timer immediately
 	uv_timer_start(&app_state.drain_timer, drain_worker, 1000, 3000);
 
-	// Start exit timer if specified
-	if (app_state.exit_after_seconds > 0) {
-		uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
+	if (!app_state.single_request) {
+		// Start exit timer if specified
+		if (app_state.wait_seconds > 0) {
+			uv_timer_start(&app_state.wait_timer, wait_delay, app_state.wait_seconds * 1000, 0);
+		}
+	} else {
+		// Start exit timer if specified
+		if (app_state.exit_after_seconds > 0) {
+			uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
+		}
 	}
 
 	// Run the loop to handle async operations
