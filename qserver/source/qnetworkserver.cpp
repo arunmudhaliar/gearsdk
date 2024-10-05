@@ -597,13 +597,10 @@ void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int 
 #if QTHREAD_POOL
 // Initialization function for context
 bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const void* user_arg) {
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "initialising threadpool context");
 	const runserverconfig* run_config = reinterpret_cast<const runserverconfig*>(user_arg);
-
-	int rr = rand() % 2;
 	GX_DELETE(context.hiredis);
 	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port);
-	if (context.hiredis->connect_redis() != 0 || rr == 0) {
+	if (context.hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "f:init_threadpool_context - failed to connect hiredis, Exiting !!!");
 		GX_DELETE(context.hiredis);
 		return false;
@@ -614,7 +611,6 @@ bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const
 // Cleanup function for context
 bool qnetworkserver::cleanup_threadpool_context(thread_pool_context& context) {
 	GX_DELETE(context.hiredis);
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "cleanup threadpool context");
 	return true;
 }
 #endif
@@ -774,16 +770,7 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->threadpool_mainthread_dispatcher_timer.data = thiz;
 	thiz->threadpool_mainthread_dispatcher_timer.repeat = 1.5f;
 	ev_timer_again(thiz->mainloop, &thiz->threadpool_mainthread_dispatcher_timer);
-	if (thiz->threadpool.init(run_config) > 0) {
-		for (int x = 0; x < 100; x++) {
-			thiz->threadpool.enqueue(
-				[](thread_pool_context& ctx, int task_id) {
-					pthread_t thread_id = pthread_self();  // Get the current thread ID
-					debug_print(LOG_LEVEL_0, __LOGTAG__, "worker thread for task %d using context data - thread:%d", task_id, thread_id);
-				},
-				x);
-		}
-	} else {
+	if (thiz->threadpool.init(run_config) <= 0) {
 		debug_print_error(__LOGTAG__, "failed to init threadpool, Exiting !!!");
 		thiz->threadpool.stop();
 		thiz->hiredis_async->disconnect_async_redis();
