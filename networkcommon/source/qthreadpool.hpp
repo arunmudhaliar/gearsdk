@@ -1,184 +1,187 @@
-#ifndef QTHREADPOOL_HPP
-#define QTHREADPOOL_HPP
+#ifndef QTHREADPOOL_H
+#define QTHREADPOOL_H
 
-#include "../../common/sdktypes.hpp"
-
-#include <atomic>
-#include <condition_variable>
 #include <functional>
-#include <future>
 #include <iostream>
-#include <mutex>
+#include <memory>
 #include <pthread.h>
 #include <queue>
-#include <stdexcept>
+#include <unordered_map>
 #include <vector>
 
-#undef __LOGTAG__
-#define __LOGTAG__ "qthreadpool"
-
-template <typename Qtask>
+template <typename user_context_t>
 class qthreadpool {
    public:
-	explicit qthreadpool(size_t num_threads);
-	~qthreadpool();
+	using task_t = std::function<void(user_context_t&, int)>;
 
-	// Enqueue a task with a callback for the main thread notification
-	template <typename Func, typename Callback, typename... Args>
-	auto enqueue(Func&& func, Callback&& callback, int task_id, Args&&... args) -> std::future<typename std::result_of<Func(Args...)>::type>;
+	struct qthread_context {
+		user_context_t context;	 // The user-defined context for each thread
+		bool initialized;		 // Flag indicating if the thread was initialized successfully
+	};
 
-	// Stop the thread pool gracefully
-	void stop();
-	void process_in_main_thread();	// Method for processing callbacks in the main thread
+	qthreadpool(size_t num_threads, std::function<bool(user_context_t&, const void*)> init_callback, std::function<void(user_context_t&)> shutdown_callback)
+		: num_threads(num_threads), init_callback(init_callback), shutdown_callback(shutdown_callback), stop_flag(false), initialized_threads(0), failed_threads(0) {}
+
+	~qthreadpool() { stop(); }
+
+	// Initialize the thread pool (create threads) synchronously with an additional argument for init_callback
+	ssize_t init(const void* init_arg) {
+		pthread_mutex_lock(&init_mutex);
+
+		threads.resize(num_threads);
+		initialized_threads = 0;  // Reset the initialized count
+		failed_threads = 0;		  // Reset the failed threads count
+
+		// Pass the same init_arg to each thread during creation
+		this->init_arg = init_arg;	// Store a pointer to the initialization argument
+
+		for (size_t i = 0; i < num_threads; ++i) {
+			if (pthread_create(&threads[i], nullptr, &qthreadpool::thread_func, this) != 0) {
+				perror("Failed to create threadpool thread");
+
+				// Thread creation failed, return false
+				pthread_mutex_unlock(&init_mutex);
+				return -1;
+			}
+		}
+
+		// Wait until all threads have completed their initialization
+		while (initialized_threads + failed_threads < num_threads) {
+			pthread_cond_wait(&all_threads_initialized_cond, &init_mutex);
+		}
+
+		pthread_mutex_unlock(&init_mutex);
+		debug_print_important(__LOGTAG__, "inited with %zu thread (failed %zu). total %zu", initialized_threads, failed_threads, num_threads);
+		// Return false if any thread failed to initialize
+		return initialized_threads;
+	}
+
+	// Enqueue a task with the user ID
+	void enqueue(task_t task, int user_id) {
+		pthread_mutex_lock(&queue_mutex);
+		if (initialized_threads == 0) {
+			pthread_mutex_unlock(&queue_mutex);
+			return;	 // If no threads initialized, return
+		}
+		tasks.push({task, user_id});				// Store both task and its user ID
+		pthread_cond_signal(&task_available_cond);	// Signal that a new task is available
+		pthread_mutex_unlock(&queue_mutex);
+	}
+
+	// Function to stop the thread pool gracefully
+	void stop() {
+		pthread_mutex_lock(&queue_mutex);
+		stop_flag = true;
+		pthread_cond_broadcast(&task_available_cond);  // Wake up all worker threads
+		pthread_mutex_unlock(&queue_mutex);
+
+		for (auto& thread : threads) {
+			pthread_join(thread, nullptr);	// Join each worker thread
+		}
+
+		// Clean up mutexes and condition variables
+		pthread_mutex_destroy(&queue_mutex);
+		pthread_mutex_destroy(&init_mutex);
+		pthread_cond_destroy(&task_available_cond);
+		pthread_cond_destroy(&all_threads_initialized_cond);
+	}
+
+	// Get the number of pending tasks in the queue
+	size_t get_pending_task_count() const {
+		pthread_mutex_lock(&queue_mutex);
+		size_t task_count = tasks.size();  // Get the size of the task queue
+		pthread_mutex_unlock(&queue_mutex);
+		return task_count;
+	}
+
+	// Getter for initialized_threads
+	size_t get_initialized_threads() const {
+		pthread_mutex_lock(&init_mutex);
+		size_t count = initialized_threads;	 // Get the count of initialized threads
+		pthread_mutex_unlock(&init_mutex);
+		return count;
+	}
+
+	void process_in_main_thread() {}
 
    private:
-	static void* worker_thread(void* arg);
+	struct task_data_t {
+		task_t task;
+		int user_id;  // Renamed from task_index to user_id
+	};
 
-	std::vector<pthread_t> workers;						  // Worker threads
-	std::queue<Qtask> tasks;							  // Task queue
-	std::queue<std::function<void()>> main_thread_queue;  // Main thread callback queue
-	std::mutex queue_mutex;								  // Mutex for task queue
-	std::mutex main_thread_mutex;						  // Mutex for main thread queue
-	std::condition_variable condition;					  // Condition variable for tasks
-														  //    std::condition_variable main_thread_condition; // Condition variable for main thread callbacks
-	std::atomic<bool> stop_flag;						  // Flag to stop the thread pool
+	size_t num_threads;
+	std::vector<pthread_t> threads;
+	std::queue<task_data_t> tasks;
+	std::unordered_map<pthread_t, qthread_context> contexts;  // Map thread_id to context
+
+	pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_cond_t task_available_cond = PTHREAD_COND_INITIALIZER;
+	bool stop_flag;
+
+	std::function<bool(user_context_t&, const void*)> init_callback;  // Now returns bool
+	std::function<void(user_context_t&)> shutdown_callback;
+
+	// Synchronization for thread initialization
+	pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_cond_t all_threads_initialized_cond = PTHREAD_COND_INITIALIZER;
+	size_t initialized_threads;
+	size_t failed_threads;
+
+	const void* init_arg;  // Store a pointer to the initialization argument
+
+	static void* thread_func(void* arg) {
+		PTHREAD_NAME("qthreadpool");
+		qthreadpool* pool = static_cast<qthreadpool*>(arg);
+		pthread_t thread_id = pthread_self();				   // Get the current thread ID
+		qthread_context& context = pool->contexts[thread_id];  // Use specific thread context
+
+		// Initialize context in worker thread with the common init_arg
+		context.initialized = pool->init_callback(context.context, pool->init_arg);
+
+		// Signal that the thread has finished its initialization
+		pthread_mutex_lock(&pool->init_mutex);
+		if (context.initialized) {
+			pool->initialized_threads++;
+		} else {
+			pool->failed_threads++;	 // Increment failed_threads if initialization failed
+		}
+
+		if (pool->initialized_threads + pool->failed_threads == pool->num_threads) {
+			pthread_cond_signal(&pool->all_threads_initialized_cond);
+		}
+		pthread_mutex_unlock(&pool->init_mutex);
+
+		// Exit if initialization failed
+		if (!context.initialized) {
+			return nullptr;
+		}
+
+		while (true) {
+			task_data_t task_data;
+
+			pthread_mutex_lock(&pool->queue_mutex);
+			while (!pool->stop_flag && pool->tasks.empty()) {
+				pthread_cond_wait(&pool->task_available_cond, &pool->queue_mutex);
+			}
+
+			if (pool->stop_flag && pool->tasks.empty()) {
+				pthread_mutex_unlock(&pool->queue_mutex);
+				break;
+			}
+
+			task_data = std::move(pool->tasks.front());
+			pool->tasks.pop();
+			pthread_mutex_unlock(&pool->queue_mutex);
+
+			// Execute the task with thread-specific context and user ID
+			task_data.task(context.context, task_data.user_id);
+		}
+
+		// Shutdown context in worker thread
+		pool->shutdown_callback(context.context);  // Call shutdown_callback with the user_context
+		return nullptr;
+	}
 };
 
-template <typename Qtask>
-qthreadpool<Qtask>::qthreadpool(size_t num_threads) : stop_flag(false) {
-	for (size_t i = 0; i < num_threads; ++i) {
-		workers.emplace_back();
-		pthread_create(&workers.back(), nullptr, &worker_thread, this);
-	}
-}
-
-template <typename Qtask>
-template <typename Func, typename Callback, typename... Args>
-auto qthreadpool<Qtask>::enqueue(Func&& func, Callback&& callback, int task_id, Args&&... args) -> std::future<typename std::result_of<Func(Args...)>::type> {
-	using return_type = typename std::result_of<Func(Args...)>::type;
-
-	// Create a packaged task to wrap the function and its arguments
-	auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<Func>(func), std::forward<Args>(args)...));
-	std::future<return_type> res = task->get_future();
-
-	{
-		std::unique_lock<std::mutex> lock(queue_mutex);
-		if (stop_flag) {
-			debug_warn(LOG_LEVEL_0, __LOGTAG__, "enqueue on stopped qthreadpool");
-		}
-
-		// Enqueue the task for worker threads
-		tasks.emplace([task, this, callback, task_id]() {
-			(*task)();	// Execute the original task
-
-			// Enqueue the callback to the main thread queue with task_id
-			{
-				std::lock_guard<std::mutex> lock(main_thread_mutex);
-				main_thread_queue.emplace([callback, task_id]() {
-					callback(task_id);	// Call the main thread callback with task_id
-				});
-			}
-			//            main_thread_condition.notify_one();  // Notify main thread about new callback
-		});
-	}
-
-	condition.notify_one();	 // Notify a worker thread that there's a new task
-	return res;
-}
-
-// Stop function to gracefully stop the thread pool
-template <typename Qtask>
-void qthreadpool<Qtask>::stop() {
-	{
-		std::unique_lock<std::mutex> lock(queue_mutex);
-		stop_flag = true;
-	}
-
-	// Notify all worker threads
-	condition.notify_all();
-
-	// Wait for all threads to finish
-	for (auto& worker : workers) {
-		pthread_join(worker, nullptr);
-	}
-
-	workers.clear();  // Clean up worker threads
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "qthreadpool stopped");
-}
-
-template <typename Qtask>
-qthreadpool<Qtask>::~qthreadpool() {
-	stop();	 // Ensure stop is called on destruction
-}
-
-template <typename Qtask>
-void* qthreadpool<Qtask>::worker_thread(void* arg) {
-	auto* pool = static_cast<qthreadpool*>(arg);
-	while (true) {
-		Qtask task;
-		{
-			std::unique_lock<std::mutex> lock(pool->queue_mutex);
-			pool->condition.wait(lock, [pool] { return pool->stop_flag || !pool->tasks.empty(); });
-
-			// Break the loop if stopping and no more tasks
-			if (pool->stop_flag && pool->tasks.empty()) {
-				return nullptr;
-			}
-
-			// Get the next task
-			task = std::move(pool->tasks.front());
-			pool->tasks.pop();
-		}
-
-		task();	 // Execute the task
-	}
-	return nullptr;
-}
-
-// Method for processing callbacks in the main thread
-template <typename Qtask>
-void qthreadpool<Qtask>::process_in_main_thread() {
-	while (true) {
-		std::function<void()> callback;
-		{
-			std::unique_lock<std::mutex> lock(main_thread_mutex);
-			// Check if there are callbacks to process
-			if (main_thread_queue.empty()) {
-				break;	// No more callbacks to process
-			}
-
-			// Retrieve the callback
-			callback = std::move(main_thread_queue.front());
-			main_thread_queue.pop();
-		}
-
-		// Execute the callback
-		if (callback) {
-			callback();	 // This is executed in the main thread
-		}
-	}
-}
-
-#endif	// QTHREADPOOL_HPP
-
-// ------------------------ EXAMPLE CODE ------------------------
-// ------------------------ EXAMPLE CODE ------------------------
-// ------------------------ EXAMPLE CODE ------------------------
-
-/*
-// in .H header file
-qthreadpool<std::function<void()>> threadpool {4};
-
-// in .CPP source file
- // threadpool.process_in_main_thread() has to be called periodically by any timer on regular inteval so that
- // the second callback get called on main thread. If you dont want the main thread callback you can ignore the second callback
-threadpool.enqueue(
-	[] {
-		debug_print(LOG_LEVEL_0, __LOGTAG__, "worker thread");
-	},
-	[](int id) {
-		debug_print(LOG_LEVEL_0, __LOGTAG__, "Task %d worker finished. called in main thread", id);
-	},
-	1   // taask id
-);
-*/
+#endif	// QTHREADPOOL_H

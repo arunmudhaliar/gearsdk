@@ -30,7 +30,7 @@ extern "C" {
 #define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
 
 #define QTHREAD_POOL 1
-#define QTHREAD_POOL_COUNT 2
+#define QTHREAD_POOL_COUNT 4
 
 // MARK: -
 class conn_io;
@@ -158,7 +158,13 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	ev_timer threadpool_mainthread_dispatcher_timer;
 
    protected:
-	qthreadpool<std::function<void()>> threadpool {QTHREAD_POOL_COUNT};
+	struct thread_pool_context {
+		qhiredis* hiredis = nullptr;
+	};
+
+	static bool init_threadpool_context(thread_pool_context& context, const void*);
+	static bool cleanup_threadpool_context(thread_pool_context& context);
+	qthreadpool<thread_pool_context> threadpool {QTHREAD_POOL_COUNT, init_threadpool_context, cleanup_threadpool_context};
 #endif
 };
 
