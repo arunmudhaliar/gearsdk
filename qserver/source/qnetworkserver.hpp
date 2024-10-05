@@ -18,6 +18,7 @@ extern "C" {
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qtextfilelogger.hpp"
+#include "../../networkcommon/source/qthreadpool.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 
@@ -27,6 +28,9 @@ extern "C" {
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
 #define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
+
+#define QTHREADPOOL 1
+#define QTHREADPOOL_THREAD_COUNT 4
 
 // MARK: -
 class conn_io;
@@ -117,9 +121,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void onconnection_connected(conn_io* qconnection) override;
 	void onconnection_destroy(conn_io* qconnection) override;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
-
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
-
 	void exit_services_gracefully();
 
 	qtextfilelogger logger;
@@ -138,21 +140,32 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	void recv_cb_internal(EV_P_ ev_io* w, int revents);
 	void force_disconnect_all();
-
 	void heartbeat_check();
 	static void heart_beat_check_cb(EV_P_ ev_timer* w, int revents);
+	static void threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents);
+	static void* run_internal(void* data);
 
 	Config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;
 	struct connections* conns = nullptr;
 	ev_timer heartbeat_check_timer;
-
-	static void* run_internal(void* data);
-
 	struct runserverconfig run_server_config;
 	qmutex run_mutex;
 	qmutex runconfig_mutex;
 	pthread_t run_thread_id;
+
+#if QTHREADPOOL
+	ev_timer threadpool_mainthread_dispatcher_timer;
+
+   protected:
+	struct thread_pool_context {
+		qhiredis* hiredis = nullptr;
+	};
+
+	static bool init_threadpool_context(thread_pool_context& context, const void*);
+	static bool cleanup_threadpool_context(thread_pool_context& context);
+	qthreadpool<thread_pool_context> threadpool {QTHREADPOOL_THREAD_COUNT, init_threadpool_context, cleanup_threadpool_context};
+#endif
 };
 
 #endif /* qnetworkserver_hpp */

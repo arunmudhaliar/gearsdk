@@ -579,11 +579,41 @@ void qnetworkserver::heartbeat_check() {
 	}
 	on_heartbeat_check();
 }
+
 void qnetworkserver::heart_beat_check_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
 	server->heartbeat_check();
 }
+
+void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(revents);
+#if QTHREADPOOL
+	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
+	server->threadpool.process_in_main_thread();
+#endif
+}
+
+#if QTHREADPOOL
+// Initialization function for context
+bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const void* user_arg) {
+	const runserverconfig* run_config = reinterpret_cast<const runserverconfig*>(user_arg);
+	GX_DELETE(context.hiredis);
+	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port);
+	if (context.hiredis->connect_redis() != 0) {
+		debug_print_error(__LOGTAG__, "f:init_threadpool_context - failed to connect hiredis, Exiting !!!");
+		GX_DELETE(context.hiredis);
+		return false;
+	}
+	return true;
+}
+
+// Cleanup function for context
+bool qnetworkserver::cleanup_threadpool_context(thread_pool_context& context) {
+	GX_DELETE(context.hiredis);
+	return true;
+}
+#endif
 
 void* qnetworkserver::run_internal(void* data) {
 	runserverconfig* run_config = reinterpret_cast<runserverconfig*>(data);
@@ -735,6 +765,26 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
+#if QTHREADPOOL
+	ev_init(&thiz->threadpool_mainthread_dispatcher_timer, threadpool_mainthread_dispatcher_cb);
+	thiz->threadpool_mainthread_dispatcher_timer.data = thiz;
+	thiz->threadpool_mainthread_dispatcher_timer.repeat = 1.5f;
+	ev_timer_again(thiz->mainloop, &thiz->threadpool_mainthread_dispatcher_timer);
+	if (thiz->threadpool.init(run_config) <= 0) {
+		debug_print_error(__LOGTAG__, "failed to init threadpool, Exiting !!!");
+		thiz->threadpool.stop();
+		thiz->hiredis_async->disconnect_async_redis();
+		GX_DELETE(thiz->hiredis_async);
+		ev_loop_destroy(thiz->mainloop);
+		freeaddrinfo(local);
+		GX_DELETE(thiz->hiredis);
+		thiz->exit_services_gracefully();
+		run_config->finished = true;
+		run_config->pthread_return_value = -1;
+		pthread_exit(&run_config->pthread_return_value);
+	}
+#endif
+
 	ev_io watcher;
 	ev_io_init(&watcher, recv_cb, sock, EV_READ);
 	ev_io_start(thiz->mainloop, &watcher);
@@ -751,6 +801,12 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_loop(thiz->mainloop, 0);
 
 	ev_timer_stop(thiz->mainloop, &thiz->heartbeat_check_timer);
+#if QTHREADPOOL
+	// Wait for all tasks to complete before shutting down the pool
+	essentials::sleep_for(5000);
+	thiz->threadpool.stop();
+	ev_timer_stop(thiz->mainloop, &thiz->threadpool_mainthread_dispatcher_timer);
+#endif
 	thiz->network_server_end();
 	thiz->force_disconnect_all();
 

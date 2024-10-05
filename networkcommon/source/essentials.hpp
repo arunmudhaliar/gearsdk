@@ -19,6 +19,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string>
+#include <unistd.h>
 #include <vector>
 // #include <quiche.h>
 #include <rapidjson/document.h>
@@ -133,6 +134,10 @@ class essentials {
 
 	// uv cleanups
 	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);
+
+	static void sleep_for(int milliseconds) {
+		usleep(milliseconds * 1000);  // Convert milliseconds to microseconds
+	}
 
    private:
 	static void close_uv_handle_callback(uv_handle_t* handle, void* arg);
