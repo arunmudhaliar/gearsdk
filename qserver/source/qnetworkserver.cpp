@@ -588,13 +588,13 @@ void qnetworkserver::heart_beat_check_cb(EV_P_ ev_timer* w, int revents) {
 
 void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
-#if QTHREAD_POOL
+#if QTHREADPOOL
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
 	server->threadpool.process_in_main_thread();
 #endif
 }
 
-#if QTHREAD_POOL
+#if QTHREADPOOL
 // Initialization function for context
 bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const void* user_arg) {
 	const runserverconfig* run_config = reinterpret_cast<const runserverconfig*>(user_arg);
@@ -765,7 +765,7 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
-#if QTHREAD_POOL
+#if QTHREADPOOL
 	ev_init(&thiz->threadpool_mainthread_dispatcher_timer, threadpool_mainthread_dispatcher_cb);
 	thiz->threadpool_mainthread_dispatcher_timer.data = thiz;
 	thiz->threadpool_mainthread_dispatcher_timer.repeat = 1.5f;
@@ -801,7 +801,7 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_loop(thiz->mainloop, 0);
 
 	ev_timer_stop(thiz->mainloop, &thiz->heartbeat_check_timer);
-#if QTHREAD_POOL
+#if QTHREADPOOL
 	// Wait for all tasks to complete before shutting down the pool
 	essentials::sleep_for(5000);
 	thiz->threadpool.stop();
