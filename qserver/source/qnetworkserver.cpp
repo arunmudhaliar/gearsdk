@@ -773,7 +773,6 @@ void* qnetworkserver::run_internal(void* data) {
 	if (thiz->threadpool.init(run_config) <= 0) {
 		debug_print_error(__LOGTAG__, "failed to init threadpool, Exiting !!!");
 		thiz->threadpool.stop();
-		thiz->hiredis_async->disconnect_async_redis();
 		GX_DELETE(thiz->hiredis_async);
 		ev_loop_destroy(thiz->mainloop);
 		freeaddrinfo(local);
@@ -810,7 +809,6 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->network_server_end();
 	thiz->force_disconnect_all();
 
-	thiz->hiredis_async->disconnect_async_redis();
 	GX_DELETE(thiz->hiredis_async);
 	GX_DELETE(thiz->hiredis);
 
