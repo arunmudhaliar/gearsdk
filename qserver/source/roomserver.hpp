@@ -26,7 +26,8 @@
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface {
    public:
-	virtual ~roomserver() {}
+	roomserver();
+	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
    protected:

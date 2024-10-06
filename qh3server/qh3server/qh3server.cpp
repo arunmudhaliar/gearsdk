@@ -8,6 +8,8 @@
 
 #include "qh3server.hpp"
 
+qh3server::qh3server() {}
+
 qh3server::~qh3server() {
 	GX_DELETE(relay_through_router_info);
 	debug_print_important2(logtag.c_str(), "qh3server destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());

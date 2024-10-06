@@ -9,6 +9,10 @@
 #include "roomserver.hpp"
 
 // MARK: - roomserver
+roomserver::roomserver() : qnetworkserver() {}
+
+roomserver::~roomserver() {}
+
 void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 	UNUSED(timer);
 	if (waiting_rooms.size()) {
