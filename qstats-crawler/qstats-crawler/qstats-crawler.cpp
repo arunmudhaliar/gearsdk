@@ -120,7 +120,7 @@ int qstats_crawler::parse_line(fs::path current_file, const qstring& line) {
 
 	if (list.size() == 0) {
 		// nothing to parse.
-		debug_print_warn(__LOGTAG__, "list.size() == 0, file: %s, line %s", current_file.string().c_str(), line.c_str());
+		debug_print_warn(__LOGTAG__, "list.size() == 0, file: %s, line: %s", current_file.string().c_str(), line.c_str());
 		return 0;
 	}
 
