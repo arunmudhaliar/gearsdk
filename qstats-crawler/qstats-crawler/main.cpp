@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) {
 				debug_print_important(__LOGTAG__, "CRAWL - t:%5.2fs", ev_now(loop) - creation_time);
 			}
 		},
-		10);
+		60);
 	UNUSED(keep_alive_loop);
 	ev_run(loop, 0);
 	return 0;

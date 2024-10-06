@@ -70,8 +70,8 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 	const int MAX_CHARS_IN_A_LINE = 1024;
 	char str[MAX_CHARS_IN_A_LINE];
 	total_records_sent_to_db_through_batching = 0;
-    batches.clear();
-    
+	batches.clear();
+
 	std::string fname = file.string();
 	/* opening file for reading */
 	FILE* fp = fopen(file.string().c_str(), "r");
