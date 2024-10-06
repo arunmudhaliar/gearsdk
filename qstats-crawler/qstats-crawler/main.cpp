@@ -45,7 +45,7 @@ bool do_crawl(const fs::path& root_dir, const fs::path& file_pattern, const qstr
 int main(int argc, const char* argv[]) {
 	fs::path root_dir = "./stats";
 	fs::path file_pattern = "qh3_statfile";
-	qstring host = "127.0.0.1";
+	qstring host = "13.233.45.2";
 	qstring port = "5432";
 
 	if (argc % 2 == 0) {
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) {
 				debug_print_important(__LOGTAG__, "CRAWL - t:%5.2fs", ev_now(loop) - creation_time);
 			}
 		},
-		60);
+		10);
 	UNUSED(keep_alive_loop);
 	ev_run(loop, 0);
 	return 0;

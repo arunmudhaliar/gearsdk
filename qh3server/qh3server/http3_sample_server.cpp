@@ -378,20 +378,20 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	debug_print(LOG_LEVEL_4, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
 }
 
-int http3_sample_server::validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
+int http3_sample_server::validate_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	const conn_io_req_res::payload& payload = conn_io->http_request->get_payload();
 	bool validate = conn_io->http_request->validate();
 	assert(validate);
 	if (!validate) {
-		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "crc_fail");
+		qh3server::get_stats_loggeer()->server_count("validate_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "crc_fail");
 	}
 	conn_io_req_res::header* token_header = conn_io->http_request->get_header("token");
 	if (token_header == nullptr) {
 		debug_print_error(const_logtag, "No token header in %s", path_header->value.c_str());
 		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "No token header in %s", path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "no_token");
+		qh3server::get_stats_loggeer()->server_count("validate_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "no_token");
 		return -1;
 	}
 
@@ -400,7 +400,7 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header, str
 	if (!bson_init_from_json(&bson, payload.buffer.c_str(), payload.buffer.length(), &error)) {
 		debug_print_error(const_logtag, "%s", error.message);
 		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - ERROR - %s", path_header->value.c_str(), error.message);
-		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
+		qh3server::get_stats_loggeer()->server_count("validate_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "payload_deserialise_fail");
 		return -2;
 	}
 
@@ -414,7 +414,7 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header, str
 		bson_destroy(&bson);
 		debug_print_error(const_logtag, "user.pid parse failed %s", path_header->value.c_str());
 		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "user.pid parse failed %s", path_header->value.c_str());
-		qh3server::get_stats_loggeer()->server_count("validte_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "user.pid_parse_fail");
+		qh3server::get_stats_loggeer()->server_count("validate_token", 1, "", "", "", "error", get_server_name(), path_header->value.c_str(), port_id_cstr, "user.pid_parse_fail");
 		return -3;
 	}
 	bson_destroy(&bson);
@@ -423,7 +423,7 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header, str
 	qstring token_in_redis;
 	qstring redis_format_pid(qstring::format_string("tokens:%s", pid.c_str()));
 	hiredis->get_value(redis_format_pid, token_in_redis);
-	qh3server::get_stats_loggeer()->server_count("validte_token", 1, token_in_redis, pid, "", token_header->value, get_server_name(), path_header->value.c_str(), port_id_cstr, "user.token_check");
+	qh3server::get_stats_loggeer()->server_count("validate_token", 1, token_in_redis, pid, "", token_header->value, get_server_name(), path_header->value.c_str(), port_id_cstr, "user.token_check");
 	if (token_in_redis != token_header->value) {
 		debug_print(LOG_LEVEL_4, const_logtag, "NOT a Valid user %s != %s !!!", token_in_redis.c_str(), token_header->value.c_str());
 		return -4;
@@ -434,7 +434,7 @@ int http3_sample_server::validte_token(conn_io_req_res::header* path_header, str
 }
 
 void http3_sample_server::parse_user_details(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
-	int result = validte_token(path_header, conn_io);
+	int result = validate_token(path_header, conn_io);
 	if (result != 0) {
 		return;
 	}
@@ -447,7 +447,7 @@ void http3_sample_server::parse_user_details(conn_io_req_res::header* path_heade
 }
 
 void http3_sample_server::parse_get_gservers(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {
-	int result = validte_token(path_header, conn_io);
+	int result = validate_token(path_header, conn_io);
 	if (result != 0) {
 		return;
 	}
