@@ -93,19 +93,19 @@ size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const
 	return log_stats(buffer);
 }
 
-size_t qstatslogger::server_count(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+size_t qstatslogger::server_count(const qstring& counter, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 								  const qstring& message) {
 	qstring server_utc_tstamp = essentials::get_time_utc_postgresql_format();
-	return server_count_internal(count, count_val, session, pid, version, epic, myth, legend, story, server_utc_tstamp, message);
+	return server_count_internal(counter, count_val, session, pid, version, epic, myth, legend, story, server_utc_tstamp, message);
 }
 
-size_t qstatslogger::server_count_internal(const qstring& count, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
+size_t qstatslogger::server_count_internal(const qstring& counter, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 										   const qstring& server_tstamp, const qstring& message) {
 	qstring utc_time = essentials::get_time_utc_string();
 	qstring seperator("|");
 	qstring buffer("count");
 	buffer += seperator;
-	buffer += count;
+	buffer += counter;
 	buffer += seperator;
 	buffer += count_val;
 	buffer += seperator;
@@ -141,13 +141,13 @@ size_t qstatslogger::server_count_internal(const qstring& count, long count_val,
 	return log_stats(buffer);
 }
 
-size_t qstatslogger::client_count(const qstring& count, long count_val, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story, const qstring& message) {
+size_t qstatslogger::client_count(const qstring& counter, long count_val, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story, const qstring& message) {
 	qstring client_utc_tstamp = essentials::get_time_utc_postgresql_format();
 	qstring utc_time = essentials::get_time_utc_string();
 	qstring seperator("|");
 	qstring buffer("count");
 	buffer += seperator;
-	buffer += count;
+	buffer += counter;
 	buffer += seperator;
 	buffer += count_val;
 	buffer += seperator;

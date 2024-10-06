@@ -100,6 +100,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	static int run_id;
 
    public:
+	qnetworkserver() {};
 	virtual ~qnetworkserver() {}
 	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT);
 	void broadcast_message(const qstring& buffer, bool flush);

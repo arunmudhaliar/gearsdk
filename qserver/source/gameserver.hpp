@@ -33,7 +33,8 @@ class game_room : public room {
 // MARK: -
 class gameserver : public roomserver {
    public:
-	virtual ~gameserver() {}
+	gameserver();
+	virtual ~gameserver();
 
    protected:
 	void on_network_server_init() override;

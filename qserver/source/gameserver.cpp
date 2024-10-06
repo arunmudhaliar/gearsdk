@@ -35,6 +35,10 @@ bool game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 //---------------------------------gameserver---------------------------------
 //----------------------------------------------------------------------------
+gameserver::gameserver() : roomserver() {}
+
+gameserver::~gameserver() {}
+
 void gameserver::on_network_server_init() {
 	roomserver::on_network_server_init();
 	debug_print_important2(__LOGTAG__, "gameserver::init");

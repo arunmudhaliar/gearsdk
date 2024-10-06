@@ -375,6 +375,11 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"LOG_LEVEL=2",
+					"$(inherited)",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/libpgsql/include\"",
 					"\"$(SRCROOT)/qpgsql\"",

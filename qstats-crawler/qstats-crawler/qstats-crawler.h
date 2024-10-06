@@ -76,25 +76,16 @@ class qstats_crawler {
 	int parse_line(fs::path current_file, const qstring& line);
 
 	/**
-	 * @brief Parses count statistics in the current file.
-	 * @param current_file The current file being parsed.
-	 * @param list The list of count statistics.
-	 * @return The result of the parsing operation.
-	 */
-	int parse_count_stats(fs::path current_file, std::vector<qstring>& list);
-
-	/**
 	 * @brief Appends count statistics to the values string.
-	 * @param values The values string to append to.
 	 * @param list The list of count statistics.
 	 * @return The result of the appending operation.
 	 */
-	int append_count_stats(qstring& values, std::vector<qstring>& list);
+	int append_count_stats(std::vector<qstring>& list);
 
 	/**
 	 * @brief Sends count statistics to the database in batches.
 	 * @param current_file The current file being parsed.
-	 * @return The result of the batch sending operation.
+	 * @return successfull inserts.
 	 */
 	int batch_send_count_stats(fs::path current_file);
 
@@ -121,12 +112,19 @@ class qstats_crawler {
 	 */
 	int batch_send_open_stats(fs::path current_file);
 
+	int get_number_of_count_stats();
+
+	struct batch_data_t {
+		int count = 0;
+		qstring value;
+	};
 	qpgsql pgsql_client;							   /**< The PostgreSQL client. */
-	int count_stats_counter = 0;					   /**< The count statistics counter. */
+													   //	int count_stats_counter = 0;					   /**< The count statistics counter. */
 	int total_records_sent_to_db_through_batching = 0; /**< The total records sent to the database through batching. */
-	qstring batch_count_stats_values;				   /**< The batch count statistics values. */
-	int open_stats_counter = 0;						   /**< The open statistics counter. */
-	qstring batch_open_stats_values;				   /**< The batch open statistics values. */
+													   //	qstring batch_count_stats_values;				   /**< The batch count statistics values. */
+	std::map<qstring, batch_data_t> batches;
+	int open_stats_counter = 0;		 /**< The open statistics counter. */
+	qstring batch_open_stats_values; /**< The batch open statistics values. */
 };
 
 #endif /* qstats_crawler_h */

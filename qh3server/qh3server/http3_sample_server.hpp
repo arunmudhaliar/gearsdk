@@ -55,7 +55,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 	static inline const char* get_server_name() { return "http3_sample_server"; }
 
    private:
-	int validte_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
+	int validate_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 
 	void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 	void parse_whoami(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);

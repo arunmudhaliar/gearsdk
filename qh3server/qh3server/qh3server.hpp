@@ -212,6 +212,7 @@ class qh3server : public bridge_h3_connection {
 	fs::path app_directory = ".";
 
    public:
+	qh3server();
 	virtual ~qh3server();
 	qtextfilelogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
