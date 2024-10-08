@@ -565,7 +565,7 @@ void print_usage(const char* program_name) {
     std::cout << "\n";
     std::cout << "Examples:\n";
     std::cout << "  " << program_name << " --server 127.0.0.1:4004 --exit-after 10\n";
-	std::cout << "  " << program_name << " --server 127.0.0.1:4010 --single-request 5\n";
+	std::cout << "  " << program_name << " --server 127.0.0.1:4004 --single-request 5\n";
 }
 
 // Function to parse command line arguments

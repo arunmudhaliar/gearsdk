@@ -246,9 +246,7 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	}
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post validate t:%lu ms", 5);
-
 	//	debug_print(LOG_LEVEL_2, __LOGTAG__, "%.*s", payload.buffer.length(), payload.buffer.c_str());
-
 	rq_msg_user_get* user_get_msg_rq = msg_parser.parse<rq_msg_user_get>(payload.buffer.length(), (uint8_t*) payload.buffer.c_str());
 	if (user_get_msg_rq == nullptr) {
 		debug_print_error(__LOGTAG__, "Parse failed %.*s", payload.buffer.length(), payload.buffer.c_str());
@@ -258,7 +256,6 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	}
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post  msg_parser.parse t:%lu ms", 5);
-
 	unsigned long crc = crc32(0L, Z_NULL, 0);
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
@@ -266,11 +263,9 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->arch.c_str(), user_get_msg_rq->arch.length());
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post crc calculation t:%lu ms", 5);
-
 	qbuffer buffer;
 	buffer.allocate(128);
 	qbuffer_writer writer;
-
 	writer.write(buffer, crc);
 	debug_print(LOG_LEVEL_4, const_logtag, "%s - user id : %x", path_header->value.c_str(), crc);
 
@@ -278,8 +273,8 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	res_msg_user_get user_get_msg_respose;
 	user_get_msg_respose.pid.format("%lx", crc);
 	user_get_msg_respose.user_name.format("guest-%lx", crc);
-	time_t givemetime = time(NULL);
-	user_get_msg_respose.last_login = strtok(ctime(&givemetime), "\n");
+	time_t last_login_utc_time_value;
+	user_get_msg_respose.last_login = essentials::get_time_utc_readable(last_login_utc_time_value);
 	writer.write(buffer, user_get_msg_respose.last_login);
 
 	// check if redis has token
@@ -299,80 +294,40 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 	}
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post token fetch t:%lu ms", 50);
-
 	// set session token on redis
 	int32_t user_token_expiry_time = zkconfig->get_int32("server_config/user_token_expiry_time", DEFAULT_USER_TOKEN_EXPIRY_TIME);
 	hiredis->set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time);
 	//
-
 	conn_io->http_response->add_or_get_header("token", user_get_msg_respose.token);
-
 	// fill gservers
 	get_gservers(user_get_msg_respose.gservers);
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post get_gservers t:%lu ms", 50);
-
-	// try find the user. (This needs to improve)
-	bool found = false;
-	bson_t find_query;
-	bson_init(&find_query);
-	bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), user_get_msg_respose.pid.c_str(), (int) user_get_msg_respose.pid.length());
-	mongoc_cursor_t* cursor = mongo->find("users", find_query);
-	const bson_t* doc = nullptr;
-	while (mongoc_cursor_next(cursor, &doc)) {
-		found = true;
+	int query_result = mongo->find_and_upsert(
+		"users", [pid = user_get_msg_respose.pid](bson_t& find_query) { bson_append_utf8(&find_query, "user.pid", strlen("user.pid"), pid.c_str(), (int) pid.length()); },
+		[last_login = user_get_msg_respose.last_login, last_login_utc_time_value](bson_t& update_query) {
+			bson_append_utf8(&update_query, "user.last_login", strlen("user.last_login"), last_login.c_str(), (int) last_login.length());
+			// Append the "last_login" as a time_t value (stored as an integer)
+			bson_append_int64(&update_query, "user.last_login_timestamp", strlen("user.last_login_timestamp"), (int64_t) last_login_utc_time_value);
+		},
+		[pid = user_get_msg_respose.pid, user_name = user_get_msg_respose.user_name, user_get_msg_rq](bson_t& insert_query) {
+			bson_append_utf8(&insert_query, "user.pid", strlen("user.pid"), pid.c_str(), (int) pid.length());
+			bson_append_utf8(&insert_query, "user.name", strlen("user.name"), user_name.c_str(), (int) user_name.length());
+			bson_append_utf8(&insert_query, "user.device.sys_name", strlen("user.device.sys_name"), user_get_msg_rq->sys_name.c_str(), (int) user_get_msg_rq->sys_name.length());
+			bson_append_utf8(&insert_query, "user.device.node_name", strlen("user.device.node_name"), user_get_msg_rq->node_name.c_str(), (int) user_get_msg_rq->node_name.length());
+			bson_append_utf8(&insert_query, "user.device.arch", strlen("user.device.arch"), user_get_msg_rq->arch.c_str(), (int) user_get_msg_rq->arch.length());
+		});
+	if (query_result == EXIT_SUCCESS) {
 		user_get_msg_respose.room_list = DEBUG_NEW msg_room_config_list(*room_config_list);
 		qstring response_json;
 		user_get_msg_respose.get_json_string(response_json);
 		conn_io->http_response->set_payload(response_json);
-		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - user-found - %s", path_header->value.c_str(), response_json.c_str());
-	}
-	mongoc_cursor_destroy(cursor);
-
-	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo find user t:%lu ms", 50);
-
-	// if not found try insert. (This needs to improve)
-	if (!found) {
-		// mongo
-		bson_t res_bson;
-		bson_init(&res_bson);
-		bson_t meta;
-		bson_init(&meta);
-		bson_append_document_begin(&res_bson, "user", 4, &meta);
-		bson_append_utf8(&meta, "pid", strlen("pid"), user_get_msg_respose.pid.c_str(), (int) user_get_msg_respose.pid.length());
-		bson_append_utf8(&meta, "name", strlen("name"), user_get_msg_respose.user_name.c_str(), (int) user_get_msg_respose.user_name.length());
-		bson_append_utf8(&meta, "sys_name", strlen("sys_name"), user_get_msg_rq->sys_name.c_str(), (int) user_get_msg_rq->sys_name.length());
-		bson_append_utf8(&meta, "node_name", strlen("node_name"), user_get_msg_rq->node_name.c_str(), (int) user_get_msg_rq->node_name.length());
-		bson_append_utf8(&meta, "arch", strlen("arch"), user_get_msg_rq->arch.c_str(), (int) user_get_msg_rq->arch.length());
-		bson_append_utf8(&meta, "last_login", strlen("last_login"), user_get_msg_respose.last_login.c_str(), (int) user_get_msg_respose.last_login.length());
-		bson_append_document_end(&res_bson, &meta);
-		if (mongo->insert("users", res_bson) == EXIT_SUCCESS) {
-			user_get_msg_respose.room_list = DEBUG_NEW msg_room_config_list(*room_config_list);
-			qstring response_json;
-			user_get_msg_respose.get_json_string(response_json);
-			conn_io->http_response->set_payload(response_json);
-			qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - new-user - %s", path_header->value.c_str(), response_json.c_str());
-		} else {
-			qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - new-user failed", path_header->value.c_str());
-		}
-		bson_destroy(&meta);
-		bson_destroy(&res_bson);
-		EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo create user t:%lu ms", 50);
-	}
-
-	bson_t* update = BCON_NEW("$set", "{", "user.last_login", BCON_UTF8(user_get_msg_respose.last_login.c_str()), "}");
-	if (mongo->update("users", find_query, *update) == EXIT_SUCCESS) {
 		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "user-last-login - %s, pid:%s", user_get_msg_respose.last_login.c_str(), user_get_msg_respose.pid.c_str());
 	} else {
-		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - %s", path_header->value.c_str(), user_get_msg_respose.pid.c_str());
+		qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - user_get failed", path_header->value.c_str());
 	}
-	bson_destroy(update);
-	bson_destroy(&find_query);
-	//
-
 	GX_DELETE(user_get_msg_rq);
-
-	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo update user t:%lu ms", 50);
+	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post mongo find_and_upsert user t:%lu ms", 50);
 
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "hit", get_server_name(), path_header->value.c_str(), port_id_cstr);
 	debug_print(LOG_LEVEL_4, __LOGTAG__, "%s - FINISHED", __FUNCTION__);
