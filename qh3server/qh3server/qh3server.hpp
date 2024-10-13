@@ -218,7 +218,7 @@ class qh3server : public bridge_h3_connection {
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 	unsigned int get_live_connection_count() { return HASH_COUNT(conns->h); }
 
-	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return);
+	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id);
 };
 
 #endif /* qh3server_hpp */

@@ -114,6 +114,13 @@ class qstats_crawler {
 
 	int get_number_of_count_stats();
 
+	/**
+	 * @brief replace the \n with \0  at string length
+	 * @param str input string
+	 * @return status
+	 */
+	static bool replace_newline_with_zero_at_the_end(char* str);
+
 	struct batch_data_t {
 		int count = 0;
 		qstring value;

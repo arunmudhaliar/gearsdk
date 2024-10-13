@@ -20,7 +20,7 @@ class qstatslogger : public qtextfilelogger {
 	qstatslogger();
 	~qstatslogger();
 
-	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int TOTAL_RAM);
+	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const qstring& app_id, const int TOTAL_RAM);
 
 	size_t log_stats(const qstring& buffer);
 
@@ -54,6 +54,7 @@ class qstatslogger : public qtextfilelogger {
 	qstring device_name;
 	qstring device_model;
 	int total_ram = 0;
+	qstring app_id;
 	bool inited = false;
 };
 

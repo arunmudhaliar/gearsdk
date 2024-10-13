@@ -10,6 +10,7 @@
 
 #define COUNT_STATS_BATCH_COUNT 200
 #define OPEN_STATS_BATCH_COUNT 70
+#define TOTAL_STAT_FIELDS 19
 
 qstats_crawler::qstats_crawler() {}
 
@@ -66,6 +67,20 @@ void qstats_crawler::try_crawl(const qstring& root_filename, const qstring& host
 	}
 }
 
+bool qstats_crawler::replace_newline_with_zero_at_the_end(char* str) {
+	size_t length = strlen(str);
+	// Check if the string is empty
+	if (length == 0) {
+		return false;  // No newline to replace
+	}
+	// Check if the last character is a newline
+	if (str[length - 1] == '\n') {
+		str[length - 1] = '\0';	 // Replace newline with null terminator
+		return true;			 // Newline replaced successfully
+	}
+	return false;  // No newline found at the end
+}
+
 int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 	const int MAX_CHARS_IN_A_LINE = 1024;
 	char str[MAX_CHARS_IN_A_LINE];
@@ -82,8 +97,8 @@ int qstats_crawler::parse_file(fs::path file, int& parsed_lines) {
 	parsed_lines = 0;
 	while (fgets(str, MAX_CHARS_IN_A_LINE, fp)) {
 		/* writing content to stdout */
-		// puts(str);
-		if (parse_line(file, qstring(str)) == 0) {
+		replace_newline_with_zero_at_the_end(str);
+		if (parse_line(file, qstring(str, strlen(str))) == 0) {
 			parsed_lines++;
 		} else {
 			fclose(fp);
@@ -156,7 +171,8 @@ int qstats_crawler::batch_send_count_stats(fs::path current_file) {
 	int previous_total = total_records_sent_to_db_through_batching;
 	for (auto itr : batches) {
 		qstring insert_header = qstring::format_string(
-			"INSERT INTO qtest_pgdb_schema.stats_%s(count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram) VALUES", itr.first.c_str());
+			"INSERT INTO qtest_pgdb_schema.stats_%s(count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram, app_id) VALUES",
+			itr.first.c_str());
 		qstring sql_script = insert_header + itr.second.value;
 		sql_script += ";";
 		if (pgsql_client.execute_query(sql_script) != 0) {
@@ -180,7 +196,7 @@ int qstats_crawler::batch_send_count_stats(fs::path current_file) {
 }
 
 int qstats_crawler::append_count_stats(std::vector<qstring>& list) {
-	if (list.size() != 18) {
+	if (list.size() != TOTAL_STAT_FIELDS) {
 		debug_print_warn(__LOGTAG__, "Unrecognised stats format ... size 18!=%d", list.size());
 		return 1;
 	}
@@ -193,8 +209,19 @@ int qstats_crawler::append_count_stats(std::vector<qstring>& list) {
 		}
 	}
 	format_string += ")";
+
 	qstring insert_values = qstring::format_string(format_string.c_str(), list[2].c_str(), list[3].c_str(), list[4].c_str(), list[5].c_str(), list[6].c_str(), list[7].c_str(), list[8].c_str(), list[9].c_str(), list[10].c_str(),
-												   list[11].c_str(), list[12].c_str(), list[13].c_str(), list[14].c_str(), list[15].c_str(), list[16].c_str(), list[17].c_str());
+												   list[11].c_str(), list[12].c_str(), list[13].c_str(), list[14].c_str(), list[15].c_str(), list[16].c_str(), list[17].c_str(), list[18].c_str());
+
+	//	// Create a vector of const char* to store the arguments for qstring::format_string
+	//	std::vector<const char*> field_args;
+	//	for (size_t x = 2; x < list.size(); ++x) {
+	//		field_args.push_back(list[x].c_str());
+	//	}
+	//
+	//	// Format the insert values using the constructed format string and arguments
+	//	qstring insert_values = qstring::format_string(format_string.c_str(), field_args.data());
+
 	const qstring& key = list[0] + "_" + list[1];
 	if (batches.find(key) != batches.end()) {
 		batches[list[0] + "_" + list[1]].value += ",";
@@ -249,7 +276,8 @@ int qstats_crawler::batch_send_open_stats(fs::path current_file) {
 			 message text COLLATE pg_catalog."default",
 			 device_name text COLLATE pg_catalog."default",
 			 device_model text COLLATE pg_catalog."default",
-			 total_ram integer
+			 total_ram integer,
+			 app_id text COLLATE pg_catalog."default"
 		 ) PARTITION BY RANGE (server_tstamp);', current_table);
 
 		 -- Create the parent partition

@@ -297,7 +297,8 @@ int qh3simple_router::run() {
 
 template <typename U, typename V>
 route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config) {
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config =
+		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	new_config->command_server = true;
 	new_config->ref = this;
 
@@ -363,7 +364,8 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 	}
 #else
 	fork_result = false;
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config =
+		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
@@ -391,12 +393,12 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	if (config->command_server) {
 		PTHREAD_NAME(U::get_server_name());
 		U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
 		GX_DELETE(new_server);
 	} else {
 		PTHREAD_NAME(V::get_server_name());
 		V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
 		GX_DELETE(new_server);
 	}
 	GX_DELETE(config);

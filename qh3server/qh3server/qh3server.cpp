@@ -684,7 +684,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	}
 }
 
-int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return) {
+int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id) {
 	app_directory = root_dir;
 	host_id = host;
 	port_id = port;
@@ -840,7 +840,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
 	qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
-	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
+	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
 
 	// dangling connection check timer
