@@ -392,6 +392,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/../common/nvwa/debug_new.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					"USE_LIBUV=1",
 					"$(inherited)",
 				);
 				HEADER_SEARCH_PATHS = (
@@ -426,7 +427,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = "USE_LIBUV=1";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/quiche",
 					"$(PROJECT_DIR)/Source/ev",

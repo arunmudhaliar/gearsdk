@@ -4,16 +4,24 @@ COMMON_SRCDIR = ../common
 # Common source files
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
-$(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
 $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
+# Conditionally include qtimer_uv.cpp if USE_LIBUV is set
+ifeq ($(USE_LIBUV), 1)
+    NCOMMONSRCS += $(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp
+endif
+
 # Include paths
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" \
--I "../networkcommon/source/ev" -I "../networkcommon/source/uv" -I "../networkcommon/source/quiche" \
+-I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" \
 -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib"
+
+ifeq ($(USE_LIBUV), 1)
+    INCLUDES += -I "../networkcommon/source/uv"
+endif
 
 # Main source directory
 SRCDIR = ./qh3client
@@ -39,6 +47,10 @@ TEST_OBJS = ${TEST_SRCS:.cpp=.o}
 LOG_LEVEL ?= 1 
 USER_DEFINES = -DLOG_LEVEL=$(LOG_LEVEL)
 
+ifeq ($(USE_LIBUV), 1)
+    USER_DEFINES += -DUSE_LIBUV=1
+endif
+
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 
@@ -48,15 +60,21 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-    LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a ../common/libs/linux/libz.a ../common/libs/linux/libbson-static-1.0.a
+    LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../common/libs/linux/libz.a ../common/libs/linux/libbson-static-1.0.a
+    ifeq ($(USE_LIBUV), 1)
+        LIBS += ../networkcommon/libs/linux/libuv.a
+    endif
 endif
 ifeq ($(UNAME), Darwin)
     # Define a variable that gets the architecture
     ARCH := $(shell uname -m)
     MACOS_LIB_DIR = macos_$(ARCH)
-    LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a \
+    LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
     ../common/libs/$(MACOS_LIB_DIR)/libz.a ../common/libs/$(MACOS_LIB_DIR)/libbson-static-1.0.a -framework CoreFoundation -framework Security
 
+    ifeq ($(USE_LIBUV), 1)
+        LIBS += ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a
+    endif
     DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
     RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
     LDFLAGS += -mmacosx-version-min=12.4

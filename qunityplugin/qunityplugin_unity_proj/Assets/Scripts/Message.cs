@@ -34,17 +34,17 @@ public class rq_msg_user_base : message_base {
 [Serializable]
 public class rq_msg_user_get : rq_msg_user_base {
     public rq_msg_user_get() : base() {
-        details = new details_struct();
+        device = new device_struct();
     }
 
     [Serializable]
-    public struct details_struct {
+    public struct device_struct {
         public string sys_name;
         public string node_name;
         public string release;
         public string arch;
     }
-    public details_struct details;
+    public device_struct device;
 
     public static new string get_type_string() {
         return "rq_msg_user_get";

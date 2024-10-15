@@ -531,6 +531,7 @@ bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
 	return true;
 }
 
+#if USE_LIBUV
 void essentials::close_uv_handle_callback(uv_handle_t* handle, void* arg) {
 	if (!uv_is_closing(handle)) {
 		uv_close(handle, nullptr);
@@ -557,6 +558,7 @@ bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
 	uv_loop_delete(loop);
 	return true;
 }
+#endif
 
 bool conn_io_req_res::has_crc_header() {
 	header* crc_header = get_header("crc");
