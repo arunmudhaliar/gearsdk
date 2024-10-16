@@ -8,12 +8,22 @@
 
 #include "qhiredis_async.hpp"
 
-qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface) : redis_ip(redis_ip), redis_port(redis_port), interface(interface) {
+qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface, const qstring& key_event_config)
+	: redis_ip(redis_ip), redis_port(redis_port), interface(interface), key_event_config(key_event_config) {
 	async_context = nullptr;
 }
 
 qhiredis_async::~qhiredis_async() {
 	disconnect_async_redis();
+}
+
+void qhiredis_async::set_notify_keyspace_events_cb(redisAsyncContext* context, void* reply, void* privdata) {
+	if (reply == nullptr) {
+		debug_print_error(__LOGTAG__, "f:set_notify_keyspace_events_cb - err: %s", context->errstr);
+		return;
+	}
+	redisReply* r = (redisReply*) reply;
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "f:set_notify_keyspace_events_cb - Reply:%s", r->str);
 }
 
 int qhiredis_async::connect_async_redis(struct ev_loop* loop) {
@@ -35,8 +45,13 @@ int qhiredis_async::connect_async_redis(struct ev_loop* loop) {
 	redisAsyncSetConnectCallback(async_context, on_connect_cb);
 	redisAsyncSetDisconnectCallback(async_context, on_disconnect_cb);
 
+	// Make sure we have set the config for key events
+	// cmd: config set notify-keyspace-events "KEA"
+	// Set the notify-keyspace-events configuration asynchronously
+	redisAsyncCommand(async_context, set_notify_keyspace_events_cb, this, key_event_config.c_str());
+
 	// Subscribe to the keyspace events for all keys
-	redisAsyncCommand(async_context, on_message_cb, this, "PSUBSCRIBE __key*__:*");
+	redisAsyncCommand(async_context, on_redis_event_cb, this, "PSUBSCRIBE __keyevent*:*");
 
 	return 0;
 }
@@ -77,7 +92,7 @@ void qhiredis_async::on_disconnect_cb(const redisAsyncContext* c, int status) {
 	}
 }
 
-void qhiredis_async::on_message_cb(struct redisAsyncContext* c, void* reply, void* priv) {
+void qhiredis_async::on_redis_event_cb(struct redisAsyncContext* c, void* reply, void* priv) {
 	UNUSED(c);
 	redisReply* r = (redisReply*) reply;
 	qhiredis_async* thiz = (qhiredis_async*) priv;
@@ -91,8 +106,28 @@ void qhiredis_async::on_message_cb(struct redisAsyncContext* c, void* reply, voi
 			if (thiz->interface) {
 				thiz->interface->on_qhiredis_async_key_expired(qstring(r->element[3]->str));
 			}
+		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:set", strlen("__keyevent@0__:set")) == 0) {
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received set hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
+			if (thiz->interface) {
+				thiz->interface->on_qhiredis_async_key_changed(qstring(r->element[3]->str), "set");
+			}
+		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:hset", strlen("__keyevent@0__:hset")) == 0) {
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received hset hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
+			if (thiz->interface) {
+				thiz->interface->on_qhiredis_async_key_changed(qstring(r->element[3]->str), "hset");
+			}
+		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:del", strlen("__keyevent@0__:del")) == 0) {
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received del hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
+			if (thiz->interface) {
+				thiz->interface->on_qhiredis_async_key_changed(qstring(r->element[3]->str), "del");
+			}
+		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:hdel", strlen("__keyevent@0__:hdel")) == 0) {
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received hdel hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
+			if (thiz->interface) {
+				thiz->interface->on_qhiredis_async_key_changed(qstring(r->element[3]->str), "hdel");
+			}
 		} else {
-			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received message hiredis async: %s %s", r->element[1]->str, r->element[2]->str);
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "Unhandled: Received hiredis event async: %s %s", r->element[1]->str, r->element[2]->str);
 		}
 	}
 }

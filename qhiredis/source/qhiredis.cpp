@@ -42,6 +42,8 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 		return 1;
 	}
 
+	/*
+	// (amudaliar): This is required by qhiredis_async not here.
 	// Setting the notify-keyspace-events to Ex
 	redisReply* reply = (redisReply*) redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
 	if (reply->type == REDIS_REPLY_ERROR) {
@@ -49,6 +51,7 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 	} else {
 		debug_print(LOG_LEVEL_4, logtag, "hiredis CONFIG set successfully");
 	}
+	 */
 
 	debug_print_important(logtag, "Connected - %s:%d", hostname.c_str(), port);
 	return 0;

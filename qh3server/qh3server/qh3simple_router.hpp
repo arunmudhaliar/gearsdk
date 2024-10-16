@@ -39,6 +39,7 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 
    protected:
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
 
    private:
 	static void recv_cb(EV_P_ ev_io* w, int revents);

@@ -778,6 +778,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	quiche_config_set_disable_active_migration(config, true);
 	quiche_config_set_cc_algorithm(config, Reno);
 
+	// Generate a 16-byte token for stateless reset
+	uint8_t stateless_reset_token[16] = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad, 0xbe, 0xcf, 0xda, 0xeb, 0xfc, 0x0d};
+
+	// Set the stateless reset token in the QUIC config
+	quiche_config_set_stateless_reset_token(config, stateless_reset_token);
+
 	http3_config = quiche_h3_config_new();
 	if (http3_config == NULL) {
 		debug_print_error(const_logtag, "failed to create HTTP/3 config");
@@ -1048,7 +1054,7 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 			}
 			if (dangling_connections > 0) {
 				if (dangling_connections < 10) {
-					debug_print(LOG_LEVEL_0, const_logtag,
+					debug_print(flushed_on_exit ? LOG_LEVEL_0 : LOG_LEVEL_3, const_logtag,
 								"Force closed %d dangling connections, with "
 								"response %d. flushed_on_exit(%d)",
 								dangling_connections, dangling_with_response, flushed_on_exit);

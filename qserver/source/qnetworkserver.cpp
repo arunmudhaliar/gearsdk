@@ -290,6 +290,9 @@ void qnetworkserver::onconnection_destroy(conn_io* qconnection) {
 void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 	UNUSED(expired_key);
 }
+void qnetworkserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
+	UNUSED(modified_key);
+}
 
 void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
@@ -752,7 +755,7 @@ void* qnetworkserver::run_internal(void* data) {
 
 	thiz->mainloop = ev_loop_new(0);
 
-	thiz->hiredis_async = DEBUG_NEW qhiredis_async(run_config->redis_ip, run_config->redis_port, thiz);
+	thiz->hiredis_async = DEBUG_NEW qhiredis_async(run_config->redis_ip, run_config->redis_port, thiz, "CONFIG SET notify-keyspace-events KEA");
 	if (thiz->hiredis_async->connect_async_redis(thiz->mainloop) != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 		GX_DELETE(thiz->hiredis_async);

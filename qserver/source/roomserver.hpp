@@ -39,6 +39,7 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void onconnection_connected(conn_io* qconnection) override final;
 	void onconnection_destroy(conn_io* qconnection) override final;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
 	void on_heartbeat_check() override;
 
 	void onroom_pre_start(room*) override final;

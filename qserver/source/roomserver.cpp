@@ -372,6 +372,8 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 	}
 }
 
+void roomserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {}
+
 void roomserver::on_heartbeat_check() {
 	size_t curr_conns = get_connection_count();
 	max_conns_reached = MAX(curr_conns, max_conns_reached);

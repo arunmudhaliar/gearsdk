@@ -122,6 +122,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void onconnection_connected(conn_io* qconnection) override;
 	void onconnection_destroy(conn_io* qconnection) override;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	void exit_services_gracefully();
 
