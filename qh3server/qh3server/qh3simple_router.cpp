@@ -129,6 +129,11 @@ void qh3simple_router::on_qhiredis_async_key_expired(const qstring& expired_key)
 void qh3simple_router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
 	UNUSED(modified_key);
 }
+
+void qh3simple_router::on_qhiredis_connect() {}
+
+void qh3simple_router::on_qhiredis_disconnect() {}
+
 void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);

@@ -53,6 +53,9 @@ class interface_qhiredis_async {
 	 *  @param event redis key event
 	 */
 	virtual void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) = 0;
+
+	virtual void on_qhiredis_connect() = 0;
+	virtual void on_qhiredis_disconnect() = 0;
 };
 
 /**
@@ -67,6 +70,7 @@ class qhiredis_async {
 	 * @param redis_ip The IP address of the Redis server.
 	 * @param redis_port The port number of the Redis server.
 	 * @param interface A pointer to the interface_qhiredis_async object for handling callbacks.
+	 * @param key_event_config if valid config, the context can only be used for SUBSCRIBE, UNSUBSCRIBE, PING, QUIT & RESET (get_value_async cant be used)
 	 */
 	qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface, const qstring& key_event_config);
 
@@ -87,6 +91,15 @@ class qhiredis_async {
 	 * @brief Disconnects from the Redis server.
 	 */
 	void disconnect_async_redis();
+
+	/**
+	 * @brief Gets the value of a key from Redis asynchronously.
+	 * @param key The key name.
+	 * @param on_success success callback.
+	 * @param on_error error callback.
+	 * @return 0 if the operation is successful, -1 otherwise.
+	 */
+	int get_value_async(const qstring& key, std::function<void(const qstring&)> on_success, std::function<void(const qstring&)> on_error);
 
    private:
 	/**
@@ -115,6 +128,8 @@ class qhiredis_async {
 	static void on_redis_event_cb(struct redisAsyncContext* c, void* reply, void* priv);
 
 	static void set_notify_keyspace_events_cb(redisAsyncContext* context, void* reply, void* privdata);
+
+	static void get_value_async_lambda_callback(redisAsyncContext* context, void* reply, void* privdata);
 
 	redisAsyncContext* async_context = nullptr;
 	qstring redis_ip = "127.0.0.1";

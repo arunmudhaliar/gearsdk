@@ -54,6 +54,7 @@ class bridge_qpeerconnection {
 	virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) = 0;
 	virtual void onconnection_destroy(conn_io* qconnection) = 0;
 	inline virtual struct ev_loop* get_mainloop() = 0;
+	virtual bool is_log_quiche() = 0;
 };
 
 // MARK: -
@@ -108,6 +109,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void network_server_end();
 	bool is_run();
 	inline size_t get_connection_count() { return conns ? HASH_COUNT(conns->h) : 0; }
+	inline bool is_log_quiche() override { return false; }
 
    protected:
 	virtual void on_network_server_begin() = 0;
@@ -123,6 +125,9 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void onconnection_destroy(conn_io* qconnection) override;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
 	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
+	void on_qhiredis_connect() override;
+	void on_qhiredis_disconnect() override;
+
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	void exit_services_gracefully();
 
@@ -133,7 +138,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	qhiredis_async* hiredis_async = nullptr;
 
    private:
-	static void debug_log(const uint8_t* line, void* argp);
+	static void debug_quiche_log(const uint8_t* line, void* argp);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
 	bool validate_token(const uint8_t* token, size_t token_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* odcid, size_t* odcid_len);

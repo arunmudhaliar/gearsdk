@@ -45,14 +45,15 @@ int qhiredis_async::connect_async_redis(struct ev_loop* loop) {
 	redisAsyncSetConnectCallback(async_context, on_connect_cb);
 	redisAsyncSetDisconnectCallback(async_context, on_disconnect_cb);
 
-	// Make sure we have set the config for key events
-	// cmd: config set notify-keyspace-events "KEA"
-	// Set the notify-keyspace-events configuration asynchronously
-	redisAsyncCommand(async_context, set_notify_keyspace_events_cb, this, key_event_config.c_str());
+	if (key_event_config.length()) {
+		// Make sure we have set the config for key events
+		// cmd: config set notify-keyspace-events "KEA"
+		// Set the notify-keyspace-events configuration asynchronously
+		redisAsyncCommand(async_context, set_notify_keyspace_events_cb, this, key_event_config.c_str());
 
-	// Subscribe to the keyspace events for all keys
-	redisAsyncCommand(async_context, on_redis_event_cb, this, "PSUBSCRIBE __keyevent*:*");
-
+		// Subscribe to the keyspace events for all keys
+		redisAsyncCommand(async_context, on_redis_event_cb, this, "PSUBSCRIBE __keyevent*:*");
+	}
 	return 0;
 }
 
@@ -76,9 +77,12 @@ void qhiredis_async::on_connect_cb(const redisAsyncContext* c, int status) {
 	if (status != REDIS_OK) {
 		debug_print_error(__LOGTAG__, "Message: %s", c->errstr);
 	} else {
-		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
+		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(c->data);
 		thiz->connected = true;
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Connected hiredis async...");
+		if (thiz->interface) {
+			thiz->interface->on_qhiredis_connect();
+		}
 	}
 }
 
@@ -86,10 +90,55 @@ void qhiredis_async::on_disconnect_cb(const redisAsyncContext* c, int status) {
 	if (status != REDIS_OK) {
 		debug_print_error(__LOGTAG__, "Message: %s", c->errstr);
 	} else {
-		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(const_cast<redisAsyncContext*>(c));
+		qhiredis_async* thiz = reinterpret_cast<qhiredis_async*>(c->data);
 		thiz->connected = false;
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Disconnected hiredis async...");
+		if (thiz->interface) {
+			thiz->interface->on_qhiredis_disconnect();
+		}
 	}
+}
+
+// Helper function to wrap lambda in a static callback
+void qhiredis_async::get_value_async_lambda_callback(redisAsyncContext* context, void* reply, void* privdata) {
+	std::function<void(redisAsyncContext*, redisReply*)>* callback = static_cast<std::function<void(redisAsyncContext*, redisReply*)>*>(privdata);
+	redisReply* r = static_cast<redisReply*>(reply);
+	if (callback) {
+		(*callback)(context, r);
+	}
+	GX_DELETE(callback);
+}
+
+int qhiredis_async::get_value_async(const qstring& key, std::function<void(const qstring&)> on_success, std::function<void(const qstring&)> on_error) {
+	if (!async_context) {
+		return 2;
+	}
+
+	// Create the lambda to handle the reply
+	auto lambda = [on_success, on_error](redisAsyncContext* context, redisReply* reply) {
+		if (reply == nullptr) {
+			if (context->err) {
+				on_error(context->errstr);
+			}
+			return;
+		}
+		if (reply->type == REDIS_REPLY_STRING) {
+			qstring value = qstring::format_string("%.*s", reply->len, reply->str);
+			on_success(value);
+		} else {
+			on_error("Unexpected reply type");
+		}
+	};
+
+	auto callback_wrapper = DEBUG_NEW std::function<void(redisAsyncContext*, redisReply*)>(lambda);
+	int status = redisAsyncCommand(async_context, get_value_async_lambda_callback, callback_wrapper, "GET %b", key.c_str(), key.length());
+	if (status != REDIS_OK) {
+		on_error("Failed to issue Redis GET command");
+		GX_DELETE(callback_wrapper);
+		return 1;
+	}
+
+	return 0;
 }
 
 void qhiredis_async::on_redis_event_cb(struct redisAsyncContext* c, void* reply, void* priv) {

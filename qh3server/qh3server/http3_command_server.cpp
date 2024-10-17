@@ -27,6 +27,7 @@ http3_command_server::~http3_command_server() {
 
 void http3_command_server::on_run_started() {
 	hiredis->set_hash_value(qstring::format_string("servers:%s", gsdk::server::machine_public_ip), "command_center", qstring::format_string("%s:%s", host_id.c_str(), port_id.c_str()));
+	check_and_update_is_log_quiche_flag();
 }
 
 bool http3_command_server::on_server_pre_init() {
@@ -38,14 +39,13 @@ void http3_command_server::on_server_uninitialise() {}
 void http3_command_server::on_run_end() {}
 
 bool http3_command_server::is_log_quiche() {
-	if (hiredis == nullptr) {
-		return false;
-	}
-	qstring is_log_quiche;
-	if (hiredis->get_value("is_log_quiche", is_log_quiche) == 0) {
-		return is_log_quiche == "true";
-	}
-	return false;
+	return is_log_quiche_flag;
+}
+
+void http3_command_server::check_and_update_is_log_quiche_flag() {
+	qstring is_log_quiche_value;
+	hiredis->get_value("is_log_quiche", is_log_quiche_value);
+	is_log_quiche_flag = is_log_quiche_value.compare("true") == 0;
 }
 
 float http3_command_server::get_router_hb_interval_in_sec() {

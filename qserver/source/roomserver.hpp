@@ -40,9 +40,12 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void onconnection_destroy(conn_io* qconnection) override final;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
 	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
+	void on_qhiredis_connect() override;
+	void on_qhiredis_disconnect() override;
 	void on_heartbeat_check() override;
-
 	void onroom_pre_start(room*) override final;
+	bool is_log_quiche() override;
+
 	virtual room* create_room(const msg_room_config* room_config_msg) = 0;
 
 	// timers
@@ -54,6 +57,8 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
 
 	room* find_room(int room_id);
+
+	void check_and_update_is_log_quiche_flag();
 
 	qtimer_scheduler scheduler;
 	std::vector<room*> waiting_rooms;
@@ -67,6 +72,7 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 
 	message_parser msg_parser;
 	qtimer* waiting_room_check_zombie_timer = nullptr;
+	bool is_log_quiche_flag = false;
 
    private:
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };

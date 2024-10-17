@@ -40,6 +40,19 @@ void roomserver::on_network_server_begin() {
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
 	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
 	debug_print_important2(__LOGTAG__, "start");
+
+	// for quiche logs
+	check_and_update_is_log_quiche_flag();
+}
+
+void roomserver::check_and_update_is_log_quiche_flag() {
+	qstring is_log_quiche_value;
+	hiredis->get_value("is_log_quiche", is_log_quiche_value);
+	is_log_quiche_flag = is_log_quiche_value.compare("true") == 0;
+}
+
+bool roomserver::is_log_quiche() {
+	return is_log_quiche_flag;
 }
 
 void roomserver::on_network_server_init() {
@@ -352,6 +365,7 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 }
 
 void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
+	qnetworkserver::on_qhiredis_async_key_expired(expired_key);
 	int count = 0;
 	for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
 		room* waiting_room = *it;
@@ -372,7 +386,20 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 	}
 }
 
-void roomserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {}
+void roomserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
+	qnetworkserver::on_qhiredis_async_key_changed(modified_key, event);
+	if (modified_key.compare("is_log_quiche") == 0 && event.compare("set") == 0) {
+		check_and_update_is_log_quiche_flag();
+	}
+}
+
+void roomserver::on_qhiredis_connect() {
+	qnetworkserver::on_qhiredis_connect();
+}
+
+void roomserver::on_qhiredis_disconnect() {
+	qnetworkserver::on_qhiredis_disconnect();
+}
 
 void roomserver::on_heartbeat_check() {
 	size_t curr_conns = get_connection_count();

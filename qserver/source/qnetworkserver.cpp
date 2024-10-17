@@ -125,9 +125,11 @@ void conn_io::close() {
 }
 
 // MARK: - qnetworkserver
-void qnetworkserver::debug_log(const uint8_t* line, void* argp) {
-	UNUSED(argp);
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "%s", (char*) line);
+void qnetworkserver::debug_quiche_log(const uint8_t* line, void* argp) {
+	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(argp);
+	if (server != nullptr && server->is_log_quiche()) {
+		debug_print(LOG_LEVEL_0, __LOGTAG__, (char*) line);
+	}
 }
 
 void qnetworkserver::mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len) {
@@ -293,6 +295,10 @@ void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 void qnetworkserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
 	UNUSED(modified_key);
 }
+
+void qnetworkserver::on_qhiredis_connect() {}
+
+void qnetworkserver::on_qhiredis_disconnect() {}
 
 void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	UNUSED(revents);
@@ -648,7 +654,12 @@ void* qnetworkserver::run_internal(void* data) {
 
 	qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
 	thiz->logger.start_session(log_path, log_path.length());
-	//    quiche_enable_debug_logging(debug_log, nullptr);
+#if ENABLE_QUICHE_LOG
+	quiche_enable_debug_logging(debug_quiche_log, thiz);
+	debug_print_warn(__LOGTAG__,
+					 "quiche log is enabled. Perfomance may get "
+					 "affected due to excess logs !!!");
+#endif
 
 	struct addrinfo* local;
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
@@ -744,6 +755,12 @@ void* qnetworkserver::run_internal(void* data) {
 	quiche_config_set_initial_max_stream_data_bidi_remote(thiz->config, 1000000);
 	quiche_config_set_initial_max_streams_bidi(thiz->config, 100);
 	quiche_config_set_cc_algorithm(thiz->config, Reno);
+
+	// Generate a 16-byte token for stateless reset
+	uint8_t stateless_reset_token[16] = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad, 0xbe, 0xcf, 0xda, 0xeb, 0xfc, 0x0d};
+
+	// Set the stateless reset token in the QUIC config
+	quiche_config_set_stateless_reset_token(thiz->config, stateless_reset_token);
 
 	struct connections c;
 	c.sock = sock;

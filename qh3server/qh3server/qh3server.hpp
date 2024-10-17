@@ -165,7 +165,7 @@ class qh3server : public bridge_h3_connection {
 	struct connections* conns = nullptr;
 	EVENT_LOOP_TYPE* mainloop = nullptr;
 
-	static void debug_log(const uint8_t* line, void* argp);
+	static void debug_quiche_log(const uint8_t* line, void* argp);
 	ssize_t flush_egress(struct conn_io_qh3* conn_io) final;
 	void destroy_connection(struct conn_io_qh3* conn_io) final;
 	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }

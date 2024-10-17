@@ -15,8 +15,7 @@ qh3server::~qh3server() {
 	debug_print_important2(logtag.c_str(), "qh3server destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
 }
 
-void qh3server::debug_log(const uint8_t* line, void* argp) {
-	UNUSED(argp);
+void qh3server::debug_quiche_log(const uint8_t* line, void* argp) {
 	qh3server* server = reinterpret_cast<qh3server*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
 		debug_print(LOG_LEVEL_0, server->logtag.c_str(), (char*) line);
@@ -694,13 +693,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	}
 	logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
 	const char* const_logtag = logtag.c_str();
-	//    quiche_enable_debug_logging(debug_log, this);
-
-	if (is_log_quiche()) {
-		debug_print_warn(const_logtag,
-						 "quiche log is enabled. Perfomance may get "
-						 "affected due to excess logs !!!");
-	}
+#if ENABLE_QUICHE_LOG
+	quiche_enable_debug_logging(debug_quiche_log, this);
+	debug_print_warn(const_logtag,
+					 "quiche log is enabled. Perfomance may get "
+					 "affected due to excess logs !!!");
+#endif
 
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;

@@ -55,6 +55,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 	static inline const char* get_server_name() { return "http3_sample_server"; }
 
    private:
+	void check_and_update_is_log_quiche_flag();
 	int validate_token(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
 
 	void parse_shutdown_test(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io);
@@ -68,6 +69,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 
 	qstring zk_uri;
 	message_parser msg_parser;
+	bool is_log_quiche_flag = false;
 
 #if TEST_RESPONSE
 	qstring test_response;
