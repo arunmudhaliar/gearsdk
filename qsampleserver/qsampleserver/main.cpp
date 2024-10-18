@@ -48,7 +48,7 @@ int32_t main(int32_t argc, const char* argv[]) {
 		exit(0);
 	}
 	gameserver server;
-	server.run(host, port, rootDir, redis_ip, redis_port);
+	server.run(host, port, rootDir, redis_ip, redis_port, "qsampleserver-app");
 
 	// dummy run loop
 	struct ev_loop* loop = ev_default_loop(0);

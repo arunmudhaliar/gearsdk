@@ -97,13 +97,14 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 		fs::path root_dir;
 		qstring redis_ip;
 		uint16_t redis_port;
+		qstring app_id;
 	};
 	static int run_id;
 
    public:
 	qnetworkserver() {};
 	virtual ~qnetworkserver() {}
-	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT);
+	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id);
 	void broadcast_message(const qstring& buffer, bool flush);
 	void network_server_begin();
 	void network_server_end();

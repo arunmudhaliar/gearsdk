@@ -628,7 +628,8 @@ void* qnetworkserver::run_internal(void* data) {
 	runserverconfig* run_config = reinterpret_cast<runserverconfig*>(data);
 	qstring host = run_config->host;
 	qstring port = run_config->port;
-	qstring thread_name = qstring::format_string("qnetworkserver %s:%s", host.c_str(), port.c_str());
+	qstring app_id = run_config->app_id;
+	qstring thread_name = qstring::format_string("qnetworkserver-%s %s:%s", app_id.c_str(), host.c_str(), port.c_str());
 	PTHREAD_NAME(thread_name.c_str());
 	qnetworkserver* thiz = run_config->thiz;
 	thiz->host_id = host;
@@ -876,7 +877,7 @@ bool qnetworkserver::is_run() {
 	return is_run;
 }
 
-int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT) {
+int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id) {
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
 	run_server_config.host = host;
 	run_server_config.port = port;
@@ -886,6 +887,7 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 	run_server_config.finished = false;
 	run_server_config.root_dir = root_dir;
 	run_server_config.id = qnetworkserver::run_id++;
+	run_server_config.app_id = app_id;
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unlock() == 0), __FUNCTION__);
 	if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, reinterpret_cast<void*>(&run_server_config)) < 0) {
 		debug_print_error(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);
