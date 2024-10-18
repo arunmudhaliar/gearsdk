@@ -85,8 +85,8 @@ class conn_io {
 };
 
 // MARK: -
-class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhiredis_async {
-   private:
+class qnetworkserver : protected bridge_qpeerconnection {
+   protected:
 	struct runserverconfig {
 		qstring host;
 		qstring port;
@@ -106,14 +106,14 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	virtual ~qnetworkserver() {}
 	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id);
 	void broadcast_message(const qstring& buffer, bool flush);
-	void network_server_begin();
+	bool network_server_begin();
 	void network_server_end();
 	bool is_run();
 	inline size_t get_connection_count() { return conns ? HASH_COUNT(conns->h) : 0; }
 	inline bool is_log_quiche() override { return false; }
 
    protected:
-	virtual void on_network_server_begin() = 0;
+	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
 	virtual void on_network_server_end() = 0;
 	virtual void on_heartbeat_check();
@@ -124,19 +124,14 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void onconnection_connect(conn_io* qconnection) override;
 	void onconnection_connected(conn_io* qconnection) override;
 	void onconnection_destroy(conn_io* qconnection) override;
-	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
-	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
-	void on_qhiredis_connect() override;
-	void on_qhiredis_disconnect() override;
 
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	void exit_services_gracefully();
-
+    const struct runserverconfig& get_run_server_config() { return run_server_config; }
+    
 	qtextfilelogger logger;
 	qstring host_id;
 	qstring port_id;
-	qhiredis* hiredis = nullptr;
-	qhiredis_async* hiredis_async = nullptr;
 
    private:
 	static void debug_quiche_log(const uint8_t* line, void* argp);

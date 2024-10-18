@@ -24,14 +24,14 @@
 #define WAITING_ROOM_ZOMBIE_THRESHOLD 10.0
 
 // MARK: -
-class roomserver : public qnetworkserver, public roomserver_interface {
+class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async {
    public:
 	roomserver();
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
    protected:
-	void on_network_server_begin() override final;
+	bool on_network_server_begin() override final;
 	void on_network_server_init() override;
 	void on_network_server_end() override final;
 	void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override final;
@@ -74,6 +74,9 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	qtimer* waiting_room_check_zombie_timer = nullptr;
 	bool is_log_quiche_flag = false;
 
+    qhiredis* hiredis = nullptr;
+    qhiredis_async* hiredis_async = nullptr;
+    
    private:
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
