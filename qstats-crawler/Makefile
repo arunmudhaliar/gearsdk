@@ -23,7 +23,7 @@ C_SRCS =
 
 OBJS = ${SRCS:.cpp=.o} ${C_SRCS:.c=.o}
 
-USER_DEFINES = -DLOG_LEVEL=2
+USER_DEFINES = -DLOG_LEVEL=2 -DUSE_LIBUV=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 

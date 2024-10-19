@@ -12,6 +12,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
               $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
               $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
               $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
+			  $(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
               $(NETWORK_COMMON_SRCDIR)/message.cpp \
               $(SERVER_COMMON_SRCDIR)/servercommon.cpp \
               $(QUTILS_SRCDIR)/discord_util.cpp \
@@ -40,7 +41,7 @@ OBJS = $(SRCS:.cpp=.o)
 MAIN_OBJS = ${MAIN_SRCS:.cpp=.o}
 
 # Definitions and Flags
-USER_DEFINES = -DLOG_LEVEL=3
+USER_DEFINES = -DLOG_LEVEL=3 -DUSE_LIBUV=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
@@ -49,6 +50,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a \
+		   ../networkcommon/libs/linux/libuv.a \
 	       ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a \
 	       -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
@@ -58,6 +60,7 @@ ifeq ($(UNAME),Darwin)
 	ARCH := $(shell uname -m)
 	MACOS_LIB_DIR = macos_$(ARCH)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
+		   ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a \
 	       ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a \
 	       -ldpp -framework CoreFoundation -framework Security -lcurl
 	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
