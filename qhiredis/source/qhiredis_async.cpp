@@ -155,6 +155,8 @@ void qhiredis_async::on_redis_event_cb(struct redisAsyncContext* c, void* reply,
 			if (thiz->interface) {
 				thiz->interface->on_qhiredis_async_key_expired(qstring(r->element[3]->str));
 			}
+		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:expire", strlen("__keyevent@0__:expire")) == 0) {
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received expire hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
 		} else if (r->elements == 4 && strncmp(r->element[2]->str, "__keyevent@0__:set", strlen("__keyevent@0__:set")) == 0) {
 			debug_print(LOG_LEVEL_4, __LOGTAG__, "Received set hiredis async: %s %s", r->element[2]->str, r->element[3]->str);
 			if (thiz->interface) {
