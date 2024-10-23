@@ -146,7 +146,7 @@ void http3_command_server::parse_whoami(conn_io_req_res::header* path_header, st
 					  // \"%d-http3_command_server\"}", getpid());
 	construct_response_whoami(payload);
 	conn_io->http_response->set_payload(payload);
-	qh3server::get_file_logger()->log(qlogfile::LEVEL_0, const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
+	//	QH3_INFO(const_logtag, "%s - whoami - %s", path_header->value.c_str(), payload.c_str());
 	qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "command", get_server_name(), has_crc_header ? "" : "no-crc", port_id_cstr, path_header->value.c_str());
 }
 

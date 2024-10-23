@@ -24,8 +24,8 @@ extern "C" {
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
+#include "../../networkcommon/source/qcustomlogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
-#include "../../networkcommon/source/qtextfilelogger.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3server"
@@ -53,6 +53,16 @@ extern "C" {
 #define TIMER_SCHEDuLER_TYPE qtimer_scheduler
 #define TIMER_TYPE qtimer
 #endif
+
+#define QH3_INFO(tag, ...) LOG_FILE(qh3server::get_file_logger(), qcustomlogger::INFO_LOG, tag, __VA_ARGS__)
+#define QH3_DEBUG(tag, ...) LOG_FILE(qh3server::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, __VA_ARGS__)
+#define QH3_WARN(tag, ...) LOG_FILE(qh3server::get_file_logger(), qcustomlogger::WARN_LOG, tag, __VA_ARGS__)
+#define QH3_ERROR(tag, ...) LOG_FILE(qh3server::get_file_logger(), qcustomlogger::ERROR_LOG, tag, __VA_ARGS__)
+
+#define QH3_INFO_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qh3server::get_file_logger(), qcustomlogger::INFO_LOG, tag, pid, __VA_ARGS__)
+#define QH3_DEBUG_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qh3server::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, pid, __VA_ARGS__)
+#define QH3_WARN_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qh3server::get_file_logger(), qcustomlogger::WARN_LOG, tag, pid, __VA_ARGS__)
+#define QH3_ERROR_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qh3server::get_file_logger(), qcustomlogger::ERROR_LOG, tag, pid, __VA_ARGS__)
 
 // trouble shoot
 // https://www.chromium.org/for-testers/providing-network-details/
@@ -204,7 +214,7 @@ class qh3server : public bridge_h3_connection {
 	virtual void on_run_started() = 0;
 	virtual void on_run_end() = 0;
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
-	qtextfilelogger* logger = nullptr;
+	qcustomlogger* logger = nullptr;
 	qstatslogger* stats_logger = nullptr;
 	qstring logtag = __LOGTAG__;
 	qstring port_id;
@@ -214,7 +224,7 @@ class qh3server : public bridge_h3_connection {
    public:
 	qh3server();
 	virtual ~qh3server();
-	qtextfilelogger* get_file_logger() { return logger; }
+	qcustomlogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 	unsigned int get_live_connection_count() { return HASH_COUNT(conns->h); }
 

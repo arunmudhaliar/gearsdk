@@ -27,6 +27,8 @@
 		5594E2262B3DD61900E47984 /* qtextfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2242B3DD61900E47984 /* qtextfile.cpp */; };
 		5594E2272B3DD61900E47984 /* qtextfile.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5594E2252B3DD61900E47984 /* qtextfile.hpp */; };
 		5595E1212BB0101D00FA2618 /* roommessage.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5595E11F2BB0101D00FA2618 /* roommessage.hpp */; };
+		55D7ACF42CC8140B0011297F /* qcustomlogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55D7ACF22CC8140B0011297F /* qcustomlogger.cpp */; };
+		55D7ACF52CC8140B0011297F /* qcustomlogger.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55D7ACF32CC8140B0011297F /* qcustomlogger.hpp */; };
 		55E0F77F2CAE7D20009748DF /* qthreadpool.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 55E0F77D2CAE7D20009748DF /* qthreadpool.hpp */; };
 		55FB29C02ACF20990051DDF9 /* quiche.h in Headers */ = {isa = PBXBuildFile; fileRef = 55E4D3352ACDD23100555999 /* quiche.h */; };
 /* End PBXBuildFile section */
@@ -54,6 +56,8 @@
 		5595E11E2BB0101D00FA2618 /* roommessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = roommessage.cpp; sourceTree = "<group>"; };
 		5595E11F2BB0101D00FA2618 /* roommessage.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = roommessage.hpp; sourceTree = "<group>"; };
 		55B372CF2AC3091000F0095E /* libnetworkcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnetworkcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55D7ACF22CC8140B0011297F /* qcustomlogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qcustomlogger.cpp; sourceTree = "<group>"; };
+		55D7ACF32CC8140B0011297F /* qcustomlogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qcustomlogger.hpp; sourceTree = "<group>"; };
 		55E0F77D2CAE7D20009748DF /* qthreadpool.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qthreadpool.hpp; sourceTree = "<group>"; };
 		55E4D3242ACAF4F600555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55E4D3352ACDD23100555999 /* quiche.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = quiche.h; sourceTree = "<group>"; };
@@ -116,6 +120,8 @@
 				556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */,
 				556AB5F82AF3A2C700D688DB /* qbuffer.cpp */,
 				556AB5F92AF3A2C700D688DB /* qbuffer.hpp */,
+				55D7ACF22CC8140B0011297F /* qcustomlogger.cpp */,
+				55D7ACF32CC8140B0011297F /* qcustomlogger.hpp */,
 				556ABAE32B0A8E7E00D688DB /* qstatslogger.cpp */,
 				556ABAE42B0A8E7E00D688DB /* qstatslogger.hpp */,
 				5594E2242B3DD61900E47984 /* qtextfile.cpp */,
@@ -154,6 +160,7 @@
 				55384B942B9651AF00BE7723 /* message.hpp in Headers */,
 				557620572C7676DE002372E4 /* qtimer_uv.hpp in Headers */,
 				55384BB62B9AD1D600BE7723 /* serverconfig.hpp in Headers */,
+				55D7ACF52CC8140B0011297F /* qcustomlogger.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +263,7 @@
 				556ABAE52B0A8E7E00D688DB /* qstatslogger.cpp in Sources */,
 				55384B952B9651AF00BE7723 /* message.cpp in Sources */,
 				5574879E2AEC227500C0F6CA /* qtimer.cpp in Sources */,
+				55D7ACF42CC8140B0011297F /* qcustomlogger.cpp in Sources */,
 				5594E2262B3DD61900E47984 /* qtextfile.cpp in Sources */,
 				556AB5F62AF260DD00D688DB /* qtextfilelogger.cpp in Sources */,
 				557487382AE9530500C0F6CA /* main.cpp in Sources */,

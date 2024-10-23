@@ -825,7 +825,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	//
 	GX_DELETE(logger);
 	GX_DELETE(stats_logger);
-	logger = DEBUG_NEW qtextfilelogger();
+	logger = DEBUG_NEW qcustomlogger();
 	stats_logger = DEBUG_NEW qstatslogger();
 
 	if (!on_server_pre_init()) {

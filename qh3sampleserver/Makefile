@@ -14,6 +14,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qstatslogger.cpp \
+$(NETWORK_COMMON_SRCDIR)/qcustomlogger.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
