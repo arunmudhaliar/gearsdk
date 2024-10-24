@@ -90,6 +90,11 @@ def move_file(file_path, target_folder):
 def process_logs(es, index_name, log_folder_path, max_batch_size):
     print(f"Current working directory: {os.getcwd()}")  # Print the current working directory
 
+    # Ensure the log folder exists
+    if not os.path.exists(log_folder_path):
+        print(f"Error: The folder path '{log_folder_path}' does not exist. returning !!!")
+        return
+
     for child in os.listdir(log_folder_path):
         child_path = os.path.join(log_folder_path, child)
 
