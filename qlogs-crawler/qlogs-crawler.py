@@ -53,25 +53,25 @@ def send_batch(es, index_name, batch):
 
             # Check for errors in the response
             if response['errors']:
-                print("Bulk insert encountered errors:")
+                print("qlogs-crawler: Bulk insert encountered errors:")
                 for item in response['items']:
                     if 'error' in item.get('index', {}):
-                        print(f"Error: {item['index']['error']}")
+                        print(f"qlogs-crawler: Error: {item['index']['error']}")
                 return False  # Indicate failure in sending batch
 
             # Check individual item results for errors
             for item in response['items']:
                 if 'error' in item.get('index', {}):
-                    print(f"Error in item: {item['index']['error']}")
+                    print(f"qlogs-crawler: Error in item: {item['index']['error']}")
                     return False  # Indicate failure for individual item
 
             return True  # Return True if successful
         except exceptions.NotFoundError as e:
-            print(f"Index not found error: {e}")
+            print(f"qlogs-crawler: Index not found error: {e}")
         except exceptions.ConflictError as e:
-            print(f"Conflict error: {e}")
+            print(f"qlogs-crawler: Conflict error: {e}")
         except Exception as e:
-            print(f"An error occurred during bulk insert: {e}")
+            print(f"qlogs-crawler: An error occurred during bulk insert: {e}")
     
     return False  # Return False if there was an error
 
@@ -82,17 +82,15 @@ def move_file(file_path, target_folder):
     target_path = os.path.join(target_folder, os.path.basename(file_path))
     try:
         shutil.move(file_path, target_path)
-        print(f"File moved to: {target_path}")
+        print(f"qlogs-crawler: File moved to: {target_path}")
     except Exception as e:
-        print(f"Error moving file {file_path} to {target_folder}: {e}")
+        print(f"qlogs-crawler: Error moving file {file_path} to {target_folder}: {e}")
 
 
 def process_logs(es, index_name, log_folder_path, max_batch_size):
-    print(f"Current working directory: {os.getcwd()}")  # Print the current working directory
-
     # Ensure the log folder exists
     if not os.path.exists(log_folder_path):
-        print(f"Error: The folder path '{log_folder_path}' does not exist. returning !!!")
+        print(f"qlogs-crawler: Error: The folder path '{log_folder_path}' does not exist. returning !!!")
         return
 
     for child in os.listdir(log_folder_path):
@@ -126,7 +124,7 @@ def process_logs(es, index_name, log_folder_path, max_batch_size):
                                 success = False  # Batch send failed
 
                     except Exception as e:
-                        print(f"Error processing file {log_file_path}: {e}")
+                        print(f"qlogs-crawler: Error processing file {log_file_path}: {e}")
                         success = False  # Set success to False on exception
 
                     # Move the file based on the success flag
@@ -136,7 +134,7 @@ def process_logs(es, index_name, log_folder_path, max_batch_size):
                         move_file(log_file_path, log_failed_folder)
 
 def signal_handler(sig, frame):
-    print("Gracefully shutting down...")
+    print("qlogs-crawler: Gracefully shutting down...")
     sys.exit(0)
 
 def main():
@@ -183,13 +181,16 @@ def main():
         http_auth=('admin', 'Fr0gmoon@123'),  # Update with your credentials
         use_ssl=True,
         verify_certs=False,
-        timeout=10,  # Set a timeout for the requests
+        timeout=30,  # Set a timeout for the requests
         max_retries=3  # Set max retries for network calls
     )
 
+    print(f"qlogs-crawler: Starting with parameters - server:{host}:{port}, indexname:{args.index_name}, batch:{args.batch_size}, interval:{args.interval}")
+    print(f"qlogs-crawler: Current working directory: {os.getcwd()}")
+
     while True:
         process_logs(es, args.index_name, args.folder_path, args.batch_size)
-        print(f"Waiting for {args.interval} seconds before the next scan...")
+        # print(f"qlogs-crawler: Waiting for {args.interval} seconds before the next scan...")
         time.sleep(args.interval)
 
 
