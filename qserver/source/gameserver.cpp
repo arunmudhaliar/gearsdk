@@ -19,7 +19,7 @@ void game_room::onroom_player_added(player* p) {
 	UNUSED(p);
 }
 void game_room::onroom_message(player* p, const qstring& msg) {
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 	// passing to other clients
 	broadcast_except(p, msg);
 }

@@ -105,7 +105,7 @@ void room::onroom_player_added(player* p) {
 	UNUSED(p);
 }
 void room::onroom_message(player* p, const qstring& msg) {
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 }
 void room::onroom_player_removed(player* p) {
 	UNUSED(p);
