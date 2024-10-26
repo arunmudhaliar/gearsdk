@@ -18,6 +18,7 @@ extern "C" {
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qcustomlogger.hpp"
+#include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qthreadpool.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
@@ -130,6 +131,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	const struct runserverconfig& get_run_server_config() { return run_server_config; }
 
 	qcustomlogger logger;
+	qstatslogger stats_logger;
+
 	qstring host_id;
 	qstring port_id;
 

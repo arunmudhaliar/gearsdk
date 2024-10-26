@@ -633,8 +633,12 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
-	qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
+	qstring log_path = qstring::format_string("./glogs/%s/q_logfile", port.c_str());
+	qstring stats_path = qstring::format_string("./gstats/%s/q_statfile", port.c_str());
 	thiz->logger.start_session(log_path, log_path.length());
+	thiz->stats_logger.init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
+	thiz->stats_logger.start_session(stats_path, stats_path.length());
+
 #if ENABLE_QUICHE_LOG
 	quiche_enable_debug_logging(debug_quiche_log, thiz);
 	debug_print_warn(__LOGTAG__,
@@ -809,23 +813,31 @@ void* qnetworkserver::run_internal(void* data) {
 }
 
 void qnetworkserver::exit_services_gracefully() {
-	int status = logger.end_session();
+	int log_status = logger.end_session();
+	int stats_status = stats_logger.end_session();
 	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_scheduler wait_scheduler;
 	wait_scheduler.set_loop(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
-		[this, wait_loop, &status](qtimer& timer) {
+		[this, wait_loop, &log_status, &stats_status](qtimer& timer) {
 			UNUSED(timer);
-			if (status != 0) {	// in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
-				status = logger.end_session();
+			if (log_status != 0) {	// in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
+				log_status = logger.end_session();
+			}
+			if (stats_status != 0) {  // in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
+				stats_status = stats_logger.end_session();
 			}
 			int service_shutdown_cnt = 0;
 			if (logger.config.finished) {
+				debug_print_important(__LOGTAG__, "logger service finished !!!");
+				service_shutdown_cnt++;
+			}
+			if (stats_logger.config.finished) {
 				debug_print_important(__LOGTAG__, "stats service finished !!!");
 				service_shutdown_cnt++;
 			}
-			if (service_shutdown_cnt >= 1) {
+			if (service_shutdown_cnt >= 2) {
 				ev_break(wait_loop, EVBREAK_ONE);
 			}
 		},
