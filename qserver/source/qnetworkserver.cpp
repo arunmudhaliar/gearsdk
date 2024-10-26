@@ -550,11 +550,11 @@ void qnetworkserver::recv_cb(EV_P_ ev_io* w, int revents) {
 }
 
 bool qnetworkserver::network_server_begin() {
-    if (!on_network_server_begin()) {
-        return false;
-    }
+	if (!on_network_server_begin()) {
+		return false;
+	}
 	on_network_server_init();
-    return true;
+	return true;
 }
 
 void qnetworkserver::network_server_end() {
@@ -768,17 +768,17 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_io_start(thiz->mainloop, &watcher);
 	watcher.data = thiz;
 
-    if (!thiz->network_server_begin()) {
-        thiz->network_server_end();
-        debug_print_error(__LOGTAG__, "network_server_begin failed, Exiting !!!");
-        thiz->threadpool.stop();
-        ev_loop_destroy(thiz->mainloop);
-        freeaddrinfo(local);
-        thiz->exit_services_gracefully();
-        run_config->finished = true;
-        run_config->pthread_return_value = -1;
-        pthread_exit(&run_config->pthread_return_value);
-    }
+	if (!thiz->network_server_begin()) {
+		thiz->network_server_end();
+		debug_print_error(__LOGTAG__, "network_server_begin failed, Exiting !!!");
+		thiz->threadpool.stop();
+		ev_loop_destroy(thiz->mainloop);
+		freeaddrinfo(local);
+		thiz->exit_services_gracefully();
+		run_config->finished = true;
+		run_config->pthread_return_value = -1;
+		pthread_exit(&run_config->pthread_return_value);
+	}
 
 	// heartbeat check timer
 	ev_init(&thiz->heartbeat_check_timer, heart_beat_check_cb);

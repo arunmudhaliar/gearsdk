@@ -31,7 +31,7 @@ void assert_callback(const char* msg) {
 int32_t main(int32_t argc, const char* argv[]) {
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
-	discord_util::set_web_hook(DISCORD_WEBHOOK);
+	discord_util::initialize_with_webhook_url(DISCORD_WEBHOOK);
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);

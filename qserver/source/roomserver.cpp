@@ -12,8 +12,8 @@
 roomserver::roomserver() : qnetworkserver() {}
 
 roomserver::~roomserver() {
-    GX_DELETE(hiredis_async);
-    GX_DELETE(hiredis);
+	GX_DELETE(hiredis_async);
+	GX_DELETE(hiredis);
 }
 
 void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
@@ -39,25 +39,26 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 }
 
 bool roomserver::on_network_server_begin() {
-    const struct runserverconfig& run_config = get_run_server_config();
-    GX_DELETE(hiredis);
-    hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port);
-    if (hiredis->connect_redis() != 0) {
-        debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
-        GX_DELETE(hiredis);
-        return false;
-    }
-    hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", run_config.port.c_str()), qstring::format_string("%s:%s", run_config.host.c_str(), run_config.port.c_str()));
-    
-    GX_DELETE(hiredis_async);
-    hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, this, "CONFIG SET notify-keyspace-events KEA");
-    if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
-        debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
-        GX_DELETE(hiredis);
-        GX_DELETE(hiredis_async);
-        return false;
-    }
-    
+	const struct runserverconfig& run_config = get_run_server_config();
+	GX_DELETE(hiredis);
+	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port);
+	if (hiredis->connect_redis() != 0) {
+		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
+		GX_DELETE(hiredis);
+		return false;
+	}
+	hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", run_config.port.c_str()),
+							qstring::format_string("%s:%s", run_config.host.c_str(), run_config.port.c_str()));
+
+	GX_DELETE(hiredis_async);
+	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, this, "CONFIG SET notify-keyspace-events KEA");
+	if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
+		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
+		GX_DELETE(hiredis);
+		GX_DELETE(hiredis_async);
+		return false;
+	}
+
 	scheduler.set_loop(get_mainloop());
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
 	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
@@ -65,7 +66,7 @@ bool roomserver::on_network_server_begin() {
 
 	// for quiche logs
 	check_and_update_is_log_quiche_flag();
-    return true;
+	return true;
 }
 
 void roomserver::check_and_update_is_log_quiche_flag() {
@@ -105,10 +106,10 @@ void roomserver::on_network_server_end() {
 	rooms.clear();
 	new_connections.clear();
 	connection_map.clear();
-    
-    GX_DELETE(hiredis_async);
-    GX_DELETE(hiredis);
-    
+
+	GX_DELETE(hiredis_async);
+	GX_DELETE(hiredis);
+
 	debug_print_important2(__LOGTAG__, "end");
 }
 
@@ -418,11 +419,9 @@ void roomserver::on_qhiredis_async_key_changed(const qstring& modified_key, cons
 	}
 }
 
-void roomserver::on_qhiredis_connect() {
-}
+void roomserver::on_qhiredis_connect() {}
 
-void roomserver::on_qhiredis_disconnect() {
-}
+void roomserver::on_qhiredis_disconnect() {}
 
 void roomserver::on_heartbeat_check() {
 	size_t curr_conns = get_connection_count();

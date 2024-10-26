@@ -127,9 +127,9 @@ class qnetworkserver : protected bridge_qpeerconnection {
 
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	void exit_services_gracefully();
-    const struct runserverconfig& get_run_server_config() { return run_server_config; }
-    
-    qcustomlogger logger;
+	const struct runserverconfig& get_run_server_config() { return run_server_config; }
+
+	qcustomlogger logger;
 	qstring host_id;
 	qstring port_id;
 

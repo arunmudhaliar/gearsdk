@@ -9,9 +9,9 @@
 #endif
 #include "../common/sdktypes.hpp"
 
-#define DISCORD_WEB_HOOK "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4"
+#define DEFUALT_DISCORD_WEB_HOOK "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4"
 
-qstring discord_util::current_web_hook = DISCORD_WEB_HOOK;
+qstring discord_util::current_web_hook = DEFUALT_DISCORD_WEB_HOOK;
 // pthread_once_t discord_util::init_once = PTHREAD_ONCE_INIT;
 std::atomic<bool> discord_util::inited = false;
 // pthread_mutex_t discord_util::webhook_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -52,9 +52,9 @@ void discord_util::request_worker() {
 	}
 }
 
-void discord_util::initialize_webhook_url() {
+void discord_util::initialize_with_webhook_url(const qstring& web_hook) {
 	// Initialization code if needed
-	set_web_hook(DISCORD_WEB_HOOK);
+	set_web_hook(web_hook);
 	done = false;
 	inited = true;
 
@@ -109,10 +109,8 @@ int discord_util::send(const qstring& msg, int retry_count) {
 
 void discord_util::send_async(const qstring& msg) {
 	if (!discord_util::inited) {
-		//        debug_print(LOG_LEVEL_0, __LOGTAG__, "issue initialize_webhook_url");
-		// Ensure the static variable is initialized before creating threads
-		//        pthread_once(&discord_util::init_once, initialize_webhook_url);
-		initialize_webhook_url();
+		std::cerr << "discord_util. Not inited !!!" << std::endl;
+		return;
 	}
 
 	if (!done) {

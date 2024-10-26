@@ -74,9 +74,9 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	qtimer* waiting_room_check_zombie_timer = nullptr;
 	bool is_log_quiche_flag = false;
 
-    qhiredis* hiredis = nullptr;
-    qhiredis_async* hiredis_async = nullptr;
-    
+	qhiredis* hiredis = nullptr;
+	qhiredis_async* hiredis_async = nullptr;
+
    private:
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;

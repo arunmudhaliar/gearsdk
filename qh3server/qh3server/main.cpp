@@ -45,6 +45,7 @@ void cause_segmentation_fault() {
 
 static qstring version_string = "0.1";
 static unsigned version_code = 1;
+#define DISCORD_WEB_HOOK "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3server-main"
@@ -68,6 +69,7 @@ int main(int argc, const char* argv[]) {
 
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
+	discord_util::initialize_with_webhook_url(DISCORD_WEB_HOOK);
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);
