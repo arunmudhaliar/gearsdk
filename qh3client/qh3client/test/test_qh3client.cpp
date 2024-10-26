@@ -48,11 +48,11 @@ TEST_P(functional_test_qh3client, test_send_request) {
 	int iteration = GetParam();
 	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
-	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
+	std::vector<qstring> json_objects = {R"({"pid":"","token":"","device":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
 
 	qstring json_str_object = json_objects[iteration % json_objects.size()];
 	Document doc;
@@ -101,11 +101,11 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 	int iteration = GetParam();
 	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
-	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
+	std::vector<qstring> json_objects = {R"({"pid":"","token":"","device":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
 
 	qstring json_str_object = json_objects[iteration % json_objects.size()];
 	Document doc;
@@ -164,11 +164,11 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 	int iteration = GetParam();
 	// debug_raw(LOG_LEVEL_0, "Running test iteration: %d", iteration + 1);
 
-	std::vector<qstring> json_objects = {R"({"pid":"","token":"","details":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
-										 R"({"pid":"","token":"","details":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
+	std::vector<qstring> json_objects = {R"({"pid":"","token":"","device":{"sys_name":"Linux","node_name":"server01.local","release":"5.15.0-56-generic","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Windows","node_name":"DESKTOP-1234ABCD","release":"10.0.19044","arch":"amd64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Darwin","node_name":"Johns-MBP.local","release":"22.3.0","arch":"arm64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}})",
+										 R"({"pid":"","token":"","device":{"sys_name":"FreeBSD","node_name":"freebsd-server.local","release":"13.1-RELEASE","arch":"i386"}})"};
 
 	qstring json_str_object = json_objects[iteration % json_objects.size()];
 	Document doc;
