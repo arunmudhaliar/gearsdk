@@ -299,6 +299,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 				} else if (room_ptr->get_state() >= room::states::ROOM_START) {
 					debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - added to room %d, map[after add sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 				}
+				Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to waiting room - connection %0x", qconnection->cid_hash_val);
 				break;
 			}
 		}
@@ -331,6 +332,8 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 				connection_map.erase(iterator);
 			}
 			connection_map[qconnection->cid_hash_val] = room_ptr;  // update the connection map
+
+			Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to previous room - connection %0x", qconnection->cid_hash_val);
 			debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - add player to PREV room %d of user [m-sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 		}
 	}
@@ -341,6 +344,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid, replaced_by_disconnected_player);	 // no need to check for limit since he is our first user in this room.
 		room_ptr = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_ptr;
+		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to new waiting room - connection %0x", qconnection->cid_hash_val);
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:do_process_roomjoin - add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
 	}
 }
@@ -355,6 +359,7 @@ room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", key.c_str(), result);
 	result = this->hiredis->expire_key(key, 1 * 60);  // 1 minute(s)
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
+	Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "new waiting room (%s), count:%d", key.c_str(), count_waiting_room_of_this_type);
 	return room_ptr;
 }
 
@@ -386,6 +391,7 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 		const qstring& rkey = room_ptr->get_room_signature("room:", host_id, port_id);
 		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
 		debug_warn_cond(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
+		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "destroy room (%s), count:%d, total:%d", rkey.c_str(), count_room_of_this_type, rooms.size());
 
 		GX_DELETE(room_ptr);
 		debug_print_important2(__LOGTAG__, "room size %d", rooms.size());

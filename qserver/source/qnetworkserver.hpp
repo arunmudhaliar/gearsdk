@@ -33,6 +33,21 @@ extern "C" {
 #define QTHREADPOOL 1
 #define QTHREADPOOL_THREAD_COUNT 4
 
+#define Q_INFO(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, __VA_ARGS__)
+#define Q_DEBUG(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, __VA_ARGS__)
+#define Q_WARN(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, __VA_ARGS__)
+#define Q_ERROR(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, __VA_ARGS__)
+
+#define Q_INFO_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, pid, __VA_ARGS__)
+#define Q_DEBUG_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, pid, __VA_ARGS__)
+#define Q_WARN_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, pid, __VA_ARGS__)
+#define Q_ERROR_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, pid, __VA_ARGS__)
+
+#define Q_INFO_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_DEBUG_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_WARN_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_ERROR_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, pid, roomid, __VA_ARGS__)
+
 // MARK: -
 class conn_io;
 struct connections {
@@ -168,6 +183,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 		qhiredis* hiredis = nullptr;
 	};
 
+	qcustomlogger* get_file_logger() { return &logger; }
 	static bool init_threadpool_context(thread_pool_context& context, const void*);
 	static bool cleanup_threadpool_context(thread_pool_context& context);
 	qthreadpool<thread_pool_context> threadpool {QTHREADPOOL_THREAD_COUNT, init_threadpool_context, cleanup_threadpool_context};

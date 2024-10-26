@@ -204,7 +204,7 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 	qconnection->timer.data = qconnection;
 	HASH_ADD(hh, conns->h, cid, Q_LOCAL_CONN_ID_LEN, qconnection);
 	qconnection->bridge->onconnection_connect(qconnection);
-
+	Q_INFO(__LOGTAG__, "new connection %0x", qconnection->cid_hash_val);
 	return qconnection;
 }
 
@@ -280,6 +280,7 @@ void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnecti
 	close_connection(qconnection);
 	onconnection_destroy(qconnection);
 	HASH_DELETE(hh, conns->h, qconnection);
+	Q_INFO(__LOGTAG__, "destroy connection %0x", qconnection->cid_hash_val);
 	GX_DELETE(qconnection);
 	debug_print_important(__LOGTAG__, "connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
@@ -459,6 +460,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 		if (quiche_conn_is_established(qconnection->conn)) {
 			if (!qconnection->connection_established) {
 				qconnection->connection_established = true;
+				Q_INFO(__LOGTAG__, "connected %0x", qconnection->cid_hash_val);
 				qconnection->bridge->onconnection_connected(qconnection);
 			}
 			uint64_t s = 0;
