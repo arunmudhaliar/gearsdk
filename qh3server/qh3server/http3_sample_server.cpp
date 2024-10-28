@@ -89,7 +89,7 @@ void http3_sample_server::on_server_uninitialise() {
 #if ENABLE_ZK
 	if (qzk != nullptr) {
 		qzk->shutdown();
-		debug_print_important(__LOGTAG__, "waiting for http3_sample_server services to finish !!!");
+		debug_print_important(__LOGTAG__, "waiting for zk services to finish !!!");
 		struct ev_loop* wait_loop = ev_loop_new();
 		qtimer_scheduler wait_scheduler;
 		wait_scheduler.set_loop(wait_loop);

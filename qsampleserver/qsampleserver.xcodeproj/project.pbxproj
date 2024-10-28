@@ -29,6 +29,8 @@
 		55CB70362C77C07000E05D37 /* libuv.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB70342C77C07000E05D37 /* libuv.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55CB70382C77C08700E05D37 /* libquiche.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB70372C77C08700E05D37 /* libquiche.dylib */; };
 		55CB70392C77C08700E05D37 /* libquiche.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB70372C77C08700E05D37 /* libquiche.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		55D7ACFC2CD0168D0011297F /* libqzookeeper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D7ACFB2CD0168D0011297F /* libqzookeeper.a */; };
+		55D7ACFE2CD016A10011297F /* libsasl2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D7ACFD2CD0169A0011297F /* libsasl2.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,6 +82,8 @@
 		55CB70322C77BFC100E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
 		55CB70342C77C07000E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
 		55CB70372C77C08700E05D37 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
+		55D7ACFB2CD0168D0011297F /* libqzookeeper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqzookeeper.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55D7ACFD2CD0169A0011297F /* libsasl2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsasl2.tbd; path = usr/lib/libsasl2.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,9 +99,11 @@
 				555EB14A2C319049001F1B21 /* libdpp.dylib in Frameworks */,
 				555EB1502C319078001F1B21 /* libquiche.a in Frameworks */,
 				55CB70382C77C08700E05D37 /* libquiche.dylib in Frameworks */,
+				55D7ACFE2CD016A10011297F /* libsasl2.tbd in Frameworks */,
 				555EB1482C319035001F1B21 /* libcurl.tbd in Frameworks */,
 				555BA7012C3AEF6900E23A51 /* libev.4.dylib in Frameworks */,
 				55CB70352C77C07000E05D37 /* libuv.1.dylib in Frameworks */,
+				55D7ACFC2CD0168D0011297F /* libqzookeeper.a in Frameworks */,
 				555EB1422C318FDC001F1B21 /* libnetworkcommon.a in Frameworks */,
 				555EB1462C318FF1001F1B21 /* libqutils.a in Frameworks */,
 				555EB1542C31912E001F1B21 /* libqserver-st.a in Frameworks */,
@@ -139,6 +145,8 @@
 		555EB13C2C318FBC001F1B21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55D7ACFD2CD0169A0011297F /* libsasl2.tbd */,
+				55D7ACFB2CD0168D0011297F /* libqzookeeper.a */,
 				55CB70372C77C08700E05D37 /* libquiche.dylib */,
 				55CB70342C77C07000E05D37 /* libuv.1.dylib */,
 				55CB70322C77BFC100E05D37 /* libuv.a */,
@@ -239,7 +247,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+			shellScript = "# copy files\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
 		};
 		555EB15D2C31991F001F1B21 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -399,6 +407,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -426,6 +435,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

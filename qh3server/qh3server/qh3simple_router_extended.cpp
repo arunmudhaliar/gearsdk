@@ -226,12 +226,6 @@ int qh3simple_router::run() {
 			return -1;
 		}
 
-		int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
-		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
-		hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
-		hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
-		hiredis->expire_key(hash_key, expire_timer_unresponsive_route_zk_check_in_sec);
-
 		ev_io watcher;
 		ev_io_init(&watcher, recv_cb, sock, EV_READ);
 		ev_io_start(mainloop, &watcher);
@@ -267,11 +261,16 @@ int qh3simple_router::run() {
 		unresponsive_routes_scheduler.set_loop(mainloop);
 		qtimer* unresponsive_timer = check_and_remove_unresponsive_routes(unresponsive_routes_scheduler);
 
+		qtimer_scheduler update_redis_about_servers_scheduler;
+		update_redis_about_servers_scheduler.set_loop(mainloop);
+		qtimer* update_redis_about_servers_timer = update_redis_about_servers(update_redis_about_servers_scheduler);
+
 		ev_loop(mainloop, 0);
 
 		ev_io_stop(mainloop, &watcher_return);
 		ev_io_stop(mainloop, &watcher);
 
+		update_redis_about_servers_scheduler.cancel_and_destroy_timer(update_redis_about_servers_timer);
 		unresponsive_routes_scheduler.cancel_and_destroy_timer(unresponsive_timer);
 
 		ev_loop_destroy(mainloop);

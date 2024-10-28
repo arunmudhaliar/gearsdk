@@ -47,7 +47,7 @@ int32_t main(int32_t argc, const char* argv[]) {
 		discord_util::shutdown();
 		exit(0);
 	}
-	gameserver server;
+	gameserver server(zk_uri);
 	server.run(host, port, rootDir, redis_ip, redis_port, "qsampleserver-app");
 
 	// dummy run loop

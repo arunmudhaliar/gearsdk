@@ -11,6 +11,8 @@
 
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
+#include "../../networkcommon/source/serverconfig.hpp"
+#include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qnetworkserver.hpp"
 #include "room.hpp"
 
@@ -24,9 +26,9 @@
 #define WAITING_ROOM_ZOMBIE_THRESHOLD 10.0
 
 // MARK: -
-class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async {
+class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async, observer_serverconfig {
    public:
-	roomserver();
+	roomserver(const qstring& zk_uri);
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
@@ -45,6 +47,8 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	void on_heartbeat_check() override;
 	void onroom_pre_start(room*) override final;
 	bool is_log_quiche() override;
+
+	void configchanged(const qstring& path, const qstring& data) override;
 
 	virtual room* create_room(const msg_room_config* room_config_msg) = 0;
 
@@ -72,16 +76,21 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 
 	message_parser msg_parser;
 	qtimer* waiting_room_check_zombie_timer = nullptr;
+	qtimer* update_redis_about_gserver_timer = nullptr;
 	bool is_log_quiche_flag = false;
 
 	qhiredis* hiredis = nullptr;
 	qhiredis_async* hiredis_async = nullptr;
+	qzookeeper* qzk = nullptr;
+	serverconfig* zkconfig = nullptr;
 
    private:
+	const qstring zk_uri;
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
 
 	void do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg);
+	qtimer* schedule_update_redis_about_gserver_timer();
 };
 
 #endif /* roomserver_hpp */

@@ -105,25 +105,6 @@ bool qh3simple_router::is_route_available(const route* r) {
 }
 
 void qh3simple_router::on_qhiredis_async_key_expired(const qstring& expired_key) {
-	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
-	if (hash_key.compare(expired_key) != 0) {
-		return;
-	}
-
-	hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
-	hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
-	for (auto r : routes) {
-		hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
-	}
-	for (auto r : unresponsive_routes) {
-		hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
-	}
-	// cmd
-	hiredis->set_hash_value(hash_key, "command_center", qstring::format_string("%s:%d", config.host.c_str(), config.command_port));
-
-	// update the expiry
-	int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
-	hiredis->expire_key(hash_key, expire_timer_unresponsive_route_zk_check_in_sec);
 }
 
 void qh3simple_router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
@@ -375,6 +356,39 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_scheduler&
 			}
 		},
 		timer_unresponsive_route_check_in_sec);
+	return timer;
+}
+
+qtimer* qh3simple_router::update_redis_about_servers(qtimer_scheduler& scheduler) {
+	int grace_time = 10;
+	int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
+	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+	hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
+	hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
+	hiredis->expire_key(hash_key, expire_timer_unresponsive_route_zk_check_in_sec + grace_time);
+
+	debug_print_important(__LOGTAG__, "update_redis_about_servers timer %d", expire_timer_unresponsive_route_zk_check_in_sec);
+	qtimer* timer = scheduler.schedule_repeat_timer(
+		[this, hash_key, grace_time](qtimer& timer) {
+			int next_expire_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
+			float diff = next_expire_in_sec - timer.delay;
+			if (GX_ABS(diff) > 1.0f) {
+				debug_print_important(__LOGTAG__, "update_redis_about_servers timer updated from %5.2f to %d", timer.delay, next_expire_in_sec);
+				timer.update_delay(next_expire_in_sec);
+			}
+			hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
+			hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
+			for (auto r : routes) {
+				hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
+			}
+			for (auto r : unresponsive_routes) {
+				hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
+			}
+			// cmd
+			hiredis->set_hash_value(hash_key, "command_center", qstring::format_string("%s:%d", config.host.c_str(), config.command_port));
+			hiredis->expire_key(hash_key, next_expire_in_sec + grace_time);
+		},
+		expire_timer_unresponsive_route_zk_check_in_sec);
 	return timer;
 }
 

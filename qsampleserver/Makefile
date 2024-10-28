@@ -6,6 +6,7 @@ COMMON_SRCDIR = ../common
 QUTILS_SRCDIR = ../qutils
 SRCDIR = ../qserver/source
 MAIN_SRCDIR = ./qsampleserver
+ZK_SRCDIR = ../qzookeeper
 
 # Source files for the static library
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
@@ -16,13 +17,16 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
               $(NETWORK_COMMON_SRCDIR)/qtimer.cpp \
 			  $(NETWORK_COMMON_SRCDIR)/qtimer_uv.cpp \
               $(NETWORK_COMMON_SRCDIR)/message.cpp \
+			  $(NETWORK_COMMON_SRCDIR)/qtextfile.cpp \
+			  $(NETWORK_COMMON_SRCDIR)/serverconfig.cpp \
               $(SERVER_COMMON_SRCDIR)/servercommon.cpp \
               $(QUTILS_SRCDIR)/discord_util.cpp \
               $(COMMON_SRCDIR)/timer.cpp \
               $(COMMON_SRCDIR)/sdktypes.cpp \
               $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis.cpp \
-              $(QHIREDIS_SRCDIR)/qhiredis_async.cpp
+              $(QHIREDIS_SRCDIR)/qhiredis_async.cpp \
+			  $(ZK_SRCDIR)/source/qzookeeper.cpp \
 
 # Source files for the executable
 SRCS = $(SRCDIR)/room.cpp \
@@ -36,14 +40,14 @@ MAIN_SRCS = $(MAIN_SRCDIR)/main.cpp
 # Include paths
 INCLUDES = -I "$(QUTILS_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" \
            -I "../networkcommon/source/ev" -I "../networkcommon/source/quiche" \
-           -I "../qhiredis/hiredis"
+           -I "../qhiredis/hiredis" -I "$(ZK_SRCDIR)/zookeeper"
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
 MAIN_OBJS = ${MAIN_SRCS:.cpp=.o}
 
 # Definitions and Flags
-USER_DEFINES = -DLOG_LEVEL=3 -DUSE_LIBUV=1
+USER_DEFINES = -DTHREADED -DLOG_LEVEL=3 -DUSE_LIBUV=1
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
@@ -51,11 +55,11 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a \
+	LIBS = $(ZK_SRCDIR)/libs/linux/libzookeeper_mt.a ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a \
 		   ../networkcommon/libs/linux/libuv.a \
 	       ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a \
-	       -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl
-	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
+	       -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl  -lsasl2
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/linux -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
 ifeq ($(UNAME),Darwin)
@@ -64,9 +68,9 @@ ifeq ($(UNAME),Darwin)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
 		   ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a \
 	       ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a \
-	       -ldpp -framework CoreFoundation -framework Security -lcurl
-	LDFLAGS = -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
-	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	       -ldpp -framework CoreFoundation -framework Security -lcurl -lzookeeper_mt -lsasl2
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	DEBUG_CXXFLAGS += -mmacosx-version-min=12.4
 	RELEASE_CXXFLAGS += -mmacosx-version-min=12.4
 	LDFLAGS += -mmacosx-version-min=12.4
