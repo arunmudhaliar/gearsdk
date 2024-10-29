@@ -23,7 +23,7 @@
 #define __LOGTAG__ "roomserver"
 
 #define WAITING_ROOM_ZOMBIE_CHECK_TIMER 30.0
-#define WAITING_ROOM_ZOMBIE_THRESHOLD 10.0
+#define WAITING_ROOM_ZOMBIE_THRESHOLD 200.0
 
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async, observer_serverconfig {

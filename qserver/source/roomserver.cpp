@@ -83,18 +83,13 @@ bool roomserver::on_network_server_begin() {
 		GX_DELETE(zkconfig);
 		return false;
 	}
-	if (!zkconfig->load(config_path, qzk, "/qh3router")) {
-		debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
-		GX_DELETE(zkconfig);
-		return false;
-	}
 
-    check_and_update_is_log_quiche_flag();
-    
+	check_and_update_is_log_quiche_flag();
+
 	scheduler.set_loop(get_mainloop());
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
 	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
-    update_redis_about_gserver_timer = schedule_update_redis_about_gserver_timer();
+	update_redis_about_gserver_timer = schedule_update_redis_about_gserver_timer();
 	debug_print_important2(__LOGTAG__, "start");
 	return true;
 }

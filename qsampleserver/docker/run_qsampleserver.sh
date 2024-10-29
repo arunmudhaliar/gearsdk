@@ -7,4 +7,5 @@ port=4000
 db_uri=mongodb://192.168.0.230:27017
 redis_ip=192.168.0.230
 redis_port=6379
-./qsampleserver-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port
+zk_uri=192.168.0.230:2181
+./qsampleserver-app --h $ip --p $port --db $db_uri --rh $redis_ip --rp $redis_port --zk $zk_uri
