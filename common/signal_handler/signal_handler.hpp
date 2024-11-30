@@ -12,6 +12,8 @@
 #include <pthread.h>
 #include <string>
 #include <unistd.h>
+
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
 // Conditional includes for platform-specific headers
@@ -19,6 +21,7 @@
 #include <dirent.h>
 #include <sys/syscall.h>
 #include <sys/ptrace.h>  // Ensure ptrace is available on Linux
+#include <sys/types.h>
 #elif __APPLE__
 #include <mach/mach.h>
 #include <mach/thread_act.h>

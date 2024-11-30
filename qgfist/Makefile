@@ -32,7 +32,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a -lz
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a -lz -lunwind
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture

@@ -8,6 +8,8 @@
 #ifdef __linux__
 #include <linux/ptrace.h>
 #include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <sys/user.h>
 #endif
 namespace signal_handler {
 
@@ -154,7 +156,7 @@ void unwind_stack_linux(int fd, pid_t tid) {
     dprintf(fd, "\nThread ID: %lu\n", thread_id);
 
     // Check if we're in the current thread
-    if (thread_id == syscall(SYS_gettid)) {
+    if (thread_id == static_cast<uintptr_t>(syscall(SYS_gettid))) {
         dprintf(fd, "This is the current thread.\n");
         unw_context_t context;
         unw_cursor_t cursor;
@@ -176,7 +178,7 @@ void unwind_stack_linux(int fd, pid_t tid) {
     }
 
     // Handle other threads using ptrace
-    if (ptrace(PTRACE_ATTACH, tid, NULL, NULL) == -1) {
+    if (ptrace((__ptrace_request)PTRACE_ATTACH, tid, NULL, NULL) == -1) {
         dprintf(fd, "Failed to attach to thread %d: %s\n", tid, strerror(errno));
         return;
     }
@@ -184,15 +186,15 @@ void unwind_stack_linux(int fd, pid_t tid) {
     // Wait for the thread to stop
     if (waitpid(tid, NULL, 0) == -1) {
         dprintf(fd, "Failed to wait for thread %d: %s\n", tid, strerror(errno));
-        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        ptrace((__ptrace_request)PTRACE_DETACH, tid, NULL, NULL);
         return;
     }
 
     // Read the thread's registers
     struct user_regs_struct regs;
-    if (ptrace(PTRACE_GETREGS, tid, NULL, &regs) == -1) {
+    if (ptrace((__ptrace_request)PTRACE_GETREGS, tid, NULL, &regs) == -1) {
         dprintf(fd, "Failed to get registers for thread %d: %s\n", tid, strerror(errno));
-        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        ptrace((__ptrace_request)PTRACE_DETACH, tid, NULL, NULL);
         return;
     }
 
@@ -202,22 +204,25 @@ void unwind_stack_linux(int fd, pid_t tid) {
 
     memset(&context, 0, sizeof(context));
 #if defined(__x86_64__)
-    context.data[UNW_X86_64_RIP] = regs.rip;  // Instruction pointer
-    context.data[UNW_X86_64_RSP] = regs.rsp;  // Stack pointer
-    context.data[UNW_X86_64_RBP] = regs.rbp;  // Base pointer
+    // context.data[UNW_X86_64_RIP] = regs.rip;  // Instruction pointer
+    // context.data[UNW_X86_64_RSP] = regs.rsp;  // Stack pointer
+    // context.data[UNW_X86_64_RBP] = regs.rbp;  // Base pointer
+	context.uc_mcontext.gregs[REG_RIP] = regs.rip;  // Instruction pointer
+    context.uc_mcontext.gregs[REG_RSP] = regs.rsp;  // Stack pointer
+    context.uc_mcontext.gregs[REG_RBP] = regs.rbp;  // Base pointer
 #elif defined(__aarch64__)
     context.data[UNW_AARCH64_PC] = regs.pc;  // Program counter
     context.data[UNW_AARCH64_SP] = regs.sp;  // Stack pointer
     context.data[UNW_AARCH64_X29] = regs.regs[29];  // Frame pointer
 #else
     dprintf(fd, "Unsupported architecture for ptrace.\n");
-    ptrace(PTRACE_DETACH, tid, NULL, NULL);
+    ptrace((__ptrace_request)PTRACE_DETACH, tid, NULL, NULL);
     return;
 #endif
 
     if (unw_init_local(&cursor, &context) < 0) {
         dprintf(fd, "Failed to initialize unwinding for thread %d.\n", tid);
-        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        ptrace((__ptrace_request)PTRACE_DETACH, tid, NULL, NULL);
         return;
     }
 
@@ -225,7 +230,7 @@ void unwind_stack_linux(int fd, pid_t tid) {
     print_stack_trace(fd, &cursor);
 
     // Detach from the thread
-    if (ptrace(PTRACE_DETACH, tid, NULL, NULL) == -1) {
+    if (ptrace((__ptrace_request)PTRACE_DETACH, tid, NULL, NULL) == -1) {
         dprintf(fd, "Failed to detach from thread %d: %s\n", tid, strerror(errno));
     }
 }
