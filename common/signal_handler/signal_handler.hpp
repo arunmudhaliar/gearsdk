@@ -13,17 +13,19 @@
 #include <string>
 #include <unistd.h>
 #include <libunwind.h>
-#include <libunwind-ptrace.h>
 
+// Conditional includes for platform-specific headers
 #ifdef __linux__
 #include <dirent.h>
 #include <sys/syscall.h>
+#include <sys/ptrace.h>  // Ensure ptrace is available on Linux
 #elif __APPLE__
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #endif
 
 namespace signal_handler {
+
 // Demangle C++ symbols
 std::string demangle(const char* mangled_name);
 
@@ -39,6 +41,7 @@ void print_thread_stack_trace(int fd, uintptr_t thread_id, const char* platform_
 #ifdef __APPLE__
 void unwind_stack_macos(int fd, thread_t thread);
 #endif
+
 #ifdef __linux__
 void print_stack_trace(int fd, unw_cursor_t* cursor);
 void unwind_stack_linux(int fd, pid_t tid);
@@ -47,10 +50,12 @@ void unwind_stack_linux(int fd, pid_t tid);
 // Capture and print stack trace for all threads
 void print_all_threads_stack_trace(int signal);
 
-// Signal handler
+// Signal handler for capturing specific signals like segfaults
 void signal_handler(int trap_signal);
 
 // Setup signal handlers
 void setup_signal_handler();
+
 }  // namespace signal_handler
-#endif	// SIGNAL_HANDLER_H
+
+#endif  // SIGNAL_HANDLER_H
