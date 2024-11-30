@@ -320,6 +320,7 @@ void setup_signal_handler() {
 	sigaction(SIGABRT, &sa, NULL);
 	sigaction(SIGFPE, &sa, NULL);
 	sigaction(SIGILL, &sa, NULL);
+	sigaction(SIGTRAP, &sa, NULL);
 }
 
 // Introducing a segmentation fault by dereferencing a null pointer
