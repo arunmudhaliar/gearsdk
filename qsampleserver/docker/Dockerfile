@@ -22,5 +22,6 @@ RUN apt-get install libsasl2-dev -y
 RUN apt install iproute2 -y
 RUN apt-get install zlib1g-dev -y
 RUN apt-get install libcurl4-openssl-dev -y
+RUN apt-get install libunwind-dev -y
 RUN sh make_qsampleserver.sh
 CMD [ "sh", "run_qsampleserver.sh" ]
