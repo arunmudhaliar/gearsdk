@@ -204,9 +204,6 @@ void unwind_stack_linux(int fd, pid_t tid) {
 
     memset(&context, 0, sizeof(context));
 #if defined(__x86_64__)
-    // context.data[UNW_X86_64_RIP] = regs.rip;  // Instruction pointer
-    // context.data[UNW_X86_64_RSP] = regs.rsp;  // Stack pointer
-    // context.data[UNW_X86_64_RBP] = regs.rbp;  // Base pointer
 	context.uc_mcontext.gregs[REG_RIP] = regs.rip;  // Instruction pointer
     context.uc_mcontext.gregs[REG_RSP] = regs.rsp;  // Stack pointer
     context.uc_mcontext.gregs[REG_RBP] = regs.rbp;  // Base pointer
@@ -317,6 +314,17 @@ void setup_signal_handler() {
 	sigaction(SIGABRT, &sa, NULL);
 	sigaction(SIGFPE, &sa, NULL);
 	sigaction(SIGILL, &sa, NULL);
+}
+
+// Introducing a segmentation fault by dereferencing a null pointer
+void test_segmentation_fault() {
+    int* ptr = nullptr;
+    *ptr = 42;  // This will cause a segmentation fault
+}
+
+// Triggering an abort to simulate a crash
+void test_abort() {
+    abort();  // This will cause the program to abort immediately
 }
 
 }  // namespace signal_handler

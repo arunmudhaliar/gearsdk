@@ -59,6 +59,12 @@ void signal_handler(int trap_signal);
 // Setup signal handlers
 void setup_signal_handler();
 
+// Triggering an abort to simulate a crash
+void test_abort();
+
+// Introducing a segmentation fault by dereferencing a null pointer
+void test_segmentation_fault();
+
 }  // namespace signal_handler
 
 #endif  // SIGNAL_HANDLER_H

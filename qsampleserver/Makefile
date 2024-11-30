@@ -59,7 +59,7 @@ ifeq ($(UNAME), Linux)
 	LIBS = $(ZK_SRCDIR)/libs/linux/libzookeeper_mt.a ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a \
 		   ../networkcommon/libs/linux/libuv.a \
 	       ../qhiredis/libs/linux/libhiredis.a ../common/libs/linux/libz.a \
-	       -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl  -lsasl2
+	       -pthread -Wl,--no-as-needed -ldl -ldpp -lssl -lcrypto -lcurl  -lsasl2 -lunwind
 	LDFLAGS = -L$(ZK_SRCDIR)/libs/linux -L$(SERVER_COMMON_SRCDIR)/../libs/linux -L$(QUTILS_SRCDIR)/libs/linux
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/linux -Wl,-rpath,$(QUTILS_SRCDIR)/libs/linux
 endif
