@@ -178,7 +178,7 @@ void qhiredis_async::on_redis_event_cb(struct redisAsyncContext* c, void* reply,
 				thiz->interface->on_qhiredis_async_key_changed(qstring(r->element[3]->str), "hdel");
 			}
 		} else {
-			debug_print(LOG_LEVEL_0, __LOGTAG__, "Unhandled: Received hiredis event async: %s %s", r->element[1]->str, r->element[2]->str);
+			debug_print(LOG_LEVEL_4, __LOGTAG__, "Unhandled: Received hiredis event async: %s %s", r->element[1]->str, r->element[2]->str);
 		}
 	}
 }
