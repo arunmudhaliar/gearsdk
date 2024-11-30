@@ -6,6 +6,7 @@
 //
 
 #include "../../common/sdktypes.hpp"
+#include "../../common/signal_handler/signal_handler.hpp"
 #include "../../qh3server/qh3server/http3_command_server.hpp"
 #include "../../qh3server/qh3server/http3_sample_server.hpp"
 #include "../../qh3server/qh3server/qh3simple_router.hpp"
@@ -31,6 +32,7 @@ void assert_callback(const char* msg) {
 }
 
 int main(int argc, const char* argv[]) {
+	signal_handler::setup_signal_handler();
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
 	discord_util::initialize_with_webhook_url(DISCORD_WEBHOOK);

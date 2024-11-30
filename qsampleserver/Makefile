@@ -24,6 +24,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
               $(COMMON_SRCDIR)/timer.cpp \
               $(COMMON_SRCDIR)/sdktypes.cpp \
               $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
+			  $(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis.cpp \
               $(QHIREDIS_SRCDIR)/qhiredis_async.cpp \
 			  $(ZK_SRCDIR)/source/qzookeeper.cpp \

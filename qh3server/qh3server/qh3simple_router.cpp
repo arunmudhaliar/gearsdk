@@ -104,8 +104,7 @@ bool qh3simple_router::is_route_available(const route* r) {
 	return (std::find(routes.begin(), routes.end(), r) == routes.end());
 }
 
-void qh3simple_router::on_qhiredis_async_key_expired(const qstring& expired_key) {
-}
+void qh3simple_router::on_qhiredis_async_key_expired(const qstring& expired_key) {}
 
 void qh3simple_router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
 	UNUSED(modified_key);

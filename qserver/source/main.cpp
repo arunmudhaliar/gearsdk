@@ -5,6 +5,7 @@
 //
 //  Created by Arun A on 20/09/23.
 //
+#include "../../common/signal_handler/signal_handler.hpp"
 #include "../../qutils/discord_util.hpp"
 #include "../servercommon/source/servercommon.hpp"
 #include "gameserver.hpp"
@@ -28,6 +29,7 @@ void assert_callback(const char* msg) {
 }
 
 int32_t main(int32_t argc, const char* argv[]) {
+	signal_handler::setup_signal_handler();
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
 	discord_util::initialize_with_webhook_url(DISCORD_WEBHOOK);

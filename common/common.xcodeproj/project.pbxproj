@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5522CC0F2CFB0A6D00676D0B /* signal_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5522CC0D2CFB0A6D00676D0B /* signal_handler.cpp */; };
+		5522CC102CFB0A6D00676D0B /* signal_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5522CC0E2CFB0A6D00676D0B /* signal_handler.hpp */; };
 		556AB6E02AF5736E00D688DB /* bson.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C42AF5736E00D688DB /* bson.h */; };
 		556AB6E12AF5736E00D688DB /* bson-json.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C52AF5736E00D688DB /* bson-json.h */; };
 		556AB6E22AF5736E00D688DB /* bson-prelude.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C62AF5736E00D688DB /* bson-prelude.h */; };
@@ -47,6 +49,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5522CC0D2CFB0A6D00676D0B /* signal_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = signal_handler.cpp; sourceTree = "<group>"; };
+		5522CC0E2CFB0A6D00676D0B /* signal_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = signal_handler.hpp; sourceTree = "<group>"; };
 		556AB6C42AF5736E00D688DB /* bson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bson.h; sourceTree = "<group>"; };
 		556AB6C52AF5736E00D688DB /* bson-json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-json.h"; sourceTree = "<group>"; };
 		556AB6C62AF5736E00D688DB /* bson-prelude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-prelude.h"; sourceTree = "<group>"; };
@@ -102,6 +106,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5522CC0C2CFB0A6D00676D0B /* signal_handler */ = {
+			isa = PBXGroup;
+			children = (
+				5522CC0D2CFB0A6D00676D0B /* signal_handler.cpp */,
+				5522CC0E2CFB0A6D00676D0B /* signal_handler.hpp */,
+			);
+			path = signal_handler;
+			sourceTree = "<group>";
+		};
 		556AB6C22AF5736E00D688DB /* libbson-1.0 */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +171,7 @@
 		55B372F12AC325B200F0095E = {
 			isa = PBXGroup;
 			children = (
+				5522CC0C2CFB0A6D00676D0B /* signal_handler */,
 				55A72F702B93B14400064250 /* typex.h */,
 				556ABAF82B0D276800D688DB /* qstring.hpp */,
 				556AB7192AFA993200D688DB /* crypto_helper.cpp */,
@@ -220,6 +234,7 @@
 				556AB6F82AF5736E00D688DB /* bson-md5.h in Headers */,
 				556AB71C2AFA993200D688DB /* crypto_helper.hpp in Headers */,
 				556AB6EA2AF5736E00D688DB /* bson-utf8.h in Headers */,
+				5522CC102CFB0A6D00676D0B /* signal_handler.hpp in Headers */,
 				556AB6E62AF5736E00D688DB /* bson-config.h in Headers */,
 				556AB6F92AF5736E00D688DB /* bson-version.h in Headers */,
 				556AB7142AFA8FBC00D688DB /* sha256.h in Headers */,
@@ -332,6 +347,7 @@
 				556AB7152AFA8FBC00D688DB /* sha256.c in Sources */,
 				55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */,
 				556AB71B2AFA993200D688DB /* crypto_helper.cpp in Sources */,
+				5522CC0F2CFB0A6D00676D0B /* signal_handler.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

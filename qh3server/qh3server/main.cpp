@@ -6,37 +6,8 @@
 //  Created by Arun A on 30/10/23.
 //
 
-#define TEST_SIGNAL_HANDLER 0
-
-#if TEST_SIGNAL_HANDLER
-#include <execinfo.h>
-#include <iostream>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-void signal_handler(int signum) {
-	// Print the signal number
-	std::cerr << "Error: signal " << signum << " received." << std::endl;
-
-	// Get void*'s for all entries on the stack
-	void* array[10];
-	size_t size = backtrace(array, 10);
-
-	// Print out all the frames to stderr
-	std::cerr << "Obtained " << size << " stack frames:" << std::endl;
-	backtrace_symbols_fd(array, size, STDERR_FILENO);
-
-	exit(1);
-}
-
-void cause_segmentation_fault() {
-	int* ptr = nullptr;
-	*ptr = 42;	// This will cause a segmentation fault
-}
-#endif
-
 #include "../../common/sdktypes.hpp"
+#include "../../common/signal_handler/signal_handler.hpp"
 #include "../../qutils/discord_util.hpp"
 #include "../../servercommon/source/servercommon.hpp"
 #include "http3_command_server.hpp"
@@ -61,11 +32,7 @@ void assert_callback(const char* msg) {
 }
 
 int main(int argc, const char* argv[]) {
-#if TEST_SIGNAL_HANDLER
-	// Register signal handler for SIGSEGV
-	signal(SIGSEGV, signal_handler);
-	cause_segmentation_fault();
-#endif
+	signal_handler::setup_signal_handler();
 
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
