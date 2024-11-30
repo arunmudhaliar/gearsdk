@@ -12,6 +12,8 @@
 #include <pthread.h>
 #include <string>
 #include <unistd.h>
+#include <libunwind.h>
+#include <libunwind-ptrace.h>
 
 #ifdef __linux__
 #include <dirent.h>
@@ -38,6 +40,7 @@ void print_thread_stack_trace(int fd, uintptr_t thread_id, const char* platform_
 void unwind_stack_macos(int fd, thread_t thread);
 #endif
 #ifdef __linux__
+void print_stack_trace(int fd, unw_cursor_t* cursor);
 void unwind_stack_linux(int fd, pid_t tid);
 #endif
 

@@ -3,8 +3,12 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <libunwind.h>
-#include <mach/mach.h>
+#include <sys/stat.h>
 
+#ifdef __linux__
+#include <linux/ptrace.h>
+#include <sys/ptrace.h>
+#endif
 namespace signal_handler {
 
 // Demangle C++ symbols
@@ -125,96 +129,107 @@ void unwind_stack_macos(int fd, thread_t thread) {
 
 // Linux-specific implementation of unwind_stack
 #ifdef __linux__
+void print_stack_trace(int fd, unw_cursor_t* cursor) {
+    int depth = 0;
+
+    // Unwind the stack and print the stack frames
+    while (unw_step(cursor) > 0) {
+        unw_word_t ip, sp;
+        unw_get_reg(cursor, UNW_REG_IP, &ip);  // Instruction pointer
+        unw_get_reg(cursor, UNW_REG_SP, &sp);  // Stack pointer
+
+        Dl_info info;
+        if (dladdr((const void*)ip, &info) && info.dli_sname) {
+            std::string symbol = info.dli_sname;
+            const char* library_name = basename((char*)info.dli_fname);
+            dprintf(fd, "%-3d %-35s 0x%016lx %s\n", depth++, library_name, (unsigned long)ip, symbol.c_str());
+        } else {
+            dprintf(fd, "%-3d %-35s 0x%016lx [unknown symbol]\n", depth++, "[unknown library]", (unsigned long)ip);
+        }
+    }
+}
+
 void unwind_stack_linux(int fd, pid_t tid) {
-	uintptr_t thread_id = tid;
-	dprintf(fd, "\nThread ID: %lu\n", thread_id);
+    uintptr_t thread_id = tid;
+    dprintf(fd, "\nThread ID: %lu\n", thread_id);
 
-	// Check if we're in the current thread
-	if (thread_id == syscall(SYS_gettid)) {
-		dprintf(fd, "This is the current thread.\n");
-		print_stack_trace(fd);
-		return;
-	}
+    // Check if we're in the current thread
+    if (thread_id == syscall(SYS_gettid)) {
+        dprintf(fd, "This is the current thread.\n");
+        unw_context_t context;
+        unw_cursor_t cursor;
 
-	// Initialize the unwinding cursor
-	unw_cursor_t cursor;
-	unw_context_t context;
+        // Capture the current execution context
+        if (unw_getcontext(&context) < 0) {
+            dprintf(fd, "Failed to get the current context.\n");
+            return;
+        }
 
-#ifdef __x86_64__
-	// For x86_64 architecture
-	x86_thread_state64_t state;
-	mach_msg_type_number_t count = x86_THREAD_STATE64_COUNT;
-	if (thread_get_state(tid, x86_THREAD_STATE64, (thread_state_t) &state, &count) != KERN_SUCCESS) {
-		dprintf(fd, "Failed to get thread state for x86_64.\n");
-		return;
-	}
+        // Initialize the unwinding cursor with the captured context
+        if (unw_init_local(&cursor, &context) < 0) {
+            dprintf(fd, "Failed to initialize unwinding.\n");
+            return;
+        }
 
-	// Prepare the unwinding context
-	memset(&context, 0, sizeof(context));
-	memcpy(&context.data[UNW_X86_64_RIP], &state.__rip, sizeof(state.__rip));  // Instruction pointer
-	memcpy(&context.data[UNW_X86_64_RSP], &state.__rsp, sizeof(state.__rsp));  // Stack pointer
-	memcpy(&context.data[UNW_X86_64_RBP], &state.__rbp, sizeof(state.__rbp));  // Base pointer
+        print_stack_trace(fd, &cursor);
+        return;
+    }
 
-#elif defined(__arm__)
-	// For ARM architecture
-	arm_thread_state_t state;
-	mach_msg_type_number_t count = ARM_THREAD_STATE_COUNT;
-	if (thread_get_state(tid, ARM_THREAD_STATE, (thread_state_t) &state, &count) != KERN_SUCCESS) {
-		dprintf(fd, "Failed to get thread state for ARM.\n");
-		return;
-	}
+    // Handle other threads using ptrace
+    if (ptrace(PTRACE_ATTACH, tid, NULL, NULL) == -1) {
+        dprintf(fd, "Failed to attach to thread %d: %s\n", tid, strerror(errno));
+        return;
+    }
 
-	// Prepare the unwinding context
-	memset(&context, 0, sizeof(context));
-	context.data[UNW_ARM_R7] = state.__r[7];  // Frame pointer
-	context.data[UNW_ARM_SP] = state.__sp;	  // Stack pointer
-	context.data[UNW_ARM_LR] = state.__lr;	  // Link register
-	context.data[UNW_ARM_PC] = state.__pc;	  // Program counter
+    // Wait for the thread to stop
+    if (waitpid(tid, NULL, 0) == -1) {
+        dprintf(fd, "Failed to wait for thread %d: %s\n", tid, strerror(errno));
+        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        return;
+    }
 
+    // Read the thread's registers
+    struct user_regs_struct regs;
+    if (ptrace(PTRACE_GETREGS, tid, NULL, &regs) == -1) {
+        dprintf(fd, "Failed to get registers for thread %d: %s\n", tid, strerror(errno));
+        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        return;
+    }
+
+    // Initialize the unwinding context with the captured registers
+    unw_context_t context;
+    unw_cursor_t cursor;
+
+    memset(&context, 0, sizeof(context));
+#if defined(__x86_64__)
+    context.data[UNW_X86_64_RIP] = regs.rip;  // Instruction pointer
+    context.data[UNW_X86_64_RSP] = regs.rsp;  // Stack pointer
+    context.data[UNW_X86_64_RBP] = regs.rbp;  // Base pointer
 #elif defined(__aarch64__)
-	// For ARM64 architecture
-	arm_thread_state64_t state;
-	mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
-	if (thread_get_state(tid, ARM_THREAD_STATE64, (thread_state_t) &state, &count) != KERN_SUCCESS) {
-		dprintf(fd, "Failed to get thread state for ARM64.\n");
-		return;
-	}
-
-	// Prepare the unwinding context
-	memset(&context, 0, sizeof(context));
-	context.data[UNW_AARCH64_X30] = state.__lr;	 // Link register
-	context.data[UNW_AARCH64_SP] = state.__sp;	 // Stack pointer
-	context.data[UNW_AARCH64_PC] = state.__pc;	 // Program counter
-
+    context.data[UNW_AARCH64_PC] = regs.pc;  // Program counter
+    context.data[UNW_AARCH64_SP] = regs.sp;  // Stack pointer
+    context.data[UNW_AARCH64_X29] = regs.regs[29];  // Frame pointer
 #else
-	dprintf(fd, "Unsupported architecture.\n");
-	return;
+    dprintf(fd, "Unsupported architecture for ptrace.\n");
+    ptrace(PTRACE_DETACH, tid, NULL, NULL);
+    return;
 #endif
 
-	// Initialize the unwinding cursor with the context
-	if (unw_init_local(&cursor, &context) < 0) {
-		dprintf(fd, "Failed to initialize unwinding.\n");
-		return;
-	}
+    if (unw_init_local(&cursor, &context) < 0) {
+        dprintf(fd, "Failed to initialize unwinding for thread %d.\n", tid);
+        ptrace(PTRACE_DETACH, tid, NULL, NULL);
+        return;
+    }
 
-	// Unwind the stack and print the stack frames
-	int depth = 0;
-	while (unw_step(&cursor) > 0) {
-		unw_word_t ip, sp;
-		unw_get_reg(&cursor, UNW_REG_IP, &ip);	// Instruction pointer
-		unw_get_reg(&cursor, UNW_REG_SP, &sp);	// Stack pointer
+    // Print the stack trace
+    print_stack_trace(fd, &cursor);
 
-		Dl_info info;
-		if (dladdr((const void*) ip, &info) && info.dli_sname) {
-			std::string symbol = info.dli_sname;
-			const char* library_name = basename((char*) info.dli_fname);
-			dprintf(fd, "%-3d %-35s 0x%016llx %s\n", depth++, library_name, (unsigned long long) ip, symbol.c_str());
-		} else {
-			dprintf(fd, "%-3d %-35s 0x%016llx [unknown symbol]\n", depth++, "[unknown library]", (unsigned long long) ip);
-		}
-	}
+    // Detach from the thread
+    if (ptrace(PTRACE_DETACH, tid, NULL, NULL) == -1) {
+        dprintf(fd, "Failed to detach from thread %d: %s\n", tid, strerror(errno));
+    }
 }
-#endif	// __linux__
+#endif  // __linux__
 
 // Signal handler logic (capture stack trace for all threads)
 void print_all_threads_stack_trace(int signal) {

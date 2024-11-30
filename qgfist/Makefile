@@ -9,6 +9,7 @@ $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
+$(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
 
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/zlib"
 

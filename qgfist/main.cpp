@@ -1,3 +1,4 @@
+#include "../common/signal_handler/signal_handler.hpp"
 #include "../networkcommon/source/message.hpp"
 #include "../networkcommon/source/roommessage.hpp"
 #include "../qclient/source/qnetworkclient.hpp"
@@ -422,6 +423,7 @@ void print_usage(const char* program_name) {
 }
 
 int main(int argc, char** argv) {
+	signal_handler::setup_signal_handler();
 	// Check for --help flag
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0) {
