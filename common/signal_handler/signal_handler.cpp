@@ -306,7 +306,13 @@ void print_all_threads_stack_trace(int signal) {
 // Setup signal handlers
 void setup_signal_handler() {
 	struct sigaction sa;
-	sa.sa_handler = [](int signal) { print_all_threads_stack_trace(signal); };
+	sa.sa_handler = [](int trap_signal) { 
+		print_all_threads_stack_trace(trap_signal);
+		// exit or re-raise the signal
+		// exit(EXIT_FAILURE);
+		signal(trap_signal, SIG_DFL);
+		raise(trap_signal);
+	};
 	sa.sa_flags = SA_RESTART;
 	sigemptyset(&sa.sa_mask);
 
