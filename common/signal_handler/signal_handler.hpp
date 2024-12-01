@@ -19,8 +19,8 @@
 // Conditional includes for platform-specific headers
 #ifdef __linux__
 #include <dirent.h>
+#include <sys/ptrace.h>	 // Ensure ptrace is available on Linux
 #include <sys/syscall.h>
-#include <sys/ptrace.h>  // Ensure ptrace is available on Linux
 #include <sys/types.h>
 #elif __APPLE__
 #include <mach/mach.h>
@@ -67,4 +67,4 @@ void test_segmentation_fault();
 
 }  // namespace signal_handler
 
-#endif  // SIGNAL_HANDLER_H
+#endif	// SIGNAL_HANDLER_H

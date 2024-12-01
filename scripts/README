@@ -1,0 +1,10 @@
+supervisor
+    - stop
+        supervisorctl stop qlogs-crawler
+
+    - reload
+        supervisorctl reread
+        supervisorctl update
+
+    - restart
+        systemctl restart supervisor

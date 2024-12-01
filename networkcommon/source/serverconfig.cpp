@@ -11,12 +11,16 @@
 #include <rapidjson/error/en.h>	 // Include for GetParseError_En
 
 serverconfig::serverconfig(interface_qzookeeper* interface, observer_serverconfig* observer) : zk_interface(interface), config_change_observer(observer) {
-	zk_interface->register_value_change_callback(serverconfig::zk_value_change_listener, this);
+	if (zk_interface) {
+		zk_interface->register_value_change_callback(serverconfig::zk_value_change_listener, this);
+	}
 }
 
 serverconfig::~serverconfig() {
 	clear();
-	zk_interface->unregister_value_change_callback(serverconfig::zk_value_change_listener, this);
+	if (zk_interface) {
+		zk_interface->unregister_value_change_callback(serverconfig::zk_value_change_listener, this);
+	}
 }
 
 void serverconfig::clear() {
@@ -97,7 +101,7 @@ bool serverconfig::iterate_and_load_keys(const qstring& buffer, qzookeeper* qzk,
 		for (auto c : kv.second) {
 			qstring zk_key = qstring::format_string("%s/%s/%s", zk_root_folder.c_str(), kv.first.c_str(), c.c_str());
 			qstring zk_res;
-			int result = qzk->get_data(zk_key, zk_res);
+			int result = (qzk != nullptr) ? qzk->get_data(zk_key, zk_res) : ZNONODE;
 			if (result == ZNONODE) {
 				//                debug_print_important2(__LOGTAG__, "Node does not exist (ZNONODE) for key %s. continuing...", zk_key.c_str());
 				continue;

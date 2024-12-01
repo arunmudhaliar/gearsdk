@@ -1,0 +1,19 @@
+cpu-monitor (linux)
+	- service file: /etc/systemd/system/cpu-monitor.service
+	- logs
+		/var/log/cpu-monitor.log
+	cmds
+		To reload all services
+			sudo systemctl daemon-reload
+
+		To start of boot
+			sudo systemctl enable cpu-monitor.service
+
+		To start
+			sudo systemctl start cpu-monitor.service
+
+		To restart
+			sudo systemctl restart cpu-monitor.service
+
+		status
+			sudo systemctl status cpu-monitor.service

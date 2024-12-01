@@ -196,7 +196,7 @@ int qh3simple_router::run() {
 			GX_DELETE(qzk);
 			return -1;
 		}
-
+#endif
 		GX_DELETE(zkconfig);
 		zkconfig = DEBUG_NEW serverconfig(qzk, nullptr);
 #if PROD_BUILD
@@ -209,7 +209,6 @@ int qh3simple_router::run() {
 			GX_DELETE(zkconfig);
 			return false;
 		}
-#endif
 
 		GX_DELETE(hiredis);
 		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port);

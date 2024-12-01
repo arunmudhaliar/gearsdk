@@ -38,6 +38,7 @@ bool http3_sample_server::on_server_pre_init() {
 		GX_DELETE(qzk);
 		return false;
 	}
+#endif
 
 	GX_DELETE(zkconfig);
 	zkconfig = DEBUG_NEW serverconfig(qzk, this);
@@ -56,7 +57,6 @@ bool http3_sample_server::on_server_pre_init() {
 		GX_DELETE(zkconfig);
 		return false;
 	}
-#endif
 
 	if (mongo->connect() != 0) {
 		return false;
