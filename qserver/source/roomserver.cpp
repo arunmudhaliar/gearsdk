@@ -45,7 +45,7 @@ void roomserver::configchanged(const qstring& path, const qstring& data) {}
 bool roomserver::on_network_server_begin() {
 	const struct runserverconfig& run_config = get_run_server_config();
 	GX_DELETE(hiredis);
-	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port);
+	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon@123");
 	if (hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
 		GX_DELETE(hiredis);
@@ -53,7 +53,7 @@ bool roomserver::on_network_server_begin() {
 	}
 
 	GX_DELETE(hiredis_async);
-	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, this, "CONFIG SET notify-keyspace-events KEA");
+	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon@123", this, "CONFIG SET notify-keyspace-events KEA");
 	if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 		GX_DELETE(hiredis);

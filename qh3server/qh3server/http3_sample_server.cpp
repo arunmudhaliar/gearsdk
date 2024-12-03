@@ -13,7 +13,7 @@
 
 http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : qh3server(), zk_uri(zk_uri) {
 	mongo = DEBUG_NEW qmongo(this, "qh3", "db_name", mongodb_uri);
-	hiredis = DEBUG_NEW qhiredis("server_hiredis", redis_ip, redis_port);
+	hiredis = DEBUG_NEW qhiredis("server_hiredis", redis_ip, redis_port, "gsdkuser", "Fr0gmoon@123");
 }
 
 http3_sample_server::~http3_sample_server() {

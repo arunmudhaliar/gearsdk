@@ -8,7 +8,8 @@
 
 #include "qhiredis.hpp"
 
-qhiredis::qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port) : NAME(NAME), redis_ip(redis_ip), redis_port(redis_port) {
+qhiredis::qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port, const qstring& username, const qstring& password)
+	: NAME(NAME), redis_ip(redis_ip), redis_port(redis_port), redis_user_name(username), redis_user_password(password) {
 	context = nullptr;
 }
 
@@ -17,10 +18,10 @@ qhiredis::~qhiredis() {
 }
 
 int qhiredis::connect_redis(bool unix_socket) {
-	return connect_redis_internal(redis_ip, redis_port, unix_socket);
+	return connect_redis_internal(redis_user_name, redis_user_password, redis_ip, redis_port, unix_socket);
 }
 
-int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, bool unix_socket) {
+int qhiredis::connect_redis_internal(const qstring& username, const qstring& password, const qstring& hostname, uint16_t port, bool unix_socket) {
 	const char* logtag = NAME.c_str();
 	if (context) {
 		debug_print_important(logtag, "Already connected !!! - %s:%d", hostname.c_str(), port);
@@ -52,6 +53,25 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 		debug_print(LOG_LEVEL_4, logtag, "hiredis CONFIG set successfully");
 	}
 	 */
+
+	if (!username.isempty() && !password.isempty()) {
+		redisReply* reply = (redisReply*) redisCommand(context, "AUTH %s %s", username.c_str(), password.c_str());
+		if (!reply) {
+			debug_print_error(logtag, "Authentication failed: no reply from server - %s:%d", hostname.c_str(), port);
+			disconnect_redis();
+			return 1;
+		}
+		if (reply->type == REDIS_REPLY_ERROR) {
+			debug_print_error(logtag, "Authentication error: %s - %s:%d", reply->str, hostname.c_str(), port);
+			freeReplyObject(reply);
+			disconnect_redis();
+			return 1;
+		}
+		debug_print_important(logtag, "Authenticated successfully");
+		freeReplyObject(reply);
+	} else {
+		debug_print_warn(logtag, "No username/password provided for authentication");
+	}
 
 	debug_print_important(logtag, "Connected - %s:%d", hostname.c_str(), port);
 	return 0;

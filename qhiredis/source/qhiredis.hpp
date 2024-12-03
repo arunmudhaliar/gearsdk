@@ -70,7 +70,7 @@ class qhiredis {
 	 * @param redis_ip The IP address of the Redis server.
 	 * @param redis_port The port number of the Redis server.
 	 */
-	qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port);
+	qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port, const qstring& username, const qstring& password);
 
 	/**
 	 * @brief Destroys the `qhiredis` object.
@@ -219,7 +219,7 @@ class qhiredis {
 	 * @param unix_socket Flag indicating whether to use a Unix socket for connection.
 	 * @return 0 if the connection is successful, -1 otherwise.
 	 */
-	int connect_redis_internal(const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
+	int connect_redis_internal(const qstring& username, const qstring& password, const qstring& hostname = "127.0.0.1", uint16_t port = 6379, bool unix_socket = false);
 
 	/**
 	 * @brief Iterates over the fields of a Redis hash.
@@ -234,6 +234,8 @@ class qhiredis {
 	const qstring NAME;				 /**< The name of the `qhiredis` object. */
 	qstring redis_ip = "127.0.0.1";	 /**< The IP address of the Redis server. */
 	uint16_t redis_port;			 /**< The port number of the Redis server. */
+	qstring redis_user_name = "";
+	qstring redis_user_password = "";
 };
 
 #endif /* qhiredis_hpp */

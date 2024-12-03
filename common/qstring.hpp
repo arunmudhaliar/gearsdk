@@ -339,8 +339,11 @@ class qstring {
 	bool operator==(const qstring& str) {
 		const char* b_str = str.c_str();
 		const char* a_str = c_str();
-		long len = str.length();
-		int res = strncmp(a_str, b_str, len);
+		long b_len = str.length();
+		if (length() != b_len) {
+			return false;
+		}
+		int res = strncmp(a_str, b_str, b_len);
 		return res == 0;
 	}
 

@@ -8,8 +8,8 @@
 
 #include "qhiredis_async.hpp"
 
-qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface, const qstring& key_event_config)
-	: redis_ip(redis_ip), redis_port(redis_port), interface(interface), key_event_config(key_event_config) {
+qhiredis_async::qhiredis_async(const qstring& redis_ip, uint16_t redis_port, const qstring& username, const qstring& password, interface_qhiredis_async* interface, const qstring& key_event_config)
+	: redis_ip(redis_ip), redis_port(redis_port), redis_user_name(username), redis_user_password(password), interface(interface), key_event_config(key_event_config) {
 	async_context = nullptr;
 }
 
@@ -44,6 +44,19 @@ int qhiredis_async::connect_async_redis(struct ev_loop* loop) {
 	async_context->data = this;
 	redisAsyncSetConnectCallback(async_context, on_connect_cb);
 	redisAsyncSetDisconnectCallback(async_context, on_disconnect_cb);
+
+	// Authenticate with username and password
+	if (!redis_user_name.isempty() && !redis_user_password.isempty()) {
+		qstring auth_command = qstring::format_string("AUTH %s %s", redis_user_name.c_str(), redis_user_password.c_str());
+		redisAsyncCommand(async_context, nullptr, nullptr, auth_command.c_str());
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "Sent AUTH command for username: %s", redis_user_name.c_str());
+	} else if (!redis_user_password.isempty()) {
+		// Fallback to AUTH <password> for Redis without ACLs (older versions or single password setups)
+		redisAsyncCommand(async_context, nullptr, nullptr, "AUTH %s", redis_user_password.c_str());
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "Sent AUTH command with password.");
+	} else {
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "No username or password provided for authentication.");
+	}
 
 	if (key_event_config.length()) {
 		// Make sure we have set the config for key events

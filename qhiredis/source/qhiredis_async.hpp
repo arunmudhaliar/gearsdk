@@ -72,7 +72,7 @@ class qhiredis_async {
 	 * @param interface A pointer to the interface_qhiredis_async object for handling callbacks.
 	 * @param key_event_config if valid config, the context can only be used for SUBSCRIBE, UNSUBSCRIBE, PING, QUIT & RESET (get_value_async cant be used)
 	 */
-	qhiredis_async(const qstring& redis_ip, uint16_t redis_port, interface_qhiredis_async* interface, const qstring& key_event_config);
+	qhiredis_async(const qstring& redis_ip, uint16_t redis_port, const qstring& username, const qstring& password, interface_qhiredis_async* interface, const qstring& key_event_config);
 
 	/**
 	 * @brief Destructor for qhiredis_async class.
@@ -134,6 +134,8 @@ class qhiredis_async {
 	redisAsyncContext* async_context = nullptr;
 	qstring redis_ip = "127.0.0.1";
 	uint16_t redis_port;
+	qstring redis_user_name = "";
+	qstring redis_user_password = "";
 	interface_qhiredis_async* interface = nullptr;
 	bool connected = false;
 	qstring key_event_config;
