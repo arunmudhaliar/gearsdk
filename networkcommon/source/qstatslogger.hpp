@@ -25,7 +25,7 @@ class qstatslogger : public qtextfilelogger {
 	size_t log_stats(const qstring& buffer);
 
 	/*
-	 CREATE TABLE qtest_pgdb_schema.stats_debug (session TEXT, pid TEXT, install_os TEXT,
+	 CREATE TABLE gsdk_stats.stats_debug (session TEXT, pid TEXT, install_os TEXT,
 						 server_tstamp timestamp, client_tstamp timestamp, message TEXT,
 						 device_name TEXT, device_model TEXT, total_ram INT4);
 	 */

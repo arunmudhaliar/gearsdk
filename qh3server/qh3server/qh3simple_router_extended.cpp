@@ -211,7 +211,7 @@ int qh3simple_router::run() {
 		}
 
 		GX_DELETE(hiredis);
-		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon@123");
+		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
 		if (hiredis->connect_redis() != 0) {
 			debug_print_error(__LOGTAG__, "failed to create redis connection !!!");
 			freeaddrinfo(router);
@@ -241,7 +241,7 @@ int qh3simple_router::run() {
 		}
 		//
 
-		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon@123", this, "CONFIG SET notify-keyspace-events KEA");
+		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
 		if (hiredis_async->connect_async_redis(mainloop) != 0) {
 			debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 			GX_DELETE(hiredis_async);

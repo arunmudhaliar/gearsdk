@@ -18,7 +18,7 @@ using namespace client;
 
 http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge, qstring router_port) : qh3server(), bridge(bridge), router_port(router_port) {
 	UNUSED(bridge);
-	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", redis_ip, redis_port, "gsdkuser", "Fr0gmoon@123");
+	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", redis_ip, redis_port, "gsdkuser", "Fr0gmoon123");
 }
 
 http3_command_server::~http3_command_server() {

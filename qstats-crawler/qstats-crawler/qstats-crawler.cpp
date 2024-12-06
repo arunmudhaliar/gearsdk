@@ -171,8 +171,7 @@ int qstats_crawler::batch_send_count_stats(fs::path current_file) {
 	int previous_total = total_records_sent_to_db_through_batching;
 	for (auto itr : batches) {
 		qstring insert_header = qstring::format_string(
-			"INSERT INTO qtest_pgdb_schema.stats_%s(count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram, app_id) VALUES",
-			itr.first.c_str());
+			"INSERT INTO gsdk_stats.stats_%s(count_val, session, pid, version, epic, myth, legend, story, install_os, server_tstamp, client_tstamp, time, message, device_name, device_model, total_ram, app_id) VALUES", itr.first.c_str());
 		qstring sql_script = insert_header + itr.second.value;
 		sql_script += ";";
 		if (pgsql_client.execute_query(sql_script) != 0) {
@@ -259,7 +258,7 @@ int qstats_crawler::batch_send_open_stats(fs::path current_file) {
 	 FOREACH current_table IN ARRAY table_names
 	 LOOP
 		 -- Create the table
-		 EXECUTE format('CREATE TABLE IF NOT EXISTS qtest_pgdb_schema.stats_count_%I
+		 EXECUTE format('CREATE TABLE IF NOT EXISTS gsdk_stats.stats_count_%I
 		 (
 			 count_val bigint,
 			 session text COLLATE pg_catalog."default",
@@ -282,7 +281,7 @@ int qstats_crawler::batch_send_open_stats(fs::path current_file) {
 
 		 -- Create the parent partition
 		 EXECUTE format('SELECT partman.create_parent(
-			 p_parent_table => ''qtest_pgdb_schema.stats_count_%I'',
+			 p_parent_table => ''gsdk_stats.stats_count_%I'',
 			 p_control => ''server_tstamp'',      -- Column to partition by
 			 p_interval => ''5 days'',             -- Partitioning interval
 			 p_type => ''range'',                   -- Use time-based partitioning

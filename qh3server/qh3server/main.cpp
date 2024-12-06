@@ -45,9 +45,9 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  //"mongodb://192.168.0.230:27017"
-	qstring redis_ip = "13.233.45.2";
-	qstring zk_uri = "13.233.45.2:2181";
+	qstring mongodb_uri = "mongodb://3.109.144.159:27017";  //"mongodb://192.168.0.230:27017"
+	qstring redis_ip = "3.109.144.159";
+	qstring zk_uri = "3.109.144.159:2181";
 
 	uint16_t redis_port = 6379;
 	fs::path root_dir;

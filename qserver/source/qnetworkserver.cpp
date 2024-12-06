@@ -602,7 +602,7 @@ void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int 
 bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const void* user_arg) {
 	const runserverconfig* run_config = reinterpret_cast<const runserverconfig*>(user_arg);
 	GX_DELETE(context.hiredis);
-	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port, "gsdkuser", "Fr0gmoon@123");
+	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port, "gsdkuser", "Fr0gmoon123");
 	if (context.hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "f:init_threadpool_context - failed to connect hiredis, Exiting !!!");
 		GX_DELETE(context.hiredis);
