@@ -125,9 +125,11 @@ void conn_io::close() {
 }
 
 // MARK: - qnetworkserver
-void qnetworkserver::debug_log(const uint8_t* line, void* argp) {
-	UNUSED(argp);
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "%s", (char*) line);
+void qnetworkserver::debug_quiche_log(const uint8_t* line, void* argp) {
+	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(argp);
+	if (server != nullptr && server->is_log_quiche()) {
+		debug_print(LOG_LEVEL_0, __LOGTAG__, (char*) line);
+	}
 }
 
 void qnetworkserver::mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len) {
@@ -202,7 +204,7 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 	qconnection->timer.data = qconnection;
 	HASH_ADD(hh, conns->h, cid, Q_LOCAL_CONN_ID_LEN, qconnection);
 	qconnection->bridge->onconnection_connect(qconnection);
-
+	Q_INFO(__LOGTAG__, "new connection %0x", qconnection->cid_hash_val);
 	return qconnection;
 }
 
@@ -278,6 +280,7 @@ void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnecti
 	close_connection(qconnection);
 	onconnection_destroy(qconnection);
 	HASH_DELETE(hh, conns->h, qconnection);
+	Q_INFO(__LOGTAG__, "destroy connection %0x", qconnection->cid_hash_val);
 	GX_DELETE(qconnection);
 	debug_print_important(__LOGTAG__, "connection destroyed [pending %d]!!!", HASH_CNT(hh, conns->h));
 }
@@ -285,10 +288,6 @@ void qnetworkserver::destroy_connection(struct ev_loop* loop, conn_io* qconnecti
 void qnetworkserver::onconnection_destroy(conn_io* qconnection) {
 	UNUSED(qconnection);
 	//    debug_print_important(__LOGTAG__, "Connection about to destroy !!!");
-}
-
-void qnetworkserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
-	UNUSED(expired_key);
 }
 
 void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
@@ -461,6 +460,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 		if (quiche_conn_is_established(qconnection->conn)) {
 			if (!qconnection->connection_established) {
 				qconnection->connection_established = true;
+				Q_INFO(__LOGTAG__, "connected %0x", qconnection->cid_hash_val);
 				qconnection->bridge->onconnection_connected(qconnection);
 			}
 			uint64_t s = 0;
@@ -551,9 +551,12 @@ void qnetworkserver::recv_cb(EV_P_ ev_io* w, int revents) {
 	server->recv_cb_internal(loop, w, revents);
 }
 
-void qnetworkserver::network_server_begin() {
-	on_network_server_begin();
+bool qnetworkserver::network_server_begin() {
+	if (!on_network_server_begin()) {
+		return false;
+	}
 	on_network_server_init();
+	return true;
 }
 
 void qnetworkserver::network_server_end() {
@@ -599,7 +602,7 @@ void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int 
 bool qnetworkserver::init_threadpool_context(thread_pool_context& context, const void* user_arg) {
 	const runserverconfig* run_config = reinterpret_cast<const runserverconfig*>(user_arg);
 	GX_DELETE(context.hiredis);
-	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port);
+	context.hiredis = DEBUG_NEW qhiredis("threadpool:qserver_hiredis", run_config->redis_ip, run_config->redis_port, "gsdkuser", "Fr0gmoon123");
 	if (context.hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "f:init_threadpool_context - failed to connect hiredis, Exiting !!!");
 		GX_DELETE(context.hiredis);
@@ -619,7 +622,8 @@ void* qnetworkserver::run_internal(void* data) {
 	runserverconfig* run_config = reinterpret_cast<runserverconfig*>(data);
 	qstring host = run_config->host;
 	qstring port = run_config->port;
-	qstring thread_name = qstring::format_string("qnetworkserver %s:%s", host.c_str(), port.c_str());
+	qstring app_id = run_config->app_id;
+	qstring thread_name = qstring::format_string("qnetworkserver-%s %s:%s", app_id.c_str(), host.c_str(), port.c_str());
 	PTHREAD_NAME(thread_name.c_str());
 	qnetworkserver* thiz = run_config->thiz;
 	thiz->host_id = host;
@@ -631,27 +635,23 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
-	GX_DELETE(thiz->hiredis);
-	thiz->hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config->redis_ip, run_config->redis_port);
-	if (thiz->hiredis->connect_redis() != 0) {
-		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
-		GX_DELETE(thiz->hiredis);
-		run_config->finished = true;
-		run_config->pthread_return_value = -1;
-		pthread_exit(&run_config->pthread_return_value);
-	}
-
-	thiz->hiredis->set_hash_value(qstring::format_string("gservers:%s", gsdk::server::machine_public_ip), qstring::format_string("gserver-%s", port.c_str()), qstring::format_string("%s:%s", host.c_str(), port.c_str()));
-
-	qstring log_path = qstring::format_string("./glogs/%s/qh3_logfile", port.c_str());
+	qstring log_path = qstring::format_string("./glogs/%s/q_logfile", port.c_str());
+	qstring stats_path = qstring::format_string("./gstats/%s/q_statfile", port.c_str());
 	thiz->logger.start_session(log_path, log_path.length());
-	//    quiche_enable_debug_logging(debug_log, nullptr);
+	thiz->stats_logger.init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
+	thiz->stats_logger.start_session(stats_path, stats_path.length());
+
+#if ENABLE_QUICHE_LOG
+	quiche_enable_debug_logging(debug_quiche_log, thiz);
+	debug_print_warn(__LOGTAG__,
+					 "quiche log is enabled. Perfomance may get "
+					 "affected due to excess logs !!!");
+#endif
 
 	struct addrinfo* local;
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
 		debug_print_error(__LOGTAG__, "failed to resolve host");
-		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -662,7 +662,6 @@ void* qnetworkserver::run_internal(void* data) {
 	int sock = socket(local->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		debug_print_error(__LOGTAG__, "failed to create socket");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
@@ -673,7 +672,6 @@ void* qnetworkserver::run_internal(void* data) {
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
@@ -684,7 +682,6 @@ void* qnetworkserver::run_internal(void* data) {
 
 	if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		debug_print_error(__LOGTAG__, "failed to connect socket");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
@@ -696,7 +693,6 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->config = quiche_config_new(PROTOCOL_VERSION);
 	if (thiz->config == nullptr) {
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		debug_print_error(__LOGTAG__, "failed to create config");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
@@ -712,7 +708,6 @@ void* qnetworkserver::run_internal(void* data) {
 	if (res_crt_load != 0) {
 		debug_print_error(__LOGTAG__, "CERT load error - %s, err %d", cert_file.c_str(), res_crt_load);
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -723,7 +718,6 @@ void* qnetworkserver::run_internal(void* data) {
 	if (res_key_load != 0) {
 		debug_print_error(__LOGTAG__, "KEY load error - %s", key_file.c_str());
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -742,6 +736,12 @@ void* qnetworkserver::run_internal(void* data) {
 	quiche_config_set_initial_max_streams_bidi(thiz->config, 100);
 	quiche_config_set_cc_algorithm(thiz->config, Reno);
 
+	// Generate a 16-byte token for stateless reset
+	uint8_t stateless_reset_token[16] = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad, 0xbe, 0xcf, 0xda, 0xeb, 0xfc, 0x0d};
+
+	// Set the stateless reset token in the QUIC config
+	quiche_config_set_stateless_reset_token(thiz->config, stateless_reset_token);
+
 	struct connections c;
 	c.sock = sock;
 	c.h = nullptr;
@@ -752,19 +752,6 @@ void* qnetworkserver::run_internal(void* data) {
 
 	thiz->mainloop = ev_loop_new(0);
 
-	thiz->hiredis_async = DEBUG_NEW qhiredis_async(run_config->redis_ip, run_config->redis_port, thiz);
-	if (thiz->hiredis_async->connect_async_redis(thiz->mainloop) != 0) {
-		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
-		GX_DELETE(thiz->hiredis_async);
-		ev_loop_destroy(thiz->mainloop);
-		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
-		thiz->exit_services_gracefully();
-		run_config->finished = true;
-		run_config->pthread_return_value = -1;
-		pthread_exit(&run_config->pthread_return_value);
-	}
-
 #if QTHREADPOOL
 	ev_init(&thiz->threadpool_mainthread_dispatcher_timer, threadpool_mainthread_dispatcher_cb);
 	thiz->threadpool_mainthread_dispatcher_timer.data = thiz;
@@ -773,10 +760,8 @@ void* qnetworkserver::run_internal(void* data) {
 	if (thiz->threadpool.init(run_config) <= 0) {
 		debug_print_error(__LOGTAG__, "failed to init threadpool, Exiting !!!");
 		thiz->threadpool.stop();
-		GX_DELETE(thiz->hiredis_async);
 		ev_loop_destroy(thiz->mainloop);
 		freeaddrinfo(local);
-		GX_DELETE(thiz->hiredis);
 		thiz->exit_services_gracefully();
 		run_config->finished = true;
 		run_config->pthread_return_value = -1;
@@ -789,7 +774,17 @@ void* qnetworkserver::run_internal(void* data) {
 	ev_io_start(thiz->mainloop, &watcher);
 	watcher.data = thiz;
 
-	thiz->network_server_begin();
+	if (!thiz->network_server_begin()) {
+		thiz->network_server_end();
+		debug_print_error(__LOGTAG__, "network_server_begin failed, Exiting !!!");
+		thiz->threadpool.stop();
+		ev_loop_destroy(thiz->mainloop);
+		freeaddrinfo(local);
+		thiz->exit_services_gracefully();
+		run_config->finished = true;
+		run_config->pthread_return_value = -1;
+		pthread_exit(&run_config->pthread_return_value);
+	}
 
 	// heartbeat check timer
 	ev_init(&thiz->heartbeat_check_timer, heart_beat_check_cb);
@@ -809,9 +804,6 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->network_server_end();
 	thiz->force_disconnect_all();
 
-	GX_DELETE(thiz->hiredis_async);
-	GX_DELETE(thiz->hiredis);
-
 	ev_loop_destroy(thiz->mainloop);
 
 	freeaddrinfo(local);
@@ -823,23 +815,31 @@ void* qnetworkserver::run_internal(void* data) {
 }
 
 void qnetworkserver::exit_services_gracefully() {
-	int status = logger.end_session();
+	int log_status = logger.end_session();
+	int stats_status = stats_logger.end_session();
 	debug_print_important(__LOGTAG__, "waiting for services to finish !!!");
 	struct ev_loop* wait_loop = ev_loop_new();
 	qtimer_scheduler wait_scheduler;
 	wait_scheduler.set_loop(wait_loop);
 	qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
-		[this, wait_loop, &status](qtimer& timer) {
+		[this, wait_loop, &log_status, &stats_status](qtimer& timer) {
 			UNUSED(timer);
-			if (status != 0) {	// in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
-				status = logger.end_session();
+			if (log_status != 0) {	// in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
+				log_status = logger.end_session();
+			}
+			if (stats_status != 0) {  // in-case the internal thread is not yet started, we need to try calling end_session till we get a success.
+				stats_status = stats_logger.end_session();
 			}
 			int service_shutdown_cnt = 0;
 			if (logger.config.finished) {
+				debug_print_important(__LOGTAG__, "logger service finished !!!");
+				service_shutdown_cnt++;
+			}
+			if (stats_logger.config.finished) {
 				debug_print_important(__LOGTAG__, "stats service finished !!!");
 				service_shutdown_cnt++;
 			}
-			if (service_shutdown_cnt >= 1) {
+			if (service_shutdown_cnt >= 2) {
 				ev_break(wait_loop, EVBREAK_ONE);
 			}
 		},
@@ -856,7 +856,7 @@ bool qnetworkserver::is_run() {
 	return is_run;
 }
 
-int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT) {
+int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id) {
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
 	run_server_config.host = host;
 	run_server_config.port = port;
@@ -866,6 +866,7 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 	run_server_config.finished = false;
 	run_server_config.root_dir = root_dir;
 	run_server_config.id = qnetworkserver::run_id++;
+	run_server_config.app_id = app_id;
 	DEBUG_ASSERT(__LOGTAG__, (runconfig_mutex.unlock() == 0), __FUNCTION__);
 	if (pthread_create(&run_thread_id, nullptr, qnetworkserver::run_internal, reinterpret_cast<void*>(&run_server_config)) < 0) {
 		debug_print_error(__LOGTAG__, "could not create thread: %s - %d", strerror(errno), errno);

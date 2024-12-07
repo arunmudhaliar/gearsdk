@@ -8,7 +8,8 @@
 
 #include "qhiredis.hpp"
 
-qhiredis::qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port) : NAME(NAME), redis_ip(redis_ip), redis_port(redis_port) {
+qhiredis::qhiredis(const qstring NAME, const qstring& redis_ip, uint16_t redis_port, const qstring& username, const qstring& password)
+	: NAME(NAME), redis_ip(redis_ip), redis_port(redis_port), redis_user_name(username), redis_user_password(password) {
 	context = nullptr;
 }
 
@@ -17,10 +18,10 @@ qhiredis::~qhiredis() {
 }
 
 int qhiredis::connect_redis(bool unix_socket) {
-	return connect_redis_internal(redis_ip, redis_port, unix_socket);
+	return connect_redis_internal(redis_user_name, redis_user_password, redis_ip, redis_port, unix_socket);
 }
 
-int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, bool unix_socket) {
+int qhiredis::connect_redis_internal(const qstring& username, const qstring& password, const qstring& hostname, uint16_t port, bool unix_socket) {
 	const char* logtag = NAME.c_str();
 	if (context) {
 		debug_print_important(logtag, "Already connected !!! - %s:%d", hostname.c_str(), port);
@@ -42,12 +43,34 @@ int qhiredis::connect_redis_internal(const qstring& hostname, uint16_t port, boo
 		return 1;
 	}
 
+	/*
+	// (amudaliar): This is required by qhiredis_async not here.
 	// Setting the notify-keyspace-events to Ex
 	redisReply* reply = (redisReply*) redisCommand(context, "CONFIG SET notify-keyspace-events Ex");
 	if (reply->type == REDIS_REPLY_ERROR) {
 		debug_print_error(logtag, "Error setting hiredis CONFIG: %s", reply->str);
 	} else {
 		debug_print(LOG_LEVEL_4, logtag, "hiredis CONFIG set successfully");
+	}
+	 */
+
+	if (!username.isempty() && !password.isempty()) {
+		redisReply* reply = (redisReply*) redisCommand(context, "AUTH %s %s", username.c_str(), password.c_str());
+		if (!reply) {
+			debug_print_error(logtag, "Authentication failed: no reply from server - %s:%d", hostname.c_str(), port);
+			disconnect_redis();
+			return 1;
+		}
+		if (reply->type == REDIS_REPLY_ERROR) {
+			debug_print_error(logtag, "Authentication error: %s - %s:%d", reply->str, hostname.c_str(), port);
+			freeReplyObject(reply);
+			disconnect_redis();
+			return 1;
+		}
+		debug_print_important(logtag, "Authenticated successfully");
+		freeReplyObject(reply);
+	} else {
+		debug_print_warn(logtag, "No username/password provided for authentication");
 	}
 
 	debug_print_important(logtag, "Connected - %s:%d", hostname.c_str(), port);
@@ -82,7 +105,7 @@ int qhiredis::set_value(const qstring& key, const qstring& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "SET %b %b", key.c_str(), key.length(), value.c_str(), value.length());
 	if (reply == nullptr) {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -99,7 +122,7 @@ int qhiredis::set_value(const qstring& key, const qstring& value, int expiry_in_
 	redisReply* reply = (redisReply*) redisCommand(context, "SET %b %b EX %d", key.c_str(), key.length(), value.c_str(), value.length(), expiry_in_sec);
 	if (reply == nullptr) {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -116,7 +139,7 @@ int qhiredis::get_value(const qstring& key, qstring& value) {
 	redisReply* reply = (redisReply*) redisCommand(context, "GET %b", key.c_str(), key.length());
 	if (reply == nullptr) {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -134,7 +157,7 @@ int qhiredis::set_hash_value(const qstring& hashkey, const qstring& field, const
 	redisReply* reply = (redisReply*) redisCommand(context, "HSET %b %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length(), value.c_str(), value.length());
 	if (reply == nullptr) {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -162,7 +185,7 @@ int qhiredis::get_hash_value(const qstring& hashkey, const qstring& field, qstri
 	redisReply* reply = (redisReply*) redisCommand(context, "HGET %b %b", hashkey.c_str(), hashkey.length(), field.c_str(), field.length());
 	if (reply == nullptr) {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -284,7 +307,7 @@ int qhiredis::incr(const qstring& key, long long& value) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "The incremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -304,7 +327,7 @@ int qhiredis::decr(const qstring& key, long long& value) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "The decremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -324,7 +347,7 @@ int qhiredis::incr_by(const qstring& key, const int DELTA, long long& value) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "The incremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -344,7 +367,7 @@ int qhiredis::decr_by(const qstring& key, const int DELTA, long long& value) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "The decremented value of '%s' is: %lld", key.c_str(), reply->integer);
 	} else {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;
@@ -367,7 +390,7 @@ int qhiredis::expire_key(const qstring& key, int expiry_in_sec) {
 		}
 	} else {
 		if (context->err) {
-			debug_print_error(logtag, "Redis error: %s", context->errstr);
+			debug_print_error(logtag, "f:%s - Redis error: %s", __FUNCTION__, context->errstr);
 			retry_connection();
 		}
 		return 1;

@@ -2280,6 +2280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1450daecf6ef046c2b41384b8e8edc44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  appTitle: {fileID: 1888000058}
   scrollRect: {fileID: 1738225701}
   scrollRect_qsocket: {fileID: 203291007}
   resultLabelPrefab: {fileID: 2853637640019774233, guid: fd5aacd2cd4d74e2eab2d20dad8a707e,

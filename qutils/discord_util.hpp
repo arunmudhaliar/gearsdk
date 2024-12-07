@@ -58,11 +58,6 @@ class discord_util {
 		uint64_t msg_id = 0;  ///< The ID of the message.
 	};
 #endif
-	/**
-	 * @brief Sets the webhook URL for sending messages to Discord.
-	 * @param web_hook The webhook URL to set.
-	 */
-	static void set_web_hook(const qstring& web_hook);
 
 	/**
 	 * @brief Sends a message to Discord synchronously.
@@ -79,11 +74,14 @@ class discord_util {
 	static void send_async(const qstring& msg);
 
 	static void shutdown();
-
-	static void initialize_webhook_url();  ///< Initializes the webhook URL.
+	static void initialize_with_webhook_url(const qstring& web_hook);  ///< Initializes the webhook URL.
 
    private:
-	static std::atomic<bool> inited;  ///< Flag indicating whether the class has been initialized.
+	/**
+	 * @brief Sets the webhook URL for sending messages to Discord.
+	 * @param web_hook The webhook URL to set.
+	 */
+	static void set_web_hook(const qstring& web_hook);
 
 	/**
 	 * @brief Internal function for sending messages asynchronously.
@@ -91,13 +89,12 @@ class discord_util {
 	 * @return A pointer to the result of the message sending operation.
 	 */
 	static void* send_async_internal(void* data);
-
 	static void request_worker();
 
+	static std::atomic<bool> inited;	   ///< Flag indicating whether the class has been initialized.
 	static qstring current_web_hook;	   ///< The current webhook URL.
 	static pthread_mutex_t webhook_mutex;  ///< Mutex for thread-safe access to the webhook URL.
 	static uint64_t counter;			   ///< Counter for generating unique message IDs.
-
 	static std::queue<qstring> request_queue;
 	static std::mutex queue_mutex;
 	static std::condition_variable queue_cv;

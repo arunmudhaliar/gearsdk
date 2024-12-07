@@ -1,0 +1,188 @@
+# service 3.109.144.159
+# endpoint 15.206.79.30
+# data 13.126.138.7
+
+# docker setup
+    sudo apt update
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/trusted.gpg.d/docker.asc
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo apt update
+    sudo apt install docker-ce
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    docker --version
+    sudo systemctl status docker
+    sudo usermod -aG docker $USER
+
+# cpu-monitor
+    # dependencies
+    sudo apt install python3-pip
+    pip3 install psutil --break-system-packages
+
+# create the log file
+sudo touch /var/log/cpu-monitor.log
+sudo chmod 664 /var/log/cpu-monitor.log
+sudo chown ubuntu:ubuntu /var/log/cpu-monitor.log
+
+# log rotation
+sudo vi /etc/logrotate.d/cpu-monitor
+# --------
+/var/log/cpu-monitor.log {
+    daily               # Rotate logs every day
+    missingok           # Don't throw an error if the log file is missing
+    rotate 7            # Keep 7 rotated logs
+    compress            # Compress old logs with gzip
+    delaycompress       # Don't compress the most recent rotated log
+    notifempty          # Don't rotate the log if it is empty
+    create 0644 ubuntu ubuntu   # Create a new log file with specified permissions and ownership
+    su ubuntu ubuntu    # Run as the 'ubuntu' user and group
+    postrotate
+        # Restart the cpu monitor service to create a new log file after rotation
+        systemctl kill --signal=HUP cpu-monitor.service
+    endscript
+}
+# --------
+
+# cpu-monitor service
+# /etc/systemd/system/cpu-monitor.service
+# -------------------------------------------------------
+[Unit]
+Description=CPU Monitor Script
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/ubuntu/scripts/cpu-monitor.py --cpu-threshold 40 --check-interval 4 --sample-history 3
+Restart=always
+User=ubuntu
+WorkingDirectory=/usr/local/bin
+Environment="PYTHONUNBUFFERED=1"
+StandardOutput=append:/var/log/cpu-monitor.log
+StandardError=append:/var/log/cpu-monitor.log
+
+[Install]
+WantedBy=multi-user.target
+# -------------------------------------------------------
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable cpu-monitor.service
+    sudo systemctl start cpu-monitor.service
+    sudo systemctl status cpu-monitor.service
+
+# zk
+    docker run -d \
+    --name some-zookeeper \
+    --publish 2181:2181/tcp \
+    --publish 2888:2888/tcp \
+    --publish 3888:3888/tcp \
+    --restart always \
+    -v ~/server_conf/zk/zoo.cfg:/conf/zoo.cfg \
+    -v ~/server_conf/zk/data:/data \
+    zookeeper:latest
+
+
+# zk-navigator
+    docker run -d \
+    --publish 9010:9010 \
+    -e HTTP_PORT=9010 \
+    --name zoonavigator \
+    --restart unless-stopped \
+    elkozmon/zoonavigator:latest
+
+# postgres
+    docker run -d \
+    --name my-postgres \
+    --restart always \
+    -e POSTGRES_PASSWORD=postgres \
+    -p 5432:5432 \
+    postgres
+
+
+# portainer
+    docker volume create portainer_data
+    docker run -d \
+    -p 8000:8000 \
+    -p 9443:9443 \
+    --name=portainer \
+    --restart=always \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v portainer_data:/data \
+    portainer/portainer-ce:latest
+
+
+# mongo
+    docker run -d \
+    --publish 27017:27017 \
+    --name mongo \
+    --restart always \
+    mongodb/mongodb-community-server:latest
+
+# mongo db user creation using mongosh
+db.createUser({
+  user: "gsdkuser",
+  pwd: "D3ltAF0rc3",
+  roles: [ { role: "readWrite", db: "gsdk_mongodb" } ]
+})
+
+# redis
+    # docker run --publish 6379:6379  --name some-redis --restart always -d redis redis-server --save 60 1 --loglevel warning
+    docker run --publish 6379:6379 \
+    --name some-redis \
+    --restart always \
+    -v /home/ubuntu/server_conf/redis:/usr/local/etc/redis \
+    -d redis redis-server /usr/local/etc/redis/redis.conf
+
+# default user permissions
+# ACL SETUSER default -@all +info +select +keys +scan +type +get +ttl +hgetall
+
+# redis-commander
+    docker run --name redis-commander --restart always -d \
+    -p 8081:8081 \
+    --env REDIS_HOST=3.109.144.159 \
+    --env REDIS_PASSWORD=frogmoon123 \
+    --env HTTP_USER=amudaliar \
+    --env HTTP_PASSWORD=Fr0gmoon@123 \
+    rediscommander/redis-commander:latest
+
+# grafana
+    docker run -d \
+    --name=grafana \
+    --restart unless-stopped \
+    -p 3010:3000 \
+    -e GF_SECURITY_ADMIN_USER=admin \
+    -e GF_SECURITY_ADMIN_PASSWORD=admin \
+    grafana/grafana
+
+
+# node-red
+    sudo chown 1000:1000 ./node-red/
+    docker run -d \
+    --restart unless-stopped \
+    -p 1880:1880 \
+    -v /home/ubuntu/server_conf/node-red:/data \
+    --name mynodered \
+    nodered/node-red
+
+
+# open-search
+    docker run -d \
+    --name opensearch-node \
+    --restart unless-stopped \
+    -p 9200:9200 \
+    -p 9600:9600 \
+    -e "OPENSEARCH_INITIAL_ADMIN_PASSWORD=Fr0gmoon@123" \
+    -e "discovery.type=single-node" \
+    -e "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" \
+    -v /var/lib/opensearch/data:/usr/share/opensearch/data \
+    opensearchproject/opensearch:latest
+
+
+# open-search-dashboard
+    docker run -d \
+    --name opensearch-dashboards \
+    --restart unless-stopped \
+    -p 5601:5601 \
+    -e "OPENSEARCH_HOSTS=https://172.17.0.2:9200" \
+    -e "OPENSEARCH_USERNAME=admin" \
+    -e "OPENSEARCH_PASSWORD=Fr0gmoon@123" \
+    opensearchproject/opensearch-dashboards:latest

@@ -15,8 +15,7 @@ qh3server::~qh3server() {
 	debug_print_important2(logtag.c_str(), "qh3server destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
 }
 
-void qh3server::debug_log(const uint8_t* line, void* argp) {
-	UNUSED(argp);
+void qh3server::debug_quiche_log(const uint8_t* line, void* argp) {
 	qh3server* server = reinterpret_cast<qh3server*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
 		debug_print(LOG_LEVEL_0, server->logtag.c_str(), (char*) line);
@@ -684,7 +683,7 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	}
 }
 
-int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return) {
+int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id) {
 	app_directory = root_dir;
 	host_id = host;
 	port_id = port;
@@ -694,13 +693,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	}
 	logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
 	const char* const_logtag = logtag.c_str();
-	//    quiche_enable_debug_logging(debug_log, this);
-
-	if (is_log_quiche()) {
-		debug_print_warn(const_logtag,
-						 "quiche log is enabled. Perfomance may get "
-						 "affected due to excess logs !!!");
-	}
+#if ENABLE_QUICHE_LOG
+	quiche_enable_debug_logging(debug_quiche_log, this);
+	debug_print_warn(const_logtag,
+					 "quiche log is enabled. Perfomance may get "
+					 "affected due to excess logs !!!");
+#endif
 
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;
@@ -778,6 +776,12 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	quiche_config_set_disable_active_migration(config, true);
 	quiche_config_set_cc_algorithm(config, Reno);
 
+	// Generate a 16-byte token for stateless reset
+	uint8_t stateless_reset_token[16] = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad, 0xbe, 0xcf, 0xda, 0xeb, 0xfc, 0x0d};
+
+	// Set the stateless reset token in the QUIC config
+	quiche_config_set_stateless_reset_token(config, stateless_reset_token);
+
 	http3_config = quiche_h3_config_new();
 	if (http3_config == NULL) {
 		debug_print_error(const_logtag, "failed to create HTTP/3 config");
@@ -821,7 +825,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	//
 	GX_DELETE(logger);
 	GX_DELETE(stats_logger);
-	logger = DEBUG_NEW qtextfilelogger();
+	logger = DEBUG_NEW qcustomlogger();
 	stats_logger = DEBUG_NEW qstatslogger();
 
 	if (!on_server_pre_init()) {
@@ -840,7 +844,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
 	qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
-	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", 0);
+	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
 
 	// dangling connection check timer
@@ -1048,7 +1052,7 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 			}
 			if (dangling_connections > 0) {
 				if (dangling_connections < 10) {
-					debug_print(LOG_LEVEL_0, const_logtag,
+					debug_print(flushed_on_exit ? LOG_LEVEL_0 : LOG_LEVEL_3, const_logtag,
 								"Force closed %d dangling connections, with "
 								"response %d. flushed_on_exit(%d)",
 								dangling_connections, dangling_with_response, flushed_on_exit);

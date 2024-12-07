@@ -92,6 +92,14 @@ class qmongo {
 	 */
 	mongoc_cursor_t* find(const qstring& collection_name, bson_t& query);
 
+	typedef std::function<void(bson_t&)> type_qmongo_findupdate_find_query_cb;
+	typedef std::function<void(bson_t&)> type_qmongo_findupdate_update_query_cb;
+	typedef std::function<void(bson_t&)> type_qmongo_findupdate_insert_query_cb;
+
+	int find_and_update(const qstring& collection_name, const qstring& search_field, const qstring& search_value, type_qmongo_findupdate_update_query_cb update_query_cb);
+
+	int find_and_upsert(const qstring& collection_name, type_qmongo_findupdate_find_query_cb find_query_cb, type_qmongo_findupdate_update_query_cb update_query_cb, type_qmongo_findupdate_insert_query_cb insert_query_cb);
+
 	/**
 	 * @brief Gets the specified collection.
 	 * @param collection_name The name of the collection.

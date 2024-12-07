@@ -111,3 +111,6 @@ summary-*.csv
 IDEWorkspaceChecks.plist
 qgfist-app
 qunityplugin/release_build
+qsampleserver/gstats
+qserver/gstats
+scripts/__pycache__

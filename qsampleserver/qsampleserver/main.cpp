@@ -5,6 +5,7 @@
 //  Created by Arun A on 30/06/24.
 //
 
+#include "../../common/signal_handler/signal_handler.hpp"
 #include "../../qserver/source/gameserver.hpp"
 #include "../../qutils/discord_util.hpp"
 #include "../../servercommon/source/servercommon.hpp"
@@ -29,17 +30,18 @@ void assert_callback(const char* msg) {
 }
 
 int32_t main(int32_t argc, const char* argv[]) {
+	signal_handler::setup_signal_handler();
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
-	discord_util::set_web_hook(DISCORD_WEBHOOK);
+	discord_util::initialize_with_webhook_url(DISCORD_WEBHOOK);
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);
 	qstring host = "127.0.0.1";
 	qstring port = "4000";
-	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  // "mongodb://192.168.0.230:27017";
-	qstring redis_ip = "13.233.45.2";
-	qstring zk_uri = "13.233.45.2:2181";
+	qstring mongodb_uri = "mongodb://3.109.144.159:27017";	// "mongodb://192.168.0.230:27017";
+	qstring redis_ip = "3.109.144.159";
+	qstring zk_uri = "3.109.144.159:2181";
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
 	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
@@ -47,8 +49,8 @@ int32_t main(int32_t argc, const char* argv[]) {
 		discord_util::shutdown();
 		exit(0);
 	}
-	gameserver server;
-	server.run(host, port, rootDir, redis_ip, redis_port);
+	gameserver server(zk_uri);
+	server.run(host, port, rootDir, redis_ip, redis_port, "qsampleserver-app");
 
 	// dummy run loop
 	struct ev_loop* loop = ev_default_loop(0);

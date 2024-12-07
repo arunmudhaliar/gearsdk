@@ -183,25 +183,25 @@ bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
 		return false;
 
 	// Access the nested objects and values
-	if (obj.HasMember("details") && obj["details"].IsObject()) {
-		const Value& details = obj["details"];
-		if (details.HasMember("sys_name") && details["sys_name"].IsString()) {
-			sys_name = details["sys_name"].GetString();
+	if (obj.HasMember("device") && obj["device"].IsObject()) {
+		const Value& device = obj["device"];
+		if (device.HasMember("sys_name") && device["sys_name"].IsString()) {
+			sys_name = device["sys_name"].GetString();
 		} else {
 			return false;
 		}
-		if (details.HasMember("node_name") && details["node_name"].IsString()) {
-			node_name = details["node_name"].GetString();
+		if (device.HasMember("node_name") && device["node_name"].IsString()) {
+			node_name = device["node_name"].GetString();
 		} else {
 			return false;
 		}
-		if (details.HasMember("release") && details["release"].IsString()) {
-			release = details["release"].GetString();
+		if (device.HasMember("release") && device["release"].IsString()) {
+			release = device["release"].GetString();
 		} else {
 			return false;
 		}
-		if (details.HasMember("arch") && details["arch"].IsString()) {
-			arch = details["arch"].GetString();
+		if (device.HasMember("arch") && device["arch"].IsString()) {
+			arch = device["arch"].GetString();
 		} else {
 			return false;
 		}
@@ -216,17 +216,17 @@ void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 	rq_msg_user_base::serialize(obj, allocator);
 	//    obj.SetObject();
 
-	// Create the "details" object
-	rapidjson::Value details(rapidjson::kObjectType);
+	// Create the "device" object
+	rapidjson::Value device(rapidjson::kObjectType);
 
-	// Add values to the "details" object
-	details.AddMember("sys_name", Value().SetString(sys_name.c_str(), (uint32_t) sys_name.length(), allocator), allocator);
-	details.AddMember("node_name", Value().SetString(node_name.c_str(), (uint32_t) node_name.length(), allocator), allocator);
-	details.AddMember("release", Value().SetString(release.c_str(), (uint32_t) release.length(), allocator), allocator);
-	details.AddMember("arch", Value().SetString(arch.c_str(), (uint32_t) arch.length(), allocator), allocator);
+	// Add values to the "device" object
+	device.AddMember("sys_name", Value().SetString(sys_name.c_str(), (uint32_t) sys_name.length(), allocator), allocator);
+	device.AddMember("node_name", Value().SetString(node_name.c_str(), (uint32_t) node_name.length(), allocator), allocator);
+	device.AddMember("release", Value().SetString(release.c_str(), (uint32_t) release.length(), allocator), allocator);
+	device.AddMember("arch", Value().SetString(arch.c_str(), (uint32_t) arch.length(), allocator), allocator);
 
-	// Add the "details" object to the main document
-	obj.AddMember("details", details, allocator);
+	// Add the "device" object to the main document
+	obj.AddMember("device", device, allocator);
 }
 
 // MARK: - res_msg_user_base

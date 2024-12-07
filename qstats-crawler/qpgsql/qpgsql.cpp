@@ -30,7 +30,7 @@ int qpgsql::connect_db(const qstring& host_, const qstring& port_) {
                           const char *login,
                           const char *pwd);
      */
-    db_connection = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, "qtest-pgdb", "postgres", "postgres");
+    db_connection = PQsetdbLogin(host.c_str(), port.c_str(), nullptr, nullptr, "devgsdkdb", "postgres", "postgres");
     /* Check to see that the backend connection was successfully made */
     if (PQstatus(db_connection) != CONNECTION_OK) {
         fprintf(stderr, "\033[41m%s\x1b[0m", PQerrorMessage(db_connection));

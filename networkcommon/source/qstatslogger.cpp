@@ -14,10 +14,11 @@ qstatslogger::qstatslogger() : qtextfilelogger() {
 
 qstatslogger::~qstatslogger() {}
 
-void qstatslogger::init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int TOTAL_RAM) {
+void qstatslogger::init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const qstring& app_id, const int TOTAL_RAM) {
 	this->install_os = install_os;
 	this->device_name = device_name;
 	this->device_model = device_model;
+	this->app_id = app_id;
 	this->total_ram = TOTAL_RAM;
 	this->inited = true;
 }
@@ -65,7 +66,8 @@ size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const
 	qstring seperator("|");
 	qstring buffer("open");
 	qstring client_utc_tstamp = essentials::get_time_utc_postgresql_format();
-	qstring utc_time = essentials::get_time_utc_string();
+	time_t utc_time_value;
+	qstring utc_time = essentials::get_time_utc_string(utc_time_value);
 	buffer += seperator;
 	buffer += client_version;
 	buffer += seperator;
@@ -90,6 +92,8 @@ size_t qstatslogger::client_open(const qstring& duid, const qstring& epic, const
 	buffer += device_model;
 	buffer += seperator;
 	buffer += qstring(total_ram);
+	buffer += seperator;
+	buffer += app_id;
 	return log_stats(buffer);
 }
 
@@ -101,7 +105,8 @@ size_t qstatslogger::server_count(const qstring& counter, long count_val, const 
 
 size_t qstatslogger::server_count_internal(const qstring& counter, long count_val, const qstring& session, const qstring& pid, const qstring& version, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story,
 										   const qstring& server_tstamp, const qstring& message) {
-	qstring utc_time = essentials::get_time_utc_string();
+	time_t utc_time_value;
+	qstring utc_time = essentials::get_time_utc_string(utc_time_value);
 	qstring seperator("|");
 	qstring buffer("count");
 	buffer += seperator;
@@ -138,12 +143,15 @@ size_t qstatslogger::server_count_internal(const qstring& counter, long count_va
 	buffer += device_model;
 	buffer += seperator;
 	buffer += qstring(total_ram);
+	buffer += seperator;
+	buffer += app_id;
 	return log_stats(buffer);
 }
 
 size_t qstatslogger::client_count(const qstring& counter, long count_val, const qstring& epic, const qstring& myth, const qstring& legend, const qstring& story, const qstring& message) {
 	qstring client_utc_tstamp = essentials::get_time_utc_postgresql_format();
-	qstring utc_time = essentials::get_time_utc_string();
+	time_t utc_time_value;
+	qstring utc_time = essentials::get_time_utc_string(utc_time_value);
 	qstring seperator("|");
 	qstring buffer("count");
 	buffer += seperator;
@@ -180,5 +188,7 @@ size_t qstatslogger::client_count(const qstring& counter, long count_val, const 
 	buffer += device_model;
 	buffer += seperator;
 	buffer += qstring(total_ram);
+	buffer += seperator;
+	buffer += app_id;
 	return log_stats(buffer);
 }

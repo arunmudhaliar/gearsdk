@@ -39,6 +39,9 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 
    protected:
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
+	void on_qhiredis_connect() override;
+	void on_qhiredis_disconnect() override;
 
    private:
 	static void recv_cb(EV_P_ ev_io* w, int revents);
@@ -62,6 +65,7 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 	route* is_in_active_routes(const qstring& host, const qstring& port) const;
 	route* is_in_unresponsive_routes(const qstring& host, const qstring& port) const;
 	qtimer* check_and_remove_unresponsive_routes(qtimer_scheduler& scheduler);
+	qtimer* update_redis_about_servers(qtimer_scheduler& scheduler);
 	route* remove_from_active_routes(route* r);
 	route* remove_from_unresponsive_routes(route* r);
 	void push_to_unresponsive_routes(route* r);

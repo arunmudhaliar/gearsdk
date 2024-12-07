@@ -6,6 +6,7 @@
 //
 
 #include "../../common/sdktypes.hpp"
+#include "../../common/signal_handler/signal_handler.hpp"
 #include "../../qh3server/qh3server/http3_command_server.hpp"
 #include "../../qh3server/qh3server/http3_sample_server.hpp"
 #include "../../qh3server/qh3server/qh3simple_router.hpp"
@@ -14,6 +15,8 @@
 
 static qstring version_string = "0.1";
 static unsigned version_code = 1;
+
+#define DISCORD_WEBHOOK "https://discord.com/api/webhooks/1207911659214082058/A0S49aiBOJKVZJk5FUUQaAw3Qxl2oRmRFdf7R93B8Y60QPuagXS0F3gLKS3yYRQrTyo4"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qh3sampleserver-main"
@@ -29,8 +32,10 @@ void assert_callback(const char* msg) {
 }
 
 int main(int argc, const char* argv[]) {
+	signal_handler::setup_signal_handler();
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
+	discord_util::initialize_with_webhook_url(DISCORD_WEBHOOK);
 	gsdk::set_warn_callback(warn_callback);
 	gsdk::set_error_callback(error_callback);
 	gsdk::set_assert_callback(assert_callback);
@@ -39,9 +44,9 @@ int main(int argc, const char* argv[]) {
 	qstring host = "127.0.0.1";
 	qstring port = "4004";
 
-	qstring mongodb_uri = "mongodb://13.233.45.2:27017";  //"mongodb://192.168.0.230:27017"
-	qstring redis_ip = "13.233.45.2";
-	qstring zk_uri = "13.233.45.2:2181";
+	qstring mongodb_uri = "mongodb://3.109.144.159:27017";	//"mongodb://192.168.0.230:27017"
+	qstring redis_ip = "3.109.144.159";
+	qstring zk_uri = "3.109.144.159:2181";
 
 	uint16_t redis_port = 6379;
 	fs::path rootDir;
@@ -54,7 +59,7 @@ int main(int argc, const char* argv[]) {
 	//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(),
 	//    redis_port, zk_uri); server.run(host, port, rootDir, nullptr, 4010, 0);   // port return not used, so passing 0
 
-	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005);
+	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005, "qh3sampleserver-app");
 	http3_sample_router router(config);
 	router.run<http3_command_server, http3_sample_server>();
 

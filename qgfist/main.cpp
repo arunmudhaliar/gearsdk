@@ -1,3 +1,4 @@
+#include "../common/signal_handler/signal_handler.hpp"
 #include "../networkcommon/source/message.hpp"
 #include "../networkcommon/source/roommessage.hpp"
 #include "../qclient/source/qnetworkclient.hpp"
@@ -31,7 +32,7 @@
 #define COLOR_GREEN "\033[32m"
 #define COLOR_CYAN "\033[36m"
 
-#define GAME_SERVER_IP "15.206.79.30:4004"
+#define GAME_SERVER_IP "15.206.79.30:4000"
 #define MAX_PARALLEL_REQUESTS 10
 #define MIN_TIMEOUT_MS 50	// Minimum timeout in milliseconds
 #define MAX_TIMEOUT_MS 300	// Maximum timeout in milliseconds
@@ -54,7 +55,7 @@ struct WorkData {
 
 struct AppState {
 	qstring host = "192.168.0.230";
-	qstring port = "4004";
+	qstring port = "4000";
 	uv_loop_t* loop;
 	uv_timer_t request_timer;
 	uv_timer_t wait_timer;
@@ -323,7 +324,7 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 // Function to initialize AppState with default values
 void initialize_app_state(AppState& app_state) {
 	app_state.host = "192.168.0.230";
-	app_state.port = "4004";
+	app_state.port = "4000";
 	app_state.loop = nullptr;
 	app_state.max_parallel_requests = MAX_PARALLEL_REQUESTS;
 	app_state.request_weightage = DEFAULT_WEIGHTAGE;
@@ -416,12 +417,13 @@ void print_usage(const char* program_name) {
 	std::cout << "  --tmax <ms>                     [optional] Maximum timeout in milliseconds (default: " << MAX_TIMEOUT_MS << ")\n";
 	std::cout << "\n";
 	std::cout << "Examples:\n";
-	std::cout << "  " << program_name << " --gserver 127.0.0.1:4004\n";
-	std::cout << "  " << program_name << " --gserver 127.0.0.1:4010 --single-mode\n";
-	std::cout << "  " << program_name << " --gserver 127.0.0.1:4010 --single-request 5\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4000\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4000 --single-mode\n";
+	std::cout << "  " << program_name << " --gserver 127.0.0.1:4000 --single-request 5\n";
 }
 
 int main(int argc, char** argv) {
+	signal_handler::setup_signal_handler();
 	// Check for --help flag
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0) {

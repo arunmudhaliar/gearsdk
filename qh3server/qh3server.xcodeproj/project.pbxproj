@@ -674,6 +674,7 @@
 					THREADED,
 					"ENABLE_ZK=1",
 					"DEV_BUILD=1",
+					"ENABLE_QUICHE_LOG=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",
@@ -721,6 +722,7 @@
 					THREADED,
 					"ENABLE_ZK=1",
 					"PROD_BUILD=1",
+					"ENABLE_QUICHE_LOG=0",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",

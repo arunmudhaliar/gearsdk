@@ -195,15 +195,14 @@ uint64_t qlogfile::log(qlogfile::log_lvls lvl, const char* tag, const char* buff
 		}
 		return -1;
 	}
-	time_t givemetime = time(NULL);
-	const char* ctime_str = ctime(&givemetime);
-	const char* ctime_str_mod = strtok(ctime(&givemetime), "\n");
-	ssize_t ctime_str_len = strlen(ctime_str);
+
+	time_t utc_time_value;
+	qstring utc_time_readable = essentials::get_time_utc_readable(utc_time_value);
 	ssize_t tag_length = strlen(tag);
 	ssize_t spaces = 10;  // 9 space + 1 extra space added !
-	uint64_t total_record_sz = ctime_str_len + spaces + tag_length + buffer_length;
-	qbuffer* record = create_new_record(ctime_str_len + spaces + tag_length + buffer_length, locked ? records : records_waiting);
-	snprintf((char*) record->data, total_record_sz, "%s : [%s] - %s\n", ctime_str_mod, tag, buffer);
+	uint64_t total_record_sz = utc_time_readable.length() + spaces + tag_length + buffer_length;
+	qbuffer* record = create_new_record(total_record_sz, locked ? records : records_waiting);
+	snprintf((char*) record->data, total_record_sz, "%s : [%s] - %s\n", utc_time_readable.c_str(), tag, buffer);
 	record->index = total_record_sz;
 	if (locked) {
 		log_mutex.unlock();

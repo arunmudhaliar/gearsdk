@@ -8,10 +8,15 @@
 
 #include "roomserver.hpp"
 
-// MARK: - roomserver
-roomserver::roomserver() : qnetworkserver() {}
+#define EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS 45
 
-roomserver::~roomserver() {}
+// MARK: - roomserver
+roomserver::roomserver(const qstring& zk_uri) : qnetworkserver(), zk_uri(zk_uri) {}
+
+roomserver::~roomserver() {
+	GX_DELETE(hiredis_async);
+	GX_DELETE(hiredis);
+}
 
 void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 	UNUSED(timer);
@@ -35,20 +40,95 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 	}
 }
 
-void roomserver::on_network_server_begin() {
+void roomserver::configchanged(const qstring& path, const qstring& data) {}
+
+bool roomserver::on_network_server_begin() {
+	const struct runserverconfig& run_config = get_run_server_config();
+	GX_DELETE(hiredis);
+	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123");
+	if (hiredis->connect_redis() != 0) {
+		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
+		GX_DELETE(hiredis);
+		return false;
+	}
+
+	GX_DELETE(hiredis_async);
+	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
+	if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
+		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
+		GX_DELETE(hiredis);
+		GX_DELETE(hiredis_async);
+		return false;
+	}
+
+	GX_DELETE(qzk);
+	qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-%s", port_id.c_str()));
+	int zk_result = qzk->connect(zk_uri);
+	if (zk_result != 0) {
+		debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
+		GX_DELETE(qzk);
+		return false;
+	}
+
+	GX_DELETE(zkconfig);
+	zkconfig = DEBUG_NEW serverconfig(qzk, this);
+	fs::path app_directory = run_config.root_dir;
+#if PROD_BUILD
+	fs::path config_path(app_directory / "configs/prod/runtime-config.json");
+#else
+	fs::path config_path(app_directory / "configs/dev/runtime-config.json");
+#endif
+	if (!zkconfig->load(config_path, qzk, "/qh3server")) {
+		debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+		GX_DELETE(zkconfig);
+		return false;
+	}
+
+	check_and_update_is_log_quiche_flag();
+
 	scheduler.set_loop(get_mainloop());
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
 	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
+	update_redis_about_gserver_timer = schedule_update_redis_about_gserver_timer();
 	debug_print_important2(__LOGTAG__, "start");
+	return true;
+}
+
+qtimer* roomserver::schedule_update_redis_about_gserver_timer() {
+	const struct runserverconfig& run_config = get_run_server_config();
+	int grace_time = 10;
+	int expire_timer_unresponsive_gserver_check_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
+	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::server::machine_public_ip);
+	hiredis->set_hash_value(hash_key, qstring::format_string("gserver-%s", run_config.port.c_str()), qstring::format_string("%s:%s", run_config.host.c_str(), run_config.port.c_str()));
+	hiredis->expire_key(hash_key, expire_timer_unresponsive_gserver_check_in_sec + grace_time);
+	debug_print_important(__LOGTAG__, "schedule_update_redis_about_gserver_timer timer %d", expire_timer_unresponsive_gserver_check_in_sec);
+	qtimer* timer = scheduler.schedule_repeat_timer(
+		[this, hash_key, grace_time, run_config](qtimer& timer) {
+			int next_expire_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
+			float diff = next_expire_in_sec - timer.delay;
+			if (GX_ABS(diff) > 1.0f) {
+				debug_print_important(__LOGTAG__, "schedule_update_redis_about_gserver_timer timer updated from %5.2f to %d", timer.delay, next_expire_in_sec);
+				timer.update_delay(next_expire_in_sec);
+			}
+			hiredis->set_hash_value(hash_key, qstring::format_string("gserver-%s", run_config.port.c_str()), qstring::format_string("%s:%s", run_config.host.c_str(), run_config.port.c_str()));
+			hiredis->expire_key(hash_key, next_expire_in_sec + grace_time);
+		},
+		expire_timer_unresponsive_gserver_check_in_sec);
+	return timer;
+}
+
+void roomserver::check_and_update_is_log_quiche_flag() {
+	qstring is_log_quiche_value;
+	hiredis->get_value("is_log_quiche", is_log_quiche_value);
+	is_log_quiche_flag = is_log_quiche_value.compare("true") == 0;
+}
+
+bool roomserver::is_log_quiche() {
+	return is_log_quiche_flag;
 }
 
 void roomserver::on_network_server_init() {
 	debug_print_important2(__LOGTAG__, "roomserver::init");
-	scheduler.cancel_and_destroy_timer(waiting_room_check_zombie_timer);
-
-	//	msg_parser.register_message_type<msg_room_match_request>();
-	//	msg_parser.register_message_type<msg_room_server_shutdown>();
-
 	message_handlers.clear();
 	message_handlers[msg_room_match_request::get_type_string_crc()] = std::bind(&roomserver::process_match_request, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	message_handlers[msg_room_server_shutdown::get_type_string_crc()] =
@@ -69,6 +149,35 @@ void roomserver::on_network_server_end() {
 	rooms.clear();
 	new_connections.clear();
 	connection_map.clear();
+
+	scheduler.cancel_and_destroy_timer(update_redis_about_gserver_timer);
+	scheduler.cancel_and_destroy_timer(waiting_room_check_zombie_timer);
+
+	GX_DELETE(zkconfig);
+	if (qzk != nullptr) {
+		qzk->shutdown();
+		debug_print_important(__LOGTAG__, "waiting for zk services to finish !!!");
+		struct ev_loop* wait_loop = ev_loop_new();
+		qtimer_scheduler wait_scheduler;
+		wait_scheduler.set_loop(wait_loop);
+		qtimer* wait_timer = wait_scheduler.schedule_repeat_timer(
+			[this, wait_loop](qtimer& timer) {
+				UNUSED(timer);
+				if (!qzk->is_running()) {
+					debug_print_important(__LOGTAG__, "qzk service finished !!!");
+					ev_break(wait_loop, EVBREAK_ONE);
+				}
+			},
+			3);
+		ev_run(wait_loop, 0);
+		wait_scheduler.cancel_and_destroy_timer(wait_timer);
+		ev_loop_destroy(wait_loop);
+		GX_DELETE(qzk);
+	}
+
+	GX_DELETE(hiredis_async);
+	GX_DELETE(hiredis);
+
 	debug_print_important2(__LOGTAG__, "end");
 }
 
@@ -258,6 +367,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 				} else if (room_ptr->get_state() >= room::states::ROOM_START) {
 					debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - added to room %d, map[after add sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 				}
+				Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to waiting room - connection %0x", qconnection->cid_hash_val);
 				break;
 			}
 		}
@@ -290,6 +400,8 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 				connection_map.erase(iterator);
 			}
 			connection_map[qconnection->cid_hash_val] = room_ptr;  // update the connection map
+
+			Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to previous room - connection %0x", qconnection->cid_hash_val);
 			debug_print_important2(__LOGTAG__, "f:do_process_roomjoin - add player to PREV room %d of user [m-sz:%d] !!! - connection %0x", room_ptr->ROOM_ID, connection_map.size(), qconnection->cid_hash_val);
 		}
 	}
@@ -300,6 +412,7 @@ void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_
 		waiting_room->try_add_connection(qconnection, room_match_request_msg.pid, replaced_by_disconnected_player);	 // no need to check for limit since he is our first user in this room.
 		room_ptr = waiting_room;
 		connection_map[qconnection->cid_hash_val] = room_ptr;
+		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "room join to new waiting room - connection %0x", qconnection->cid_hash_val);
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:do_process_roomjoin - add to hash[after add sz:%d] !!! - %0x", connection_map.size(), qconnection->cid_hash_val);
 	}
 }
@@ -314,6 +427,7 @@ room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis incr_by failed for key %s, result %d", key.c_str(), result);
 	result = this->hiredis->expire_key(key, 1 * 60);  // 1 minute(s)
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", key.c_str(), result);
+	Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "new waiting room (%s), count:%d", key.c_str(), count_waiting_room_of_this_type);
 	return room_ptr;
 }
 
@@ -345,6 +459,7 @@ void roomserver::onconnection_destroy(conn_io* qconnection) {
 		const qstring& rkey = room_ptr->get_room_signature("room:", host_id, port_id);
 		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
 		debug_warn_cond(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
+		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "destroy room (%s), count:%d, total:%d", rkey.c_str(), count_room_of_this_type, rooms.size());
 
 		GX_DELETE(room_ptr);
 		debug_print_important2(__LOGTAG__, "room size %d", rooms.size());
@@ -371,6 +486,16 @@ void roomserver::on_qhiredis_async_key_expired(const qstring& expired_key) {
 		debug_warn_cond(__LOGTAG__, result != 0, "hiredis expire_key failed for key %s, result %d", expired_key.c_str(), result);
 	}
 }
+
+void roomserver::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
+	if (modified_key.compare("is_log_quiche") == 0 && event.compare("set") == 0) {
+		check_and_update_is_log_quiche_flag();
+	}
+}
+
+void roomserver::on_qhiredis_connect() {}
+
+void roomserver::on_qhiredis_disconnect() {}
 
 void roomserver::on_heartbeat_check() {
 	size_t curr_conns = get_connection_count();

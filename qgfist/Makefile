@@ -9,6 +9,7 @@ $(NETWORK_COMMON_SRCDIR)/message.cpp \
 $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
+$(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
 
 INCLUDES = -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/zlib"
 
@@ -31,7 +32,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
-	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a -lz
+	LIBS = ../networkcommon/libs/linux/libquiche.a ../networkcommon/libs/linux/libev.a ../networkcommon/libs/linux/libuv.a -lz -lunwind
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture

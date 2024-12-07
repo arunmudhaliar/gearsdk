@@ -13,8 +13,9 @@
 #include "../../common/sdktypes.hpp"
 #include "../../common/timer.hpp"
 #include "qtimer.hpp"
+#if USE_LIBUV
 #include "qtimer_uv.hpp"
-
+#endif
 #include <map>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -104,10 +105,10 @@ class essentials {
 										 uint16_t& redis_port, qstring& zk_uri);
 
 	static time_t get_time_local();
-	static qstring get_time_local_tostring();
+	static qstring get_time_local_tostring(time_t& local_time);
 	static time_t get_time_utc();
-	static qstring get_time_utc_string();
-	static qstring get_time_utc_readable();
+	static qstring get_time_utc_string(time_t& utc_time);
+	static qstring get_time_utc_readable(time_t& utc_time);
 	static qstring get_time_utc_postgresql_format();
 
 	static qstring get_sysname();
@@ -131,16 +132,17 @@ class essentials {
 	static uLong mod_crc32_z(uLong adler, const Bytef* buf, z_size_t len);
 
 	static bool get_json_string(rapidjson::Document& obj, qstring& output);
-
-	// uv cleanups
-	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);
-
 	static void sleep_for(int milliseconds) {
 		usleep(milliseconds * 1000);  // Convert milliseconds to microseconds
 	}
 
+#if USE_LIBUV
+	// uv cleanups
+	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);
+
    private:
 	static void close_uv_handle_callback(uv_handle_t* handle, void* arg);
+#endif
 };
 
 // h3 structs

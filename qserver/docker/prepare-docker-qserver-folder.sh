@@ -23,8 +23,10 @@ mkdir $DOCKER_DIR
 
 # Copy necessary files and directories
 cp -r $COMMON_DIR $DOCKER_DIR/common
+cp -r ./configs $DOCKER_DIR/configs
 cp -r $NETWORK_COMMON_DIR $DOCKER_DIR/networkcommon
 cp -r $SERVER_COMMON_DIR $DOCKER_DIR/servercommon
+cp -r ./qzookeeper/ $DOCKER_DIR/qzookeeper
 cp -r $QHIREDIS_DIR $DOCKER_DIR/qhiredis
 cp -r $QUTILS_DIR $DOCKER_DIR/qutils
 cp -r $QSERVER_DIR $DOCKER_DIR/$SERVER
@@ -42,6 +44,7 @@ find $DOCKER_DIR -name '*.xcodeproj' -exec rm -rf {} +
 rm -rf $DOCKER_DIR/networkcommon/libs/macos
 rm -rf $DOCKER_DIR/qhiredis/libs/macos
 rm -rf $DOCKER_DIR/qutils/libs/macos
+rm -rf $DOCKER_DIR/qzookeeper/libs/macos
 rm -rf $DOCKER_DIR/$SERVER/docker
 rm -rf $DOCKER_DIR/$SERVER/*.dSYM
 rm -rf $DOCKER_DIR/$SERVER/$SERVER-app

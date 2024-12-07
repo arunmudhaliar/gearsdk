@@ -196,7 +196,7 @@ int qh3simple_router::run() {
 			GX_DELETE(qzk);
 			return -1;
 		}
-
+#endif
 		GX_DELETE(zkconfig);
 		zkconfig = DEBUG_NEW serverconfig(qzk, nullptr);
 #if PROD_BUILD
@@ -209,10 +209,9 @@ int qh3simple_router::run() {
 			GX_DELETE(zkconfig);
 			return false;
 		}
-#endif
 
 		GX_DELETE(hiredis);
-		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port);
+		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
 		if (hiredis->connect_redis() != 0) {
 			debug_print_error(__LOGTAG__, "failed to create redis connection !!!");
 			freeaddrinfo(router);
@@ -225,12 +224,6 @@ int qh3simple_router::run() {
 			GX_DELETE(hiredis);
 			return -1;
 		}
-
-		int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
-		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
-		hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
-		hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
-		hiredis->expire_key(hash_key, expire_timer_unresponsive_route_zk_check_in_sec);
 
 		ev_io watcher;
 		ev_io_init(&watcher, recv_cb, sock, EV_READ);
@@ -248,7 +241,7 @@ int qh3simple_router::run() {
 		}
 		//
 
-		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, this);
+		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
 		if (hiredis_async->connect_async_redis(mainloop) != 0) {
 			debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 			GX_DELETE(hiredis_async);
@@ -267,11 +260,16 @@ int qh3simple_router::run() {
 		unresponsive_routes_scheduler.set_loop(mainloop);
 		qtimer* unresponsive_timer = check_and_remove_unresponsive_routes(unresponsive_routes_scheduler);
 
+		qtimer_scheduler update_redis_about_servers_scheduler;
+		update_redis_about_servers_scheduler.set_loop(mainloop);
+		qtimer* update_redis_about_servers_timer = update_redis_about_servers(update_redis_about_servers_scheduler);
+
 		ev_loop(mainloop, 0);
 
 		ev_io_stop(mainloop, &watcher_return);
 		ev_io_stop(mainloop, &watcher);
 
+		update_redis_about_servers_scheduler.cancel_and_destroy_timer(update_redis_about_servers_timer);
 		unresponsive_routes_scheduler.cancel_and_destroy_timer(unresponsive_timer);
 
 		ev_loop_destroy(mainloop);
@@ -297,7 +295,8 @@ int qh3simple_router::run() {
 
 template <typename U, typename V>
 route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config) {
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config =
+		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	new_config->command_server = true;
 	new_config->ref = this;
 
@@ -336,7 +335,7 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 		// Code executed by the child process
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
 		server_config_in* new_config =
-			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 		if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
 			debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 			GX_DELETE(new_config);
@@ -363,7 +362,8 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 	}
 #else
 	fork_result = false;
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return);
+	server_config_in* new_config =
+		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
@@ -391,12 +391,12 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	if (config->command_server) {
 		PTHREAD_NAME(U::get_server_name());
 		U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
 		GX_DELETE(new_server);
 	} else {
 		PTHREAD_NAME(V::get_server_name());
 		V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return);
+		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
 		GX_DELETE(new_server);
 	}
 	GX_DELETE(config);

@@ -26,6 +26,7 @@ RUN apt install libsnappy-dev -y
 RUN apt-get install libzstd-dev -y
 RUN apt install iproute2 -y
 RUN apt-get install libcurl4-openssl-dev -y
+RUN apt-get install libunwind-dev -y
 RUN sh make_qh3server.sh
 RUN chmod 755 ./run_qh3server.sh
 

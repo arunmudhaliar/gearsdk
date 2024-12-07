@@ -33,7 +33,7 @@ class game_room : public room {
 // MARK: -
 class gameserver : public roomserver {
    public:
-	gameserver();
+	gameserver(const qstring& zk_uri);
 	virtual ~gameserver();
 
    protected:

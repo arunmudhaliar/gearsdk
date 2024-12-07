@@ -40,6 +40,8 @@
 		55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D1C6D02AD2A49B00470E01 /* Security.framework */; };
 		55D1C6DE2AD32E9300470E01 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DC2AD32E8800470E01 /* cert.key */; };
 		55D1C6DF2AD32E9300470E01 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55D1C6DD2AD32E8800470E01 /* cert.crt */; };
+		55D7ACF72CD0101E0011297F /* libqzookeeper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D7ACF62CD0101E0011297F /* libqzookeeper.a */; };
+		55D7ACF92CD010B40011297F /* libsasl2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 55D7ACF82CD010890011297F /* libsasl2.tbd */; };
 		55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55E4D31B2ACAF47E00555999 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -106,6 +108,9 @@
 		55D1C6D02AD2A49B00470E01 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		55D1C6DC2AD32E8800470E01 /* cert.key */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		55D1C6DD2AD32E8800470E01 /* cert.crt */ = {isa = PBXFileReference; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
+		55D7ACF62CD0101E0011297F /* libqzookeeper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqzookeeper.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		55D7ACF82CD010890011297F /* libsasl2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsasl2.tbd; path = usr/lib/libsasl2.tbd; sourceTree = SDKROOT; };
+		55D7ACFA2CD012720011297F /* configs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = configs; path = ../configs; sourceTree = "<group>"; };
 		55E4D31B2ACAF47E00555999 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		55FB29CE2ACF32220051DDF9 /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../../quiche/target/debug/deps/libquiche.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -130,9 +135,11 @@
 				55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				55CB70302C77BF3700E05D37 /* libquiche.dylib in Frameworks */,
+				55D7ACF92CD010B40011297F /* libsasl2.tbd in Frameworks */,
 				557487AD2AED546A00C0F6CA /* libev.a in Frameworks */,
 				555BA6F52C3AEE2000E23A51 /* libev.4.dylib in Frameworks */,
 				55CB702D2C77BF2500E05D37 /* libuv.1.dylib in Frameworks */,
+				55D7ACF72CD0101E0011297F /* libqzookeeper.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
 				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
 				1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */,
@@ -147,6 +154,8 @@
 		55853CDE2AC32E7600901E52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				55D7ACF82CD010890011297F /* libsasl2.tbd */,
+				55D7ACF62CD0101E0011297F /* libqzookeeper.a */,
 				55CB702F2C77BF3700E05D37 /* libquiche.dylib */,
 				55CB702C2C77BF2500E05D37 /* libuv.1.dylib */,
 				55CB702A2C77BE5800E05D37 /* libuv.a */,
@@ -175,6 +184,7 @@
 		55B372AF2AC2ABCD00F0095E = {
 			isa = PBXGroup;
 			children = (
+				55D7ACFA2CD012720011297F /* configs */,
 				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,
 				5576DA7F2BED5FE700B39413 /* servercommon.cpp */,
@@ -338,7 +348,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# copy files\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+			shellScript = "# copy files\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
 		};
 		5595E1252BB08BAB00FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -410,6 +420,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -438,6 +449,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -575,9 +587,10 @@
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
 					"DEBUG=1",
 					"LOG_LEVEL=1",
-					"$(inherited)",
+					"ENABLE_QUICHE_LOG=1",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
@@ -586,6 +599,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -610,6 +624,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5ZJZVQUB7D;
 				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "ENABLE_QUICHE_LOG=0";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/Source/quiche\"",
 					"\"$(SRCROOT)/../networkcommon/Source/ev\"",
@@ -617,6 +632,7 @@
 					"\"$(SRCROOT)/../common/uthash\"",
 					"\"$(SRCROOT)/../qhiredis/hiredis\"",
 					"\"$(SRCROOT)/../common\"",
+					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

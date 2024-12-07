@@ -17,7 +17,8 @@ extern "C" {
 
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
-#include "../../networkcommon/source/qtextfilelogger.hpp"
+#include "../../networkcommon/source/qcustomlogger.hpp"
+#include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qthreadpool.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
@@ -31,6 +32,21 @@ extern "C" {
 
 #define QTHREADPOOL 1
 #define QTHREADPOOL_THREAD_COUNT 4
+
+#define Q_INFO(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, __VA_ARGS__)
+#define Q_DEBUG(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, __VA_ARGS__)
+#define Q_WARN(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, __VA_ARGS__)
+#define Q_ERROR(tag, ...) LOG_FILE(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, __VA_ARGS__)
+
+#define Q_INFO_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, pid, __VA_ARGS__)
+#define Q_DEBUG_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, pid, __VA_ARGS__)
+#define Q_WARN_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, pid, __VA_ARGS__)
+#define Q_ERROR_WITH_PID(pid, tag, ...) LOG_FILE_WITH_PID(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, pid, __VA_ARGS__)
+
+#define Q_INFO_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::INFO_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_DEBUG_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::DEBUG_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_WARN_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::WARN_LOG, tag, pid, roomid, __VA_ARGS__)
+#define Q_ERROR_WITH_ROOID(pid, roomid, tag, ...) LOG_FILE_WITH_ROOMID(qnetworkserver::get_file_logger(), qcustomlogger::ERROR_LOG, tag, pid, roomid, __VA_ARGS__)
 
 // MARK: -
 class conn_io;
@@ -54,6 +70,7 @@ class bridge_qpeerconnection {
 	virtual void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) = 0;
 	virtual void onconnection_destroy(conn_io* qconnection) = 0;
 	inline virtual struct ev_loop* get_mainloop() = 0;
+	virtual bool is_log_quiche() = 0;
 };
 
 // MARK: -
@@ -84,8 +101,8 @@ class conn_io {
 };
 
 // MARK: -
-class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhiredis_async {
-   private:
+class qnetworkserver : protected bridge_qpeerconnection {
+   protected:
 	struct runserverconfig {
 		qstring host;
 		qstring port;
@@ -96,21 +113,23 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 		fs::path root_dir;
 		qstring redis_ip;
 		uint16_t redis_port;
+		qstring app_id;
 	};
 	static int run_id;
 
    public:
 	qnetworkserver() {};
 	virtual ~qnetworkserver() {}
-	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT);
+	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id);
 	void broadcast_message(const qstring& buffer, bool flush);
-	void network_server_begin();
+	bool network_server_begin();
 	void network_server_end();
 	bool is_run();
 	inline size_t get_connection_count() { return conns ? HASH_COUNT(conns->h) : 0; }
+	inline bool is_log_quiche() override { return false; }
 
    protected:
-	virtual void on_network_server_begin() = 0;
+	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
 	virtual void on_network_server_end() = 0;
 	virtual void on_heartbeat_check();
@@ -121,18 +140,19 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 	void onconnection_connect(conn_io* qconnection) override;
 	void onconnection_connected(conn_io* qconnection) override;
 	void onconnection_destroy(conn_io* qconnection) override;
-	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	void exit_services_gracefully();
+	const struct runserverconfig& get_run_server_config() { return run_server_config; }
 
-	qtextfilelogger logger;
+	qcustomlogger logger;
+	qstatslogger stats_logger;
+
 	qstring host_id;
 	qstring port_id;
-	qhiredis* hiredis = nullptr;
-	qhiredis_async* hiredis_async = nullptr;
 
    private:
-	static void debug_log(const uint8_t* line, void* argp);
+	static void debug_quiche_log(const uint8_t* line, void* argp);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
 	bool validate_token(const uint8_t* token, size_t token_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* odcid, size_t* odcid_len);
@@ -163,6 +183,7 @@ class qnetworkserver : protected bridge_qpeerconnection, protected interface_qhi
 		qhiredis* hiredis = nullptr;
 	};
 
+	qcustomlogger* get_file_logger() { return &logger; }
 	static bool init_threadpool_context(thread_pool_context& context, const void*);
 	static bool cleanup_threadpool_context(thread_pool_context& context);
 	qthreadpool<thread_pool_context> threadpool {QTHREADPOOL_THREAD_COUNT, init_threadpool_context, cleanup_threadpool_context};

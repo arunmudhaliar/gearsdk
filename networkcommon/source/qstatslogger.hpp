@@ -20,12 +20,12 @@ class qstatslogger : public qtextfilelogger {
 	qstatslogger();
 	~qstatslogger();
 
-	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const int TOTAL_RAM);
+	void init(const qstring& install_os, const qstring& device_name, const qstring& device_model, const qstring& app_id, const int TOTAL_RAM);
 
 	size_t log_stats(const qstring& buffer);
 
 	/*
-	 CREATE TABLE qtest_pgdb_schema.stats_debug (session TEXT, pid TEXT, install_os TEXT,
+	 CREATE TABLE gsdk_stats.stats_debug (session TEXT, pid TEXT, install_os TEXT,
 						 server_tstamp timestamp, client_tstamp timestamp, message TEXT,
 						 device_name TEXT, device_model TEXT, total_ram INT4);
 	 */
@@ -54,6 +54,7 @@ class qstatslogger : public qtextfilelogger {
 	qstring device_name;
 	qstring device_model;
 	int total_ram = 0;
+	qstring app_id;
 	bool inited = false;
 };
 

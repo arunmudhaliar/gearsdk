@@ -299,44 +299,68 @@ qstring essentials::get_device_release_str() {
 }
 
 time_t essentials::get_time_local() {
+	// Get the current time in seconds since the Unix epoch (UTC)
 	time_t now = time(NULL);
-	struct tm* tm = localtime(&now);
-	time_t local_time = tm->tm_sec + tm->tm_min * 60 + tm->tm_hour * 3600 + tm->tm_yday * 86400 + (tm->tm_year - 70) * 31536000 + ((tm->tm_year - 69) / 4) * 86400 - ((tm->tm_year - 1) / 100) * 86400 + ((tm->tm_year + 299) / 400) * 86400;
-	return local_time;
+	// Convert to local time
+	struct tm* local_tm = localtime(&now);
+	return mktime(local_tm);
 }
 
-qstring essentials::get_time_local_tostring() {
-	time_t local_time = get_time_local();
-	qstring tmp(ctime(&local_time));
-	return tmp;
+qstring essentials::get_time_local_tostring(time_t& local_time) {
+	local_time = get_time_local();
+	struct tm time_info;
+	char buffer[32];
+	localtime_r(&local_time, &time_info);
+	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
+	return qstring(buffer);
 }
 
 time_t essentials::get_time_utc() {
-	time_t now;
-	time(&now);
+	// Get the current time in seconds since the Unix epoch (UTC)
+	time_t now = time(NULL);
+	// Convert the time to a UTC time structure (tm)
 	struct tm* tm = gmtime(&now);
-	time_t utc_time = tm->tm_sec + tm->tm_min * 60 + tm->tm_hour * 3600 + tm->tm_yday * 86400 + (tm->tm_year - 70) * 31536000 + ((tm->tm_year - 69) / 4) * 86400 - ((tm->tm_year - 1) / 100) * 86400 + ((tm->tm_year + 299) / 400) * 86400;
-	return utc_time;
+	// Convert the UTC time structure back to a time_t (seconds since epoch)
+	return timegm(tm);
 }
 
-qstring essentials::get_time_utc_string() {
-	time_t utc_time = get_time_utc();
+qstring essentials::get_time_utc_string(time_t& utc_time) {
+	utc_time = get_time_utc();
 	qstring tmp = qstring::format_string("%ld", utc_time);
 	return tmp;
 }
 
-qstring essentials::get_time_utc_readable() {
-	time_t utc_time = get_time_utc();
-	qstring tmp(ctime(&utc_time));
-	return tmp;
+qstring essentials::get_time_utc_readable(time_t& utc_time) {
+	utc_time = get_time_utc();	// Get current UTC time
+	struct tm time_info;
+	// Thread-safe version of gmtime
+	gmtime_r(&utc_time, &time_info);
+	// Buffer to hold the formatted date and time string
+	char buffer[32];
+	// Format the time as "YYYY-MM-DD HH:MM:SS"
+	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
+	// Return the formatted time string as qstring
+	return qstring(buffer);
 }
 
 qstring essentials::get_time_utc_postgresql_format() {
 	time_t now;
-	time(&now);
-	struct tm* tm = gmtime(&now);
+	time(&now);	 // Get current time in seconds since the Epoch
+	struct tm time_info;
+	// Use gmtime_r for thread safety
+	gmtime_r(&now, &time_info);
+	// Buffer to hold the formatted timestamp string
 	char timestamp_str[32];
-	snprintf(timestamp_str, sizeof(timestamp_str), "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	// Format the time as "YYYY-MM-DD HH:MM:SS"
+	snprintf(timestamp_str, sizeof(timestamp_str), "%04d-%02d-%02d %02d:%02d:%02d",
+			 time_info.tm_year + 1900,	// Year since 1900
+			 time_info.tm_mon + 1,		// Month range is 0-11
+			 time_info.tm_mday,			// Day of the month
+			 time_info.tm_hour,			// Hours since midnight
+			 time_info.tm_min,			// Minutes after the hour
+			 time_info.tm_sec);			// Seconds after the minute
+
+	// Return the formatted timestamp string as qstring
 	return qstring(timestamp_str);
 }
 
@@ -507,6 +531,7 @@ bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
 	return true;
 }
 
+#if USE_LIBUV
 void essentials::close_uv_handle_callback(uv_handle_t* handle, void* arg) {
 	if (!uv_is_closing(handle)) {
 		uv_close(handle, nullptr);
@@ -533,6 +558,7 @@ bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
 	uv_loop_delete(loop);
 	return true;
 }
+#endif
 
 bool conn_io_req_res::has_crc_header() {
 	header* crc_header = get_header("crc");

@@ -11,6 +11,8 @@
 
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
+#include "../../networkcommon/source/serverconfig.hpp"
+#include "../../qzookeeper/source/qzookeeper.hpp"
 #include "qnetworkserver.hpp"
 #include "room.hpp"
 
@@ -21,17 +23,17 @@
 #define __LOGTAG__ "roomserver"
 
 #define WAITING_ROOM_ZOMBIE_CHECK_TIMER 30.0
-#define WAITING_ROOM_ZOMBIE_THRESHOLD 10.0
+#define WAITING_ROOM_ZOMBIE_THRESHOLD 200.0
 
 // MARK: -
-class roomserver : public qnetworkserver, public roomserver_interface {
+class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async, observer_serverconfig {
    public:
-	roomserver();
+	roomserver(const qstring& zk_uri);
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 
    protected:
-	void on_network_server_begin() override final;
+	bool on_network_server_begin() override final;
 	void on_network_server_init() override;
 	void on_network_server_end() override final;
 	void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override final;
@@ -39,9 +41,15 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void onconnection_connected(conn_io* qconnection) override final;
 	void onconnection_destroy(conn_io* qconnection) override final;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
+	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
+	void on_qhiredis_connect() override;
+	void on_qhiredis_disconnect() override;
 	void on_heartbeat_check() override;
-
 	void onroom_pre_start(room*) override final;
+	bool is_log_quiche() override;
+
+	void configchanged(const qstring& path, const qstring& data) override;
+
 	virtual room* create_room(const msg_room_config* room_config_msg) = 0;
 
 	// timers
@@ -53,6 +61,8 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 	void process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
 
 	room* find_room(int room_id);
+
+	void check_and_update_is_log_quiche_flag();
 
 	qtimer_scheduler scheduler;
 	std::vector<room*> waiting_rooms;
@@ -66,12 +76,21 @@ class roomserver : public qnetworkserver, public roomserver_interface {
 
 	message_parser msg_parser;
 	qtimer* waiting_room_check_zombie_timer = nullptr;
+	qtimer* update_redis_about_gserver_timer = nullptr;
+	bool is_log_quiche_flag = false;
+
+	qhiredis* hiredis = nullptr;
+	qhiredis_async* hiredis_async = nullptr;
+	qzookeeper* qzk = nullptr;
+	serverconfig* zkconfig = nullptr;
 
    private:
+	const qstring zk_uri;
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
 
 	void do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg);
+	qtimer* schedule_update_redis_about_gserver_timer();
 };
 
 #endif /* roomserver_hpp */

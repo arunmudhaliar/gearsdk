@@ -7,6 +7,7 @@ using System.Net.Sockets;
 
 public class TestScript : MonoBehaviour
 {
+    public TMPro.TextMeshProUGUI appTitle;
     public UnityEngine.UI.ScrollRect scrollRect;
     public UnityEngine.UI.ScrollRect scrollRect_qsocket;
     public GameObject resultLabelPrefab;
@@ -30,6 +31,7 @@ public class TestScript : MonoBehaviour
     void Start()
     {
         Debug.Log("TestScript - Start");
+        appTitle.text = $"qunityplugin {Application.version}";
         Screen.fullScreen = false;
         ShowStatusBar();
         previous_valid_ip = PlayerPrefs.GetString("server_ip", previous_valid_ip);
@@ -114,10 +116,10 @@ public class TestScript : MonoBehaviour
         string dotNetVersion = Environment.Version.ToString();
         int processorCount = Environment.ProcessorCount;
 
-        msg_user_get.details.sys_name = osDescription;
-        msg_user_get.details.arch = osArchitecture;
-        msg_user_get.details.node_name = machineName;
-        msg_user_get.details.release = dotNetVersion;
+        msg_user_get.device.sys_name = osDescription;
+        msg_user_get.device.arch = osArchitecture;
+        msg_user_get.device.node_name = machineName;
+        msg_user_get.device.release = dotNetVersion;
 
         string payload = JsonUtility.ToJson(msg_user_get);
 

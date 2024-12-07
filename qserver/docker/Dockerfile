@@ -6,8 +6,10 @@ COPY common ./common
 COPY networkcommon/ ./networkcommon
 COPY qhiredis/ ./qhiredis
 COPY servercommon/ ./servercommon
+COPY qzookeeper/ ./qzookeeper
 COPY qutils/ ./qutils
 COPY qserver/ ./qserver
+COPY configs ./qserver/configs
 COPY make_qserver.sh ./
 COPY run_qserver.sh ./
 COPY qserver/certs/cert.crt ./qserver/
@@ -15,8 +17,10 @@ COPY qserver/certs/cert.key ./qserver/
 RUN apt-get update && apt-get install make -y
 RUN apt-get install build-essential -y
 RUN apt-get install libssl-dev -y
+RUN apt-get install libsasl2-dev -y
 RUN apt install iproute2 -y
 RUN apt-get install zlib1g-dev -y
 RUN apt-get install libcurl4-openssl-dev -y
+RUN apt-get install libunwind-dev -y
 RUN sh make_qserver.sh
 CMD [ "sh", "run_qserver.sh" ]

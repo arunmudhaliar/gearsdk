@@ -1,0 +1,15 @@
+[Unit]
+Description=CPU Monitor Script
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/ubuntu/scripts/cpu-monitor.py --cpu-threshold 40 --check-interval 2 --sample-history 2
+Restart=always
+User=ubuntu
+WorkingDirectory=/home/ubuntu/scripts
+Environment="PYTHONUNBUFFERED=1"
+StandardOutput=append:/var/log/cpu-monitor.log
+StandardError=append:/var/log/cpu-monitor.log
+
+[Install]
+WantedBy=multi-user.target

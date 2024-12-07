@@ -23,7 +23,7 @@ class bridge_command_center {
 
 struct server_config_in {
 	server_config_in(const qstring& host, const qstring& port, const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_, const fs::path& root_dir, struct addrinfo* router, uint16_t command_port, const qstring& router_port,
-					 const qstring& zk_uri, uint16_t router_port_return)
+					 const qstring& zk_uri, uint16_t router_port_return, const qstring& app_id)
 		: host(host),
 		  port(port),
 		  mongodb_uri(mongodb_uri),
@@ -34,7 +34,8 @@ struct server_config_in {
 		  router(router),
 		  command_port(command_port),
 		  router_port(router_port),
-		  router_port_return(router_port_return) {}
+		  router_port_return(router_port_return),
+		  app_id(app_id) {}
 
 	server_config_in(const server_config_in& config)
 		: host(config.host),
@@ -49,7 +50,8 @@ struct server_config_in {
 		  command_feedback_port(config.command_feedback_port),
 		  ref(config.ref),
 		  router_port(config.router_port),
-		  router_port_return(config.router_port_return) {}
+		  router_port_return(config.router_port_return),
+		  app_id(config.app_id) {}
 	qstring host = "localhost";
 	qstring port = "4004";
 	qstring mongodb_uri = "mongodb://localhost:27017";	//"mongodb://192.168.0.230:6006"
@@ -65,6 +67,7 @@ struct server_config_in {
 	bridge_command_center* ref = nullptr;
 	qstring router_port;
 	uint16_t router_port_return = 4005;
+	qstring app_id = "default";
 };
 
 struct route {

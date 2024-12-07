@@ -112,34 +112,82 @@ int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qs
 	return EXIT_SUCCESS;
 }
 
-/*
-int qmongo::create_client_index_if_not(mongoc_collection_t* collection, const qstring& collection_name) {
-	if (!interface) {
+int qmongo::find_and_upsert(const qstring& collection_name, type_qmongo_findupdate_find_query_cb find_query_cb, type_qmongo_findupdate_update_query_cb update_query_cb, type_qmongo_findupdate_insert_query_cb insert_query_cb) {
+	mongoc_collection_t* collection = get_collection(collection_name);
+	if (collection == nullptr) {
+		fprintf(stderr, "f:find_and_upsert - collection not found : %s\n", collection_name.c_str());
 		return EXIT_FAILURE;
 	}
+	bson_t find_query;
+	bson_t update_doc;
+	bson_t set_on_insert;
 	bson_error_t error;
-	bson_t indexkey;
-	bson_init (&indexkey);
-	bson_t opt;
-	bson_init (&opt);
+	bson_t child;
 
-	interface->on_mongo_create_index_keys(collection_name.c_str(), &indexkey, &opt);
+	// Initialize the find query
+	bson_init(&find_query);
+	find_query_cb(find_query);
 
-	mongoc_index_model_t *im = mongoc_index_model_new(&indexkey, &opt);
+	// Initialize the update document
+	bson_init(&update_doc);
+	// Add $set to update
+	bson_append_document_begin(&update_doc, "$set", strlen("$set"), &child);
+	update_query_cb(child);
+	bson_append_document_end(&update_doc, &child);
 
-	if (mongoc_collection_create_indexes_with_opts(collection, &im, 1, nullptr, nullptr, &error)) {
-		printf ("Successfully created index\n");
-	} else {
-		fprintf (stderr, "%s\n", error.message);
-		bson_destroy (&indexkey);
-		mongoc_index_model_destroy(im);
+	// Add $setOnInsert to insert user details if not found
+	bson_append_document_begin(&update_doc, "$setOnInsert", strlen("$setOnInsert"), &set_on_insert);
+	insert_query_cb(set_on_insert);
+	bson_append_document_end(&update_doc, &set_on_insert);
+
+	bson_t opts;
+	bson_init(&opts);
+	BSON_APPEND_BOOL(&opts, "upsert", true);
+
+	// Perform the update (upsert)
+	bool success = mongoc_collection_update_one(collection, &find_query, &update_doc, &opts, nullptr, &error);
+	if (!success) {
+		fprintf(stderr, "f:find_and_upsert failed: %s\n", error.message);
+	}
+
+	bson_destroy(&opts);
+	bson_destroy(&find_query);
+	bson_destroy(&update_doc);
+	return success ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int qmongo::find_and_update(const qstring& collection_name, const qstring& search_field, const qstring& search_value, type_qmongo_findupdate_update_query_cb update_query_cb) {
+	mongoc_collection_t* collection = get_collection(collection_name);
+	if (collection == nullptr) {
+		fprintf(stderr, "f:find_and_update - collection not found : %s\n", collection_name.c_str());
 		return EXIT_FAILURE;
 	}
-	mongoc_index_model_destroy(im);
-	bson_destroy (&indexkey);
-	return EXIT_SUCCESS;
+
+	bson_t filter;
+	bson_init(&filter);
+	bson_append_utf8(&filter, search_field.c_str(), (int) search_field.length(), search_value.c_str(), (int) search_value.length());
+
+	bson_t update_doc;
+	bson_init(&update_doc);
+	update_query_cb(update_doc);
+
+	bson_t opts;
+	bson_init(&opts);
+	bson_append_bool(&opts, "upsert", strlen("upsert"), true);
+
+	bson_error_t error;
+	bson_t reply;
+	bool success = mongoc_collection_update_one(collection, &filter, &update_doc, &opts, &reply, &error);
+	if (!success) {
+		fprintf(stderr, "f:find_and_update - Update failed: %s\n", error.message);
+	}
+
+	bson_destroy(&reply);
+	bson_destroy(&opts);
+	bson_destroy(&update_doc);
+	bson_destroy(&filter);
+	return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-*/
 
 int qmongo::insert(const qstring& collection_name, bson_t& query) {
 	bson_error_t error;
