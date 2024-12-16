@@ -42,8 +42,8 @@ struct conn_io_qh3_client {
 	struct sockaddr_storage local_addr;
 	socklen_t local_addr_len;
 
-	Connection* conn = nullptr;
-	Connection* http3 = nullptr;
+	quiche_conn* conn = nullptr;
+	quiche_h3_conn* http3 = nullptr;
 	bridge_h3client_connection* bridge = nullptr;
 
 	bool req_sent = false;
@@ -74,12 +74,12 @@ class qh3client : public bridge_h3client_connection {
 
 	struct ev_loop* mainloop = nullptr;
 
-	static void debug_log(const uint8_t* line, void* arg);
+	static void debug_log(const char* line, void* arg);
 	void flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) final;
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	inline const struct conn_io_req_res* get_getorpost_http_request() final { return http_request; }
 	static int for_each_setting(uint64_t identifier, uint64_t value, void* argp);
-	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
+	static int for_each_header(uint8_t* name, size_t name_len, uint8_t* value, size_t value_len, void* argp);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	static void connection_establishment_timeout_cb(EV_P_ ev_timer* w, int revents);

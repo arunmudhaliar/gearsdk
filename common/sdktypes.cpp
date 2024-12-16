@@ -11,9 +11,14 @@
 #include <cmath>
 #include <inttypes.h>  // Include this for PRIu64
 #include <iostream>
+#if PLATFORM != PLATFORM_WINDOWS
 #include <sys/resource.h>
-#include <time.h>
 #include <unistd.h>
+#else
+#include <stdarg.h>
+#endif
+#include <time.h>
+
 
 #if PLATFORM == PLATFORM_ANDROID
 #include <android/log.h>
@@ -32,12 +37,13 @@ int init_gsdk(JavaVM* JavaVM) {
 #else
 int init_gsdk() {
 #endif
+#if PLATFORM != PLATFORM_WINDOWS
 	errno = 0;
 	if (uname(&device::device_details) != 0) {
 		perror("uname doesn't return 0, so there is an error");
 		return -1;
 	}
-
+#endif
 	print_common_info();
 	return 0;
 }
@@ -84,6 +90,7 @@ void print_common_info() {
 	debug_print(LOG_LEVEL_0, __DEFAULT_LOG_TAG__, "DEBUG");
 #endif
 
+#if PLATFORM != PLATFORM_WINDOWS
 	// fd limits info
 	struct rlimit limit;
 	if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
@@ -99,6 +106,7 @@ void print_common_info() {
 		debug_print_warn(__DEFAULT_LOG_TAG__, "Error getting maximum fd");
 	}
 	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "FD_SETSIZE: %ld", FD_SETSIZE);
+#endif
 }
 
 int number_of_digits(unsigned int num) {
@@ -156,7 +164,11 @@ void debug_print(int log_level, const char* tag, const char* format, ...) {
 	}
 	time_t current_time = time(NULL);
 	struct tm time_info;
+#if PLATFORM == PLATFORM_WINDOWS
+	localtime_s(&time_info, &current_time);	 // Windows version
+#else
 	localtime_r(&current_time, &time_info);	 // Thread-safe localtime variant
+#endif
 	char time_buffer[20];					 // Buffer for time in "YYYY-MM-DD HH:MM:SS" format
 	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 
@@ -177,9 +189,11 @@ void debug_print2_internal(int log_level, const char* tag, const char* file, con
 		return;
 	}
 	time_t current_time = time(NULL);
-	struct tm* time_info = localtime(&current_time);
+	// struct tm* time_info = localtime(&current_time);
+	struct tm time_info;
+	localtime_s(&time_info, &current_time);	 // Safer version of localtime
 	char time_buffer[20];  // Enough for "YYYY-MM-DD HH:MM:SS"
-	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", time_info);
+	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list args;
 	va_start(args, format);

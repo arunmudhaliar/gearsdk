@@ -137,6 +137,8 @@ public class qunitysdk : MonoBehaviour
     const string cp = "libqunityplugin.so";
 #elif UNITY_STANDALONE_LINUX
     const string cp = "libqunityplugin.so";
+#elif UNITY_STANDALONE_WIN
+    const string cp = "qunityplugin";
 #endif
 
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]

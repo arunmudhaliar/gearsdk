@@ -15,7 +15,7 @@
 using namespace client;
 
 template int qh3client_helper::send_async_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, void* arg, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout,
-															 type_qh3client_helper_finalize_cb finalize_cb = nullptr);
+															 type_qh3client_helper_finalize_cb finalize_cb);
 template int qh3client_helper::send_request<qh3client>(const qstring host, const qstring port, const conn_io_req_res* data_getorpost_, type_qh3client_helper_cb async_cb, int retry, float connection_establishment_timeout);
 
 #if PLATFORM == PLATFORM_ANDROID
@@ -122,11 +122,13 @@ void* qh3client_helper::run_internal(void* data) {
 		}
 		T* new_client = DEBUG_NEW T(req_obj->host, req_obj->port, req_obj->arg);
 		new_client->send_request(req_obj->data, req_obj->async_cb, req_obj->connection_establishment_timeout);
-		response_received = new_client->conn_io->res_received;
-		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
-			debug_print(LOG_LEVEL_3, __LOGTAG__, "send_request returned with response_received %d", response_received);
-			if (!response_received && req_obj->async_cb != nullptr) {
-				respond_with_empty_response(req_obj, new_client);
+		if (new_client->conn_io) {
+			response_received = new_client->conn_io->res_received;
+			if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
+				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_request returned with response_received %d", response_received);
+				if (!response_received && req_obj->async_cb != nullptr) {
+					respond_with_empty_response(req_obj, new_client);
+				}
 			}
 		}
 		new_client->on_post_send_cleanup();
