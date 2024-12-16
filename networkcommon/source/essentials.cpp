@@ -15,6 +15,10 @@
 #include <sys/types.h>
 #endif
 
+#if PLATFORM == PLATFORM_MAC
+#include "../../common/platform/ios_mac/ios_mac_helper.h"
+#endif
+
 using namespace gsdk;
 
 // MARK: - QMutex
@@ -296,6 +300,28 @@ qstring essentials::get_device_arch() {
 }
 qstring essentials::get_device_release_str() {
 	return qstring(device::device_details.release);
+}
+
+qstring essentials::get_device_duid() {
+#if PLATFORM == PLATFORM_MAC
+	char* duid_cstr = gsdk::platform::apple::ios_mac_helper::get_duid();
+	if (duid_cstr) {
+        strncpy(gsdk::device::device_duid, duid_cstr, strlen(duid_cstr));
+		free(duid_cstr);
+	}
+#endif
+	return qstring(gsdk::device::device_duid);
+}
+
+qstring essentials::get_device_locale() {
+#if PLATFORM == PLATFORM_MAC
+	char* locale_cstr = gsdk::platform::apple::ios_mac_helper::get_locale();
+	if (locale_cstr) {
+        strncpy(gsdk::device::device_locale, locale_cstr, strlen(locale_cstr));
+		free(locale_cstr);
+	}
+#endif
+    return qstring(gsdk::device::device_locale);
 }
 
 time_t essentials::get_time_local() {

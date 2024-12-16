@@ -22,6 +22,8 @@
 using namespace gsdk;
 
 struct utsname device::device_details;
+char device::device_duid[256] = "";
+char device::device_locale[16] = "";
 char server::machine_public_ip[16] = "0.0.0.0";
 
 extern "C" {

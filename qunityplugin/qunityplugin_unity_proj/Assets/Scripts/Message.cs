@@ -43,6 +43,8 @@ public class rq_msg_user_get : rq_msg_user_base {
         public string node_name;
         public string release;
         public string arch;
+        public string duid;
+        public string locale;
     }
     public device_struct device;
 

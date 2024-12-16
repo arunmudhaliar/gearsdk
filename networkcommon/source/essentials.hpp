@@ -115,6 +115,8 @@ class essentials {
 	static qstring get_device_name();
 	static qstring get_device_arch();
 	static qstring get_device_release_str();
+	static qstring get_device_duid();
+	static qstring get_device_locale();
 
 	static int get_memory_info(int& curr_real_mem, int& peak_real_mem, int& curr_virt_mem, int& peak_virt_mem);
 	static long long get_total_ram();

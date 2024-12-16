@@ -185,6 +185,11 @@ bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
 	// Access the nested objects and values
 	if (obj.HasMember("device") && obj["device"].IsObject()) {
 		const Value& device = obj["device"];
+		if (device.HasMember("duid") && device["duid"].IsString()) {
+			duid = device["duid"].GetString();
+		} else {
+			return false;
+		}
 		if (device.HasMember("sys_name") && device["sys_name"].IsString()) {
 			sys_name = device["sys_name"].GetString();
 		} else {
@@ -197,6 +202,11 @@ bool rq_msg_user_get::deserialize(rapidjson::Value& obj) {
 		}
 		if (device.HasMember("release") && device["release"].IsString()) {
 			release = device["release"].GetString();
+		} else {
+			return false;
+		}
+		if (device.HasMember("locale") && device["locale"].IsString()) {
+			locale = device["locale"].GetString();
 		} else {
 			return false;
 		}
@@ -220,10 +230,12 @@ void rq_msg_user_get::serialize(rapidjson::Value& obj, rapidjson::Document::Allo
 	rapidjson::Value device(rapidjson::kObjectType);
 
 	// Add values to the "device" object
+	device.AddMember("duid", Value().SetString(duid.c_str(), (uint32_t) duid.length(), allocator), allocator);
 	device.AddMember("sys_name", Value().SetString(sys_name.c_str(), (uint32_t) sys_name.length(), allocator), allocator);
 	device.AddMember("node_name", Value().SetString(node_name.c_str(), (uint32_t) node_name.length(), allocator), allocator);
 	device.AddMember("release", Value().SetString(release.c_str(), (uint32_t) release.length(), allocator), allocator);
 	device.AddMember("arch", Value().SetString(arch.c_str(), (uint32_t) arch.length(), allocator), allocator);
+	device.AddMember("locale", Value().SetString(locale.c_str(), (uint32_t) locale.length(), allocator), allocator);
 
 	// Add the "device" object to the main document
 	obj.AddMember("device", device, allocator);

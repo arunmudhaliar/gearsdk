@@ -9,6 +9,8 @@
 #ifndef qunityplugin_hpp
 #define qunityplugin_hpp
 
+#include "../../common/sdktypes.hpp"
+#include "../../networkcommon/source/essentials.hpp"
 #include "../../qclient/source/qnetworkclient.hpp"
 #include "../../qh3client/qh3client/qh3client.hpp"
 #include "../../qh3client/qh3client/qh3client_helper.hpp"
@@ -71,6 +73,8 @@ EXPORT static int qsocket_close(unsigned long guid_crc);
 EXPORT static void destroy_finished_qsockets();
 EXPORT static void qsocket_print_info();
 EXPORT static unsigned long get_crc32(const char* guid, int guid_len);
+EXPORT static const char* get_duid();
+EXPORT static const char* get_locale();
 }
 };	// namespace qunitysdk
 
