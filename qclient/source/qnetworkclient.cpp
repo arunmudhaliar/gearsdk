@@ -9,10 +9,9 @@
 #include "qnetworkclient.hpp"
 
 #if PLATFORM == PLATFORM_WINDOWS
-#include <wincrypt.h>
 #include <corecrt_io.h>
+#include <wincrypt.h>
 #endif
-
 
 using client::conn_io_client;
 using client::qnetworkclient;
@@ -144,7 +143,7 @@ int conn_io_client::connect(qstring host, qstring port) {
 	int tmp_local_addr_len = sizeof(tmp_local_addr);
 	memset(&tmp_local_addr, 0, sizeof(tmp_local_addr));
 	tmp_local_addr.sin_family = AF_INET;
-	tmp_local_addr.sin_port = htons(0);		  // Let the system pick an available port
+	tmp_local_addr.sin_port = htons(0);			  // Let the system pick an available port
 	tmp_local_addr.sin_addr.s_addr = INADDR_ANY;  // Bind to any local address
 
 	// Bind the socket
@@ -264,7 +263,7 @@ void qnetworkclient::sendto_retry_cb(EV_P_ ev_timer* w, int revents) {
 #if PLATFORM != PLATFORM_WINDOWS
 		ssize_t sent = sendto(data->sockfd, data->buf, data->len, data->flags, data->dest_addr, data->addrlen);
 #else
-		ssize_t sent = sendto(data->sockfd, (const char*)data->buf, data->len, data->flags, data->dest_addr, data->addrlen);
+		ssize_t sent = sendto(data->sockfd, (const char*) data->buf, data->len, data->flags, data->dest_addr, data->addrlen);
 #endif
 		bytes_sent += sent;
 		if (sent < 0) {
@@ -285,7 +284,7 @@ ssize_t qnetworkclient::socket_sendto(int sockfd, const void* buf, size_t len, i
 #if PLATFORM != PLATFORM_WINDOWS
 	ssize_t sent = sendto(sockfd, buf, len, flags, dest_addr, addrlen);
 #else
-	ssize_t sent = sendto(sockfd, (const char*)buf, len, flags, dest_addr, addrlen);
+	ssize_t sent = sendto(sockfd, (const char*) buf, len, flags, dest_addr, addrlen);
 #endif
 	if (sent < 0) {
 		debug_print_error(__LOGTAG__, "f:socket_sendto - failed to send");

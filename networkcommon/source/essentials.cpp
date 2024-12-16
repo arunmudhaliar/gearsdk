@@ -10,6 +10,7 @@
 
 #if PLATFORM != PLATFORM_WINDOWS
 #include <arpa/inet.h>
+#include <fcntl.h>
 #endif
 
 #include <cstring>
@@ -591,7 +592,7 @@ bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
 
 int essentials::set_non_blocking(int socket) {
 #if PLATFORM != PLATFORM_WINDOWS
-	return fcntl(sock, F_SETFL, O_NONBLOCK)
+	return fcntl(socket, F_SETFL, O_NONBLOCK);
 #else
 	u_long mode = 1;  // 1 for non-blocking mode
 	return ioctlsocket(socket, FIONBIO, &mode);

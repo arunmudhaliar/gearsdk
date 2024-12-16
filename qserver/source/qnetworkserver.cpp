@@ -54,13 +54,14 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 	}
 	bool success = false;
 	uint64_t s = 0;
-	StreamIter* writable = quiche_conn_writable(conn);
+	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		if (last_stream_s == s) {
 			continue;
 		}
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "stream %" PRIu64 " is writable", s);
-		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
+        uint64_t out_error_code = 0;
+		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
 		if (sent_len != (ssize_t) buflen) {
 			debug_print_error(__LOGTAG__, "send failure %d", sent_len);
 			break;
@@ -75,7 +76,8 @@ void conn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 	uint64_t next_s = last_stream_s;
 	while (!success && next_s < MAX_SEND_STREAM_TO_TRY) {
 		next_s = (next_s + 1) + (next_s % 2);
-		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false);
+        uint64_t out_error_code = 0;
+		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
 		if (sent_len == (ssize_t) buflen) {
 			debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
 			last_stream_s = next_s;
@@ -98,11 +100,12 @@ void conn_io::close() {
 		return;
 	}
 	uint64_t s = 0;
-	StreamIter* writable = quiche_conn_writable(conn);
+	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - stream %" PRIu64 " is writable - connection %0x", s, cid_hash_val);
 		const char* byez = "byez\n";
-		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true);
+        uint64_t out_error_code = 0;
+		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true, &out_error_code);
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - sending 'byez' - connection %0x", cid_hash_val);
 		if (bye_sent_len != 5) {
 			debug_print_error(__LOGTAG__, "f:close - sending 'byez' failed !!! - connection %0x", cid_hash_val);
@@ -190,7 +193,7 @@ conn_io* qnetworkserver::create_conn(uint8_t* scid, size_t scid_len, uint8_t* od
 		return nullptr;
 	}
 
-	Connection* conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_addr, peer_addr_len, config);
+    quiche_conn* conn = quiche_accept(qconnection->cid, Q_LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_addr, peer_addr_len, config);
 	if (conn == nullptr) {
 		debug_print_error(__LOGTAG__, "failed to create connection");
 		GX_DELETE(qconnection);
@@ -239,7 +242,7 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_i
 }
 
 void qnetworkserver::flush_egress(struct ev_loop* loop, conn_io* qconnection) {
-	SendInfo send_info;
+	quiche_send_info send_info;
 	while (true) {
 		ssize_t written = quiche_conn_send(qconnection->conn, qconnection->egress_out, sizeof(qconnection->egress_out), &send_info);
 		if (written == QUICHE_ERR_DONE) {
@@ -298,8 +301,8 @@ void qnetworkserver::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	qconnection->bridge->flush_egress(loop, qconnection);
 
 	if (quiche_conn_is_closed(qconnection->conn)) {
-		Stats stats;
-		PathStats path_stats;
+		quiche_stats stats;
+		quiche_path_stats path_stats;
 
 		quiche_conn_stats(qconnection->conn, &stats);
 		quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
@@ -342,13 +345,13 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 		uint8_t type;
 		uint32_t version;
 
-		uint8_t scid[MAX_CID_LEN];
+		uint8_t scid[QUICHE_MAX_CONN_ID_LEN];
 		size_t scid_len = sizeof(scid);
 
-		uint8_t dcid[MAX_CID_LEN];
+		uint8_t dcid[QUICHE_MAX_CONN_ID_LEN];
 		size_t dcid_len = sizeof(dcid);
 
-		uint8_t odcid[MAX_CID_LEN];
+		uint8_t odcid[QUICHE_MAX_CONN_ID_LEN];
 		size_t odcid_len = sizeof(odcid);
 
 		uint8_t token[MAX_TOKEN_LEN];
@@ -436,7 +439,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			}
 		}
 
-		RecvInfo recv_info = {
+		quiche_recv_info recv_info = {
 			(struct sockaddr*) &peer_addr,
 			peer_addr_len,
 
@@ -464,17 +467,18 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				qconnection->bridge->onconnection_connected(qconnection);
 			}
 			uint64_t s = 0;
-			StreamIter* readable = quiche_conn_readable(qconnection->conn);
+			quiche_stream_iter* readable = quiche_conn_readable(qconnection->conn);
 			while (quiche_stream_iter_next(readable, &s)) {
 				debug_print(LOG_LEVEL_4, __LOGTAG__, "stream %" PRIu64 " is readable", s);
 				bool fin = false;
-				ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s, conns->buf, sizeof(conns->buf), &fin);
+                uint64_t out_error_code = 0;
+				ssize_t recv_len = quiche_conn_stream_recv(qconnection->conn, s, conns->buf, sizeof(conns->buf), &fin, &out_error_code);
 				if (recv_len < 0) {
 					break;
 				}
 				if (fin) {
 					const char* resp = "byez\n";
-					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, reinterpret_cast<const uint8_t*>(resp), 5, true);
+					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, reinterpret_cast<const uint8_t*>(resp), 5, true, &out_error_code);
 					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
 					if (bye_sent_len != 5) {
 						debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
@@ -496,8 +500,8 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 		flush_egress(loop, qconnection);
 
 		if (quiche_conn_is_closed(qconnection->conn)) {
-			Stats stats;
-			PathStats path_stats;
+			quiche_stats stats;
+			quiche_path_stats path_stats;
 
 			quiche_conn_stats(qconnection->conn, &stats);
 			quiche_conn_path_stats(qconnection->conn, 0, &path_stats);
@@ -532,8 +536,8 @@ void qnetworkserver::force_disconnect_all() {
 		if (quiche_conn_is_closed(conn_io_ptr->conn)) {
 			debug_print(LOG_LEVEL_0, __LOGTAG__, "force close : connection is already closed");
 		}
-		Stats stats;
-		PathStats path_stats;
+		quiche_stats stats;
+		quiche_path_stats path_stats;
 		quiche_conn_stats(conn_io_ptr->conn, &stats);
 		quiche_conn_path_stats(conn_io_ptr->conn, 0, &path_stats);
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
@@ -690,7 +694,7 @@ void* qnetworkserver::run_internal(void* data) {
 		pthread_exit(&run_config->pthread_return_value);
 	}
 
-	thiz->config = quiche_config_new(PROTOCOL_VERSION);
+	thiz->config = quiche_config_new(QUICHE_PROTOCOL_VERSION);
 	if (thiz->config == nullptr) {
 		freeaddrinfo(local);
 		debug_print_error(__LOGTAG__, "failed to create config");
@@ -734,7 +738,7 @@ void* qnetworkserver::run_internal(void* data) {
 	quiche_config_set_initial_max_stream_data_bidi_local(thiz->config, 1000000);
 	quiche_config_set_initial_max_stream_data_bidi_remote(thiz->config, 1000000);
 	quiche_config_set_initial_max_streams_bidi(thiz->config, 100);
-	quiche_config_set_cc_algorithm(thiz->config, Reno);
+	quiche_config_set_cc_algorithm(thiz->config, quiche_cc_algorithm::QUICHE_CC_RENO);
 
 	// Generate a 16-byte token for stateless reset
 	uint8_t stateless_reset_token[16] = {0x1a, 0x2b, 0x3c, 0x4d, 0x5e, 0x6f, 0x7a, 0x8b, 0x9c, 0xad, 0xbe, 0xcf, 0xda, 0xeb, 0xfc, 0x0d};

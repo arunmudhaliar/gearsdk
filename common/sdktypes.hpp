@@ -179,31 +179,21 @@ extern "C" DECLSPEC void debug_print_hexadecimal_string(int log_level, const cha
 #ifndef PATH_MAX
 #define PATH_MAX 260  // Default Windows path limit
 #endif
-#include <direct.h>		// Required for _getcwd
+#include <direct.h>	 // Required for _getcwd
 #define getcwd _getcwd
-#include <process.h>	// Required for _getpid
+#include <process.h>  // Required for _getpid
 #define getpid _getpid
-#include <cstddef>		// For size_t, ptrdiff_t
-//#ifndef INET6_ADDRSTRLEN  // Define INET6_ADDRSTRLEN for Windows
-//#define INET6_ADDRSTRLEN 46
-//#endif
-//#define NI_NUMERICHOST 1
-//#define NI_NUMERICSERV 2
+#include <cstddef>	// For size_t, ptrdiff_t
 #define timegm _mkgmtime
 #define gmtime_r gmtime_s
-// Define ssize_t for Windows if it's not already defined
-//#ifndef _SSIZE_T_DEFINED	// Check if SSIZE_T is already defined
-//#define _SSIZE_T_DEFINED
-//typedef ptrdiff_t ssize_t;	// Can also use long or int, but ptrdiff_t is the most accurate alternative
-//#endif
 
 struct utsname {
-	char sysname[128];		// Operating system name (e.g., "Linux")
-	char nodename[128];	 // Node name (hostname)
-	char release[64];		// OS release (e.g., "5.8.0")
-	char version[64];		// OS version (e.g., "#1 SMP Thu Oct 15 18:25:36 UTC 2020")
-	char machine[32];		// Machine hardware name (e.g., "x86_64")
-	char domainname[64];	// Domain name (optional, may be an empty string)
+	char sysname[128];	  // Operating system name (e.g., "Linux")
+	char nodename[128];	  // Node name (hostname)
+	char release[64];	  // OS release (e.g., "5.8.0")
+	char version[64];	  // OS version (e.g., "#1 SMP Thu Oct 15 18:25:36 UTC 2020")
+	char machine[32];	  // Machine hardware name (e.g., "x86_64")
+	char domainname[64];  // Domain name (optional, may be an empty string)
 };
 #else
 #define closesocket close

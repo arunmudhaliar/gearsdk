@@ -31,16 +31,15 @@
 #endif
 
 #include <string>
-
 #include <vector>
 // #include <quiche.h>
+#include <pthread.h>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 #include <time.h>
 #include <zlib.h>
-#include <pthread.h>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "essentials"

@@ -56,7 +56,6 @@ class qsocket : public qnetworkclient {
 
 std::map<unsigned long, qsocket*> qsockets;
 
-
 #if PLATFORM == PLATFORM_WINDOWS
 #define EXPORT __declspec(dllexport)
 #else
@@ -70,7 +69,7 @@ typedef void (*type_qh3client_plugin_helper_cb)(const char* payload, void* arg, 
 EXPORT int send_async_request(const char* host, const char* port, const char* path, const char* payload, void* arg, type_qh3client_plugin_helper_cb callback, int retry);
 void destroy_qsocket(qsocket* qs);
 EXPORT bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg, qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
-								   qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close);
+							qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close);
 EXPORT bool qsocket_is_run_finished(unsigned long guid_crc);
 EXPORT int qsocket_sendMessage(unsigned long guid_crc, const char* buffer, unsigned long size, bool flush);
 EXPORT int qsocket_close(unsigned long guid_crc);

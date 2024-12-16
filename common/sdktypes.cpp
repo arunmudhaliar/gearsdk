@@ -19,7 +19,6 @@
 #endif
 #include <time.h>
 
-
 #if PLATFORM == PLATFORM_ANDROID
 #include <android/log.h>
 #endif
@@ -169,7 +168,7 @@ void debug_print(int log_level, const char* tag, const char* format, ...) {
 #else
 	localtime_r(&current_time, &time_info);	 // Thread-safe localtime variant
 #endif
-	char time_buffer[20];					 // Buffer for time in "YYYY-MM-DD HH:MM:SS" format
+	char time_buffer[20];  // Buffer for time in "YYYY-MM-DD HH:MM:SS" format
 	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 
 	char buffer[LOGBUFFER_SIZE + 1];
@@ -191,7 +190,11 @@ void debug_print2_internal(int log_level, const char* tag, const char* file, con
 	time_t current_time = time(NULL);
 	// struct tm* time_info = localtime(&current_time);
 	struct tm time_info;
+#if PLATFORM == PLATFORM_WINDOWS
 	localtime_s(&time_info, &current_time);	 // Safer version of localtime
+#else
+	localtime_r(&current_time, &time_info);
+#endif
 	char time_buffer[20];  // Enough for "YYYY-MM-DD HH:MM:SS"
 	strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 	char buffer[LOGBUFFER_SIZE + 1];

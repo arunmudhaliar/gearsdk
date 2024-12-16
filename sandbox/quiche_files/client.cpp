@@ -69,7 +69,7 @@ static void debug_log(const uint8_t *line, void *argp) {
 static void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
     static uint8_t out[MAX_DATAGRAM_SIZE];
 
-    SendInfo send_info;
+    quiche_send_info send_info;
 
     while (1) {
         ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out),
@@ -129,7 +129,7 @@ static void recv_cb(EV_P_ ev_io *w, int revents) {
             return;
         }
 
-        RecvInfo recv_info = {
+        quiche_recv_info recv_info = {
             (struct sockaddr *) &peer_addr,
             peer_addr_len,
 
@@ -179,7 +179,7 @@ static void recv_cb(EV_P_ ev_io *w, int revents) {
     if (quiche_conn_is_established(conn_io->conn)) {
         uint64_t s = 0;
 
-        StreamIter *readable = quiche_conn_readable(conn_io->conn);
+        quiche_stream_iter *readable = quiche_conn_readable(conn_io->conn);
 
         while (quiche_stream_iter_next(readable, &s)) {
             fprintf(stderr, "stream %" PRIu64 " is readable\n", s);
@@ -216,8 +216,8 @@ static void timeout_cb(EV_P_ ev_timer *w, int revents) {
     flush_egress(loop, conn_io);
 
     if (quiche_conn_is_closed(conn_io->conn)) {
-        Stats stats;
-        PathStats path_stats;
+        quiche_stats stats;
+        quiche_path_stats path_stats;
 
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);

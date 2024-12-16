@@ -39,7 +39,7 @@ void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* co
 		}
 
 #if PLATFORM == PLATFORM_WINDOWS
-		ssize_t sent = sendto(conn_io->sock, (const char*)conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
+		ssize_t sent = sendto(conn_io->sock, (const char*) conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 #else
 		ssize_t sent = sendto(conn_io->sock, conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
 #endif
@@ -227,7 +227,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 		memset(&peer_addr, 0, peer_addr_len);
 
 #if PLATFORM == PLATFORM_WINDOWS
-		ssize_t read = recvfrom(conn_io->sock, (char*)conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
+		ssize_t read = recvfrom(conn_io->sock, (char*) conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
 		if (read < 0) {
 			int error = WSAGetLastError();
 			if (error == WSAEWOULDBLOCK) {
@@ -501,11 +501,13 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	}
 
 	int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
+#if PLATFORM == PLATFORM_WINDOWS
 	if (sock == INVALID_SOCKET) {
 		fprintf(stderr, "Socket creation failed %d", sock);
 		freeaddrinfo(peer);
 		return -1;
 	}
+#endif
 	if (sock < 0) {
 		fprintf(stderr, "failed to create socket");
 		freeaddrinfo(peer);

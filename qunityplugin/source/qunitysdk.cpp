@@ -130,7 +130,7 @@ EXPORT unsigned long get_crc32(const char* guid, int guid_len) {
 }
 
 EXPORT bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg, qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
-					 qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close) {
+							qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close) {
 	if (qsockets.find(guid_crc) != qsockets.end()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "qsocket_connect failed - guid_crc already exist %d", guid_crc);
 		return false;
@@ -184,7 +184,7 @@ EXPORT void qsocket_print_info() {
 }
 }
 
-//#define QH3TEST_APP 1
+// #define QH3TEST_APP 1
 #if PLATFORM == PLATFORM_WINDOWS && QH3TEST_APP
 // Callback function definition
 void async_request_callback(const char* payload, void* arg, bool success) {
@@ -198,7 +198,7 @@ void test_qh3client() {
 	const char* port = "4004";
 	const char* path = "/whoami";
 	const char* payload = "{}";
-	void* user_arg = nullptr;	 // You can pass any user-defined argument here
+	void* user_arg = nullptr;  // You can pass any user-defined argument here
 
 	int result = send_async_request(host, port, path, payload, user_arg, async_request_callback, 3);
 	if (result != 0) {
@@ -210,20 +210,19 @@ void test_qh3client() {
 void test_qclient() {
 	const char* host = "15.206.79.30";
 	const char* port = "4000";
-	void* user_arg = nullptr;	 // You can pass any user-defined argument here
+	void* user_arg = nullptr;  // You can pass any user-defined argument here
 
 	const int CONNECTION1_GUID = 12345;
 	const int CONNECTION2_GUID = 12347;
 	bool result1 = qsocket_connect(
 		CONNECTION1_GUID, host, port, user_arg,
-		[](unsigned long guid_crc, void* v) { 
-			debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connected %d", guid_crc); 
+		[](unsigned long guid_crc, void* v) {
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connected %d", guid_crc);
 			const char* payload = "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f5159b\"}";
 			qsocket_sendMessage(guid_crc, payload, strlen(payload), true);
 		},
-		[](unsigned long guid_crc, unsigned long recv_len, uint8_t* buf) { debug_print(LOG_LEVEL_0, __LOGTAG__, "msg recv %d - %.*s", guid_crc, recv_len, buf); }, 
-		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket release connection %d", guid_crc); },
-		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connection closed %d", guid_crc); });
+		[](unsigned long guid_crc, unsigned long recv_len, uint8_t* buf) { debug_print(LOG_LEVEL_0, __LOGTAG__, "msg recv %d - %.*s", guid_crc, recv_len, buf); },
+		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket release connection %d", guid_crc); }, [](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connection closed %d", guid_crc); });
 	if (!result1) {
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Connection1 request failed");
 	}
@@ -231,13 +230,12 @@ void test_qclient() {
 	bool result2 = qsocket_connect(
 		CONNECTION2_GUID, host, port, user_arg,
 		[](unsigned long guid_crc, void* v) {
-			debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connected %d", guid_crc); 
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connected %d", guid_crc);
 			const char* payload = "{\"sig\":31387,\"t_crc\":3673067835,\"room_config\":{\"min\":2,\"max\":4,\"betx\":0,\"rewardx\":8192,\"allow_after_start\":false},\"prev_cid_hash_val\":0,\"room_id\":-1,\"pid\":\"57f515a1\"}";
 			qsocket_sendMessage(guid_crc, payload, strlen(payload), true);
 		},
-		[](unsigned long guid_crc, unsigned long recv_len, uint8_t* buf) { debug_print(LOG_LEVEL_0, __LOGTAG__, "msg recv %d - %.*s", guid_crc, recv_len, buf); }, 
-		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket release connection %d", guid_crc); },
-		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connection closed %d", guid_crc); });
+		[](unsigned long guid_crc, unsigned long recv_len, uint8_t* buf) { debug_print(LOG_LEVEL_0, __LOGTAG__, "msg recv %d - %.*s", guid_crc, recv_len, buf); },
+		[](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket release connection %d", guid_crc); }, [](unsigned long guid_crc) { debug_print(LOG_LEVEL_0, __LOGTAG__, "qsocket connection closed %d", guid_crc); });
 	if (!result2) {
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Connection2 request failed");
 	}
@@ -260,9 +258,8 @@ int main() {
 	}
 #endif
 
-	test_qh3client();	// uncomment this to test stateless request
-	//test_qclient();		// uncomment this to test statefull request
-
+	test_qh3client();  // uncomment this to test stateless request
+	// test_qclient();		// uncomment this to test statefull request
 
 	// Keep the program running until the async request completes and the callback is invoked.
 	// (This is just a placeholder and should be handled more elegantly in a real app).
