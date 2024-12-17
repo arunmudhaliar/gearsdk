@@ -11,16 +11,19 @@
 #include "../../common/sdktypes.hpp"
 
 #include <zlib.h>
+#if PLATFORM == PLATFORM_WINDOWS
+#include <corecrt_io.h>
+#endif
 
 using client::qh3client;
 
-void qh3client::debug_log(const uint8_t* line, void* argp) {
+void qh3client::debug_log(const char* line, void* argp) {
 	UNUSED(argp);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, (char*) line);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, line);
 }
 
 void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* conn_io) {
-	SendInfo send_info;
+	quiche_send_info send_info;
 
 	while (1) {
 		ssize_t written = quiche_conn_send(conn_io->conn, conn_io->out, sizeof(conn_io->out), &send_info);
@@ -35,7 +38,11 @@ void qh3client::flush_egress(struct ev_loop* loop, struct conn_io_qh3_client* co
 			return;
 		}
 
+#if PLATFORM == PLATFORM_WINDOWS
+		ssize_t sent = sendto(conn_io->sock, (const char*) conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
+#else
 		ssize_t sent = sendto(conn_io->sock, conn_io->out, written, 0, (struct sockaddr*) &send_info.to, send_info.to_len);
+#endif
 
 		if (sent != written) {
 			perror("failed to send");
@@ -68,7 +75,7 @@ int qh3client::for_each_setting(uint64_t identifier, uint64_t value, void* argp)
    size_t value_len,
    void *argp)
  */
-int qh3client::for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp) {
+int qh3client::for_each_header(uint8_t* name, size_t name_len, uint8_t* value, size_t value_len, void* argp) {
 	debug_print(LOG_LEVEL_5, __LOGTAG__, "got HTTP header: %.*s=%.*s", (int) name_len, name, (int) value_len, value);
 
 	struct conn_io_qh3_client* conn_io = (struct conn_io_qh3_client*) argp;
@@ -82,7 +89,7 @@ int qh3client::for_each_header(const uint8_t* name, size_t name_len, const uint8
 int64_t qh3client::send_get_http_request(const conn_io_req_res* data_getorpost, struct conn_io_qh3_client* conn_io) {
 	const qstring& crc_buffer = data_getorpost->get_payload().get_crc_string();
 	int header_size = 5;
-	Header* headers = DEBUG_NEW Header[header_size + data_getorpost->headers.size()];
+	quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + data_getorpost->headers.size()];
 	headers[0] = {
 		.name = (uint8_t*) ":method",
 		.name_len = sizeof(":method") - 1,
@@ -144,7 +151,7 @@ int64_t qh3client::send_post_http_request(const conn_io_req_res* data_getorpost,
 	debug_print(LOG_LEVEL_4, __LOGTAG__, "crc %lx - %s, payload sz %d", data_getorpost->get_payload().get_crc_value(), crc_buffer.c_str(), data_getorpost->data.buffer.length());
 
 	int header_size = 6;
-	Header* headers = DEBUG_NEW Header[header_size + data_getorpost->headers.size()];
+	quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + data_getorpost->headers.size()];
 	headers[0] = {
 		.name = (uint8_t*) ":method",
 		.name_len = sizeof(":method") - 1,
@@ -219,17 +226,29 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 		socklen_t peer_addr_len = sizeof(peer_addr);
 		memset(&peer_addr, 0, peer_addr_len);
 
+#if PLATFORM == PLATFORM_WINDOWS
+		ssize_t read = recvfrom(conn_io->sock, (char*) conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
+		if (read < 0) {
+			int error = WSAGetLastError();
+			if (error == WSAEWOULDBLOCK) {
+				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				break;
+			}
+			debug_print_error(__LOGTAG__, "failed to read");
+			return;
+		}
+#else
 		ssize_t read = recvfrom(conn_io->sock, conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
-
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
 				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
 
-			perror("failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
+#endif
 
 #if LOG_LEVEL >= LOG_LEVEL_5
 		char name[INET6_ADDRSTRLEN];
@@ -254,7 +273,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
         }
 #endif
 
-		RecvInfo recv_info = {
+		quiche_recv_info recv_info = {
 			(struct sockaddr*) &peer_addr,
 			peer_addr_len,
 
@@ -296,7 +315,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		debug_print(LOG_LEVEL_4, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
 
-		Config* config = quiche_h3_config_new();
+		quiche_h3_config* config = quiche_h3_config_new();
 		if (config == NULL) {
 			fprintf(stderr, "failed to create HTTP/3 config\n");
 			return;
@@ -320,10 +339,10 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 
 	if (quiche_conn_is_established(conn_io->conn)) {
-		Event* ev;
+		quiche_h3_event* ev;
 
 		while (1) {
-			int64_t s = quiche_h3_conn_poll(conn_io->http3, conn_io->conn, (const struct Event**) &ev);
+			int64_t s = quiche_h3_conn_poll(conn_io->http3, conn_io->conn, (struct quiche_h3_event**) &ev);
 
 			if (s < 0) {
 				break;
@@ -338,8 +357,8 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 			}
 
 			switch (quiche_h3_event_type(ev)) {
-				case Event_type::Headers: {
-					int rc = quiche_h3_event_for_each_header((const struct Event*) ev, for_each_header, conn_io);
+				case quiche_h3_event_type::QUICHE_H3_EVENT_HEADERS: {
+					int rc = quiche_h3_event_for_each_header((struct quiche_h3_event*) ev, for_each_header, conn_io);
 
 					if (rc != 0) {
 						fprintf(stderr, "failed to process headers");
@@ -348,7 +367,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 					break;
 				}
 
-				case Event_type::Data: {
+				case quiche_h3_event_type::QUICHE_H3_EVENT_DATA: {
 					for (;;) {
 						ssize_t len = quiche_h3_recv_body(conn_io->http3, conn_io->conn, s, conn_io->buf, sizeof(conn_io->buf));
 
@@ -370,28 +389,28 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 					break;
 				}
 
-				case Event_type::Finished: {
+				case quiche_h3_event_type::QUICHE_H3_EVENT_FINISHED: {
 					if (client->response_cb && client->conn_io && client->conn_io->response) {
 						client->response_cb(const_cast<conn_io_req_res*>(client->http_request), client->conn_io->response, client->get_client_specific_data(), client->arg, conn_io->res_received);
 					}
-					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
+					if (quiche_conn_close(conn_io->conn, true, 0, reinterpret_cast<const uint8_t*>("finished"), strlen("finished")) < 0) {
 						fprintf(stderr, "failed to close connection\n");
 					}
 					break;
 				}
 
-				case Event_type::Reset:
+				case quiche_h3_event_type::QUICHE_H3_EVENT_RESET:
 					debug_print(LOG_LEVEL_3, __LOGTAG__, "request was reset");
 
-					if (quiche_conn_close(conn_io->conn, true, 0, NULL, 0) < 0) {
+					if (quiche_conn_close(conn_io->conn, true, 0, reinterpret_cast<const uint8_t*>("reset"), strlen("reset")) < 0) {
 						fprintf(stderr, "failed to close connection\n");
 					}
 					break;
 
-				case Event_type::PriorityUpdate:
+				case quiche_h3_event_type::QUICHE_H3_EVENT_PRIORITY_UPDATE:
 					break;
 
-				case Event_type::GoAway: {
+				case quiche_h3_event_type::QUICHE_H3_EVENT_GOAWAY: {
 					debug_print(LOG_LEVEL_3, __LOGTAG__, "got GOAWAY");
 					break;
 				}
@@ -414,8 +433,8 @@ void qh3client::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	conn_io->bridge->flush_egress(loop, conn_io);
 
 	if (quiche_conn_is_closed(conn_io->conn)) {
-		Stats stats;
-		PathStats path_stats;
+		quiche_stats stats;
+		quiche_path_stats path_stats;
 
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
@@ -435,7 +454,7 @@ qh3client::~qh3client() {
 }
 
 int qh3client::close_socket(int sock) {
-	int result = close(sock);
+	int result = closesocket(sock);
 	if (result < 0) {
 		debug_print_error(__LOGTAG__, "Socket closure failed: %s", strerror(errno));
 	}
@@ -458,7 +477,7 @@ void qh3client::connection_establishment_timeout_cb(EV_P_ ev_timer* w, int reven
 
 	// Clean up and close the connection
 	if (conn_io->conn) {
-		quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
+		quiche_conn_close(conn_io->conn, true, 0, reinterpret_cast<const uint8_t*>("tout"), strlen("tout"));
 		debug_print_error(__LOGTAG__, "connection couldn't establish due to timeout. t:%5.2fs", ev_now(loop) - conn_io->creation_time);
 	}
 
@@ -470,10 +489,11 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	this->http_request = data_get;
 	this->response_cb = response_cb;
 
+#if ENABLE_QUICHE_LOG
+	quiche_enable_debug_logging(debug_log, NULL);
+#endif
+
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
-
-	//    quiche_enable_debug_logging(debug_log, NULL);
-
 	struct addrinfo* peer;
 	if (getaddrinfo(HOST.c_str(), PORT.c_str(), &HINTS, &peer) != 0) {
 		fprintf(stderr, "failed to resolve host");
@@ -481,20 +501,36 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	}
 
 	int sock = socket(peer->ai_family, SOCK_DGRAM, 0);
+#if PLATFORM == PLATFORM_WINDOWS
+	if (sock == INVALID_SOCKET) {
+		fprintf(stderr, "Socket creation failed %d", sock);
+		freeaddrinfo(peer);
+		return -1;
+	}
+#endif
 	if (sock < 0) {
 		fprintf(stderr, "failed to create socket");
 		freeaddrinfo(peer);
 		return -1;
 	}
 
+	if (essentials::set_non_blocking(sock) != 0) {
+		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
+
+	/*
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		fprintf(stderr, "failed to make socket non-blocking");
 		freeaddrinfo(peer);
 		close_socket(sock);
 		return -1;
 	}
+	*/
 
-	Config* config = quiche_config_new(0xbabababa);
+	quiche_config* config = quiche_config_new(0xbabababa);
 	if (config == NULL) {
 		fprintf(stderr, "failed to create config\n");
 		freeaddrinfo(peer);
@@ -520,8 +556,15 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	}
 
 	// ABC: old config creation here
-
 	uint8_t scid[LOCAL_CONN_ID_LEN];
+	if (essentials::generate_random_data(scid, LOCAL_CONN_ID_LEN) < 0) {
+		debug_print_error(__LOGTAG__, "generate_random_data failed. returning.");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
+
+	/*
 	int rng = open("/dev/urandom", O_RDONLY);
 	if (rng < 0) {
 		fprintf(stderr, "failed to open /dev/urandom");
@@ -539,6 +582,7 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 		return -1;
 	}
 	close(rng);
+	*/
 
 	GX_DELETE(conn_io);
 	conn_io = DEBUG_NEW struct conn_io_qh3_client();
@@ -549,15 +593,38 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 		return -1;
 	}
 
+#if PLATFORM == PLATFORM_WINDOWS
+	// in windows we need to bind the socket before calling 'getsockname'.
+	struct sockaddr_in local_addr;
+	int local_addr_len = sizeof(local_addr);
+	memset(&local_addr, 0, sizeof(local_addr));
+	local_addr.sin_family = AF_INET;
+	local_addr.sin_port = htons(0);			  // Let the system pick an available port
+	local_addr.sin_addr.s_addr = INADDR_ANY;  // Bind to any local address
+
+	// Bind the socket
+	if (bind(sock, (struct sockaddr*) &local_addr, sizeof(local_addr)) < 0) {
+		fprintf(stderr, "bind failed");
+		freeaddrinfo(peer);
+		close_socket(sock);
+		return -1;
+	}
+#endif
+
 	conn_io->local_addr_len = sizeof(conn_io->local_addr);
+	memset(&conn_io->local_addr, 0, sizeof(conn_io->local_addr));
 	if (getsockname(sock, (struct sockaddr*) &conn_io->local_addr, &conn_io->local_addr_len) != 0) {
+#if PLATFORM != PLATFORM_WINDOWS
 		fprintf(stderr, "failed to get local address of socket - %s", strerror(errno));
+#else
+		fprintf(stderr, "failed to get local address of socket - error code: %d\n", WSAGetLastError());
+#endif
 		freeaddrinfo(peer);
 		close_socket(sock);
 		return -1;
 	}
 
-	Connection* conn = quiche_connect(HOST.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &conn_io->local_addr, conn_io->local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
+	quiche_conn* conn = quiche_connect(HOST.c_str(), (const uint8_t*) scid, sizeof(scid), (struct sockaddr*) &conn_io->local_addr, conn_io->local_addr_len, peer->ai_addr, peer->ai_addrlen, config);
 
 	if (conn == NULL) {
 		fprintf(stderr, "failed to create connection\n");
@@ -584,11 +651,17 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	ev_timer_init(&conn_io->connection_establishment_timeout_timer, qh3client::connection_establishment_timeout_cb, connection_timeout, 0.0);  // 10 seconds timeout
 	conn_io->connection_establishment_timeout_timer.data = this;																			   // Store pointer to the client object
 
-	ev_io watcher;
-
 	mainloop = ev_loop_new(0);
 
+	ev_io watcher;
+
+#if PLATFORM != PLATFORM_WINDOWS
 	ev_io_init(&watcher, recv_cb, conn_io->sock, EV_READ);
+#else
+	int sock_fd = _open_osfhandle(conn_io->sock, 0);
+	ev_io_init(&watcher, recv_cb, sock_fd, EV_READ);
+#endif
+
 	ev_io_start(mainloop, &watcher);
 	watcher.data = this;
 

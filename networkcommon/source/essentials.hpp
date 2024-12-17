@@ -17,17 +17,27 @@
 #include "qtimer_uv.hpp"
 #endif
 #include <map>
+#if PLATFORM != PLATFORM_WINDOWS
 #include <netdb.h>
 #include <netinet/in.h>
-#include <string>
 #include <unistd.h>
-#include <vector>
-// #include <quiche.h>
+#else
+// Prevent multiple inclusion of winsock2.h
+#define _WINSOCKAPI_				// Prevent inclusion of winsock.h before winsock2.h
+#include <winsock2.h>				// Include winsock2.h first
+#include <ws2tcpip.h>				// For getnameinfo
+#pragma comment(lib, "ws2_32.lib")	// Link ws2_32.lib
+#include <windows.h>
+#endif
+
+#include <pthread.h>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <string>
 #include <time.h>
+#include <vector>
 #include <zlib.h>
 
 #undef __LOGTAG__
@@ -133,8 +143,17 @@ class essentials {
 
 	static bool get_json_string(rapidjson::Document& obj, qstring& output);
 	static void sleep_for(int milliseconds) {
-		usleep(milliseconds * 1000);  // Convert milliseconds to microseconds
+#if PLATFORM == PLATFORM_WINDOWS
+		// Convert microseconds to milliseconds and call Sleep
+		Sleep(milliseconds);
+#else
+		// Use usleep on Unix-based systems
+		usleep(milliseconds * 1000);
+#endif
 	}
+
+	static int set_non_blocking(int socket);
+	static int generate_random_data(uint8_t* buffer, size_t length);
 
 #if USE_LIBUV
 	// uv cleanups

@@ -25,6 +25,16 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include <cstddef>	// For size_t, ptrdiff_t
+// Define ssize_t for Windows if it's not already defined
+// #ifndef _SSIZE_T_DEFINED	// Check if SSIZE_T is already defined
+// #define _SSIZE_T_DEFINED
+typedef ptrdiff_t ssize_t;	// Can also use long or int, but ptrdiff_t is the most accurate alternative
+// #endif
+//  typedef long ssize_t;
+#endif
+
 /**
  * @class qstring
  * @brief A class for flexible string handling using UT_string.

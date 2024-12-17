@@ -53,7 +53,7 @@
 
 #define MAX_DATAGRAM_SIZE 1350
 
-#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
+#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + QUICHE_MAX_CONN_ID_LEN
 
 struct connections {
     int sock;
@@ -96,7 +96,7 @@ static void debug_log(const uint8_t *line, void *argp) {
 static void flush_egress(struct ev_loop *loop, struct conn_io *conn_io) {
     static uint8_t out[MAX_DATAGRAM_SIZE];
 
-    SendInfo send_info;
+    quiche_send_info send_info;
 
     while (1) {
         ssize_t written = quiche_conn_send(conn_io->conn, out, sizeof(out),
@@ -274,13 +274,13 @@ static void recv_cb(EV_P_ ev_io *w, int revents) {
         uint8_t type;
         uint32_t version;
 
-        uint8_t scid[MAX_CID_LEN];
+        uint8_t scid[QUICHE_MAX_CONN_ID_LEN];
         size_t scid_len = sizeof(scid);
 
-        uint8_t dcid[MAX_CID_LEN];
+        uint8_t dcid[QUICHE_MAX_CONN_ID_LEN];
         size_t dcid_len = sizeof(dcid);
 
-        uint8_t odcid[MAX_CID_LEN];
+        uint8_t odcid[QUICHE_MAX_CONN_ID_LEN];
         size_t odcid_len = sizeof(odcid);
 
         uint8_t token[MAX_TOKEN_LEN];
@@ -374,7 +374,7 @@ static void recv_cb(EV_P_ ev_io *w, int revents) {
             }
         }
 
-        RecvInfo recv_info = {
+        quiche_recv_info recv_info = {
             (struct sockaddr *)&peer_addr,
             peer_addr_len,
 
@@ -485,8 +485,8 @@ static void recv_cb(EV_P_ ev_io *w, int revents) {
         flush_egress(loop, conn_io);
 
         if (quiche_conn_is_closed(conn_io->conn)) {
-            Stats stats;
-            PathStats path_stats;
+            quiche_stats stats;
+            quiche_path_stats path_stats;
 
             quiche_conn_stats(conn_io->conn, &stats);
             quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
@@ -513,8 +513,8 @@ static void timeout_cb(EV_P_ ev_timer *w, int revents) {
     flush_egress(loop, conn_io);
 
     if (quiche_conn_is_closed(conn_io->conn)) {
-        Stats stats;
-        PathStats path_stats;
+        quiche_stats stats;
+        quiche_path_stats path_stats;
 
         quiche_conn_stats(conn_io->conn, &stats);
         quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
@@ -566,7 +566,7 @@ int main_h3(int argc, const char *argv[]) {
         return -1;
     }
 
-    config = quiche_config_new(PROTOCOL_VERSION);
+    config = quiche_config_new(QUICHE_PROTOCOL_VERSION);
     if (config == NULL) {
         fprintf(stderr, "failed to create config\n");
         return -1;
