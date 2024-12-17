@@ -451,7 +451,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
-			perror("failed to read");
+            debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #else
@@ -462,7 +462,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				break;
 			}
 
-			perror("failed to read");
+            debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #endif
@@ -494,7 +494,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "connection established: %.*s", (int) app_proto_len, app_proto);
 		qconnection->bridge->event_connect(qconnection);
 
-		const static uint8_t HI[] = "{\"m\":\"hi\"}";
+		const uint8_t HI[] = "{\"m\":\"hi\"}";
 		uint64_t error_code = 0;
 		if (quiche_conn_stream_send(qconnection->conn, 4, HI, sizeof(HI), false, &error_code) < 0) {
 			debug_print_error(__LOGTAG__, "failed to send Hi request");

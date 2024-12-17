@@ -37,7 +37,7 @@
 #elif defined(__linux__)
 #define PLATFORM PLATFORM_LINUX
 #else
-#define PLATFORM PLATFORM_UNIX
+#error "Platform not supported."
 #endif
 
 #include <assert.h>	 // assert

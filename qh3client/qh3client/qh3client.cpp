@@ -234,7 +234,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
 				break;
 			}
-			perror("failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #else
@@ -245,7 +245,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 				break;
 			}
 
-			perror("failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #endif

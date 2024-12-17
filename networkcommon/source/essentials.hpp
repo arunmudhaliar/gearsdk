@@ -30,15 +30,14 @@
 #include <windows.h>
 #endif
 
-#include <string>
-#include <vector>
-// #include <quiche.h>
 #include <pthread.h>
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <string>
 #include <time.h>
+#include <vector>
 #include <zlib.h>
 
 #undef __LOGTAG__

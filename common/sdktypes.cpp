@@ -53,7 +53,7 @@ void print_common_info() {
 #elif PROD_BUILD
 	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "PRODUCTION BUILD");
 #else
-	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis server can lead to unstable behaviour !!!");
+	debug_print(LOG_LEVEL, __DEFAULT_LOG_TAG__, "UNRECOGNISED BUILD CONFIGURATION !!!. Please set 'DEV_BUILD' or 'PROD_BUILD' in make file.\nThis can lead to unstable behaviour !!!");
 #endif
 #if GSDK_ENDIAN == GSDK_LITTLEENDIAN
 	const char* endian_str = "Little endian machine";
@@ -64,7 +64,6 @@ void print_common_info() {
 #ifdef __aarch64__
 	const char* arch_str = "ARM64 arch";
 #elif __x86_64__
-#define ARCH "Intel 64-bit"
 	const char* arch_str = "Intel x86_64 arch";
 #else
 	const char* arch_str = "Unknown architecture";
@@ -188,7 +187,6 @@ void debug_print2_internal(int log_level, const char* tag, const char* file, con
 		return;
 	}
 	time_t current_time = time(NULL);
-	// struct tm* time_info = localtime(&current_time);
 	struct tm time_info;
 #if PLATFORM == PLATFORM_WINDOWS
 	localtime_s(&time_info, &current_time);	 // Safer version of localtime
@@ -216,9 +214,11 @@ type_debug_warn_or_err_cb global_assert_cb = nullptr;
 void set_warn_callback(type_debug_warn_or_err_cb cb) {
 	global_warn_cb = cb;
 }
+
 void set_error_callback(type_debug_warn_or_err_cb cb) {
 	global_err_cb = cb;
 }
+
 void set_assert_callback(type_debug_warn_or_err_cb cb) {
 	global_assert_cb = cb;
 }
@@ -252,6 +252,7 @@ void debug_warn_cond(const char* tag, bool condition, const char* format, ...) {
 		global_warn_cb(buffer);
 	}
 }
+
 void debug_print_warn(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
@@ -263,6 +264,7 @@ void debug_print_warn(const char* tag, const char* format, ...) {
 		global_warn_cb(buffer);
 	}
 }
+
 void debug_print_error(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
@@ -274,18 +276,19 @@ void debug_print_error(const char* tag, const char* format, ...) {
 		global_err_cb(buffer);
 	}
 }
+
 void debug_assert_internal(const char* tag, const char* condition, const char* file, const char* function, int line, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
 	va_start(v, format);
 	vsnprintf(buffer, LOGBUFFER_SIZE, format, v);
 	va_end(v);
-	// fprintf(stderr, "Assertion '%s' failed: %s (%s: %s: %d)\n", condition, buffer, file, function, line);
 	debug_print(LOG_LEVEL, "\x1B[31mASSERT !!!", "[%s] : '%s' failed\n%s\n(%s: %s: %d)\x1b[0m", tag, condition, buffer, file, function, line);
 	if (global_assert_cb) {
 		global_assert_cb(buffer);
 	}
 }
+
 void debug_print_important(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;
@@ -294,6 +297,7 @@ void debug_print_important(const char* tag, const char* format, ...) {
 	va_end(v);
 	debug_print(LOG_LEVEL, tag, "\x1b[36m%s\x1b[0m", buffer);
 }
+
 void debug_print_important2(const char* tag, const char* format, ...) {
 	char buffer[LOGBUFFER_SIZE + 1];
 	va_list v;

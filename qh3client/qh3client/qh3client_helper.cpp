@@ -124,11 +124,11 @@ void* qh3client_helper::run_internal(void* data) {
 		new_client->send_request(req_obj->data, req_obj->async_cb, req_obj->connection_establishment_timeout);
 		if (new_client->conn_io) {
 			response_received = new_client->conn_io->res_received;
-			if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
-				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_request returned with response_received %d", response_received);
-				if (!response_received && req_obj->async_cb != nullptr) {
-					respond_with_empty_response(req_obj, new_client);
-				}
+		}
+		if (response_received || x == req_obj->retry) {	 // if no response even after last try just return the callback with empty response.
+			debug_print(LOG_LEVEL_3, __LOGTAG__, "send_request returned with response_received %d", response_received);
+			if (!response_received && req_obj->async_cb != nullptr) {
+				respond_with_empty_response(req_obj, new_client);
 			}
 		}
 		new_client->on_post_send_cleanup();

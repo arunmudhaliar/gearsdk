@@ -103,14 +103,14 @@ void conn_io::close() {
 	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - stream %" PRIu64 " is writable - connection %0x", s, cid_hash_val);
-		const char* byez = "byez\n";
+        const uint8_t BYEZ[] = "byez";
         uint64_t out_error_code = 0;
-		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(byez), 5, true, &out_error_code);
+		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - sending 'byez' - connection %0x", cid_hash_val);
 		if (bye_sent_len != 5) {
 			debug_print_error(__LOGTAG__, "f:close - sending 'byez' failed !!! - connection %0x", cid_hash_val);
 		}
-		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) byez);
+		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) BYEZ);
 		break;
 	}
 	quiche_stream_iter_free(writable);
@@ -477,8 +477,8 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 					break;
 				}
 				if (fin) {
-					const char* resp = "byez\n";
-					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, reinterpret_cast<const uint8_t*>(resp), 5, true, &out_error_code);
+                    const uint8_t BYEZ[] = "byez";
+					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
 					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
 					if (bye_sent_len != 5) {
 						debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
