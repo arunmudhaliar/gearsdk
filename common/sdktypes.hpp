@@ -206,7 +206,13 @@ namespace gsdk {
  */
 class device {
    public:
+    device() {
+        memset(device_duid, 0, sizeof(device_duid));
+        memset(device_locale, 0, sizeof(device_locale));
+    }
 	static struct utsname device_details;  ///< Details about the device
+    static char device_duid[256];
+    static char device_locale[16];
 #if PLATFORM == PLATFORM_ANDROID
 	static JavaVM* g_JavaVM;  ///< Java VM instance for Android
 #endif

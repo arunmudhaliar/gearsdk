@@ -32,7 +32,8 @@ void http3_sample_client::create_connections(int count) {
 	user_get_msg_rq.node_name = essentials::get_device_name();
 	user_get_msg_rq.arch = essentials::get_device_arch();
 	user_get_msg_rq.release = essentials::get_device_release_str();
-
+    user_get_msg_rq.duid = essentials::get_device_duid();
+    user_get_msg_rq.locale = essentials::get_device_locale();
 	qstring json_str;
 	user_get_msg_rq.get_json_string(json_str);
 

@@ -46,6 +46,7 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
 endif
 ifeq ($(UNAME), Darwin)
+    SDK_SRCS += $(COMMON_SRCDIR)/platform/ios_mac/ios_mac_helper.cpp
     RELEASE_CXXFLAGS += -Wstrict-prototypes -Wno-semicolon-before-method-body -Wno-c++11-extensions -Wno-newline-eof -Wno-four-char-constants -Wno-exit-time-destructors
     RELEASE_CXXFLAGS += -Werror=non-modular-include-in-framework-module -Wno-missing-prototypes -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wint-conversion 
     RELEASE_CXXFLAGS += -fmodules -gmodules -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -fmodules-prune-interval=86400 -fmodules-prune-after=345600
@@ -53,7 +54,7 @@ ifeq ($(UNAME), Darwin)
     RELEASE_CXXFLAGS += -Wbool-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -fasm-blocks -Winfinite-recursion -Wmove -Wcomma -Wblock-capture-autoreleasing -Wrange-loop-analysis -Wunguarded-availability
     ARCH := $(shell uname -m)
     MACOS_LIB_DIR = macos_$(ARCH)
-    LIBS = -L../networkcommon/libs/$(MACOS_LIB_DIR) -lev -L../networkcommon/libs/$(MACOS_LIB_DIR) -lquiche -lz -framework Security
+    LIBS = -L../networkcommon/libs/$(MACOS_LIB_DIR) -lev -L../networkcommon/libs/$(MACOS_LIB_DIR) -lquiche -lz -framework Security -framework CoreFoundation
     LDFLAGS = -dynamiclib -install_name @rpath/libqunityplugin.dylib
     RPATH_FLAGS = -Wl,-rpath,@loader_path/
     LIB_EXT = dylib

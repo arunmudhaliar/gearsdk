@@ -129,6 +129,16 @@ EXPORT unsigned long get_crc32(const char* guid, int guid_len) {
 	return essentials::get_crc((const uint8_t*) guid, guid_len);
 }
 
+EXPORT const char* get_duid() {
+	essentials::get_device_duid();
+	return gsdk::device::device_duid;
+}
+
+EXPORT const char* get_locale() {
+	essentials::get_device_locale();
+	return gsdk::device::device_locale;
+}
+
 EXPORT bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg, qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
 							qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close) {
 	if (qsockets.find(guid_crc) != qsockets.end()) {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5508B7A42D08C9D700215CF3 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5508B7A32D08C9D700215CF3 /* CoreFoundation.framework */; };
+		5508B7A62D08D8FB00215CF3 /* ios_mac_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5508B7A52D08D8FB00215CF3 /* ios_mac_helper.cpp */; };
 		551CDD3E2C97432100ED9D65 /* libuv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD3D2C97432000ED9D65 /* libuv.dylib */; };
 		55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55294FFA2BD5914D0090816B /* libquiche.a */; };
 		555BA7102C3B135800E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA70F2C3B135800E23A51 /* libev.4.dylib */; };
@@ -37,6 +39,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5508B7A32D08C9D700215CF3 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		5508B7A52D08D8FB00215CF3 /* ios_mac_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ios_mac_helper.cpp; path = ../common/platform/ios_mac/ios_mac_helper.cpp; sourceTree = "<group>"; };
 		551CDD3D2C97432000ED9D65 /* libuv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.dylib; path = ../networkcommon/libs/macos/libuv.dylib; sourceTree = "<group>"; };
 		55294FF82BD591440090816B /* libev.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.dylib; path = ../networkcommon/libs/macos/libev.dylib; sourceTree = "<group>"; };
 		55294FFA2BD5914D0090816B /* libquiche.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libquiche.a; path = ../networkcommon/libs/macos/libquiche.a; sourceTree = "<group>"; };
@@ -62,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5508B7A42D08C9D700215CF3 /* CoreFoundation.framework in Frameworks */,
 				55A9CD3D2B6827D0006CAD14 /* Security.framework in Frameworks */,
 				55A9CD3C2B6827CA006CAD14 /* libz.1.1.3.tbd in Frameworks */,
 				55294FFB2BD5914D0090816B /* libquiche.a in Frameworks */,
@@ -76,6 +81,7 @@
 		55A847A12B61787600001308 = {
 			isa = PBXGroup;
 			children = (
+				5508B7A52D08D8FB00215CF3 /* ios_mac_helper.cpp */,
 				55A72F5B2B779A1000064250 /* qnetworkclient.cpp */,
 				55A9CD252B682140006CAD14 /* debug_new.cpp */,
 				55A9CD232B682114006CAD14 /* essentials.cpp */,
@@ -108,6 +114,7 @@
 		55A847B62B617A6600001308 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5508B7A32D08C9D700215CF3 /* CoreFoundation.framework */,
 				551CDD3D2C97432000ED9D65 /* libuv.dylib */,
 				555BA70F2C3B135800E23A51 /* libev.4.dylib */,
 				55294FFA2BD5914D0090816B /* libquiche.a */,
@@ -215,6 +222,7 @@
 				55A9CD362B682675006CAD14 /* qh3client.cpp in Sources */,
 				55A9CD372B682678006CAD14 /* qh3client_helper.cpp in Sources */,
 				55A9CD342B68266F006CAD14 /* essentials.cpp in Sources */,
+				5508B7A62D08D8FB00215CF3 /* ios_mac_helper.cpp in Sources */,
 				55A9CD382B68267D006CAD14 /* qunitysdk.cpp in Sources */,
 				55A9CD332B68266C006CAD14 /* debug_new.cpp in Sources */,
 			);

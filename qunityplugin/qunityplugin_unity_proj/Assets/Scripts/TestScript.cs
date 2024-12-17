@@ -120,6 +120,9 @@ public class TestScript : MonoBehaviour
         msg_user_get.device.arch = osArchitecture;
         msg_user_get.device.node_name = machineName;
         msg_user_get.device.release = dotNetVersion;
+        msg_user_get.device.duid = qunitysdk.get_device_duid();
+        msg_user_get.device.locale = qunitysdk.get_device_locale();
+        Debug.Log($"device: duid - {msg_user_get.device.duid}, locale - {msg_user_get.device.locale}");
 
         string payload = JsonUtility.ToJson(msg_user_get);
 

@@ -146,6 +146,8 @@ class rq_msg_user_get : public rq_msg_user_base {
 	qstring node_name;
 	qstring release;
 	qstring arch;
+	qstring duid;
+	qstring locale;
 };
 
 // MARK: -

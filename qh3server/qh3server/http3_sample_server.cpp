@@ -258,10 +258,12 @@ void http3_sample_server::parse_user_get(conn_io_req_res::header* path_header, s
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post  msg_parser.parse t:%lu ms", 5);
 	unsigned long crc = crc32(0L, Z_NULL, 0);
-	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
-	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
-	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->release.c_str(), user_get_msg_rq->release.length());
+//	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->sys_name.c_str(), user_get_msg_rq->sys_name.length());
+//	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->node_name.c_str(), user_get_msg_rq->node_name.length());
+//	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->release.c_str(), user_get_msg_rq->release.length());
+//  crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->locale.c_str(), user_get_msg_rq->locale.length());
 	crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->arch.c_str(), user_get_msg_rq->arch.length());
+    crc = essentials::mod_crc32_z(crc, (uint8_t*) user_get_msg_rq->duid.c_str(), user_get_msg_rq->duid.length());
 
 	EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, __LOGTAG__, "user_get : post crc calculation t:%lu ms", 5);
 	qbuffer buffer;

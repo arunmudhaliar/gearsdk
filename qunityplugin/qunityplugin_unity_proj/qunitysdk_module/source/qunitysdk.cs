@@ -6,126 +6,126 @@ using System.Collections.Generic;
 
 public class qunitysdk : MonoBehaviour
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, bool success);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, bool success);
 
-    // qsocket
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qsocket_onconnect(ulong guid_crc, IntPtr user_data);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qsocket_onmessage( ulong guid_crc, ulong recvLen, IntPtr buf);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qsocket_onreleaseconnection( ulong guid_crc );
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void type_qsocket_onclose( ulong guid_crc );
+	// qsocket
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void type_qsocket_onconnect(ulong guid_crc, IntPtr user_data);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void type_qsocket_onmessage(ulong guid_crc, ulong recvLen, IntPtr buf);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void type_qsocket_onreleaseconnection(ulong guid_crc);
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void type_qsocket_onclose(ulong guid_crc);
 
-    public abstract class mqsocket {
-        abstract protected void onconnect(IntPtr user_data);
-        abstract protected void onmessage( ulong recv_len, string buf );
-        abstract protected void onreleaseconnection();
-        abstract protected void onclose();
-    }
-    public class qsocket : mqsocket {
-        public Guid guid { get; private set; }
-        public ulong guid_crc = 0;
+	public abstract class mqsocket {
+		abstract protected void onconnect(IntPtr user_data);
+		abstract protected void onmessage(ulong recv_len, string buf);
+		abstract protected void onreleaseconnection();
+		abstract protected void onclose();
+	}
+	public class qsocket : mqsocket {
+		public Guid guid { get; private set; }
+		public ulong guid_crc = 0;
 
-        public Action<qsocket, IntPtr> OnConnect;
-        public Action<qsocket, ulong, string> OnMessage;
-        public Action<qsocket> OnReleaseConnection;
-        public Action<qsocket> OnClose;
+		public Action<qsocket, IntPtr> OnConnect;
+		public Action<qsocket, ulong, string> OnMessage;
+		public Action<qsocket> OnReleaseConnection;
+		public Action<qsocket> OnClose;
 
-        public qsocket() {
-            guid = Guid.NewGuid();
-            string guid_str = guid.ToString();
-            guid_crc = get_crc32(guid_str, guid_str.Length);
-            Debug.Log("qsocket guid_crc - " + guid_crc);
-        }
+		public qsocket() {
+			guid = Guid.NewGuid();
+			string guid_str = guid.ToString();
+			guid_crc = get_crc32(guid_str, guid_str.Length);
+			Debug.Log("qsocket guid_crc - " + guid_crc);
+		}
 
-        protected override void onconnect(IntPtr user_data) {
-            OnConnect(this, user_data);
-        }
+		protected override void onconnect(IntPtr user_data) {
+			OnConnect(this, user_data);
+		}
 
-        protected override void onmessage( ulong recv_len, string buf ) {
-            OnMessage(this, recv_len, buf);
-        }
+		protected override void onmessage(ulong recv_len, string buf) {
+			OnMessage(this, recv_len, buf);
+		}
 
-        protected override void onreleaseconnection() {
-            OnReleaseConnection(this);
-        }
+		protected override void onreleaseconnection() {
+			OnReleaseConnection(this);
+		}
 
-        protected override void onclose() {
-            OnClose(this);
-        }
+		protected override void onclose() {
+			OnClose(this);
+		}
 
-        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onconnect))]
-        private static void global_onconnect( ulong guid_crc, IntPtr user_data ) {
-            MainThreadDispatcher.RunOnMainThread(() => {
-                if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
-                    return;
-                }
-                qunitysdk.sockets[guid_crc].onconnect(user_data);
-            });
-        }
-        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onmessage))]
-        private static void global_onmessage( ulong guid_crc, ulong recv_len, IntPtr buf ) {
+		[MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onconnect))]
+		private static void global_onconnect(ulong guid_crc, IntPtr user_data) {
+			MainThreadDispatcher.RunOnMainThread(() => {
+				if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
+					return;
+				}
+				qunitysdk.sockets[guid_crc].onconnect(user_data);
+			});
+		}
+		[MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onmessage))]
+		private static void global_onmessage(ulong guid_crc, ulong recv_len, IntPtr buf) {
 
-            byte[] array = new byte[recv_len];
+			byte[] array = new byte[recv_len];
 
-            // Copy the bytes from the unmanaged memory to the byte array
-            Marshal.Copy(buf, array, 0, (int)recv_len);
+			// Copy the bytes from the unmanaged memory to the byte array
+			Marshal.Copy(buf, array, 0, (int)recv_len);
 
-            string msg = System.Text.Encoding.UTF8.GetString(array, 0, (int)recv_len);
-            MainThreadDispatcher.RunOnMainThread(() => {
-                if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
-                    return;
-                }
-                qunitysdk.sockets[guid_crc].onmessage(recv_len, msg);
-            });
-        }
-        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onreleaseconnection))]
-        private static void global_onreleaseconnection( ulong guid_crc ) {
-            MainThreadDispatcher.RunOnMainThread(() => {
-                if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
-                    return;
-                }
-                qunitysdk.sockets[guid_crc].onreleaseconnection();
-                qunitysdk.sockets.Remove(guid_crc);
-                Debug.Log("removing qsocket " + guid_crc + ", socket count " + qunitysdk.sockets.Count);
-            });
-        }
-        [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onclose))]
-        private static void global_onclose( ulong guid_crc ) {
-            MainThreadDispatcher.RunOnMainThread(() => {
-                if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
-                    return;
-                }
-                qunitysdk.sockets[guid_crc].onclose();
-            });
-        }
+			string msg = System.Text.Encoding.UTF8.GetString(array, 0, (int)recv_len);
+			MainThreadDispatcher.RunOnMainThread(() => {
+				if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
+					return;
+				}
+				qunitysdk.sockets[guid_crc].onmessage(recv_len, msg);
+			});
+		}
+		[MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onreleaseconnection))]
+		private static void global_onreleaseconnection(ulong guid_crc) {
+			MainThreadDispatcher.RunOnMainThread(() => {
+				if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
+					return;
+				}
+				qunitysdk.sockets[guid_crc].onreleaseconnection();
+				qunitysdk.sockets.Remove(guid_crc);
+				Debug.Log("removing qsocket " + guid_crc + ", socket count " + qunitysdk.sockets.Count);
+			});
+		}
+		[MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onclose))]
+		private static void global_onclose(ulong guid_crc) {
+			MainThreadDispatcher.RunOnMainThread(() => {
+				if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
+					return;
+				}
+				qunitysdk.sockets[guid_crc].onclose();
+			});
+		}
 
-        public bool connect(string host, string port, IntPtr arg) {
-            if (qunitysdk.sockets.ContainsKey(guid_crc)) {
-                Debug.LogWarning("qsocket already in use !!!");
-                return false;
-            }
-            sockets.Add(guid_crc, this);
-            return qsocket_connect(guid_crc, host, port, arg,
-                global_onconnect, global_onmessage, global_onreleaseconnection, global_onclose);
-        }
+		public bool connect(string host, string port, IntPtr arg) {
+			if (qunitysdk.sockets.ContainsKey(guid_crc)) {
+				Debug.LogWarning("qsocket already in use !!!");
+				return false;
+			}
+			sockets.Add(guid_crc, this);
+			return qsocket_connect(guid_crc, host, port, arg,
+				global_onconnect, global_onmessage, global_onreleaseconnection, global_onclose);
+		}
 
-        public bool is_finished() {
-            return qsocket_is_run_finished(guid_crc);
-        }
+		public bool is_finished() {
+			return qsocket_is_run_finished(guid_crc);
+		}
 
-        public int sendMessage(string buffer, bool flush) {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(buffer);
-            return qsocket_sendMessage(guid_crc, bytes, (ulong)bytes.Length, flush);
-        }
+		public int sendMessage(string buffer, bool flush) {
+			byte[] bytes = System.Text.Encoding.UTF8.GetBytes(buffer);
+			return qsocket_sendMessage(guid_crc, bytes, (ulong)bytes.Length, flush);
+		}
 
-        public int close() {
-            return qsocket_close(guid_crc);
-        }
-    }
+		public int close() {
+			return qsocket_close(guid_crc);
+		}
+	}
 
 #if UNITY_EDITOR_OSX
     const string cp = "Assets/Plugins/qunitysdk/libs/macos/libqunityplugin.dylib";
@@ -141,31 +141,54 @@ public class qunitysdk : MonoBehaviour
     const string cp = "qunityplugin";
 #endif
 
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void pre_init_sdk();
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern void pre_init_sdk();
 
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb, int retry);
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern int send_async_request(string host, string port, string path, string payload, IntPtr arg, type_qh3client_helper_cb cb, int retry);
 
-    // qsocket
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool qsocket_connect( ulong guid_crc, string host, string port, IntPtr arg,
-                         type_qsocket_onconnect cb_connect, type_qsocket_onmessage cb_message,
-                         type_qsocket_onreleaseconnection cb_release_connection, type_qsocket_onclose cb_close);
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool qsocket_is_run_finished( ulong guid_crc );
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void destroy_finished_qsockets();
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int qsocket_sendMessage( ulong guid_crc, byte[] buffer, ulong size, bool flush);
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void qsocket_print_info();
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern ulong get_crc32(string guid, int guid_len);
-    [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int qsocket_close( ulong guid_crc );
+	// qsocket
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern bool qsocket_connect(ulong guid_crc, string host, string port, IntPtr arg,
+						 type_qsocket_onconnect cb_connect, type_qsocket_onmessage cb_message,
+						 type_qsocket_onreleaseconnection cb_release_connection, type_qsocket_onclose cb_close);
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern bool qsocket_is_run_finished(ulong guid_crc);
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern void destroy_finished_qsockets();
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern int qsocket_sendMessage(ulong guid_crc, byte[] buffer, ulong size, bool flush);
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern void qsocket_print_info();
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern int qsocket_close(ulong guid_crc);
 
-    private static qunitysdk instance;
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	public static extern ulong get_crc32(string guid, int guid_len);
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	private static extern IntPtr get_duid();
+	[DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
+	private static extern IntPtr get_locale();
+
+	public static string get_device_duid() {
+		IntPtr duidPtr = qunitysdk.get_duid();
+		if (duidPtr != IntPtr.Zero) {
+			// Convert the returned IntPtr to a C# string
+			return Marshal.PtrToStringAnsi(duidPtr);  // Converts the unmanaged string (char*) to a C# string
+		}
+		return "";
+	}
+
+	public static string get_device_locale() {
+		IntPtr localePtr = qunitysdk.get_locale();
+		if (localePtr != IntPtr.Zero) {
+			// Convert the returned IntPtr to a C# string
+			return Marshal.PtrToStringAnsi(localePtr);  // Converts the unmanaged string (char*) to a C# string
+		}
+		return "";
+	}
+
+	private static qunitysdk instance;
     private static Dictionary<ulong, qsocket> sockets = new Dictionary<ulong, qsocket>();
     private void Start() {
         if (instance != null) {
