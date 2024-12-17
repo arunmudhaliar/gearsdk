@@ -6,11 +6,11 @@ make release
 
 # Determine the operating system
 UNAME=$(uname)
-if [ "$UNAME" == "Linux" ]; then
+if [ "$UNAME" = "Linux" ]; then
     # Linux-specific actions if needed
     echo "Running on Linux"
     chmod 755 ./release_build/libqunityplugin.so
-elif [ "$UNAME" == "Darwin" ]; then
+elif [ "$UNAME" = "Darwin" ]; then
     # macOS-specific actions
     echo "Running on macOS"
     
