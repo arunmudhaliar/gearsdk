@@ -10,7 +10,7 @@
 #define qnetworkclient_hpp
 
 extern "C" {
-#include <cstdlib>	// for malloc and free
+// #include <cstdlib>	// for malloc and free
 #include <cstring>	// for memcpy
 #include <ev.h>
 #include <fcntl.h>
@@ -78,21 +78,24 @@ class conn_io_client {
 
    public:
 	conn_io_client(bridge_qcommand* bridge, int id);
-	conn_io_client(bridge_qcommand* bridge, Config* config, int id);
+	conn_io_client(bridge_qcommand* bridge, quiche_config* config, int id);
 	~conn_io_client();
 
 	int close_socket();
-	void set_config(Config* config) { this->config = config; }
+	void set_config(quiche_config* config) { this->config = config; }
 	int id = -1;
 	ev_timer timer;
 	ev_timer send_timer;
 	ev_io watcher;
 	int sock = -1;
+#if PLATFORM == PLATFORM_WINDOWS
+	int win_sock_fd = -1;
+#endif
 	struct sockaddr_storage local_addr;
 	socklen_t local_addr_len;
-	Connection* conn = nullptr;
+	quiche_conn* conn = nullptr;
 	bridge_qcommand* bridge = nullptr;
-	Config* config = nullptr;
+	quiche_config* config = nullptr;
 	struct addrinfo* peer = nullptr;
 	int connect(qstring host, qstring port);
 	ssize_t send_message(const char* buf, size_t buflen, bool fin);
@@ -173,7 +176,7 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	pthread_t run_thread_id;
 #endif
 
-	static void debug_log(const uint8_t* line, void* argp);
+	static void debug_log(const char* line, void* argp);
 	static void recv_cb(EV_P_ ev_io* w, int revents);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	static void send_cb(EV_P_ ev_timer* w, int revents);

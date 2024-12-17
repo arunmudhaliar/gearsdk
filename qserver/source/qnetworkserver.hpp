@@ -28,7 +28,7 @@ extern "C" {
 
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
-#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
+#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + QUICHE_MAX_CONN_ID_LEN
 
 #define QTHREADPOOL 1
 #define QTHREADPOOL_THREAD_COUNT 4
@@ -88,7 +88,7 @@ class conn_io {
 	unsigned cid_hash_val = 0;
 	ev_timer timer;
 	int sock;
-	Connection* conn = nullptr;
+    quiche_conn* conn = nullptr;
 	struct sockaddr_storage peer_addr;
 	socklen_t peer_addr_len;
 	UT_hash_handle hh;
@@ -166,7 +166,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	static void threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
 
-	Config* config = nullptr;
+    quiche_config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;
 	struct connections* conns = nullptr;
 	ev_timer heartbeat_check_timer;

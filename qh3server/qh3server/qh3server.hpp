@@ -35,7 +35,7 @@ extern "C" {
 #define ORIGINAL_CLIENT_ADDR_SZ (3 * sizeof(uint16_t))
 #define MAX_DATAGRAM_SIZE 1350 - ORIGINAL_CLIENT_ADDR_SZ  // last 6 bytes is reserved for original client address verification
 
-#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + MAX_CID_LEN
+#define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + QUICHE_MAX_CONN_ID_LEN
 
 #define SEND_CHUNK_SIZE 256
 #define DROP_CONNECTION_AFTER 45.0f	 // in seconds
@@ -132,8 +132,8 @@ struct conn_io_qh3 {
 	EVENT_TIMER_TYPE timer;
 	int sock;
 	uint8_t cid[LOCAL_CONN_ID_LEN];
-	Connection* conn = nullptr;
-	Connection* http3 = nullptr;
+    quiche_conn* conn = nullptr;
+    quiche_h3_conn* http3 = nullptr;
 	struct sockaddr_storage peer_addr;
 	socklen_t peer_addr_len;
 	UT_hash_handle hh;
@@ -170,8 +170,8 @@ struct routerinfo {
 // MARK: -
 class qh3server : public bridge_h3_connection {
    private:
-	Config* config = nullptr;
-	Config* http3_config = nullptr;
+    quiche_config* config = nullptr;
+    quiche_h3_config* http3_config = nullptr;
 	struct connections* conns = nullptr;
 	EVENT_LOOP_TYPE* mainloop = nullptr;
 
@@ -188,7 +188,7 @@ class qh3server : public bridge_h3_connection {
 	static uint8_t* gen_cid(uint8_t* cid, size_t cid_len);
 	struct conn_io_qh3* create_conn(uint8_t* scid, size_t scid_len, uint8_t* odcid, size_t odcid_len, struct sockaddr* local_addr, socklen_t local_addr_len, struct sockaddr_storage* peer_addr, socklen_t peer_addr_len,
 									struct sockaddr_storage* peer_original_client_addr);
-	static int for_each_header(const uint8_t* name, size_t name_len, const uint8_t* value, size_t value_len, void* argp);
+	static int for_each_header(uint8_t* name, size_t name_len, uint8_t* value, size_t value_len, void* argp);
 #if USE_UV_MAIN_LOOP
 	static void recv_cb(uv_poll_t* handle, int status, int events);
 	static void timeout_cb(uv_timer_t* handle);

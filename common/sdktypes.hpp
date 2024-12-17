@@ -26,9 +26,10 @@
 #define PLATFORM_UNIX 3
 #define PLATFORM_ANDROID 4
 #define PLATFORM_LINUX 5
+#define PLATFORM_WINDOWS 6
 
 #if defined(_WIN32)
-#error "Not supported"
+#define PLATFORM PLATFORM_WINDOWS
 #elif defined(__APPLE__)
 #define PLATFORM PLATFORM_MAC
 #elif defined(ANDROID)
@@ -36,7 +37,7 @@
 #elif defined(__linux__)
 #define PLATFORM PLATFORM_LINUX
 #else
-#define PLATFORM PLATFORM_UNIX
+#error "Platform not supported."
 #endif
 
 #include <assert.h>	 // assert
@@ -45,6 +46,8 @@
 #if PLATFORM == PLATFORM_MAC
 namespace fs = std::__fs::filesystem;
 #elif PLATFORM == PLATFORM_LINUX
+namespace fs = std::filesystem;
+#elif PLATFORM == PLATFORM_WINDOWS
 namespace fs = std::filesystem;
 #else
 namespace fs = std::__fs::filesystem;
@@ -93,7 +96,9 @@ namespace fs = std::__fs::filesystem;
 #include <jni.h>
 #endif
 
+#if PLATFORM != PLATFORM_WINDOWS
 #include <sys/utsname.h>
+#endif
 
 /** Logging levels */
 #define LOG_LEVEL_0 0
@@ -169,6 +174,30 @@ extern "C" DECLSPEC void debug_print_important(const char* tag, const char* form
 extern "C" DECLSPEC void debug_print_important2(const char* tag, const char* format, ...);											 ///< Print important debug info
 extern "C" DECLSPEC void debug_print_scid(int log_level, const uint8_t* scid, size_t scid_len);										 ///< Print SCID information
 extern "C" DECLSPEC void debug_print_hexadecimal_string(int log_level, const char* prefix, const uint8_t* token, size_t token_len);	 ///< Print token information
+
+#if PLATFORM == PLATFORM_WINDOWS
+#ifndef PATH_MAX
+#define PATH_MAX 260  // Default Windows path limit
+#endif
+#include <direct.h>	 // Required for _getcwd
+#define getcwd _getcwd
+#include <process.h>  // Required for _getpid
+#define getpid _getpid
+#include <cstddef>	// For size_t, ptrdiff_t
+#define timegm _mkgmtime
+#define gmtime_r gmtime_s
+
+struct utsname {
+	char sysname[128];	  // Operating system name (e.g., "Linux")
+	char nodename[128];	  // Node name (hostname)
+	char release[64];	  // OS release (e.g., "5.8.0")
+	char version[64];	  // OS version (e.g., "#1 SMP Thu Oct 15 18:25:36 UTC 2020")
+	char machine[32];	  // Machine hardware name (e.g., "x86_64")
+	char domainname[64];  // Domain name (optional, may be an empty string)
+};
+#else
+#define closesocket close
+#endif
 
 namespace gsdk {
 

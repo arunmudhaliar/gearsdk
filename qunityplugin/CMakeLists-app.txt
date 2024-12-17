@@ -1,0 +1,112 @@
+# cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+# cmake --build build --target qunityplugin
+
+# Minimum CMake version required
+cmake_minimum_required(VERSION 3.16)
+
+# Project name and version
+project(qunityplugin VERSION 1.0 LANGUAGES CXX)
+
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Paths
+set(NETWORK_COMMON_SRCDIR ../networkcommon/source)
+set(SERVER_COMMON_SRCDIR ../servercommon/source)
+set(COMMON_SRCDIR ../common)
+set(QH3_CLIENT_SRCDIR ../qh3client/qh3client)
+set(Q_CLIENT_SRCDIR ../qclient/source)
+set(SRCDIR ./source)
+
+# Source files common to both debug and release builds
+set(SDK_SRCS
+    ${COMMON_SRCDIR}/sdktypes.hpp
+    ${COMMON_SRCDIR}/sdktypes.cpp
+    ${NETWORK_COMMON_SRCDIR}/essentials.hpp
+    ${NETWORK_COMMON_SRCDIR}/essentials.cpp
+    ${Q_CLIENT_SRCDIR}/qnetworkclient.hpp
+    ${Q_CLIENT_SRCDIR}/qnetworkclient.cpp
+    ${QH3_CLIENT_SRCDIR}/qh3client.hpp
+    ${QH3_CLIENT_SRCDIR}/qh3client.cpp
+    ${QH3_CLIENT_SRCDIR}/qh3client_helper.hpp
+    ${QH3_CLIENT_SRCDIR}/qh3client_helper.cpp
+    ${SRCDIR}/qunitysdk.hpp
+    ${SRCDIR}/qunitysdk.cpp
+)
+
+# Source files specific to debug build
+set(DEBUG_SRCS
+    ${COMMON_SRCDIR}/nvwa/debug_new.cpp
+)
+
+# Include directories
+include_directories(
+    ${COMMON_SRCDIR}
+    ${COMMON_SRCDIR}/zlib-win32
+    ../pthread-win32
+    ${COMMON_SRCDIR}/uthash
+    ${NETWORK_COMMON_SRCDIR}/ev
+    ${NETWORK_COMMON_SRCDIR}/uv
+    ${NETWORK_COMMON_SRCDIR}/quiche
+)
+
+message(STATUS "PROJECT Directory: ${PROJECT_SOURCE_DIR}")
+
+set(USER_DEFINES "-DLOG_LEVEL=2 -DTHREADED=1 -DUSE_PTHREAD=1")
+
+# Architecture-specific Flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -DPROD_BUILD=1 -DNDEBUG ${USER_DEFINES}")
+
+# Debug and release-specific flags
+set(DEBUG_CXXFLAGS "-DDEBUG -DDEV_BUILD=1")
+set(RELEASE_CXXFLAGS "-DPROD_BUILD=1 -DNDEBUG")
+
+# Platform-specific settings
+message(STATUS "Building for Windows")
+
+# Specify library directory for Windows
+set(LIB_DIR "windows")
+message(STATUS "ev search Directory: ${PROJECT_SOURCE_DIR}/../networkcommon/libs/${LIB_DIR}")
+
+# Specify multiple directories
+set(LIBRARY_DIRS
+    ${PROJECT_SOURCE_DIR}/../networkcommon/libs/${LIB_DIR}
+    ${PROJECT_SOURCE_DIR}/../common/libs/${LIB_DIR}
+)
+
+# Add these directories for linking
+link_directories(${LIBRARY_DIRS})
+
+set(LIBS  "zlib.lib" "quiche.lib" "pthreadVC3.lib" "libev_static.lib" "Userenv.lib" "crypt32.lib" "ntdll.lib")
+
+# set(LDFLAGS "/DLL")
+# set(RPATH_FLAGS "")
+set(LIB_EXT "dll")
+
+# Define the base output directory for libraries and executables
+set(OUTPUT_BASE_DIR ${CMAKE_BINARY_DIR}/output)
+
+# Define output directories conditionally based on build type
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/debug/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/debug/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/debug/bin)
+
+    # Debug target (create executable instead of library)
+    add_executable(qunityplugin_debug ${SDK_SRCS} ${DEBUG_SRCS})
+    target_compile_options(qunityplugin_debug PRIVATE ${CMAKE_CXX_FLAGS} ${DEBUG_CXXFLAGS})
+    target_link_libraries(qunityplugin_debug PRIVATE ${LIBS} ${LDFLAGS} ${RPATH_FLAGS})
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/release/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/release/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_BASE_DIR}/release/bin)
+
+    # Release target (create executable instead of library)
+    add_executable(qunityplugin ${SDK_SRCS})
+    target_compile_options(qunityplugin PRIVATE ${CMAKE_CXX_FLAGS} ${RELEASE_CXXFLAGS})
+    target_link_libraries(qunityplugin PRIVATE ${LIBS} ${LDFLAGS} ${RPATH_FLAGS})
+endif()
+
+# Clean target (handled automatically by CMake)

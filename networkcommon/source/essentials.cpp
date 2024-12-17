@@ -8,7 +8,11 @@
 
 #include "essentials.hpp"
 
+#if PLATFORM != PLATFORM_WINDOWS
 #include <arpa/inet.h>
+#include <fcntl.h>
+#endif
+
 #include <cstring>
 #if PLATFORM == PLATFORM_LINUX
 #include <sys/sysinfo.h>
@@ -336,7 +340,14 @@ qstring essentials::get_time_local_tostring(time_t& local_time) {
 	local_time = get_time_local();
 	struct tm time_info;
 	char buffer[32];
+#if PLATFORM == PLATFORM_WINDOWS
+	// On Windows, use localtime_s
+	localtime_s(&time_info, &local_time);
+#else
+	// On Unix-like systems, use localtime_r
 	localtime_r(&local_time, &time_info);
+#endif
+
 	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 	return qstring(buffer);
 }
@@ -359,8 +370,17 @@ qstring essentials::get_time_utc_string(time_t& utc_time) {
 qstring essentials::get_time_utc_readable(time_t& utc_time) {
 	utc_time = get_time_utc();	// Get current UTC time
 	struct tm time_info;
-	// Thread-safe version of gmtime
+#if PLATFORM == PLATFORM_WINDOWS
+	// Use gmtime_s on Windows, passing the tm structure and time_t
+	errno_t err = gmtime_r(&time_info, &utc_time);
+	if (err != 0) {
+		// Handle the error (e.g., invalid time)
+		return "";
+	}
+#else
+	// Use gmtime_r on Unix-like systems
 	gmtime_r(&utc_time, &time_info);
+#endif
 	// Buffer to hold the formatted date and time string
 	char buffer[32];
 	// Format the time as "YYYY-MM-DD HH:MM:SS"
@@ -374,7 +394,17 @@ qstring essentials::get_time_utc_postgresql_format() {
 	time(&now);	 // Get current time in seconds since the Epoch
 	struct tm time_info;
 	// Use gmtime_r for thread safety
+#if PLATFORM == PLATFORM_WINDOWS
+	// Use gmtime_s on Windows, passing the tm structure and time_t
+	errno_t err = gmtime_r(&time_info, &now);
+	if (err != 0) {
+		// Handle the error (e.g., invalid time)
+		return "";
+	}
+#else
+	// Use gmtime_r on Unix-like systems
 	gmtime_r(&now, &time_info);
+#endif
 	// Buffer to hold the formatted timestamp string
 	char timestamp_str[32];
 	// Format the time as "YYYY-MM-DD HH:MM:SS"
@@ -585,6 +615,51 @@ bool essentials::cleanup_and_destroy_uv_loop(uv_loop_t* loop) {
 	return true;
 }
 #endif
+
+int essentials::set_non_blocking(int socket) {
+#if PLATFORM != PLATFORM_WINDOWS
+	return fcntl(socket, F_SETFL, O_NONBLOCK);
+#else
+	u_long mode = 1;  // 1 for non-blocking mode
+	return ioctlsocket(socket, FIONBIO, &mode);
+#endif
+}
+
+int essentials::generate_random_data(uint8_t* buffer, size_t length) {
+#if PLATFORM == PLATFORM_WINDOWS
+	// Windows-specific code to generate random data using CryptGenRandom
+	HCRYPTPROV hCryptProv = 0;
+	if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
+		printf("Failed to acquire cryptographic context\n");
+		return -1;
+	}
+
+	if (!CryptGenRandom(hCryptProv, static_cast<DWORD>(length), buffer)) {
+		CryptReleaseContext(hCryptProv, 0);
+		printf("Failed to generate random data\n");
+		return -1;
+	}
+
+	CryptReleaseContext(hCryptProv, 0);
+#else
+	// Unix-specific code to generate random data using /dev/urandom
+	int rng = open("/dev/urandom", O_RDONLY);
+	if (rng < 0) {
+		perror("Failed to open /dev/urandom");
+		return -1;
+	}
+
+	ssize_t rand_len = read(rng, buffer, length);
+	if (rand_len < 0) {
+		close(rng);
+		perror("Failed to read random data");
+		return -1;
+	}
+
+	close(rng);
+#endif
+	return 0;
+}
 
 bool conn_io_req_res::has_crc_header() {
 	header* crc_header = get_header("crc");
