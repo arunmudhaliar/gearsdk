@@ -1,0 +1,23 @@
+{
+    "name": "qunitysdk-ts",
+    "version": "1.0.0",
+    "description": "A project using ffi-napi and ref-napi with TypeScript.",
+    "main": "dist/qunitysdk.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "DYLD_LIBRARY_PATH='../qunityplugin_unity_proj/qunitysdk_module/libs/macos_x86_64' node dist/qunitysdk.js",
+        "watch": "tsc --watch"
+    },
+    "dependencies": {
+        "ffi-napi": "^4.0.3",
+        "ref-napi": "^3.0.3"
+    },
+    "devDependencies": {
+        "@types/ffi-napi": "^4.0.10",
+        "@types/ref-napi": "^3.0.12",
+        "typescript": "^5.0.0"
+    },
+    "keywords": [],
+    "author": "amudaliar",
+    "license": "ISC"
+}
