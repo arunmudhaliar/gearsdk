@@ -132,8 +132,8 @@ struct conn_io_qh3 {
 	EVENT_TIMER_TYPE timer;
 	int sock;
 	uint8_t cid[LOCAL_CONN_ID_LEN];
-    quiche_conn* conn = nullptr;
-    quiche_h3_conn* http3 = nullptr;
+	quiche_conn* conn = nullptr;
+	quiche_h3_conn* http3 = nullptr;
 	struct sockaddr_storage peer_addr;
 	socklen_t peer_addr_len;
 	UT_hash_handle hh;
@@ -170,12 +170,12 @@ struct routerinfo {
 // MARK: -
 class qh3server : public bridge_h3_connection {
    private:
-    quiche_config* config = nullptr;
-    quiche_h3_config* http3_config = nullptr;
+	quiche_config* config = nullptr;
+	quiche_h3_config* http3_config = nullptr;
 	struct connections* conns = nullptr;
 	EVENT_LOOP_TYPE* mainloop = nullptr;
 
-	static void debug_quiche_log(const uint8_t* line, void* argp);
+	static void debug_quiche_log(const char* line, void* argp);
 	ssize_t flush_egress(struct conn_io_qh3* conn_io) final;
 	void destroy_connection(struct conn_io_qh3* conn_io) final;
 	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }

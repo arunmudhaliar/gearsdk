@@ -88,7 +88,7 @@ class conn_io {
 	unsigned cid_hash_val = 0;
 	ev_timer timer;
 	int sock;
-    quiche_conn* conn = nullptr;
+	quiche_conn* conn = nullptr;
 	struct sockaddr_storage peer_addr;
 	socklen_t peer_addr_len;
 	UT_hash_handle hh;
@@ -152,7 +152,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qstring port_id;
 
    private:
-	static void debug_quiche_log(const uint8_t* line, void* argp);
+	static void debug_quiche_log(const char* line, void* argp);
 	static void timeout_cb(EV_P_ ev_timer* w, int revents);
 	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
 	bool validate_token(const uint8_t* token, size_t token_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* odcid, size_t* odcid_len);
@@ -166,7 +166,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	static void threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
 
-    quiche_config* config = nullptr;
+	quiche_config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;
 	struct connections* conns = nullptr;
 	ev_timer heartbeat_check_timer;

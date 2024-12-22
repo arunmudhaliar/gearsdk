@@ -115,7 +115,7 @@ int qh3simple_router::run() {
 
 	debug_print_important2(__LOGTAG__, "Creating  command center !!!");
 	// command server
-	if (spawn_qh3server_command_server<U, V>(config.host, config.command_port, config) == nullptr) {
+	if (spawn_qh3server_command_server<U>(config.host, config.command_port, config, this) == nullptr) {
 		debug_print_error(__LOGTAG__, "failed to create command server !!!");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
@@ -149,7 +149,7 @@ int qh3simple_router::run() {
 			break;
 		}
 		bool fork_result = false;  // only valid inside FORK_QH3_SERVER preprocessor
-		int result = spawn_qh3server<U, V>(config.host, qstring::format_string("%d", free_port), config, child_process_id, fork_result);
+		int result = spawn_qh3server<V>(config.host, qstring::format_string("%d", free_port), config, child_process_id, fork_result, this);
 #if FORK_QH3_SERVER
 		UNUSED(result);
 		if (fork_result) {	// forking is successfull
@@ -293,34 +293,34 @@ int qh3simple_router::run() {
 	}
 }
 
-template <typename U, typename V>
-route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config) {
+template <typename U>
+route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3simple_router* router) {
 	server_config_in* new_config =
 		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	new_config->command_server = true;
-	new_config->ref = this;
+	new_config->ref = router;
 
-	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
+	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3_command_server_internal<U>, (void*) new_config) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
 		return nullptr;
 	}
 
-	GX_DELETE(command_feedback_route);
-	command_feedback_route = DEBUG_NEW route(host, qstring::format_string("%d", new_config->command_feedback_port), -1);
-	command_feedback_route->create_bridge(mainloop, (bridge_command_center*) this, U::command_feedback_recv_cb);
-	command_feedback_route->refresh_hb_timestamp(mainloop);
+	GX_DELETE(router->command_feedback_route);
+	router->command_feedback_route = DEBUG_NEW route(host, qstring::format_string("%d", new_config->command_feedback_port), -1);
+	router->command_feedback_route->create_bridge(router->mainloop, (bridge_command_center*) router, U::command_feedback_recv_cb);
+	router->command_feedback_route->refresh_hb_timestamp(router->mainloop);
 
-	GX_DELETE(command_route);
-	command_route = DEBUG_NEW route(host, port, server_counter++);
-	debug_print_important2(__LOGTAG__, "spawned qh3 command server: %s:%s id-%d", host.c_str(), port.c_str(), command_route->server_id);
-	command_route->create_bridge(mainloop, command_route, nullptr);
-	command_route->refresh_hb_timestamp(mainloop);
-	return command_route;
+	GX_DELETE(router->command_route);
+	router->command_route = DEBUG_NEW route(host, port, router->server_counter++);
+	debug_print_important2(__LOGTAG__, "spawned qh3 command server: %s:%s id-%d", host.c_str(), port.c_str(), router->command_route->server_id);
+	router->command_route->create_bridge(router->mainloop, router->command_route, nullptr);
+	router->command_route->refresh_hb_timestamp(router->mainloop);
+	return router->command_route;
 }
 
-template <typename U, typename V>
-int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result) {
+template <typename V>
+int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3simple_router* router) {
 #if FORK_QH3_SERVER
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
 	fork_result = false;
@@ -335,8 +335,8 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 		// Code executed by the child process
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
 		server_config_in* new_config =
-			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
-		if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
+			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
+		if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<V>, (void*) new_config) < 0) {
 			debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 			GX_DELETE(new_config);
 			return -1;
@@ -353,34 +353,41 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 		fork_result = true;
 		// Code executed by the parent process
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
-		route* child = DEBUG_NEW route(host, port, server_counter++);
+		route* child = DEBUG_NEW route(host, port, router->server_counter++);
 		child->child_process_id = child_process_id;
-		routes.push_back(child);
+		router->routes.push_back(child);
 		debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
-		child->create_bridge(mainloop, child, nullptr);
+		child->create_bridge(router->mainloop, child, nullptr);
 		return 0;
 	}
 #else
 	fork_result = false;
 	server_config_in* new_config =
-		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
-	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<U, V>, (void*) new_config) < 0) {
+		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
+	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<V>, (void*) new_config) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
 		return -1;
 	}
-	route* child = DEBUG_NEW route(host, port, server_counter++);
-	routes.push_back(child);
+	route* child = DEBUG_NEW route(host, port, router->server_counter++);
+	router->routes.push_back(child);
 	debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
-	child->create_bridge(mainloop, child, nullptr);
+	child->create_bridge(router->mainloop, child, nullptr);
 	return 0;
 #endif
 	return -1;
 }
 
-template <typename U, typename V>
+template <typename V>
 void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	server_config_in* config = (server_config_in*) data;
+	if (config->command_server) {
+		debug_print_error(__LOGTAG__, "spawn_qh3server_internal failed, its a command server");
+		GX_DELETE(config);
+		pthread_exit(0);
+		return nullptr;
+	}
+
 	qstring& host = config->host;
 	qstring& port = config->port;
 	qstring& mongodb_uri = config->mongodb_uri;
@@ -388,17 +395,32 @@ void* qh3simple_router::spawn_qh3server_internal(void* data) {
 	uint16_t redis_port = config->redis_port;
 	fs::path& root_dir = config->root_dir;
 	qstring& zk_uri = config->zk_uri;
-	if (config->command_server) {
-		PTHREAD_NAME(U::get_server_name());
-		U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
-		GX_DELETE(new_server);
-	} else {
-		PTHREAD_NAME(V::get_server_name());
-		V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-		new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
-		GX_DELETE(new_server);
+	PTHREAD_NAME(V::get_server_name());
+	V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
+	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
+	GX_DELETE(new_server);
+	GX_DELETE(config);
+	pthread_exit(0);
+}
+
+template <typename U>
+void* qh3simple_router::spawn_qh3_command_server_internal(void* data) {
+	server_config_in* config = (server_config_in*) data;
+	if (!config->command_server) {
+		debug_print_error(__LOGTAG__, "spawn_qh3_command_server_internal failed, not a command server");
+		GX_DELETE(config);
+		pthread_exit(0);
+		return nullptr;
 	}
+	qstring& host = config->host;
+	qstring& port = config->port;
+	qstring& redis_ip = config->redis_ip;
+	uint16_t redis_port = config->redis_port;
+	fs::path& root_dir = config->root_dir;
+	PTHREAD_NAME(U::get_server_name());
+	U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
+	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
+	GX_DELETE(new_server);
 	GX_DELETE(config);
 	pthread_exit(0);
 }

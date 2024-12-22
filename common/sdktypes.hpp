@@ -210,14 +210,7 @@ class device {
 #if PLATFORM == PLATFORM_ANDROID
 	static JavaVM* g_JavaVM;  ///< Java VM instance for Android
 #endif
-};
-
-/**
- * @brief Provides server-related information.
- */
-class server {
-   public:
-	static char machine_public_ip[16];	///< Public IP address of the machine
+	static char public_ip[16];	///< Public IP address of the machine
 };
 
 /**

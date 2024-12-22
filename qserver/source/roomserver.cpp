@@ -98,7 +98,7 @@ qtimer* roomserver::schedule_update_redis_about_gserver_timer() {
 	const struct runserverconfig& run_config = get_run_server_config();
 	int grace_time = 10;
 	int expire_timer_unresponsive_gserver_check_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
-	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::server::machine_public_ip);
+	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::device::public_ip);
 	hiredis->set_hash_value(hash_key, qstring::format_string("gserver-%s", run_config.port.c_str()), qstring::format_string("%s:%s", run_config.host.c_str(), run_config.port.c_str()));
 	hiredis->expire_key(hash_key, expire_timer_unresponsive_gserver_check_in_sec + grace_time);
 	debug_print_important(__LOGTAG__, "schedule_update_redis_about_gserver_timer timer %d", expire_timer_unresponsive_gserver_check_in_sec);

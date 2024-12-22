@@ -361,7 +361,7 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_scheduler&
 qtimer* qh3simple_router::update_redis_about_servers(qtimer_scheduler& scheduler) {
 	int grace_time = 10;
 	int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
-	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
 	hiredis->set_hash_value(hash_key, "router", qstring::format_string("%s:%s", config.host.c_str(), config.port.c_str()));
 	hiredis->set_hash_value(hash_key, "router-return", qstring::format_string("%s:%d", config.host.c_str(), config.router_port_return));
 	hiredis->expire_key(hash_key, expire_timer_unresponsive_route_zk_check_in_sec + grace_time);
@@ -414,7 +414,7 @@ route* qh3simple_router::remove_from_active_routes(route* r) {
 	routes.erase(std::remove(routes.begin(), routes.end(), r), routes.end());
 	if (old_sz != routes.size()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from ACTIVE list", r->host.c_str(), r->port.c_str());
-		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
 		hiredis->delete_hash_field(hash_key, qstring::format_string("server-%s", r->port.c_str()));
 		return r;
 	}
@@ -426,7 +426,7 @@ route* qh3simple_router::remove_from_unresponsive_routes(route* r) {
 	unresponsive_routes.erase(std::remove(unresponsive_routes.begin(), unresponsive_routes.end(), r), unresponsive_routes.end());
 	if (old_sz != unresponsive_routes.size()) {
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Removed route %s:%s from UNRESPONSIVE list", r->host.c_str(), r->port.c_str());
-		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+		const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
 		hiredis->delete_hash_field(hash_key, qstring::format_string("server-%s", r->port.c_str()));
 		return r;
 	}
@@ -446,7 +446,7 @@ void qh3simple_router::push_to_routes(route* r) {
 		return;
 	}
 	debug_warn(LOG_LEVEL_0, __LOGTAG__, "Re-pushed route %s:%s to ACTIVE list", r->host.c_str(), r->port.c_str());
-	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::server::machine_public_ip);
+	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
 	hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
 	routes.push_back(r);
 }

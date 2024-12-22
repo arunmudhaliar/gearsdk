@@ -15,10 +15,10 @@ qh3server::~qh3server() {
 	debug_print_important2(logtag.c_str(), "qh3server destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
 }
 
-void qh3server::debug_quiche_log(const uint8_t* line, void* argp) {
+void qh3server::debug_quiche_log(const char* line, void* argp) {
 	qh3server* server = reinterpret_cast<qh3server*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
-		debug_print(LOG_LEVEL_0, server->logtag.c_str(), (char*) line);
+		debug_print(LOG_LEVEL_0, server->logtag.c_str(), line);
 	}
 }
 
@@ -151,7 +151,7 @@ struct conn_io_qh3* qh3server::create_conn(uint8_t* scid, size_t scid_len, uint8
 		debug_print_error(const_logtag, "failed, scid length too short");
 	}
 
-    quiche_conn* conn = quiche_accept(scid, LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_original_client_addr, peer_addr_len, config);
+	quiche_conn* conn = quiche_accept(scid, LOCAL_CONN_ID_LEN, odcid, odcid_len, local_addr, local_addr_len, (struct sockaddr*) peer_original_client_addr, peer_addr_len, config);
 	if (conn == NULL) {
 		debug_print_error(const_logtag, "failed to create connection");
 		return NULL;
@@ -439,7 +439,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 #endif
 
 		if (quiche_conn_is_established(conn_io->conn)) {
-            quiche_h3_event* ev;
+			quiche_h3_event* ev;
 
 			if (conn_io->http3 == NULL) {
 				conn_io->http3 = quiche_h3_conn_new_with_transport(conn_io->conn, server->http3_config);
@@ -508,7 +508,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 						int header_size = 5;
 						conn_io_req_res::header* status_header = conn_io->http_response->get_header(":status");
-                        quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + conn_io->http_response->headers.size()];
+						quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + conn_io->http_response->headers.size()];
 						headers[0] = {
 							.name = (uint8_t*) ":status",
 							.name_len = sizeof(":status") - 1,
@@ -614,8 +614,8 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 		server->flush_egress(conn_io);
 
 		if (quiche_conn_is_closed(conn_io->conn)) {
-            quiche_stats stats;
-            quiche_path_stats path_stats;
+			quiche_stats stats;
+			quiche_path_stats path_stats;
 
 			quiche_conn_stats(conn_io->conn, &stats);
 			quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
@@ -670,8 +670,8 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	conn_io->bridge->flush_egress(conn_io);
 
 	if (quiche_conn_is_closed(conn_io->conn)) {
-        quiche_stats stats;
-        quiche_path_stats path_stats;
+		quiche_stats stats;
+		quiche_path_stats path_stats;
 
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
@@ -970,8 +970,8 @@ void qh3server::destroy_pending_connections() {
 		if (quiche_conn_is_closed(conn_io->conn)) {
 			debug_print(LOG_LEVEL_0, const_logtag, "force close : connection is already closed");
 		}
-        quiche_stats stats;
-        quiche_path_stats path_stats;
+		quiche_stats stats;
+		quiche_path_stats path_stats;
 		quiche_conn_stats(conn_io->conn, &stats);
 		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 		debug_print(LOG_LEVEL_3, const_logtag, "connection force closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
@@ -1017,8 +1017,8 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 						dangling_with_response++;
 					}
 					debug_print(LOG_LEVEL_4, const_logtag, "closing dangling connection !!!");
-                    quiche_stats stats;
-                    quiche_path_stats path_stats;
+					quiche_stats stats;
+					quiche_path_stats path_stats;
 					quiche_conn_stats(conn_io->conn, &stats);
 					quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
 #if USE_UV_MAIN_LOOP

@@ -51,11 +51,13 @@ class qh3simple_router : public bridge_command_center, protected interface_qhire
 	int sock_return = -1;
 
 	// qh3
-	template <typename U, typename V>
-	route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config);
-	template <typename U, typename V>
-	int spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result);
-	template <typename U, typename V>
+	template <typename U>
+	static route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3simple_router* router);
+	template <typename U>
+	static void* spawn_qh3_command_server_internal(void* data);
+	template <typename V>
+	static int spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3simple_router* router);
+	template <typename V>
 	static void* spawn_qh3server_internal(void* data);
 
 	static int next_available_port(const qstring& host, port_range& range, int& index);	 // index starts with 0
