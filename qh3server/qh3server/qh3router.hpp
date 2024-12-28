@@ -6,8 +6,8 @@
 //  Created by Arun A on 21/12/23.
 //
 
-#ifndef qh3simple_router_hpp
-#define qh3simple_router_hpp
+#ifndef qh3router_hpp
+#define qh3router_hpp
 
 #include "../../networkcommon/source/serverconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
@@ -118,4 +118,4 @@ class http3_sample_router : public qh3router {
 	http3_sample_router(const server_config_in& config) : qh3router(config) {}
 	~http3_sample_router() {}
 };
-#endif /* qh3simple_router_hpp */
+#endif /* qh3router_hpp */
