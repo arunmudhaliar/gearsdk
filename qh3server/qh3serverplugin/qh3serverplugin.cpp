@@ -64,10 +64,11 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* s
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const char* path, const char* buffer, unsigned long len) {
+char* gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const char* path, const char* buffer, unsigned long len) {
 	if (cb_on_server_parse) {
-		cb_on_server_parse(server, path, buffer, len);
+		return cb_on_server_parse(server, path, buffer, len);
 	}
+    return nullptr;
 }
 
 // qh3plugin_server
@@ -94,7 +95,13 @@ void gsdk::server::qh3plugin_server::parse(struct conn_io_qh3* conn_io) {
 	}
 
 	if (server_event_observer) {
-		server_event_observer->on_serevr_parse(this, path_header->value.c_str(), conn_io->http_request->get_payload().buffer.c_str(), conn_io->http_request->get_payload().buffer.length());
+		const char* return_buffer = server_event_observer->on_serevr_parse(this, path_header->value.c_str(), conn_io->http_request->get_payload().buffer.c_str(), conn_io->http_request->get_payload().buffer.length());
+		if (return_buffer) {
+            conn_io->http_response->set_payload(return_buffer);
+			debug_print(LOG_LEVEL_0, __LOGTAG__, "response buffer - %s", return_buffer);
+			free((void*)return_buffer);
+			return_buffer = nullptr;
+		}
 	}
 }
 

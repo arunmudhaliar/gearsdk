@@ -4,6 +4,13 @@ import * as path from 'path';
 // import StructType from 'ref-struct-napi';
 // const StructType = require('ref-struct-napi');
 
+// Import libc's malloc and free
+const libc = ffi.Library('libc', {
+    strdup: ['pointer', ['string']], // strdup allocates memory for the string copy
+    malloc: ['pointer', ['size_t']],
+    free: ['void', ['pointer']],
+});
+
 export namespace qh3serversdk {
     const lib_path = path.join(__dirname, './../qh3serverplugin/libqh3serverplugin-debug.dylib');
     // const lib_path = path.join(__dirname, './../qh3serverplugin/libqh3serverplugin.dylib');         // release version
@@ -31,7 +38,7 @@ export namespace qh3serversdk {
     export type type_on_server_start = (router: Buffer) => void;
     export type type_on_server_stop = (server: Buffer) => void;
     export type type_on_server_error = (server: Buffer, error_code: number) => void;
-    export type type_on_server_parse = (server: Buffer, path: string, buffer: string, len: number) => void;
+    export type type_on_server_parse = (server: Buffer, path: string, buffer: string, len: number) => string;
 
     // Define the interface for the library's methods
     interface interface_qh3serverplugin {
@@ -116,25 +123,15 @@ export namespace qh3serversdk {
     export const on_server_error = ffi.Callback('void', ['pointer'], (server: Buffer, error_code: number) => {
         console.log(`on_server_error: ${error_code}`);
     }) as unknown as type_on_server_error;
-    export const on_server_parse = ffi.Callback('void', ['pointer', 'string', 'string', 'int'], (server: Buffer, path: string, buffer: string, len: number) => {
+    export const on_server_parse = ffi.Callback('pointer', ['pointer', 'string', 'string', 'int'], (server: Buffer, path: string, buffer: string, len: number) => {
         console.log(`on_server_parse: ${path}, ${buffer}, len ${len}`);
-        // Create the response buffer
-        // const response_data = `{test}`;
-        // const response_bytes = Buffer.from(response_data, 'utf-8');
-
-        // // Allocate the response buffer and copy data
-        // const response_buffer = Buffer.alloc(response_bytes.length + 1); // +1 for null-terminator
-        // response_bytes.copy(response_buffer);
-        // response_buffer[response_bytes.length] = 0; // Null-terminate
-
-        // // Create the struct instance
-        // const response = new parse_response_struct({
-        //     data: response_buffer,
-        //     size: response_bytes.length,
-        // });
-
-        // console.log(`Response constructed: ${response_data}`);
-        // return response.ref(); // Return pointer to the struct
+        const response_string = `{msg:\"test message\"}`;
+        // Use strdup to allocate and return a copy of the string
+        const result = libc.strdup(response_string);
+        if (result.isNull()) {
+            throw new Error('Memory allocation failed using strdup.');
+        }
+        return result; // Return the pointer to C++
     }) as unknown as type_on_server_parse;
 
     qh3serverplugin.spawn_qh3server(
