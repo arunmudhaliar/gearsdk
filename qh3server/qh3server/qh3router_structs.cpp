@@ -1,12 +1,12 @@
 //
 //  Copyright 2024 homenet25
-//  qh3simple_router_structs.cpp
+//  qh3router_structs.cpp
 //  qh3server
 //
 //  Created by Arun A on 30/12/23.
 //
 
-#include "qh3simple_router_structs.h"
+#include "qh3router_structs.h"
 
 #include <fcntl.h>
 

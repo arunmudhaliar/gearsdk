@@ -1,0 +1,25 @@
+{
+    "name": "qh3serverplugin-ts",
+    "version": "1.0.0",
+    "description": "A project using ffi-napi and ref-napi with TypeScript.",
+    "main": "dist/qh3serverplugin.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "DYLD_LIBRARY_PATH='../qh3serverplugin' node dist/qh3serverplugin.js",
+        "watch": "tsc --watch"
+    },
+    "dependencies": {
+        "ffi-napi": "^4.0.3",
+        "mongodb": "^6.12.0",
+        "ref-napi": "^3.0.3",
+        "ref-struct-napi": "^1.1.1"
+    },
+    "devDependencies": {
+        "@types/ffi-napi": "^4.0.10",
+        "@types/ref-napi": "^3.0.12",
+        "typescript": "^5.0.0"
+    },
+    "keywords": [],
+    "author": "amudaliar",
+    "license": "ISC"
+}

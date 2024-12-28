@@ -16,9 +16,9 @@
 using namespace rapidjson;
 using namespace client;
 
-http3_command_server::http3_command_server(const qstring& redis_ip, uint16_t redis_port, bridge_command_center* bridge, qstring router_port) : qh3server(), bridge(bridge), router_port(router_port) {
+http3_command_server::http3_command_server(const server_config_in& config) : qh3server(), bridge(config.ref), router_port(config.router_port) {
 	UNUSED(bridge);
-	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", redis_ip, redis_port, "gsdkuser", "Fr0gmoon123");
+	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
 }
 
 http3_command_server::~http3_command_server() {

@@ -12,8 +12,8 @@
 #include "../../common/crypto_helper.hpp"
 #include "../../networkcommon/source/qbuffer.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
+#include "qh3router_structs.h"
 #include "qh3server.hpp"
-#include "qh3simple_router_structs.h"
 
 #include <qh3client_helper.hpp>
 
@@ -36,7 +36,7 @@ class http3_command_server : public qh3server {
 	qhiredis* hiredis = nullptr;
 
    public:
-	http3_command_server(const qstring& redis_url, uint16_t redis_port, bridge_command_center* bridge, qstring router_port);
+	http3_command_server(const server_config_in& config);
 	~http3_command_server();
 	static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
 	static inline const char* get_server_name() { return "http3_command_server"; }

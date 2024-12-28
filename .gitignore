@@ -116,3 +116,8 @@ qserver/gstats
 scripts/__pycache__
 qunityplugin/qunityplugin_ts_proj/dist
 qunityplugin/qunityplugin_ts_proj/node_modules
+qh3server/qh3serverplugin_ts_proj/dist
+qh3server/qh3serverplugin_ts_proj/logs
+qh3server/qh3serverplugin_ts_proj/node_modules
+qh3server/qh3serverplugin_ts_proj/stats
+libqh3serverplugin-debug.dylib

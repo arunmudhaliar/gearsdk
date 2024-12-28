@@ -8,6 +8,34 @@
 
 #include "qh3server.hpp"
 
+#define QH3SERVER_EVENT_ERROR(thiz, error_code)                \
+	do {                                                       \
+		if (event_observer) {                                  \
+			event_observer->on_server_error(thiz, error_code); \
+		}                                                      \
+	} while (0)
+
+#define QH3SERVER_EVENT_PRE_START(thiz)                \
+	do {                                               \
+		if (event_observer && thiz) {                  \
+			event_observer->on_server_pre_start(thiz); \
+		}                                              \
+	} while (0)
+
+#define QH3SERVER_EVENT_START(thiz)                \
+	do {                                           \
+		if (event_observer && thiz) {              \
+			event_observer->on_server_start(thiz); \
+		}                                          \
+	} while (0)
+
+#define QH3SERVER_EVENT_STOP(thiz)                \
+	do {                                          \
+		if (event_observer) {                     \
+			event_observer->on_server_stop(thiz); \
+		}                                         \
+	} while (0)
+
 qh3server::qh3server() {}
 
 qh3server::~qh3server() {
@@ -683,7 +711,9 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 	}
 }
 
-int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id) {
+int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
+				   observer_qh3server_events* event_observer) {
+	server_event_observer = event_observer;
 	app_directory = root_dir;
 	host_id = host;
 	port_id = port;
@@ -705,6 +735,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
 		debug_print_error(const_logtag, "failed to resolve host - port[%s]", port.c_str());
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -713,6 +744,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		debug_print_error(const_logtag, "failed to create socket - port[%s]", port.c_str());
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -722,6 +754,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		// new servers wont be able to bind.
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -730,6 +763,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -739,6 +773,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -751,6 +786,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 	int res_key_load = quiche_config_load_priv_key_from_pem_file(config, key_file.c_str());
@@ -759,6 +795,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -788,6 +825,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -837,6 +875,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
+		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -846,19 +885,17 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
 	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
-
 	// dangling connection check timer
 	TIMER_SCHEDuLER_TYPE close_dangling_connections_scheduler;
 	close_dangling_connections_scheduler.set_loop(mainloop);
 	TIMER_TYPE* dangling_connections_check_timer = dangling_connections_check_loop(close_dangling_connections_scheduler, 3.0f);
-
 	// router hb timer
 	TIMER_SCHEDuLER_TYPE router_hb_scheduler;
 	router_hb_scheduler.set_loop(mainloop);
 	TIMER_TYPE* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
-
+	QH3SERVER_EVENT_PRE_START(this);
 	on_run_started();
-
+	QH3SERVER_EVENT_START(this);
 	// main event loop
 #if USE_UV_MAIN_LOOP
 	uv_run(mainloop, UV_RUN_DEFAULT);
@@ -869,6 +906,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	destroy_pending_connections();
 	//
 
+	QH3SERVER_EVENT_STOP(this);
 	on_run_end();
 	on_server_uninitialise();
 

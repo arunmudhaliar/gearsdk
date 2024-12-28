@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch qh3server SDK",
+        "program": "${workspaceFolder}/dist/qh3serverplugin.js",
+        "env": {
+          "DYLD_LIBRARY_PATH": "${workspaceFolder}/../qh3serverplugin"
+        },
+        "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+        "sourceMaps": true,
+        "runtimeVersion": "16.16.0",
+        "runtimeExecutable": "node",
+        "preLaunchTask": "tsc: watch",
+        "runtimeArgs": [
+          "--trace-exit"
+      ],
+      "outputCapture": "std"
+      },
+      {
+        "name": "Debug C++ from Node.js",
+        "type": "cppdbg",
+        "request": "attach",
+        "program": "/Users/amudaliar/.nvm/versions/node/v16.16.0/bin/node",
+        "processId": "${command:pickProcess}",
+        "targetArchitecture": "x86_64",
+        "MIMode": "lldb", // Use "gdb" if you are on Linux and prefer GDB
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            }
+        ],
+        "sourceFileMap": {
+          "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/qh3server/qh3serverplugin": "${workspaceFolder}/../qh3serverplugin"
+        }
+      }    
+    ]
+  }
+  

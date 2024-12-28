@@ -12,7 +12,7 @@
 #include "../../servercommon/source/servercommon.hpp"
 #include "http3_command_server.hpp"
 #include "http3_sample_server.hpp"
-#include "qh3simple_router.hpp"
+#include "qh3router.hpp"
 
 static qstring version_string = "0.1";
 static unsigned version_code = 1;

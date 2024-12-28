@@ -5,14 +5,18 @@
         "type": "node",
         "request": "launch",
         "name": "Launch Qunity SDK",
-        "program": "${workspaceFolder}/dist/qunitysdk.js",
+        "program": "${workspaceFolder}/dist/app.js",
         "env": {
           "DYLD_LIBRARY_PATH": "${workspaceFolder}/../qunityplugin_unity_proj/qunitysdk_module/libs/macos_x86_64"
         },
         "outFiles": ["${workspaceFolder}/dist/**/*.js"],
         "sourceMaps": true,
         "runtimeVersion": "16.16.0",
-        "preLaunchTask": "tsc: watch"
+        "preLaunchTask": "tsc: watch",
+        "runtimeArgs": [
+          "--trace-exit"
+      ],
+      "outputCapture": "std"
       }
     ]
   }

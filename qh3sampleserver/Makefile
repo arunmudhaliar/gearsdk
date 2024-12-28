@@ -35,10 +35,10 @@ $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
 $(ZK_SRCDIR)/source/qzookeeper.cpp
 
 SRCS = $(SRCDIR)/qh3server.cpp \
-$(SRCDIR)/qh3simple_router.cpp \
+$(SRCDIR)/qh3router.cpp \
 $(SRCDIR)/http3_command_server.cpp \
 $(SRCDIR)/http3_sample_server.cpp \
-$(SRCDIR)/qh3simple_router_structs.cpp \
+$(SRCDIR)/qh3router_structs.cpp \
 $(NCOMMONSRCS)
 
 C_SRCS = $(COMMON_SRCDIR)/crypto/sha256.c

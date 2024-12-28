@@ -1,0 +1,182 @@
+//
+//  qh3serverplugin.cpp
+//  qh3server
+//
+//  Created by Arun A on 22/12/24.
+//
+
+#include "qh3serverplugin.h"
+
+#include "../../common/signal_handler/signal_handler.hpp"
+#include "../../servercommon/source/servercommon.hpp"
+#include "../qh3server/http3_command_server.hpp"
+
+#undef __LOGTAG__
+#define __LOGTAG__ "qh3serverplugin"
+
+// qh3plugin_router_event_listener
+void gsdk::server::qh3plugin_router_event_listener::on_router_pre_start(qh3router* router) {
+	if (cb_on_router_pre_start) {
+		cb_on_router_pre_start(router);
+	}
+}
+
+void gsdk::server::qh3plugin_router_event_listener::on_router_start(qh3router* router) {
+	if (cb_on_router_start) {
+		cb_on_router_start(router);
+	}
+}
+
+void gsdk::server::qh3plugin_router_event_listener::on_router_stop() {
+	if (cb_on_router_stop) {
+		cb_on_router_stop();
+	}
+}
+
+void gsdk::server::qh3plugin_router_event_listener::on_router_error(int error_code) {
+	if (cb_on_router_error) {
+		cb_on_router_error(error_code);
+	}
+}
+
+// qh3plugin_router_event_listener
+void gsdk::server::qh3plugin_server_event_listener::on_server_pre_start(qh3server* server) {
+	if (cb_on_server_pre_start) {
+		cb_on_server_pre_start(server);
+	}
+}
+
+void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server) {
+	if (cb_on_server_start) {
+		cb_on_server_start(server);
+	}
+}
+
+void gsdk::server::qh3plugin_server_event_listener::on_server_stop(qh3server* server) {
+	if (cb_on_server_stop) {
+		cb_on_server_stop(server);
+	}
+}
+
+void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* server, int error_code) {
+	if (cb_on_server_error) {
+		cb_on_server_error(server, error_code);
+	}
+}
+
+void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const char* path, const char* buffer, unsigned long len) {
+	if (cb_on_server_parse) {
+		cb_on_server_parse(server, path, buffer, len);
+	}
+}
+
+// qh3plugin_server
+gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {}
+
+void gsdk::server::qh3plugin_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
+	qh3server::parse_header(name, value, conn_io);
+}
+
+void gsdk::server::qh3plugin_server::parse(struct conn_io_qh3* conn_io) {
+	const char* const_logtag = logtag.c_str();
+	const char* port_id_cstr = port_id.c_str();
+	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
+	if (path_header == nullptr) {
+		debug_print_error(const_logtag, "path_header == null, returning. !!!");
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", get_server_name(), "", port_id_cstr, "path_not_found");
+		return;
+	}
+
+	if (path_header->value.length() <= 1) {
+		debug_print_warn(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
+		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", get_server_name(), path_header->value.c_str(), port_id_cstr, "short_path");
+		return;
+	}
+
+	if (server_event_observer) {
+		server_event_observer->on_serevr_parse(this, path_header->value.c_str(), conn_io->http_request->get_payload().buffer.c_str(), conn_io->http_request->get_payload().buffer.length());
+	}
+}
+
+bool gsdk::server::qh3plugin_server::on_server_pre_init() {
+	return true;
+}
+
+void gsdk::server::qh3plugin_server::on_server_uninitialise() {}
+
+void gsdk::server::qh3plugin_server::on_run_started() {}
+
+void gsdk::server::qh3plugin_server::on_run_end() {}
+
+EXPORT void gsdk::server::setup_signal_handler() {
+	signal_handler::setup_signal_handler();
+}
+
+EXPORT void gsdk::server::pre_init_qh3serverplugin_sdk() {
+	init_gsdk();
+	gsdk::servercommon::init_server_common();
+}
+
+EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
+										  qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
+										  qh3plugin_router_event_listener::type_on_router_error error_cb) {
+	qaddress router_addr(router_address);
+	qaddress redis_addr(redis_address);
+	server_config_in config(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, router_addr.port, zk_uri, router_port_return, app_id);
+	config.print();
+	http3_sample_router router(config);
+	qh3plugin_router_event_listener listener(pre_start_cb, start_cb, stop_cb, error_cb);
+	router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, &listener);
+}
+
+EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return,
+										  const char* app_id, qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb,
+										  qh3plugin_server_event_listener::type_on_server_stop stop_cb, qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb) {
+	qaddress server_addr(server_address);
+	qaddress redis_addr(redis_address);
+	server_config_in config(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, server_addr.port, zk_uri, router_port_return, app_id);
+
+	port_range range;
+	int index = 0;
+	int free_port = qh3router::next_available_port(config.host, range, index);
+	if (free_port == 0) {
+		debug_print_error(__LOGTAG__, "NO PORT AVAILABLE !!!");
+		return;
+	}
+
+	qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
+	PTHREAD_NAME(qh3plugin_server::get_server_name());
+	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(config);
+	new_server->run(config.host, qstring::format_string("%d", free_port), config.root_dir, nullptr, config.command_feedback_port, 0, config.app_id, listener);
+	GX_DELETE(new_server);
+	GX_DELETE(listener);
+
+	/*
+	bool fork_result = false;  // only valid inside FORK_QH3_SERVER preprocessor
+	pid_t parent_process_id = getpid();
+	pid_t child_process_id = -1;
+	qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
+	int result = qh3router::spawn_qh3server<qh3plugin_server>(config.host, qstring::format_string("%d", free_port), config, child_process_id, fork_result, router, listener);
+#if FORK_QH3_SERVER
+	if (result != 0) {
+		debug_print_error(__LOGTAG__, "spawn_qh3server failed. returning !!!");
+		return;
+	}
+	if (!fork_result) {
+		if (parent_process_id == getpid()) {
+			debug_print_error(__LOGTAG__, "spawn_qh3server forking failed. rturning !!!", parent_process_id);
+			return;
+		}
+	}
+#else
+	if (result != 0) {
+		debug_print_error(__LOGTAG__, "spawn_qh3server failed. !!!");
+	}
+#endif
+	 */
+}
+
+EXPORT int gsdk::server::test_func() {
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "test_func");
+	return 100;
+}
