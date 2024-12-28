@@ -1,6 +1,6 @@
 //
 //  Copyright 2024 homenet25
-//  qh3simple_router_structs.h
+//  qh3router_structs.h
 //  qh3server
 //
 //  Created by Arun A on 30/12/23.
@@ -12,7 +12,7 @@
 #include "../../networkcommon/source/essentials.hpp"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "qh3simple_router_structs"
+#define __LOGTAG__ "qh3router_structs"
 
 struct route;
 class bridge_command_center {
@@ -52,6 +52,27 @@ struct server_config_in {
 		  router_port(config.router_port),
 		  router_port_return(config.router_port_return),
 		  app_id(config.app_id) {}
+
+	void print() {
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "server_config_in values:\n{");
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Host: %s", host.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Port: %s", port.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("MongoDB URI: %s", mongodb_uri.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Redis IP: %s", redis_ip.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Redis Port: %u", redis_port).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Zookeeper URI: %s", zk_uri.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Root Directory: %s", root_dir.string().c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Run Thread ID: %lu", (unsigned long) run_thread_id).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Router: %s", router ? "Set" : "Not Set").c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Command Server: %s", command_server ? "YES" : "NO").c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Command Port: %u", command_port).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Command Feedback Port: %u", command_feedback_port).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Bridge Command Center Ref: %s", ref ? "Set" : "Not Set").c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Router Port: %s", router_port.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("Router Port Return: %u", router_port_return).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("App ID: %s\n}", app_id.c_str()).c_str());
+	}
+
 	qstring host = "localhost";
 	qstring port = "4004";
 	qstring mongodb_uri = "mongodb://localhost:27017";	//"mongodb://192.168.0.230:6006"

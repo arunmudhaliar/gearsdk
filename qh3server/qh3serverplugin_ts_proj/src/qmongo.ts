@@ -1,0 +1,123 @@
+// import { MongoClient, Db, Collection, Document } from "mongodb";
+
+// type ErrorHandler = (error: Error) => void;
+
+// class qmongo {
+//     private appName: string;
+//     private dbName: string;
+//     private uri: string;
+//     private client: MongoClient | null = null;
+//     private database: Db | null = null;
+//     private collections: Map<string, Collection> = new Map();
+//     private errorHandler: ErrorHandler | null = null;
+
+//     constructor(appName: string, dbName: string, uri: string, errorHandler?: ErrorHandler) {
+//         this.appName = appName;
+//         this.dbName = dbName;
+//         this.uri = uri;
+//         if (errorHandler) this.errorHandler = errorHandler;
+//     }
+
+//     private handleError(error: Error) {
+//         if (this.errorHandler) {
+//             this.errorHandler(error);
+//         } else {
+//             console.error(error.message);
+//         }
+//     }
+
+//     async connect(): Promise<void> {
+//         try {
+//             this.client = new MongoClient(this.uri, { appName: this.appName });
+//             await this.client.connect();
+//             this.database = this.client.db(this.dbName);
+//             console.log(`Connected to MongoDB: ${this.uri}`);
+//         } catch (error) {
+//             this.handleError(error as Error);
+//             throw error;
+//         }
+//     }
+
+//     async disconnect(): Promise<void> {
+//         if (this.client) {
+//             await this.client.close();
+//             this.client = null;
+//             this.database = null;
+//             this.collections.clear();
+//             console.log("Disconnected from MongoDB");
+//         }
+//     }
+
+//     private getCollection(collectionName: string): Collection | null {
+//         if (!this.database) {
+//             console.error("Database connection is not initialized.");
+//             return null;
+//         }
+
+//         if (!this.collections.has(collectionName)) {
+//             const collection = this.database.collection(collectionName);
+//             this.collections.set(collectionName, collection);
+//         }
+
+//         return this.collections.get(collectionName) || null;
+//     }
+
+//     async insert(collectionName: string, document: Document): Promise<void> {
+//         try {
+//             const collection = this.getCollection(collectionName);
+//             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
+
+//             await collection.insertOne(document);
+//             console.log(`Document inserted into ${collectionName}`);
+//         } catch (error) {
+//             this.handleError(error as Error);
+//             throw error;
+//         }
+//     }
+
+//     async update(collectionName: string, filter: Document, update: Document): Promise<void> {
+//         try {
+//             const collection = this.getCollection(collectionName);
+//             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
+
+//             const result = await collection.findOneAndUpdate(filter, { $set: update }, { upsert: true, returnDocument: "after" });
+//             if (!result.value) throw new Error("Update failed or document not found.");
+//             console.log(`Document updated in ${collectionName}`);
+//         } catch (error) {
+//             this.handleError(error as Error);
+//             throw error;
+//         }
+//     }
+
+//     async find(collectionName: string, filter: Document): Promise<Document[]> {
+//         try {
+//             const collection = this.getCollection(collectionName);
+//             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
+
+//             const documents = await collection.find(filter).toArray();
+//             console.log(`Found ${documents.length} documents in ${collectionName}`);
+//             return documents;
+//         } catch (error) {
+//             this.handleError(error as Error);
+//             throw error;
+//         }
+//     }
+
+//     async createClientIndexIfNot(collectionName: string, indexKey: Document): Promise<void> {
+//         try {
+//             const collection = this.getCollection(collectionName);
+//             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
+
+//             const indexExists = await collection.indexExists(Object.keys(indexKey));
+//             if (!indexExists) {
+//                 await collection.createIndex(indexKey);
+//                 console.log(`Index created for ${collectionName}`);
+//             } else {
+//                 console.log(`Index already exists for ${collectionName}`);
+//             }
+//         } catch (error) {
+//             this.handleError(error as Error);
+//             throw error;
+//         }
+//     }
+// }

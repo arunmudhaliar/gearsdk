@@ -289,6 +289,22 @@ struct qaddress {
 	qaddress(const qstring& ip, const qstring& port) { set(ip, port); }
 	qaddress(struct sockaddr& addr) { set(addr); }
 	qaddress(struct sockaddr* addr) { set(*addr); }
+	qaddress(const qstring& address) {
+		std::vector<qstring> parts;
+		address.split(":", parts, false);
+		if (parts.size() == 2) {
+			ip = parts[0];
+			int tmp = 0;
+			if (gsdk::str2int(&tmp, parts[1].c_str(), parts[1].length(), 10) == gsdk::STR2INT_SUCCESS) {
+				port = (uint16_t) tmp;
+			} else {
+				debug_print_error("qaddress", "Unable to parse port !!! - %s", parts[1].c_str());
+			}
+		} else {
+			debug_print_error(__LOGTAG__, "Invalid request IP: %s", address.c_str());
+		}
+	}
+
 	int set(struct sockaddr& addr) {
 		char name[INET6_ADDRSTRLEN];
 		char port[10];

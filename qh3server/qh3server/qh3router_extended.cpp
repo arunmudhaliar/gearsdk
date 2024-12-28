@@ -1,6 +1,6 @@
 //
 //  Copyright 2024 homenet25
-//  qh3simple_router_extended.cpp
+//  qh3router_extended.cpp
 //  qh3server
 //
 //  Created by Arun A on 25/06/24.
@@ -9,11 +9,39 @@
 #ifndef QH3SIMPLE_ROUTER_EXTENDED_CPP
 #define QH3SIMPLE_ROUTER_EXTENDED_CPP
 
-#include "qh3simple_router.hpp"
+#include "qh3router.hpp"
+
+#define ROUTER_EVENT_ERROR(error_code)                   \
+	do {                                                 \
+		if (event_observer) {                            \
+			event_observer->on_router_error(error_code); \
+		}                                                \
+	} while (0)
+
+#define ROUTER_EVENT_PRE_START(thiz)                   \
+	do {                                               \
+		if (event_observer && thiz) {                  \
+			event_observer->on_router_pre_start(thiz); \
+		}                                              \
+	} while (0)
+
+#define ROUTER_EVENT_START(thiz)                   \
+	do {                                           \
+		if (event_observer && thiz) {              \
+			event_observer->on_router_start(thiz); \
+		}                                          \
+	} while (0)
+
+#define ROUTER_EVENT_STOP()                   \
+	do {                                      \
+		if (event_observer) {                 \
+			event_observer->on_router_stop(); \
+		}                                     \
+	} while (0)
 
 using namespace client;
 template <typename U, typename V>
-int qh3simple_router::run() {
+int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_observer) {
 	PTHREAD_NAME(qstring::format_string("router-%s", config.port.c_str()).c_str());
 
 #if FORK_QH3_SERVER
@@ -27,6 +55,7 @@ int qh3simple_router::run() {
 	freeaddrinfo(router);
 	if (getaddrinfo(config.host.c_str(), config.port.c_str(), &HINTS, &router) != 0) {
 		debug_print_error(__LOGTAG__, "failed to resolve host");
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 	// return
@@ -35,6 +64,7 @@ int qh3simple_router::run() {
 		debug_print_error(__LOGTAG__, "failed to resolve host (port_return)");
 		freeaddrinfo(router);
 		router = nullptr;
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 	//
@@ -50,6 +80,7 @@ int qh3simple_router::run() {
 		freeaddrinfo(router_return);
 		router_return = nullptr;
 		router = nullptr;
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 
@@ -60,6 +91,7 @@ int qh3simple_router::run() {
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 
@@ -70,6 +102,7 @@ int qh3simple_router::run() {
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 
@@ -85,6 +118,7 @@ int qh3simple_router::run() {
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 
@@ -96,24 +130,26 @@ int qh3simple_router::run() {
 		router = nullptr;
 		close(sock_return);
 		close(sock);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 
 	if (bind(sock_return, router_return->ai_addr, router_return->ai_addrlen) < 0) {
-		debug_print_error(__LOGTAG__, "failed to connect sock_return");
+		debug_print_error(__LOGTAG__, "failed to connect sock_return. port[%u]", config.router_port_return);
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
 		router = nullptr;
 		close(sock_return);
 		close(sock);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
 	//
 
 	mainloop = ev_default_loop(0);
 
-	debug_print_important2(__LOGTAG__, "Creating  command center !!!");
+	debug_print_important2(__LOGTAG__, "spawning command center !!!");
 	// command server
 	if (spawn_qh3server_command_server<U>(config.host, config.command_port, config, this) == nullptr) {
 		debug_print_error(__LOGTAG__, "failed to create command server !!!");
@@ -126,8 +162,12 @@ int qh3simple_router::run() {
 		shutdown_zk();
 		GX_DELETE(hiredis_async);
 		GX_DELETE(hiredis);
+		ROUTER_EVENT_ERROR(-1);
 		return -1;
 	}
+
+	debug_print_important2(__LOGTAG__, "pre-start");
+	ROUTER_EVENT_PRE_START(this);
 
 	// spawn initial servers
 	int spawned_servers = 0;  // never decrement
@@ -135,7 +175,7 @@ int qh3simple_router::run() {
 	int index = 0;
 	pid_t parent_process_id = getpid();
 	pid_t child_process_id = -1;
-	while (spawned_servers < NO_OF_SERVERS_TO_SPAWN) {
+	while ((run_flag & SKIP_DEFAULT_QH3SERVER_SPAWN) == 0 && spawned_servers < NO_OF_DEFAULT_SERVERS_TO_SPAWN) {
 		overflow++;
 		if (overflow > 1000) {
 			debug_print_error(__LOGTAG__, "OVERFLOW ON SPAWNING SERVERS !!!");
@@ -177,10 +217,9 @@ int qh3simple_router::run() {
 		spawned_servers++;
 	}
 	//
+	debug_print_important2(__LOGTAG__, "pre-start - finish:prespawn");
 
 	if (child_process_id != 0) {
-		debug_print_important2(__LOGTAG__, "Star router !!!");
-
 #if ENABLE_ZK
 		GX_DELETE(qzk);
 		qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-router-%s", config.port.c_str()));
@@ -194,6 +233,7 @@ int qh3simple_router::run() {
 			close(sock);
 			debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 			GX_DELETE(qzk);
+			ROUTER_EVENT_ERROR(-1);
 			return -1;
 		}
 #endif
@@ -207,8 +247,10 @@ int qh3simple_router::run() {
 		if (!zkconfig->load(config_path, qzk, "/qh3router")) {
 			debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
 			GX_DELETE(zkconfig);
-			return false;
+			ROUTER_EVENT_ERROR(-1);
+			return -1;
 		}
+		debug_print_important2(__LOGTAG__, "pre-start - finish:config");
 
 		GX_DELETE(hiredis);
 		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
@@ -222,8 +264,11 @@ int qh3simple_router::run() {
 			close(sock);
 			shutdown_zk();
 			GX_DELETE(hiredis);
+			ROUTER_EVENT_ERROR(-1);
 			return -1;
 		}
+
+		debug_print_important2(__LOGTAG__, "pre-start - finish:redis");
 
 		ev_io watcher;
 		ev_io_init(&watcher, recv_cb, sock, EV_READ);
@@ -234,12 +279,6 @@ int qh3simple_router::run() {
 		ev_io_init(&watcher_return, recv_return_cb, sock_return, EV_READ);
 		ev_io_start(mainloop, &watcher_return);
 		watcher_return.data = this;
-
-		// refresh the hb timestamp.
-		for (auto r : routes) {
-			r->refresh_hb_timestamp(mainloop);
-		}
-		//
 
 		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
 		if (hiredis_async->connect_async_redis(mainloop) != 0) {
@@ -253,8 +292,11 @@ int qh3simple_router::run() {
 			close(sock);
 			shutdown_zk();
 			GX_DELETE(hiredis);
+			ROUTER_EVENT_ERROR(-1);
 			return -1;
 		}
+
+		debug_print_important2(__LOGTAG__, "pre-start - end");
 
 		qtimer_scheduler unresponsive_routes_scheduler;
 		unresponsive_routes_scheduler.set_loop(mainloop);
@@ -263,6 +305,9 @@ int qh3simple_router::run() {
 		qtimer_scheduler update_redis_about_servers_scheduler;
 		update_redis_about_servers_scheduler.set_loop(mainloop);
 		qtimer* update_redis_about_servers_timer = update_redis_about_servers(update_redis_about_servers_scheduler);
+
+		debug_print_important2(__LOGTAG__, "Star router !!!");
+		ROUTER_EVENT_START(this);
 
 		ev_loop(mainloop, 0);
 
@@ -282,6 +327,7 @@ int qh3simple_router::run() {
 		close(sock);
 		shutdown_zk();
 		debug_print_important2(__LOGTAG__, "Stop router !!!");
+		ROUTER_EVENT_STOP();
 		return 0;
 	} else {
 		freeaddrinfo(router);
@@ -294,13 +340,13 @@ int qh3simple_router::run() {
 }
 
 template <typename U>
-route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3simple_router* router) {
+route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3router* router) {
 	server_config_in* new_config =
 		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
 	new_config->command_server = true;
 	new_config->ref = router;
 
-	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3_command_server_internal<U>, (void*) new_config) < 0) {
+	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3_command_server_internal<U>, (void*) new_config) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(new_config);
 		return nullptr;
@@ -320,7 +366,7 @@ route* qh3simple_router::spawn_qh3server_command_server(const qstring& host, con
 }
 
 template <typename V>
-int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3simple_router* router) {
+int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer) {
 #if FORK_QH3_SERVER
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
 	fork_result = false;
@@ -336,9 +382,12 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
 		server_config_in* new_config =
 			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
-		if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<V>, (void*) new_config) < 0) {
+		std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, observer_qh3server_events*>(new_config, server_event_observer);
+		if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3server_internal<V>, (void*) tuple_in) < 0) {
 			debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+			GX_DELETE(tuple_in);
 			GX_DELETE(new_config);
+			GX_DELETE(server_event_observer);
 			return -1;
 		}
 
@@ -355,6 +404,7 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
 		route* child = DEBUG_NEW route(host, port, router->server_counter++);
 		child->child_process_id = child_process_id;
+		child->refresh_hb_timestamp(router->mainloop);
 		router->routes.push_back(child);
 		debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
 		child->create_bridge(router->mainloop, child, nullptr);
@@ -364,12 +414,16 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 	fork_result = false;
 	server_config_in* new_config =
 		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
-	if (pthread_create(&new_config->run_thread_id, nullptr, qh3simple_router::spawn_qh3server_internal<V>, (void*) new_config) < 0) {
+	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, observer_qh3server_events*>(new_config, server_event_observer);
+	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3server_internal<V>, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
+		GX_DELETE(tuple_in);
 		GX_DELETE(new_config);
+		GX_DELETE(server_event_observer);
 		return -1;
 	}
 	route* child = DEBUG_NEW route(host, port, router->server_counter++);
+	child->refresh_hb_timestamp(router->mainloop);
 	router->routes.push_back(child);
 	debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
 	child->create_bridge(router->mainloop, child, nullptr);
@@ -379,32 +433,34 @@ int qh3simple_router::spawn_qh3server(const qstring& host, const qstring& port, 
 }
 
 template <typename V>
-void* qh3simple_router::spawn_qh3server_internal(void* data) {
-	server_config_in* config = (server_config_in*) data;
+void* qh3router::spawn_qh3server_internal(void* data) {
+	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = (std::tuple<server_config_in*, observer_qh3server_events*>*) data;
+	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
+	observer_qh3server_events* event_observer = (observer_qh3server_events*) std::get<1>(*tuple_in);
 	if (config->command_server) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_internal failed, its a command server");
 		GX_DELETE(config);
+		GX_DELETE(tuple_in);
+		GX_DELETE(event_observer);
 		pthread_exit(0);
 		return nullptr;
 	}
 
 	qstring& host = config->host;
 	qstring& port = config->port;
-	qstring& mongodb_uri = config->mongodb_uri;
-	qstring& redis_ip = config->redis_ip;
-	uint16_t redis_port = config->redis_port;
 	fs::path& root_dir = config->root_dir;
-	qstring& zk_uri = config->zk_uri;
 	PTHREAD_NAME(V::get_server_name());
-	V* new_server = DEBUG_NEW V(mongodb_uri.c_str(), redis_ip.c_str(), redis_port, zk_uri);
-	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
+	V* new_server = DEBUG_NEW V(*config);
+	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, event_observer);
 	GX_DELETE(new_server);
 	GX_DELETE(config);
+	GX_DELETE(tuple_in);
+	GX_DELETE(event_observer);
 	pthread_exit(0);
 }
 
 template <typename U>
-void* qh3simple_router::spawn_qh3_command_server_internal(void* data) {
+void* qh3router::spawn_qh3_command_server_internal(void* data) {
 	server_config_in* config = (server_config_in*) data;
 	if (!config->command_server) {
 		debug_print_error(__LOGTAG__, "spawn_qh3_command_server_internal failed, not a command server");
@@ -414,11 +470,9 @@ void* qh3simple_router::spawn_qh3_command_server_internal(void* data) {
 	}
 	qstring& host = config->host;
 	qstring& port = config->port;
-	qstring& redis_ip = config->redis_ip;
-	uint16_t redis_port = config->redis_port;
 	fs::path& root_dir = config->root_dir;
 	PTHREAD_NAME(U::get_server_name());
-	U* new_server = DEBUG_NEW U(redis_ip.c_str(), redis_port, config->ref, config->router_port);
+	U* new_server = DEBUG_NEW U(*config);
 	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
 	GX_DELETE(new_server);
 	GX_DELETE(config);

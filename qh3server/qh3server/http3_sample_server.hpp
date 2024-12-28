@@ -14,6 +14,7 @@
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
 #include "../../servercommon/source/qmongo/qmongo.hpp"
+#include "qh3router_structs.h"
 #include "qh3server.hpp"
 
 #define DEFAULT_USER_TOKEN_EXPIRY_TIME 300	// in seconds
@@ -48,7 +49,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 	msg_room_config_list* room_config_list = nullptr;
 
    public:
-	http3_sample_server(const qstring& mongodb_uri, const qstring& redis_url, uint16_t redis_port, const qstring& zk_uri);
+	http3_sample_server(const server_config_in& config);
 	virtual ~http3_sample_server();
 
 	void test_mongo_db();

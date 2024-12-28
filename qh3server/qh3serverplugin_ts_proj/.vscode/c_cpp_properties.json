@@ -1,0 +1,34 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/../qh3serverplugin/"
+                ,"${workspaceFolder}/../qh3serverplugin/../../networkcommon/source"
+                ,"${workspaceFolder}/../qh3serverplugin/../../qhiredis/source"
+                ,"${workspaceFolder}/../qh3serverplugin/../../servercommon/source"
+                ,"${workspaceFolder}/../qh3serverplugin/../../common"
+                ,"${workspaceFolder}/../qh3serverplugin/../../qutils"
+                ,"${workspaceFolder}/../qh3serverplugin/../../qzookeeper"
+                ,"${workspaceFolder}/../qh3serverplugin/../../qh3client/qh3client"
+                ,"${workspaceFolder}/../qh3serverplugin/../../qh3server"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/qh3client/qh3client"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/qzookeeper/zookeeper"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/networkcommon/source/ev"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/qhiredis/hiredis"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/networkcommon/source/quiche"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/common/uthash"
+                ,"/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/servercommon"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64"
+        }
+    ],
+    "version": 4
+}

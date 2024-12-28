@@ -11,9 +11,9 @@
 #include "../../common/crypto_helper.hpp"
 #include "../../networkcommon/source/qbuffer.hpp"
 
-http3_sample_server::http3_sample_server(const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port, const qstring& zk_uri) : qh3server(), zk_uri(zk_uri) {
-	mongo = DEBUG_NEW qmongo(this, "qh3", "gsdk_mongodb", mongodb_uri);
-	hiredis = DEBUG_NEW qhiredis("server_hiredis", redis_ip, redis_port, "gsdkuser", "Fr0gmoon123");
+http3_sample_server::http3_sample_server(const server_config_in& config) : qh3server(), zk_uri(config.zk_uri) {
+	mongo = DEBUG_NEW qmongo(this, "qh3", "gsdk_mongodb", config.mongodb_uri);
+	hiredis = DEBUG_NEW qhiredis("server_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
 }
 
 http3_sample_server::~http3_sample_server() {

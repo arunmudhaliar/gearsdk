@@ -1,16 +1,16 @@
 //
 //  Copyright 2024 homenet25
-//  qh3simple_router.cpp
+//  qh3router.cpp
 //  qh3server
 //
 //  Created by Arun A on 21/12/23.
 //
 
-#include "qh3simple_router.hpp"
+#include "qh3router.hpp"
 
 using namespace client;
-qh3simple_router::qh3simple_router(const server_config_in& config) : config(config) {}
-qh3simple_router::~qh3simple_router() {
+qh3router::qh3router(const server_config_in& config) : config(config) {}
+qh3router::~qh3router() {
 	for (auto r : routes) {
 		GX_DELETE(r);
 	}
@@ -21,15 +21,15 @@ qh3simple_router::~qh3simple_router() {
 	GX_DELETE(command_route);
 	GX_DELETE(hiredis_async);
 	GX_DELETE(hiredis);
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "qh3simple_router destroyed...");
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "qh3router destroyed...");
 }
 
-void qh3simple_router::shutdown_zk() {
+void qh3router::shutdown_zk() {
 	GX_DELETE(zkconfig);
 #if ENABLE_ZK
 	if (qzk != nullptr) {
 		qzk->shutdown();
-		debug_print_important(__LOGTAG__, "waiting for qh3simple_router services to finish !!!");
+		debug_print_important(__LOGTAG__, "waiting for qh3router services to finish !!!");
 		struct ev_loop* wait_loop = ev_loop_new();
 		qtimer_scheduler wait_scheduler;
 		wait_scheduler.set_loop(wait_loop);
@@ -52,10 +52,10 @@ void qh3simple_router::shutdown_zk() {
 #endif
 }
 
-void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
+void qh3router::recv_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);
-	qh3simple_router* router = (qh3simple_router*) w->data;
+	qh3router* router = (qh3router*) w->data;
 	static uint8_t buf[65535];
 
 	while (1) {
@@ -100,24 +100,24 @@ void qh3simple_router::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 }
 
-bool qh3simple_router::is_route_available(const route* r) {
+bool qh3router::is_route_available(const route* r) {
 	return (std::find(routes.begin(), routes.end(), r) == routes.end());
 }
 
-void qh3simple_router::on_qhiredis_async_key_expired(const qstring& expired_key) {}
+void qh3router::on_qhiredis_async_key_expired(const qstring& expired_key) {}
 
-void qh3simple_router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
+void qh3router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
 	UNUSED(modified_key);
 }
 
-void qh3simple_router::on_qhiredis_connect() {}
+void qh3router::on_qhiredis_connect() {}
 
-void qh3simple_router::on_qhiredis_disconnect() {}
+void qh3router::on_qhiredis_disconnect() {}
 
-void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
+void qh3router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);
-	qh3simple_router* router = (qh3simple_router*) w->data;
+	qh3router* router = (qh3router*) w->data;
 	static uint8_t buf_return[65535];
 
 	while (1) {
@@ -181,7 +181,7 @@ void qh3simple_router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 	}
 }
 
-int qh3simple_router::next_available_port(const qstring& host, port_range& range, int& index) {
+int qh3router::next_available_port(const qstring& host, port_range& range, int& index) {
 	int min = range.MIN_VAL;
 	int max = range.MAX_VAL;
 	int start_index = index;
@@ -194,7 +194,7 @@ int qh3simple_router::next_available_port(const qstring& host, port_range& range
 	return 0;
 }
 
-int qh3simple_router::is_port_available(const qstring& host, int port_number) {
+int qh3router::is_port_available(const qstring& host, int port_number) {
 	qstring port = qstring::format_string("%d", port_number);
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;
@@ -229,7 +229,7 @@ int qh3simple_router::is_port_available(const qstring& host, int port_number) {
 	return port_number;
 }
 
-void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, const qstring& cmd) {
+void qh3router::cmd_feedback_from_client(struct sockaddr* client_addr, const qstring& cmd) {
 	char host[INET6_ADDRSTRLEN];
 	char port[10];
 	int ret = getnameinfo(client_addr, sizeof(struct sockaddr), host, sizeof(host), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
@@ -296,7 +296,7 @@ void qh3simple_router::cmd_feedback_from_client(struct sockaddr* client_addr, co
 	//
 }
 
-qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_scheduler& scheduler) {
+qtimer* qh3router::check_and_remove_unresponsive_routes(qtimer_scheduler& scheduler) {
 	int timer_unresponsive_route_check_in_sec = zkconfig->get_int32("router/timer_unresponsive_route_check_in_sec", TIMER_UNRESPONSIVE_ROUTE_CHECK_IN_SECONDS);
 	debug_print_important(__LOGTAG__, "check_and_remove_unresponsive_routes timer %d", timer_unresponsive_route_check_in_sec);
 	qtimer* timer = scheduler.schedule_repeat_timer(
@@ -358,7 +358,7 @@ qtimer* qh3simple_router::check_and_remove_unresponsive_routes(qtimer_scheduler&
 	return timer;
 }
 
-qtimer* qh3simple_router::update_redis_about_servers(qtimer_scheduler& scheduler) {
+qtimer* qh3router::update_redis_about_servers(qtimer_scheduler& scheduler) {
 	int grace_time = 10;
 	int expire_timer_unresponsive_route_zk_check_in_sec = zkconfig->get_int32("router/expire_timer_unresponsive_route_zk_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_ROUTE_ZK_CHECK_IN_SECONDS);
 	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
@@ -391,7 +391,7 @@ qtimer* qh3simple_router::update_redis_about_servers(qtimer_scheduler& scheduler
 	return timer;
 }
 
-route* qh3simple_router::is_in_active_routes(const qstring& host, const qstring& port) const {
+route* qh3router::is_in_active_routes(const qstring& host, const qstring& port) const {
 	for (auto r : routes) {
 		if (r->host == host && r->port == port) {
 			return r;
@@ -400,7 +400,7 @@ route* qh3simple_router::is_in_active_routes(const qstring& host, const qstring&
 	return nullptr;
 }
 
-route* qh3simple_router::is_in_unresponsive_routes(const qstring& host, const qstring& port) const {
+route* qh3router::is_in_unresponsive_routes(const qstring& host, const qstring& port) const {
 	for (auto r : unresponsive_routes) {
 		if (r->host == host && r->port == port) {
 			return r;
@@ -409,7 +409,7 @@ route* qh3simple_router::is_in_unresponsive_routes(const qstring& host, const qs
 	return nullptr;
 }
 
-route* qh3simple_router::remove_from_active_routes(route* r) {
+route* qh3router::remove_from_active_routes(route* r) {
 	size_t old_sz = routes.size();
 	routes.erase(std::remove(routes.begin(), routes.end(), r), routes.end());
 	if (old_sz != routes.size()) {
@@ -421,7 +421,7 @@ route* qh3simple_router::remove_from_active_routes(route* r) {
 	return nullptr;
 }
 
-route* qh3simple_router::remove_from_unresponsive_routes(route* r) {
+route* qh3router::remove_from_unresponsive_routes(route* r) {
 	size_t old_sz = unresponsive_routes.size();
 	unresponsive_routes.erase(std::remove(unresponsive_routes.begin(), unresponsive_routes.end(), r), unresponsive_routes.end());
 	if (old_sz != unresponsive_routes.size()) {
@@ -433,7 +433,7 @@ route* qh3simple_router::remove_from_unresponsive_routes(route* r) {
 	return nullptr;
 }
 
-void qh3simple_router::push_to_unresponsive_routes(route* r) {
+void qh3router::push_to_unresponsive_routes(route* r) {
 	if (r == nullptr || std::find(unresponsive_routes.begin(), unresponsive_routes.end(), r) != unresponsive_routes.end()) {
 		return;
 	}
@@ -441,7 +441,7 @@ void qh3simple_router::push_to_unresponsive_routes(route* r) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "Pushed route %s:%s to UNRESPONSIVE list.", r->host.c_str(), r->port.c_str());
 }
 
-void qh3simple_router::push_to_routes(route* r) {
+void qh3router::push_to_routes(route* r) {
 	if (r == nullptr || std::find(routes.begin(), routes.end(), r) != routes.end()) {
 		return;
 	}

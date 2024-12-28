@@ -2,16 +2,18 @@ import * as ffi from 'ffi-napi';
 import * as ref from 'ref-napi';
 import * as path from 'path';
 
-namespace qunitysdk {
+export namespace qunitysdk {
+    export const null_ptr = ref.NULL;
+    export namespace client {
     const libPath = path.join(__dirname, './../release_build/libqunityplugin.dylib');
 
     // Define TypeScript types for each function
-    type type_async_request_cb = (payload: string, arg: Buffer, success: boolean) => void;
+    export type type_async_request_cb = (payload: string, arg: Buffer, success: boolean) => void;
 
-    type type_qsocket_onconnect_cb = (guid_crc: number, arg: Buffer) => void;
-    type type_qsocket_onmessage_cb = (guid_crc: number, recv_len: number, buf: string) => void;
-    type type_qsocket_onreleaseconnection_cb = (guid_crc: number) => void;
-    type type_qsocket_onclose_cb = (guid_crc: number) => void;
+    export type type_qsocket_onconnect_cb = (guid_crc: number, arg: Buffer) => void;
+    export type type_qsocket_onmessage_cb = (guid_crc: number, recv_len: number, buf: string) => void;
+    export type type_qsocket_onreleaseconnection_cb = (guid_crc: number) => void;
+    export type type_qsocket_onclose_cb = (guid_crc: number) => void;
 
     // Define callback functions with proper types
     export const type_qh3client_plugin_helper_cb = ffi.Callback('void', ['string', 'pointer', 'bool'], (payload, arg, success) => {
@@ -75,23 +77,30 @@ namespace qunitysdk {
     }) as interface_qunityplugin;
 
     qunity_plugin.pre_init_sdk();
-    console.log('Library loaded successfully.');
+    console.log('qunityplugin loaded successfully.');
 
     // Example usage
     // const payload = '{"pid":"","token":"","device":{"sys_name":"Ubuntu","node_name":"ubuntu-vm.local","release":"20.04","arch":"x86_64"}}';
-    const null_ptr = ref.NULL;
+    // const null_ptr = ref.NULL;
 
     // const result = qunity_plugin.send_async_request('15.206.79.30', '4004', '/user_get', payload, null_ptr, type_qh3client_plugin_helper_cb, 3);
     // console.log('Send Async Request Result:', result);
 
-    const guid_crc = 123456789; // Replace this with your actual GUID CRC value
-    const connected = qunity_plugin.qsocket_connect(guid_crc, '15.206.79.30', '4000', null_ptr, type_qsocket_onconnect, type_qsocket_onmessage, type_qsocket_onreleaseconnection, type_qsocket_onclose);
-    if (connected) {
-        console.log('Attempting to connect to the server...');
-    }
+    // const guid_crc = 123456789; // Replace this with your actual GUID CRC value
+    // const connected = qunity_plugin.qsocket_connect(guid_crc, '15.206.79.30', '4000', null_ptr, type_qsocket_onconnect, type_qsocket_onmessage, type_qsocket_onreleaseconnection, type_qsocket_onclose);
+    // if (connected) {
+    //     console.log('Attempting to connect to the server...');
+    // }
 
-    // Prevent the main process from exiting
-    setInterval(() => {
-        console.log(`alive`);
-    }, 10000); // Keeps the event loop alive with a repeating timer.
+    // const guid_crc2 = 987654321; // Replace this with your actual GUID CRC value
+    // const connected2 = qunity_plugin.qsocket_connect(guid_crc2, '15.206.79.30', '4000', null_ptr, type_qsocket_onconnect, type_qsocket_onmessage, type_qsocket_onreleaseconnection, type_qsocket_onclose);
+    // if (connected2) {
+    //     console.log('Attempting to connect2 to the server...');
+    // }
+
+    // // Prevent the main process from exiting
+    // setInterval(() => {
+    //     console.log(`alive`);
+    // }, 10000); // Keeps the event loop alive with a repeating timer.
+}
 }
