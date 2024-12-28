@@ -54,7 +54,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 	typedef void (*type_on_server_start)(qh3server* server);
 	typedef void (*type_on_server_stop)(qh3server* server);
 	typedef void (*type_on_server_error)(qh3server* server, int error_code);
-	typedef void (*type_on_server_parse)(qh3server*, const char* path, const char* buffer, unsigned long len);
+	typedef char* (*type_on_server_parse)(qh3server*, const char* path, const char* buffer, unsigned long len);
 	qh3plugin_server_event_listener(type_on_server_pre_start pre_start_cb, type_on_server_start start_cb, type_on_server_stop stop_cb, type_on_server_error error_cb, type_on_server_parse parse_cb)
 		: cb_on_server_pre_start(pre_start_cb), cb_on_server_start(start_cb), cb_on_server_stop(stop_cb), cb_on_server_error(error_cb), cb_on_server_parse(parse_cb) {}
 
@@ -63,7 +63,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 	void on_server_start(qh3server*) override;
 	void on_server_stop(qh3server*) override;
 	void on_server_error(qh3server*, int error_code) override;
-	void on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) override;
+	char* on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) override;
 
    private:
 	type_on_server_pre_start cb_on_server_pre_start = nullptr;

@@ -152,6 +152,6 @@ class observer_qh3server_events {
 	virtual void on_server_start(qh3server*) = 0;
 	virtual void on_server_stop(qh3server*) = 0;
 	virtual void on_server_error(qh3server*, int error_code) = 0;
-	virtual void on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) = 0;
+	virtual char* on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) = 0;
 };
 #endif /* qh3server_structs_h */
