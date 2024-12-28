@@ -6,8 +6,8 @@
 //  Created by Arun A on 30/12/23.
 //
 
-#ifndef qh3simple_router_structs_h
-#define qh3simple_router_structs_h
+#ifndef qh3router_structs_h
+#define qh3router_structs_h
 
 #include "../../networkcommon/source/essentials.hpp"
 
@@ -113,4 +113,4 @@ struct port_range {
 	const int MAX_VAL = 5200;
 };
 
-#endif /* qh3simple_router_structs_h */
+#endif /* qh3router_structs_h */
