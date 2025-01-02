@@ -227,8 +227,9 @@ void qh3server::parse_header(const qstring& name, const qstring& value, struct c
 	conn_io->http_request->add_or_get_header(name, value);
 }
 
-void qh3server::parse(struct conn_io_qh3* conn_io) {
+bridge_h3_connection::parse_return qh3server::parse(struct conn_io_qh3* conn_io) {
 	UNUSED(conn_io);
+    return parse_sync;
 }
 
 int qh3server::for_each_header(uint8_t* name, size_t name_len, uint8_t* value, size_t value_len, void* argp) {
@@ -523,102 +524,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 					case quiche_h3_event_type::QUICHE_H3_EVENT_FINISHED: {
 						EV_START_RECORD(parse_start_time);
-						conn_io->bridge->parse(conn_io);
-						EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, const_logtag, "parse-time t:%lu ms", 1200);
-
-						EV_START_RECORD(send_start_time);
-						if (payload.buffer.length() == 0) {
-							debug_print(LOG_LEVEL_4, const_logtag, "no-response. ignoring the request!!!");
-							conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
-						}
-						const qstring& content_length_data = qstring::format_string("%d", static_cast<int>(payload.buffer.length()));
-						const qstring& crc = payload.get_crc_string();
-
-						int header_size = 5;
-						conn_io_req_res::header* status_header = conn_io->http_response->get_header(":status");
-						quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + conn_io->http_response->headers.size()];
-						headers[0] = {
-							.name = (uint8_t*) ":status",
-							.name_len = sizeof(":status") - 1,
-
-							.value = status_header ? (uint8_t*) status_header->value.c_str() : (uint8_t*) "200",
-							.value_len = status_header ? status_header->value.length() : sizeof("200") - 1,
-						};
-						headers[1] = {
-							.name = (uint8_t*) "Alternate-Protocol",
-							.name_len = sizeof("Alternate-Protocol") - 1,
-
-							.value = (uint8_t*) conns->quic_alternate_protocol_str.c_str(),
-							.value_len = conns->quic_alternate_protocol_str.length() - 1,
-						};
-
-						headers[2] = {
-							.name = (uint8_t*) "server",
-							.name_len = sizeof("server") - 1,
-
-							.value = (uint8_t*) "quiche",
-							.value_len = sizeof("quiche") - 1,
-						};
-						headers[3] = {
-							.name = (uint8_t*) "content-length",
-							.name_len = sizeof("content-length") - 1,
-
-							.value = (uint8_t*) content_length_data.c_str(),
-							.value_len = content_length_data.length(),
-						};
-						headers[4] = {
-							.name = (uint8_t*) "crc",
-							.name_len = sizeof("crc") - 1,
-
-							.value = (uint8_t*) crc.c_str(),
-							.value_len = crc.length(),
-						};
-
-						int additional_header_index = 0;
-						for (auto it : conn_io->http_response->headers) {
-							headers[header_size + additional_header_index] = {
-								.name = (uint8_t*) it.second->name.c_str(),
-								.name_len = it.second->name.length(),
-
-								.value = (uint8_t*) it.second->value.c_str(),
-								.value_len = it.second->value.length(),
-							};
-							debug_print(LOG_LEVEL_4, const_logtag, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
-							additional_header_index++;
-						}
-						quiche_h3_send_response(conn_io->http3, conn_io->conn, s, headers, header_size + conn_io->http_response->headers.size(), false);
-						GX_DELETE_ARY(headers);
-
-						EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, const_logtag, "q-send_response t:%lu ms", 50);
-
-						// payload
-						conn_io->total_sent_bytes = 0;	// reset the total bytes sent over network
-						ssize_t bytes_to_send = payload.buffer.length();
-						if (bytes_to_send < SEND_CHUNK_SIZE) {	// if small chunk then try issue in one go.
-							ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, s, reinterpret_cast<const uint8_t*>(payload.buffer.c_str()), bytes_to_send, true);
-							if (sent < 0) {
-								debug_print_error(const_logtag, "HTTP response send failure. quiche_h3_send_body returned %d", sent);
-								break;
-							}
-							conn_io->total_sent_bytes += sent;
-							if (conn_io->total_sent_bytes != (ssize_t) payload.buffer.length()) {
-								debug_print_error(const_logtag, "HTTP response send failure %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
-								server->get_stats_loggeer()->server_count("recv_cb", 1, "", conn_io->total_sent_bytes, (ssize_t) payload.buffer.length(), "error", "qh3server", "response_send_fail", port_id_cstr);
-								break;
-							}
-						} else {
-							conn_io->stream_id = s;
-							server->send_in_chunks(conn_io);
-							debug_print(LOG_LEVEL_4, __LOGTAG__, "START Stream sending .... [%d] [%d]", conn_io->total_sent_bytes, payload.buffer.length());
-							if (conn_io->total_sent_bytes < (ssize_t) payload.buffer.length()) {
-								debug_print(LOG_LEVEL_4, const_logtag, "(Partial) HTTP response send %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
-							}
-						}
-
-						EV_PRINT_IF_ELAPSED_AND_CLEAR(send_start_time, const_logtag, "q-send_body t:%lu ms", 30);
-#if LOG_LEVEL >= LOG_LEVEL_4
-						DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-sent HTTP response over %" PRId64 " with body %s\n\t%zd bytes - crc: %lx", s, payload.buffer.c_str(), payload.get_size(), payload.get_crc_value());
-#endif
+                        conn_io->stream_id = s; // cache the stream id
+						parse_return return_type = conn_io->bridge->parse(conn_io);
+                        EV_PRINT_IF_ELAPSED_AND_CLEAR(parse_start_time, const_logtag, "parse-time t:%lu ms", 1200);
+                        if (return_type == parse_sync) {
+                            server->send_response(conn_io);
+                        }
 					} break;
 
 					case quiche_h3_event_type::QUICHE_H3_EVENT_RESET:
@@ -656,6 +567,122 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 }
 
+void qh3server::try_send_response(struct conn_io_qh3* conn_io) {
+    send_response(conn_io);
+    flush_egress(conn_io);
+    if (quiche_conn_is_closed(conn_io->conn)) {
+        quiche_stats stats;
+        quiche_path_stats path_stats;
+
+        quiche_conn_stats(conn_io->conn, &stats);
+        quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+
+        debug_print(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+
+        HASH_DELETE(hh, conns->h, conn_io);
+        GX_DELETE(conn_io);
+    }
+}
+    
+void qh3server::send_response(struct conn_io_qh3* conn_io) {
+    const char* const_logtag = logtag.c_str();
+    const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
+    const char* port_id_cstr = port_id.c_str();
+    
+    EV_START_RECORD(send_start_time);
+    if (payload.buffer.length() == 0) {
+        debug_print(LOG_LEVEL_0, const_logtag, "no-response. ignoring the request!!!");
+        conn_io->http_response->set_payload(qstring("{}", strlen("{}")));
+    }
+    const qstring& content_length_data = qstring::format_string("%d", static_cast<int>(payload.buffer.length()));
+    const qstring& crc = payload.get_crc_string();
+
+    int header_size = 5;
+    conn_io_req_res::header* status_header = conn_io->http_response->get_header(":status");
+    quiche_h3_header* headers = DEBUG_NEW quiche_h3_header[header_size + conn_io->http_response->headers.size()];
+    headers[0] = {
+        .name = (uint8_t*) ":status",
+        .name_len = sizeof(":status") - 1,
+
+        .value = status_header ? (uint8_t*) status_header->value.c_str() : (uint8_t*) "200",
+        .value_len = status_header ? status_header->value.length() : sizeof("200") - 1,
+    };
+    headers[1] = {
+        .name = (uint8_t*) "Alternate-Protocol",
+        .name_len = sizeof("Alternate-Protocol") - 1,
+
+        .value = (uint8_t*) conns->quic_alternate_protocol_str.c_str(),
+        .value_len = conns->quic_alternate_protocol_str.length() - 1,
+    };
+
+    headers[2] = {
+        .name = (uint8_t*) "server",
+        .name_len = sizeof("server") - 1,
+
+        .value = (uint8_t*) "quiche",
+        .value_len = sizeof("quiche") - 1,
+    };
+    headers[3] = {
+        .name = (uint8_t*) "content-length",
+        .name_len = sizeof("content-length") - 1,
+
+        .value = (uint8_t*) content_length_data.c_str(),
+        .value_len = content_length_data.length(),
+    };
+    headers[4] = {
+        .name = (uint8_t*) "crc",
+        .name_len = sizeof("crc") - 1,
+
+        .value = (uint8_t*) crc.c_str(),
+        .value_len = crc.length(),
+    };
+
+    int additional_header_index = 0;
+    for (auto it : conn_io->http_response->headers) {
+        headers[header_size + additional_header_index] = {
+            .name = (uint8_t*) it.second->name.c_str(),
+            .name_len = it.second->name.length(),
+
+            .value = (uint8_t*) it.second->value.c_str(),
+            .value_len = it.second->value.length(),
+        };
+        debug_print(LOG_LEVEL_4, const_logtag, "custom header %s - %s", it.second->name.c_str(), it.second->value.c_str());
+        additional_header_index++;
+    }
+    quiche_h3_send_response(conn_io->http3, conn_io->conn, conn_io->stream_id, headers, header_size + conn_io->http_response->headers.size(), false);
+    GX_DELETE_ARY(headers);
+
+    EV_PRINT_IF_ELAPSED_AND_CLEAR(send_start_time, const_logtag, "q-send_response t:%lu ms", 50);
+
+    // payload
+    conn_io->total_sent_bytes = 0;    // reset the total bytes sent over network
+    ssize_t bytes_to_send = payload.buffer.length();
+    if (bytes_to_send < SEND_CHUNK_SIZE) {    // if small chunk then try issue in one go.
+        ssize_t sent = quiche_h3_send_body(conn_io->http3, conn_io->conn, conn_io->stream_id, reinterpret_cast<const uint8_t*>(payload.buffer.c_str()), bytes_to_send, true);
+        if (sent < 0) {
+            debug_print_error(const_logtag, "HTTP response send failure. quiche_h3_send_body returned %d", sent);
+            return;
+        }
+        conn_io->total_sent_bytes += sent;
+        if (conn_io->total_sent_bytes != (ssize_t) payload.buffer.length()) {
+            debug_print_error(const_logtag, "HTTP response send failure %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
+            get_stats_loggeer()->server_count("recv_cb", 1, "", conn_io->total_sent_bytes, (ssize_t) payload.buffer.length(), "error", "qh3server", "response_send_fail", port_id_cstr);
+            return;
+        }
+    } else {
+        send_in_chunks(conn_io);
+        debug_print(LOG_LEVEL_4, __LOGTAG__, "START Stream sending .... [%d] [%d]", conn_io->total_sent_bytes, payload.buffer.length());
+        if (conn_io->total_sent_bytes < (ssize_t) payload.buffer.length()) {
+            debug_print(LOG_LEVEL_4, const_logtag, "(Partial) HTTP response send %d<>%d", conn_io->total_sent_bytes, payload.buffer.length());
+        }
+    }
+
+    EV_PRINT_IF_ELAPSED_AND_CLEAR(send_start_time, const_logtag, "q-send_body t:%lu ms", 30);
+#if LOG_LEVEL >= LOG_LEVEL_4
+    DEBUG_PRINT2(LOG_LEVEL_4, const_logtag, "q-sent HTTP response over %" PRId64 " with body %s\n\t%zd bytes - crc: %lx", conn_io->stream_id, payload.buffer.c_str(), payload.get_size(), payload.get_crc_value());
+#endif
+}
+    
 void qh3server::send_in_chunks(struct conn_io_qh3* conn_io) {
 	const conn_io_req_res::payload& payload = conn_io->http_response->get_payload();
 	size_t chunk_size = SEND_CHUNK_SIZE;
@@ -710,6 +737,16 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 		return;
 	}
 }
+
+#if !USE_UV_MAIN_LOOP
+void qh3server::libev_idle_cb(EV_P_ ev_idle* w, int revents) {
+	// Your callback code, this could post work to Node.js or continue
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "libev idle callback running");
+
+	// Stop the idle watcher so it does not loop indefinitely
+	// ev_idle_stop(EV_A_ w);
+}
+#endif
 
 int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
 				   observer_qh3server_events* event_observer) {
@@ -858,6 +895,10 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	ev_io_init(&watcher, recv_cb, sock, EV_READ);
 	ev_io_start(mainloop, &watcher);
 	watcher.data = this;
+
+//	ev_idle idle_watcher;
+//	ev_idle_init(&idle_watcher, libev_idle_cb);
+//	ev_idle_start(mainloop, &idle_watcher);
 #endif
 
 	//

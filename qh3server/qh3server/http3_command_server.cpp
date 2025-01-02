@@ -56,20 +56,20 @@ void http3_command_server::parse_header(const qstring& name, const qstring& valu
 	qh3server::parse_header(name, value, conn_io);
 }
 
-void http3_command_server::parse(struct conn_io_qh3* conn_io) {
+bridge_h3_connection::parse_return http3_command_server::parse(struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
 	if (path_header == nullptr) {
 		debug_print_error(const_logtag, "path_header == null, returning. !!!");
 		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "error", get_server_name(), "", port_id_cstr, "path_not_found");
-		return;
+		return parse_sync;
 	}
 
 	if (path_header->value.length() <= 1) {
 		debug_print_warn(const_logtag, "path is very short - %s, returning. !!!", path_header->value.c_str());
 		qh3server::get_stats_loggeer()->server_count("parse", 1, "", "", "", "warn", get_server_name(), path_header->value.c_str(), port_id_cstr, "short_path");
-		return;
+		return parse_sync;
 	}
 
 	// parse paths
@@ -81,6 +81,7 @@ void http3_command_server::parse(struct conn_io_qh3* conn_io) {
 	} else if (path_header->value.compare("/whoami") == 0) {
 		parse_whoami(path_header, conn_io);
 	}
+    return parse_sync;
 }
 
 void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {

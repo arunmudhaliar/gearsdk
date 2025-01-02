@@ -9,6 +9,7 @@
         "watch": "tsc --watch"
     },
     "dependencies": {
+        "class-transformer": "^0.5.1",
         "ffi-napi": "^4.0.3",
         "mongodb": "^6.12.0",
         "ref-napi": "^3.0.3",

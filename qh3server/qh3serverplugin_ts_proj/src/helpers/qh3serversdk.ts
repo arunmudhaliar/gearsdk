@@ -1,19 +1,21 @@
 import * as ffi from 'ffi-napi';
-import * as ref from 'ref-napi';
 import * as path from 'path';
-// import StructType from 'ref-struct-napi';
-// const StructType = require('ref-struct-napi');
-
-// Import libc's malloc and free
-const libc = ffi.Library('libc', {
-    strdup: ['pointer', ['string']], // strdup allocates memory for the string copy
-    malloc: ['pointer', ['size_t']],
-    free: ['void', ['pointer']],
-});
+import ref from "ref-napi";
 
 export namespace qh3serversdk {
-    const lib_path = path.join(__dirname, './../qh3serverplugin/libqh3serverplugin-debug.dylib');
-    // const lib_path = path.join(__dirname, './../qh3serverplugin/libqh3serverplugin.dylib');         // release version
+    // Import libc's malloc and free
+    export const libc = ffi.Library('libc', {
+        strdup: ['pointer', ['string']], // strdup allocates memory for the string copy
+        malloc: ['pointer', ['size_t']],
+        free: ['void', ['pointer']],
+    });
+
+    const uLong = ref.types.ulong; // Represents `unsigned long`
+    const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
+    const size_t = ref.types.size_t; // Represents size_t
+
+    const lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.dylib');
+    // const lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.dylib');         // release version
 
     // Define the exported C functions' TypeScript types
     export interface qh3_router_input_config {
@@ -38,7 +40,7 @@ export namespace qh3serversdk {
     export type type_on_server_start = (router: Buffer) => void;
     export type type_on_server_stop = (server: Buffer) => void;
     export type type_on_server_error = (server: Buffer, error_code: number) => void;
-    export type type_on_server_parse = (server: Buffer, path: string, buffer: string, len: number) => string;
+    export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number) => void;
 
     // Define the interface for the library's methods
     interface interface_qh3serverplugin {
@@ -74,6 +76,9 @@ export namespace qh3serversdk {
             error_cb: type_on_server_error,
             parse_cb: type_on_server_parse
         ): void;
+        get_crc32(str:string, len:number) : number;
+        mod_crc32(adler:number, buf:string | null, len:number) : number;
+        qh3server_try_send_response(server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
         test_func() : number;
     }
 
@@ -83,6 +88,9 @@ export namespace qh3serversdk {
         pre_init_qh3serverplugin_sdk: ['void', []],
         spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', 'uint16', 'uint16', 'string', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', 'uint16', 'uint16', 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
+        get_crc32: ['ulong', ['string', 'int']],
+        mod_crc32: [uLong, [uLong, 'string', size_t]],
+        qh3server_try_send_response: ['void', ['pointer', 'pointer', 'string', size_t, 'string', size_t]],
         test_func: ['int', []],
     }) as interface_qh3serverplugin;
 
@@ -90,7 +98,6 @@ export namespace qh3serversdk {
     console.log("Current Directory:", process.cwd());
     qh3serverplugin.setup_signal_handler();
     qh3serverplugin.pre_init_qh3serverplugin_sdk();
-    // console.log(`test_func returned ${qh3serverplugin.test_func()}`);
 
     const router_config : qh3_router_input_config = {
         router_address: `127.0.0.1:4004`,
@@ -110,6 +117,7 @@ export namespace qh3serversdk {
     //     size: 'int',       // Size of the response buffer
     // });
 
+    /*
     // server events
     export const on_server_pre_start = ffi.Callback('void', ['pointer'], (server: Buffer) => {
         console.log(`on_server_pre_start`);
@@ -150,6 +158,7 @@ export namespace qh3serversdk {
         on_server_error,
         on_server_parse
     );
+    */
 
     /*
     // router events

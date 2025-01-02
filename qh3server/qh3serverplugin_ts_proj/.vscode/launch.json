@@ -5,7 +5,7 @@
         "type": "node",
         "request": "launch",
         "name": "Launch qh3server SDK",
-        "program": "${workspaceFolder}/dist/qh3serverplugin.js",
+        "program": "${workspaceFolder}/dist/app.js",
         "env": {
           "DYLD_LIBRARY_PATH": "${workspaceFolder}/../qh3serverplugin"
         },
