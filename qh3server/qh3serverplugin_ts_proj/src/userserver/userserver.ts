@@ -5,6 +5,8 @@ import { plainToClass } from "class-transformer";
 import { res_msg_user_get, rq_msg_user_get } from './messages';
 import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
+import qhiredis from '../helpers/qhiredis';
+import qzookeeper from '../helpers/qzookeeper';
 
 export namespace server {
     export class userserver {
@@ -19,6 +21,8 @@ export namespace server {
             app_id: `qh3serverplugin-app`
         };
         private mongo : qmongo | null = null;
+        private hiredis: qhiredis | null = null;
+        private qzk: qzookeeper | null = null;
 
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (server: Buffer) => {
             console.log(`on_server_pre_start`);
@@ -99,6 +103,35 @@ export namespace server {
             this.mongo = new qmongo("", "gsdk_mongodb", this.router_config.mongodb_uri);
             await this.mongo?.connect();
             await this.exampleUsage();
+            const redis_ip_port = essentials.extract_ip_and_port(this.router_config.redis_address);
+            if (redis_ip_port) {
+                const [ip, port]: [string, number] = redis_ip_port;
+                this.hiredis = new qhiredis("hiredis", ip, port, "gsdkuser", "Fr0gmoon123");
+            } else {
+                console.log("Invalid hiredis address format");
+                return;
+            }
+            try {
+                await this.hiredis.connect_redis();
+            } catch (error) {
+                console.error(error);
+            }
+
+            const zk_ip_port = essentials.extract_ip_and_port(this.router_config.zk_uri);
+            if (zk_ip_port) {
+                const [ip, port]: [string, number] = zk_ip_port;
+                this.qzk = new qzookeeper(this.router_config.zk_uri);
+            } else {
+                console.log("Invalid zk address format");
+                return;
+            }
+
+            try {
+                await this.qzk.connect();
+            } catch (error) {
+                console.error(error);
+            }
+
             qh3serversdk.qh3serverplugin.spawn_qh3server(
                 native_router,
                 this.router_config.router_address,
