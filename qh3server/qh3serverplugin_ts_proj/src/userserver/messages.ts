@@ -138,19 +138,26 @@ export class res_msg_user_base extends message_base {
     }
 }
 
-export class res_msg_gservers extends message_base {
-    public gservers : Map<string, string[]>;
-    constructor() {
-        super();
-        this.gservers = new Map<string, string[]>();
-    }
-}
+// export class res_msg_gservers extends message_base {
+//     public gservers : Map<string, string[]>;
+//     constructor() {
+//         super();
+//         this.gservers = new Map<string, string[]>();
+//     }
+// }
+// export class res_msg_gservers_serialisable extends message_base {
+//     public gservers : any;
+//     constructor(gservers : res_msg_gservers) {
+//         super();
+//         this.gservers = Object.fromEntries(gservers.gservers);
+//     }
+// }
 
 export class res_msg_user_get extends res_msg_user_base {
     public last_login: string;
     public user_name: string;
     public token: string;
-    public gservers: res_msg_gservers | null;
+    public gservers: any;
     constructor() {
         super();
         this.last_login = '';

@@ -1,3 +1,5 @@
+import { createHash } from 'crypto';
+
 export class essentials {
     public static get_time_utc_readable(): string {
         const utcTime = new Date();
@@ -16,5 +18,11 @@ export class essentials {
         
         // Return null if the input doesn't match the expected format
         return null;
+    }
+
+    public static sha256(input: string): string {
+        const hash = createHash('sha256');
+        hash.update(input);
+        return hash.digest('hex');
     }
 }

@@ -7,9 +7,15 @@ import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
 import qhiredis from '../helpers/qhiredis';
 import qzookeeper from '../helpers/qzookeeper';
+import { debug_print, debug_print_error, LOG_LEVEL_4 } from '../helpers/sdktypes';
+import { serverconfig } from '../helpers/serverconfig';
+import * as path from 'path';
 
 export namespace server {
+    const DEFAULT_USER_TOKEN_EXPIRY_TIME = 300;
+
     export class userserver {
+        private static __LOGTAG__: string = `userserver`;
         private router_config : qh3serversdk.qh3_router_input_config = {
             router_address: `127.0.0.1:4004`,
             mongodb_uri: `mongodb://3.109.144.159:27017`,
@@ -23,6 +29,7 @@ export namespace server {
         private mongo : qmongo | null = null;
         private hiredis: qhiredis | null = null;
         private qzk: qzookeeper | null = null;
+        private zkconfig: serverconfig | null = null;
 
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (server: Buffer) => {
             console.log(`on_server_pre_start`);
@@ -39,18 +46,20 @@ export namespace server {
         protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', 'int'], async (server: Buffer, conn: Buffer, path: string, buffer: string, len: number) => {
             console.log(`on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
-            if (path === '/user_get') {
-                result = await this.parse_user_get(buffer);
-            } else if (path === '/whoami') {
-
-            }
-            if (result) {
-                try {
-                    qh3serversdk.qh3serverplugin.qh3server_try_send_response(server, conn, result, result.length, null, 0);    
-                } catch (error) {
-                    console.error(error);
+            // try {
+                if (path === '/user_get') {
+                    result = await this.parse_user_get(buffer);
+                } else if (path === '/whoami') {
+                    // not implemented
                 }
-            }
+                if (result) {
+                    qh3serversdk.qh3serverplugin.qh3server_try_send_response(server, conn, result, result.length, null, 0);
+                }
+            // } catch (error) {
+            //     debug_print_error(userserver.__LOGTAG__, JSON.stringify(error));
+            // }
+
+
             // const response_string = `{msg:\"test message\"}`;
             // // Use strdup to allocate and return a copy of the string
             // result = qh3serversdk.libc.strdup(response_string);
@@ -77,10 +86,43 @@ export namespace server {
             user_get_msg_respose.user_name = `guest-${crc.toString(16)}`;
             user_get_msg_respose.last_login = essentials.get_time_utc_readable();
 
-            const result = await this.exampleUsage();
+            // const result = await this.exampleUsage();
+            let redis_format_pid: string = `tokens:${user_get_msg_respose.pid}`;
+            let token_in_redis: string | null | undefined = await this.hiredis?.get_value(redis_format_pid);
+            if (token_in_redis!=null && token_in_redis?.length != 0) {
+                user_get_msg_respose.token = token_in_redis ?? '';
+                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `token '${user_get_msg_respose.token}' retreived from redis for user id : ${crc}`);
+            } else {
+                user_get_msg_respose.token = essentials.sha256(JSON.stringify(user_get_msg_respose));
+                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `new token '${user_get_msg_respose.token}' for user id : ${crc}`);
+            }
 
+            let user_token_expiry_time: number = DEFAULT_USER_TOKEN_EXPIRY_TIME;
+            if ((await this.hiredis?.set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time)) !== 0) {
+                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `Failed to set token on redis.`);
+            }
+
+            
+            let gservers_map: Map<string, string[]> = new Map<string, string[]>();
+            await this.getgservers(gservers_map);
+            user_get_msg_respose.gservers = Object.fromEntries(gservers_map);
             return JSON.stringify(user_get_msg_respose);
         }
+        
+                
+        private async getgservers(gservers_map: Map<string, string[]>) : Promise<void> {
+            await this.hiredis?.scan(`gservers`, (key: string, field: string, value: string, arg?: any) => {
+                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `${key} - ${field}:${value}`);
+                if (gservers_map.has(key)) {
+                    gservers_map.get(key)!.push(value);
+                } else {
+                    gservers_map.set(key, [value]);
+                }
+            });
+        }
+        // private getgservers(key: string, field: string, value: string, arg?: any) : void {
+
+        // }
 
         async exampleUsage() : Promise<void> {
             // const dbClient = new YourDatabaseClient(); // assuming this is your class that includes the `find` method
@@ -131,6 +173,12 @@ export namespace server {
             } catch (error) {
                 console.error(error);
             }
+
+            // server config
+            this.zkconfig = new serverconfig(this.qzk, null);
+            const config_path = path.join(this.router_config.root_dir, 'configs', 'dev', 'runtime-config.json');
+            debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `reading ${config_path}`);
+            await this.zkconfig.load(config_path, this.qzk, `/qh3server`);
 
             qh3serversdk.qh3serverplugin.spawn_qh3server(
                 native_router,
