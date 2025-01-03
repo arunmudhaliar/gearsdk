@@ -87,8 +87,8 @@ export namespace server {
             user_get_msg_respose.pid = `${crc.toString(16)}`;
             user_get_msg_respose.user_name = `guest-${crc.toString(16)}`;
             let time_result = essentials.get_time_utc_readable();
-            let last_login_utc_time_value : Date = time_result.utc_date;
-            user_get_msg_respose.last_login = time_result.formatted_time;
+            let last_login_utc_time_value : number = time_result.utc_date_number;
+            user_get_msg_respose.last_login = time_result.utc_date_string;
 
             // const result = await this.exampleUsage();
             let redis_format_pid: string = `tokens:${user_get_msg_respose.pid}`;
