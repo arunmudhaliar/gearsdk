@@ -14,8 +14,16 @@ export namespace qh3serversdk {
     const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
     const size_t = ref.types.size_t; // Represents size_t
 
-    const lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.dylib');
-    // const lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.dylib');         // release version
+    let lib_path: string;
+    if (process.platform === 'darwin') {
+        lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.dylib');
+        // lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.dylib');         // release version
+    } else if (process.platform === 'linux') {
+        lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.so');
+        // lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.so');            // release version
+    } else {
+        throw new Error('Unsupported platform');
+    }
 
     // Define the exported C functions' TypeScript types
     export interface qh3_router_input_config {
