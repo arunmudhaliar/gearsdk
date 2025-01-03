@@ -2,7 +2,7 @@ import * as ffi from 'ffi-napi';
 import { qh3serversdk } from '../helpers/qh3serversdk';
 import * as ref from 'ref-napi';
 import { plainToClass } from "class-transformer";
-import { res_msg_user_get, rq_msg_user_get } from './messages';
+import { msg_room_config_list, res_msg_user_get, rq_msg_user_get } from './messages';
 import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
 import qhiredis from '../helpers/qhiredis';
@@ -54,6 +54,8 @@ export namespace server {
                 }
                 if (result) {
                     qh3serversdk.qh3serverplugin.qh3server_try_send_response(server, conn, result, result.length, null, 0);
+                } else {
+                    qh3serversdk.qh3serverplugin.qh3server_try_send_response(server, conn, `{}`, 2, null, 0);
                 }
             // } catch (error) {
             //     debug_print_error(userserver.__LOGTAG__, JSON.stringify(error));
@@ -84,7 +86,9 @@ export namespace server {
             let user_get_msg_respose: res_msg_user_get = new res_msg_user_get();
             user_get_msg_respose.pid = `${crc.toString(16)}`;
             user_get_msg_respose.user_name = `guest-${crc.toString(16)}`;
-            user_get_msg_respose.last_login = essentials.get_time_utc_readable();
+            let time_result = essentials.get_time_utc_readable();
+            let last_login_utc_time_value : Date = time_result.utc_date;
+            user_get_msg_respose.last_login = time_result.formatted_time;
 
             // const result = await this.exampleUsage();
             let redis_format_pid: string = `tokens:${user_get_msg_respose.pid}`;
@@ -102,11 +106,39 @@ export namespace server {
                 debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `Failed to set token on redis.`);
             }
 
-            
             let gservers_map: Map<string, string[]> = new Map<string, string[]>();
             await this.getgservers(gservers_map);
             user_get_msg_respose.gservers = Object.fromEntries(gservers_map);
-            return JSON.stringify(user_get_msg_respose);
+
+            const query_result = await this.mongo?.find_and_upsert(
+                'users',
+                (find_query: Record<string, any>) => {
+                    find_query['user.pid'] = user_get_msg_respose.pid;
+                },
+                (update_query: Record<string, any>) => {
+                    update_query['user.last_login'] = user_get_msg_respose.last_login;
+                    // Append the "last_login" as a timestamp value (stored as a number)
+                    update_query['user.last_login_timestamp'] = last_login_utc_time_value;
+                },
+                (insert_query: Record<string, any>) => {
+                    insert_query['user.pid'] = user_get_msg_respose.pid;
+                    insert_query['user.name'] = user_get_msg_respose.user_name;
+                    insert_query['user.device.sys_name'] = user_get_msg_rq.device.sys_name;
+                    insert_query['user.device.node_name'] = user_get_msg_rq.device.node_name;
+                    insert_query['user.device.arch'] = user_get_msg_rq.device.arch;
+                }
+            );
+
+            if (query_result === 0) { // Assuming `EXIT_SUCCESS` is represented by 0 in TypeScript
+                let room_config : string | any = this.zkconfig?.get_string(`gserver/roomconfig`, '');
+                user_get_msg_respose.room_list = JSON.parse(room_config) as msg_room_config_list;
+            } else {
+                console.info(`user_get failed`);
+                return '{}';
+            }
+            let response_json = JSON.stringify(user_get_msg_respose);
+            // console.log(`${response_json}`);
+            return response_json;
         }
         
                 

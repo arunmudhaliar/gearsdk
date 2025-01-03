@@ -1,9 +1,11 @@
 import { createHash } from 'crypto';
 
 export class essentials {
-    public static get_time_utc_readable(): string {
-        const utcTime = new Date();
-        return utcTime.toISOString().replace("T", " ").split(".")[0]; // Trim milliseconds and adjust format
+    public static get_time_utc_readable(): { formatted_time: string, utc_date: Date } {
+        const utc_date = new Date();
+        const formatted_time = utc_date.toISOString().replace("T", " ").split(".")[0]; // Trim milliseconds and adjust format
+    
+        return { formatted_time, utc_date };  // Return both formatted string and the original Date object
     }
 
     public static extract_ip_and_port(input: string): [string, number] | null {

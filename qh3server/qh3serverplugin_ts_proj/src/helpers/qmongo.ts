@@ -1,6 +1,9 @@
 import { MongoClient, Db, Collection, Document } from "mongodb";
 
 type ErrorHandler = (error: Error) => void;
+type type_qmongo_findupdate_find_query_cb = (findQuery: Document) => void;
+type type_qmongo_findupdate_update_query_cb = (updateQuery: Document) => void;
+type type_qmongo_findupdate_insert_query_cb = (insertQuery: Document) => void;
 
 export class qmongo {
     private appName: string;
@@ -98,6 +101,48 @@ export class qmongo {
             const documents = await collection.find(filter).toArray();
             console.log(`Found ${documents.length} documents in ${collectionName}`);
             return documents;
+        } catch (error) {
+            this.handleError(error as Error);
+            throw error;
+        }
+    }
+
+    async find_and_upsert(
+        collection_name: string,
+        find_query_cb: type_qmongo_findupdate_find_query_cb,
+        update_query_cb: type_qmongo_findupdate_update_query_cb,
+        insert_query_cb: type_qmongo_findupdate_insert_query_cb
+    ): Promise<number> {
+        try {
+            const collection = this.getCollection(collection_name);
+            if (!collection) throw new Error(`Collection "${collection_name}" not found.`);
+
+            const find_query: Document = {};
+            find_query_cb(find_query);
+
+            const update_doc: Document = {};
+            const set_on_insert: Document = {};
+
+            // Add $set to update
+            update_query_cb(update_doc);
+
+            // Add $setOnInsert to insert document if not found
+            insert_query_cb(set_on_insert);
+
+            const update_ops: Document = {
+                $set: update_doc,
+                $setOnInsert: set_on_insert,
+            };
+
+            // Perform the update (upsert)
+            const result = await collection.updateOne(find_query, update_ops, { upsert: true });
+            if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+                console.log(`Upsert successful for ${collection_name}`);
+                return 0;
+            } else {
+                console.log(`No document was updated or inserted in ${collection_name}`);
+                return 1;
+            }
         } catch (error) {
             this.handleError(error as Error);
             throw error;
