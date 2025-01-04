@@ -100,6 +100,7 @@ EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);
 EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
 EXPORT int test_func();
+void* spawn_qh3router_internal(void* data);
 void* spawn_qh3server_internal(void* data);
 EXPORT void qh3server_try_send_response(qh3server*, conn_io_qh3* conn, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
 EXPORT unsigned int get_live_connection_count(qh3server*);

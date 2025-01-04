@@ -147,7 +147,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 	//
 
-	mainloop = ev_default_loop(0);
+	mainloop = ev_loop_new();
 
 	debug_print_important2(__LOGTAG__, "spawning command center !!!");
 	// command server
@@ -237,6 +237,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 			return -1;
 		}
 #endif
+
 		GX_DELETE(zkconfig);
 		zkconfig = DEBUG_NEW serverconfig(qzk, nullptr);
 #if PROD_BUILD
