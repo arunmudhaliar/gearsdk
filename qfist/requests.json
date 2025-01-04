@@ -20,6 +20,106 @@
         "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"FreeBSD\",\"node_name\":\"freebsd-server.local\",\"release\":\"13.1-RELEASE\",\"arch\":\"i386\"}}"
     },
     {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Linux\",\"node_name\":\"pi-zero.local\",\"release\":\"6.1.19\",\"arch\":\"armv7l\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Windows\",\"node_name\":\"LAPTOP-JKLM1234\",\"release\":\"11.0.22000\",\"arch\":\"x64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Android\",\"node_name\":\"Pixel-5\",\"release\":\"13\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"iOS\",\"node_name\":\"iPhone-13\",\"release\":\"16.4\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"macOS\",\"node_name\":\"MacMini.local\",\"release\":\"12.6\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Debian\",\"node_name\":\"debian-server.local\",\"release\":\"11.7\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Fedora\",\"node_name\":\"fedora-laptop.local\",\"release\":\"38\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"RHEL\",\"node_name\":\"rhel-server.local\",\"release\":\"9.1\",\"arch\":\"ppc64le\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"CentOS\",\"node_name\":\"centos-vm.local\",\"release\":\"8\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"ArchLinux\",\"node_name\":\"arch-desktop.local\",\"release\":\"2025.01.04\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Gentoo\",\"node_name\":\"gentoo-lab.local\",\"release\":\"2.13\",\"arch\":\"amd64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"OpenSUSE\",\"node_name\":\"suse-server.local\",\"release\":\"15.4\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Alpine\",\"node_name\":\"alpine-container\",\"release\":\"3.18\",\"arch\":\"aarch64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Windows\",\"node_name\":\"SERVER2019\",\"release\":\"2019\",\"arch\":\"x64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"iOS\",\"node_name\":\"iPad-Pro\",\"release\":\"15.7\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Solaris\",\"node_name\":\"solaris-vm.local\",\"release\":\"11.4\",\"arch\":\"sparc\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"AmazonLinux\",\"node_name\":\"aws-ec2-instance\",\"release\":\"2023\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"ChromeOS\",\"node_name\":\"chromebook.local\",\"release\":\"116.0.5845.170\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Manjaro\",\"node_name\":\"manjaro-pc.local\",\"release\":\"23.0\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Slackware\",\"node_name\":\"slackware-laptop.local\",\"release\":\"15.1\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"KaliLinux\",\"node_name\":\"kali-desktop.local\",\"release\":\"2024.2\",\"arch\":\"amd64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Mint\",\"node_name\":\"mint-desktop.local\",\"release\":\"21.3\",\"arch\":\"x86_64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"ParrotOS\",\"node_name\":\"parrot-laptop.local\",\"release\":\"5.3\",\"arch\":\"arm64\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"Haiku\",\"node_name\":\"haiku-vm.local\",\"release\":\"R1/Beta4\",\"arch\":\"x86\"}}"
+    },
+    {
+        "api": "/user_get",
+        "payload": "{\"pid\":\"\",\"token\":\"\",\"device\":{\"sys_name\":\"ReactOS\",\"node_name\":\"reactos-vm.local\",\"release\":\"0.4.14\",\"arch\":\"i686\"}}"
+    },    
+    {
         "api": "/whoami",
         "payload": "{}"
     },

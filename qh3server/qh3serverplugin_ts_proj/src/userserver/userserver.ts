@@ -10,7 +10,7 @@ import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
 
 export namespace server {
-    type type_api_callback = (user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number) => Promise<string | null | any>;
+    export type type_api_callback = (native_server: Buffer, conn: Buffer, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
 
     export interface interface_userserver {
         get_mongo_driver(): qmongo | null;
@@ -67,13 +67,13 @@ export namespace server {
         protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: Buffer, error_code: number) => {
             // debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as qh3serversdk.type_on_server_error;
-        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', 'int'], async (native_server: Buffer, conn: Buffer, path: string, buffer: string, len: number) => {
+        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', qh3serversdk.size_t, 'string', qh3serversdk.size_t], async (native_server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
 
             if (this.api_callbacks.has(path)) {
                 let api_instance: interface_api | any= this.api_callbacks.get(path);
-                result = await api_instance?.get_post_cb()?.(this, api_instance, path, buffer, len);
+                result = await api_instance?.get_post_cb()?.(native_server, conn, this, api_instance, path, buffer, len, headers, header_buffer_size);
             }
 
             if (result) {

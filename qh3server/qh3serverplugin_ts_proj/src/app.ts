@@ -11,19 +11,19 @@ namespace app {
         }
 
         private async on_router_start_cb(native_router: Buffer) {
-            this.start_userserver();
+            this.start_userserver(native_router);
         }
         private async start_router() : Promise<void> {
             let router_instance: routerserver.router = new routerserver.router(this.on_router_start_cb);
             router_instance.run();
         }
 
-        private async start_userserver() : Promise<void> {
+        private async start_userserver(native_router: Buffer = ref.NULL) : Promise<void> {
             let userserver_instance: qh3server.userserver = new qh3server.userserver();
             userserver_instance.register_api(new api_whoami());
             userserver_instance.register_api(new api_ping());
             userserver_instance.register_api(new api_user_get());
-            userserver_instance.run(ref.NULL);
+            userserver_instance.run(native_router);
         }
         public async run() : Promise<void> {
             // this.start_router();

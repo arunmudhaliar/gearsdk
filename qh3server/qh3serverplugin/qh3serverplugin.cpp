@@ -64,9 +64,9 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* s
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len) {
+void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
 	if (cb_on_server_parse) {
-        cb_on_server_parse(server, conn, path, buffer, len);
+        cb_on_server_parse(server, conn, path, buffer, len, headers_buffer, headers_buffer_size);
 	}
 }
 
@@ -94,7 +94,10 @@ bridge_h3_connection::parse_return gsdk::server::qh3plugin_server::parse(struct 
 	}
 
 	if (server_event_observer) {
-		server_event_observer->on_serevr_parse(this, conn_io, path_header->value.c_str(), conn_io->http_request->get_payload().buffer.c_str(), conn_io->http_request->get_payload().buffer.length());
+        qstring headers_json_string;
+        conn_io->http_request->headers_to_json(headers_json_string);
+		server_event_observer->on_serevr_parse(this, conn_io, path_header->value.c_str(), conn_io->http_request->get_payload().buffer.c_str(), conn_io->http_request->get_payload().buffer.length(),
+                                               headers_json_string.c_str(), headers_json_string.length());
         return parse_async;
 //		if (return_buffer) {
 //			conn_io->http_response->set_payload(return_buffer);
@@ -222,6 +225,10 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, conn_io_qh3* conn_io, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
     conn_io->http_response->set_payload(qstring(payload, len));
     server->try_send_response(conn_io);
+}
+
+EXPORT unsigned int gsdk::server::get_live_connection_count(qh3server* server) {
+    return server->get_live_connection_count();
 }
 
 EXPORT unsigned long gsdk::server::get_crc32(const char* guid, int guid_len) {

@@ -11,9 +11,9 @@ export namespace qh3serversdk {
         free: ['void', ['pointer']],
     });
 
-    const uLong = ref.types.ulong; // Represents `unsigned long`
-    const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
-    const size_t = ref.types.size_t; // Represents size_t
+    export const uLong = ref.types.ulong; // Represents `unsigned long`
+    export const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
+    export const size_t = ref.types.size_t; // Represents size_t
     const __LOGTAG__: string = `qh3serversdk`;
 
     let lib_path: string;
@@ -50,7 +50,7 @@ export namespace qh3serversdk {
     export type type_on_server_start = (router: Buffer) => void;
     export type type_on_server_stop = (server: Buffer) => void;
     export type type_on_server_error = (server: Buffer, error_code: number) => void;
-    export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number) => void;
+    export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
 
     // Define the interface for the library's methods
     interface interface_qh3serverplugin {
@@ -90,6 +90,7 @@ export namespace qh3serversdk {
         mod_crc32(adler:number, buf:string | null, len:number) : number;
         qh3server_try_send_response(native_server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
         test_func() : number;
+        get_live_connection_count(native_server: Buffer) : number;
     }
 
     // Load the C library and cast it to the interface_qh3serverplugin
@@ -102,6 +103,7 @@ export namespace qh3serversdk {
         mod_crc32: [uLong, [uLong, 'string', size_t]],
         qh3server_try_send_response: ['void', ['pointer', 'pointer', 'string', size_t, 'string', size_t]],
         test_func: ['int', []],
+        get_live_connection_count: ['uint', ['pointer']],
     }) as interface_qh3serverplugin;
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'qh3serverplugin loaded successfully.');

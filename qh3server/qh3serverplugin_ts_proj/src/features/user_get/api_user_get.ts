@@ -11,10 +11,10 @@ class api_user_get implements server.interface_api {
     public get_path(): string {
         return `/user_get`;
     }
-    public get_post_cb(): (user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number) => Promise<string | null | any> {
+    public get_post_cb(): server.type_api_callback {
         return this.parse_user_get;
     }
-    private async parse_user_get(user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number) : Promise<string | null> {
+    private async parse_user_get(native_server: Buffer, conn: Buffer, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) : Promise<string | null> {
         let thiz:api_user_get = api_instance as api_user_get;
 
         const user_get_msg_rq = plainToClass(rq_msg_user_get, JSON.parse(buffer));
@@ -43,13 +43,13 @@ class api_user_get implements server.interface_api {
             debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `new token '${user_get_msg_respose.token}' for user id : ${crc}`);
         }
 
-        let user_token_expiry_time: number = thiz.DEFAULT_USER_TOKEN_EXPIRY_TIME;
+        let user_token_expiry_time: number | undefined = user_server_interface.get_zkconfig()?.get_int32("server_config/user_token_expiry_time", thiz.DEFAULT_USER_TOKEN_EXPIRY_TIME);
         if ((await user_server_interface.get_hiredis_driver()?.set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time)) !== 0) {
             debug_error(api_user_get.__LOGTAG__, `Failed to set token on redis.`);
         }
 
         let gservers_map: Map<string, string[]> = new Map<string, string[]>();
-        await thiz.getgservers(user_server_interface, gservers_map);
+        await api_user_get.getgservers(user_server_interface, gservers_map);
         user_get_msg_respose.gservers = Object.fromEntries(gservers_map);
 
         const query_result = await user_server_interface.get_mongo_driver()?.find_and_upsert(
@@ -82,7 +82,7 @@ class api_user_get implements server.interface_api {
         return response_json;
     }
 
-    private async getgservers(user_server_interface: server.interface_userserver, gservers_map: Map<string, string[]>) : Promise<void> {
+    private static async getgservers(user_server_interface: server.interface_userserver, gservers_map: Map<string, string[]>) : Promise<void> {
         await user_server_interface.get_hiredis_driver()?.scan(`gservers`, (key: string, field: string, value: string, arg?: any) => {
             debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `${key} - ${field}:${value}`);
             if (gservers_map.has(key)) {
