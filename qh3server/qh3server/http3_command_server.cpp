@@ -81,7 +81,7 @@ bridge_h3_connection::parse_return http3_command_server::parse(struct conn_io_qh
 	} else if (path_header->value.compare("/whoami") == 0) {
 		parse_whoami(path_header, conn_io);
 	}
-    return parse_sync;
+	return parse_sync;
 }
 
 void http3_command_server::parse_shutdown_command_center(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {

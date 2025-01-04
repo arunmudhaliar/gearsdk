@@ -160,7 +160,7 @@ bridge_h3_connection::parse_return http3_sample_server::parse(struct conn_io_qh3
 		parse_ping(path_header, conn_io);
 	}
 	QH3_INFO(const_logtag, "request:%s, payload:%s", path_header->value.c_str(), conn_io->http_response->get_payload().buffer.c_str());
-    return parse_sync;
+	return parse_sync;
 }
 
 void http3_sample_server::parse_ping(conn_io_req_res::header* path_header, struct conn_io_qh3* conn_io) {

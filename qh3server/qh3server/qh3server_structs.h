@@ -43,10 +43,7 @@
 // MARK: -
 class bridge_h3_connection {
    public:
-    enum parse_return {
-        parse_sync,
-        parse_async
-    };
+	enum parse_return { parse_sync, parse_async };
 	virtual ssize_t flush_egress(struct conn_io_qh3* conn_io) = 0;
 	virtual void destroy_connection(struct conn_io_qh3* conn_io) = 0;
 	inline virtual EVENT_LOOP_TYPE* get_mainloop() = 0;

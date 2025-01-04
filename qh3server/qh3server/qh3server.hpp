@@ -49,13 +49,13 @@ class qh3server : public bridge_h3_connection {
 	quiche_h3_config* http3_config = nullptr;
 	struct connections* conns = nullptr;
 	EVENT_LOOP_TYPE* mainloop = nullptr;
-    inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }
+	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }
 	static void debug_quiche_log(const char* line, void* argp);
 	ssize_t flush_egress(struct conn_io_qh3* conn_io) final;
 	void destroy_connection(struct conn_io_qh3* conn_io) final;
 	inline bool is_log_quiche() override { return false; }
 	float get_router_hb_interval_in_sec() override { return DEFAULT_TIMER_ROUTER_HB_INTERVAL_IN_SECONDS; }
-    parse_return parse(struct conn_io_qh3* conn_io) override;
+	parse_return parse(struct conn_io_qh3* conn_io) override;
 
 	void mint_token(const uint8_t* dcid, size_t dcid_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* token, size_t* token_len);
 	bool validate_token(const uint8_t* token, size_t token_len, struct sockaddr_storage* addr, socklen_t addr_len, uint8_t* odcid, size_t* odcid_len);
@@ -73,8 +73,8 @@ class qh3server : public bridge_h3_connection {
 #endif
 
 	void send_in_chunks(struct conn_io_qh3* conn_io);
-    void send_response(struct conn_io_qh3* conn_io);
-    
+	void send_response(struct conn_io_qh3* conn_io);
+
 	void destroy_pending_connections();
 	TIMER_TYPE* router_hb_loop(TIMER_SCHEDuLER_TYPE& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port);
 	TIMER_TYPE* dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& close_dangling_connections_scheduler, float interval);
@@ -104,8 +104,8 @@ class qh3server : public bridge_h3_connection {
 	qcustomlogger* get_file_logger() { return logger; }
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 	unsigned int get_live_connection_count() { return HASH_COUNT(conns->h); }
-    void try_send_response(struct conn_io_qh3* conn_io);
-    
+	void try_send_response(struct conn_io_qh3* conn_io);
+
 	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
 			observer_qh3server_events* event_observer = nullptr);
 };
