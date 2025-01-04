@@ -1,10 +1,12 @@
 // redis
 import { Redis, RedisOptions } from "ioredis";
+import { debug_print, LOG_LEVEL_0, LOG_LEVEL_2, LOG_LEVEL_4 } from "./sdktypes";
 
 type redis_hash_iterator_callback = (field: string, value: string, arg?: any) => void;
 type redis_scan_callback = (key: string, field: string, value: string, arg?: any) => void;
 
 class qhiredis {
+    private static __LOGTAG__: string = `qhiredis`;
     private redis_client: Redis | null = null;
     private readonly name: string;
     private readonly redis_ip: string;
@@ -22,7 +24,7 @@ class qhiredis {
 
     async connect_redis(unix_socket = false): Promise<number> {
         if (this.redis_client) {
-            console.log(`[${this.name}] Already connected to Redis at ${this.redis_ip}:${this.redis_port}`);
+            debug_print(LOG_LEVEL_0, qhiredis.__LOGTAG__, `[${this.name}] Already connected to Redis at ${this.redis_ip}:${this.redis_port}`);
             return 0;
         }
 
@@ -44,14 +46,14 @@ class qhiredis {
             }
 
             this.redis_client = new Redis(options);
-            console.log(`[${this.name}] Tyring connection to Redis at ${this.redis_ip}:${this.redis_port}`);
+            debug_print(LOG_LEVEL_4, qhiredis.__LOGTAG__, `[${this.name}] Tyring connection to Redis at ${this.redis_ip}:${this.redis_port}`);
             await this.redis_client.connect();
-            console.log(`[${this.name}] Connected to Redis at ${this.redis_ip}:${this.redis_port}`);
+            debug_print(LOG_LEVEL_0, qhiredis.__LOGTAG__, `[${this.name}] Connected to Redis at ${this.redis_ip}:${this.redis_port}`);
             // // Perform authentication if username and password are provided
             // if (this.redis_username && this.redis_password) {
-            //     console.log(`[${this.name}] Tyring authentication`);
+            //     debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `[${this.name}] Tyring authentication`);
             //     await this.redis_client.auth(this.redis_username, this.redis_password);
-            //     console.log(`[${this.name}] Authenticated to Redis with username and password`);
+            //     debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `[${this.name}] Authenticated to Redis with username and password`);
             // }
 
             this.redis_client.config("SET", "notify-keyspace-events", "Ex");
@@ -67,12 +69,12 @@ class qhiredis {
         if (this.redis_client) {
             this.redis_client.quit();
             this.redis_client = null;
-            console.log(`[${this.name}] Redis connection closed`);
+            debug_print(LOG_LEVEL_0, qhiredis.__LOGTAG__, `[${this.name}] Redis connection closed`);
         }
     }
 
     async retry_connection(): Promise<number> {
-        console.log(`[${this.name}] Retrying Redis connection...`);
+        debug_print(LOG_LEVEL_0, qhiredis.__LOGTAG__, `[${this.name}] Retrying Redis connection...`);
         this.disconnect_redis();
         return this.connect_redis();
     }
@@ -111,7 +113,7 @@ class qhiredis {
 
         try {
             const result = await this.redis_client.hset(hash_key, field, value);
-            console.log(`[${this.name}] HSET result for ${hash_key}:${field}: ${result}`);
+            debug_print(LOG_LEVEL_4, qhiredis.__LOGTAG__, `[${this.name}] HSET result for ${hash_key}:${field}: ${result}`);
             return 0;
         } catch (error) {
             console.error(`[${this.name}] Redis HSET error:`, error);
@@ -138,7 +140,7 @@ class qhiredis {
         try {
             const result = await this.redis_client.hdel(hash_key, field);
             if (result === 1) {
-                console.log(`[${this.name}] Deleted field ${field} from hash ${hash_key}`);
+                debug_print(LOG_LEVEL_4, qhiredis.__LOGTAG__, `[${this.name}] Deleted field ${field} from hash ${hash_key}`);
             } else {
                 console.warn(`[${this.name}] Field ${field} not found in hash ${hash_key}`);
             }

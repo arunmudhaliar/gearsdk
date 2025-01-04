@@ -1,6 +1,7 @@
 import qzookeeper from "./qzookeeper";
 import interface_qzookeeper  from "./qzookeeper";
 import * as fs from 'fs';
+import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from "./sdktypes";
 
 
 export abstract class observer_serverconfig {
@@ -8,6 +9,7 @@ export abstract class observer_serverconfig {
 }
 
 export class serverconfig {
+    private static __LOGTAG__: string = `serverconfig`;
     private zk_interface: interface_qzookeeper | null;
     private config_change_observer: observer_serverconfig | null;
     private configs: Map<string, string>;
@@ -82,7 +84,7 @@ export class serverconfig {
     
         // Validate and process the parsed data
         for (const [key, value] of Object.entries(parsedData)) {
-            console.log(`${key}`);
+            debug_print(LOG_LEVEL_0, serverconfig.__LOGTAG__, `${key}`);
             if (!Array.isArray(value)) {
                 console.warn(`Root key (${key}) must be an array!`);
                 return false;
@@ -124,7 +126,7 @@ export class serverconfig {
         // Wait for all Zookeeper calls to complete
         await Promise.all(loadPromises);
     
-        console.log(`${this.configs.size} keys loaded`);
+        debug_print(LOG_LEVEL_0, serverconfig.__LOGTAG__, `${this.configs.size} keys loaded`);
         return true;
     }
     
@@ -147,7 +149,7 @@ export class serverconfig {
     public static zk_value_change_listener(path: string, data: string, context: any): void {
         const config = context as serverconfig;
         if (config.try_update_value(path, data)) {
-            console.log(`Config updated: ${path}`);
+            debug_print(LOG_LEVEL_0, serverconfig.__LOGTAG__, `Config updated: ${path}`);
             config.config_change_observer?.configchanged(path, data);
         } else {
             console.warn(`Config not found for: ${path}`);

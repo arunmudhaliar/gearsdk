@@ -1,6 +1,7 @@
 import * as ffi from 'ffi-napi';
 import * as path from 'path';
 import ref from "ref-napi";
+import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
 
 export namespace qh3serversdk {
     // Import libc's malloc and free
@@ -13,6 +14,7 @@ export namespace qh3serversdk {
     const uLong = ref.types.ulong; // Represents `unsigned long`
     const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
     const size_t = ref.types.size_t; // Represents size_t
+    const __LOGTAG__: string = `qh3serversdk`;
 
     let lib_path: string;
     if (process.platform === 'darwin') {
@@ -69,7 +71,7 @@ export namespace qh3serversdk {
             error_cb: type_on_router_error
         ): void;
         spawn_qh3server(
-            router: Buffer,
+            native_router: Buffer,
             router_address: string,
             mongodb_uri: string,
             redis_address: string,
@@ -86,7 +88,7 @@ export namespace qh3serversdk {
         ): void;
         get_crc32(str:string, len:number) : number;
         mod_crc32(adler:number, buf:string | null, len:number) : number;
-        qh3server_try_send_response(server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
+        qh3server_try_send_response(native_server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
         test_func() : number;
     }
 
@@ -102,21 +104,21 @@ export namespace qh3serversdk {
         test_func: ['int', []],
     }) as interface_qh3serverplugin;
 
-    console.log('qh3serverplugin loaded successfully.');
-    console.log("Current Directory:", process.cwd());
+    debug_print(LOG_LEVEL_0, __LOGTAG__, 'qh3serverplugin loaded successfully.');
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "Current Directory:", process.cwd());
     qh3serverplugin.setup_signal_handler();
     qh3serverplugin.pre_init_qh3serverplugin_sdk();
 
-    const router_config : qh3_router_input_config = {
-        router_address: `127.0.0.1:4004`,
-        mongodb_uri: `mongodb://3.109.144.159:27017`,
-        redis_address: `3.109.144.159:6379`,
-        zk_uri: `3.109.144.159:2181`,
-        root_dir: process.cwd(),
-        command_port: 4010,
-        router_port_return: 4005,
-        app_id: `qh3serverplugin-app`
-    };
+    // const router_config : qh3_router_input_config = {
+    //     router_address: `127.0.0.1:4004`,
+    //     mongodb_uri: `mongodb://3.109.144.159:27017`,
+    //     redis_address: `3.109.144.159:6379`,
+    //     zk_uri: `3.109.144.159:2181`,
+    //     root_dir: process.cwd(),
+    //     command_port: 4010,
+    //     router_port_return: 4005,
+    //     app_id: `qh3serverplugin-app`
+    // };
 
     // const structFactory = StructType(ref);
     // // Define the struct layout for response
@@ -128,19 +130,19 @@ export namespace qh3serversdk {
     /*
     // server events
     export const on_server_pre_start = ffi.Callback('void', ['pointer'], (server: Buffer) => {
-        console.log(`on_server_pre_start`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
     }) as unknown as type_on_server_pre_start;
     export const on_server_start = ffi.Callback('void', ['pointer'], (server: Buffer) => {
-        console.log(`on_server_start`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
     }) as unknown as type_on_server_start;
     export const on_server_stop = ffi.Callback('void', ['pointer'], (server: Buffer) => {
-        console.log(`on_server_stop:`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
     }) as unknown as type_on_server_stop;
     export const on_server_error = ffi.Callback('void', ['pointer'], (server: Buffer, error_code: number) => {
-        console.log(`on_server_error: ${error_code}`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_error: ${error_code}`);
     }) as unknown as type_on_server_error;
     export const on_server_parse = ffi.Callback('pointer', ['pointer', 'string', 'string', 'int'], (server: Buffer, path: string, buffer: string, len: number) => {
-        console.log(`on_server_parse: ${path}, ${buffer}, len ${len}`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
         const response_string = `{msg:\"test message\"}`;
         // Use strdup to allocate and return a copy of the string
         const result = libc.strdup(response_string);
@@ -171,16 +173,16 @@ export namespace qh3serversdk {
     /*
     // router events
     export const on_router_pre_start = ffi.Callback('void', ['pointer'], (router: Buffer) => {
-        console.log(`on_router_pre_start`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_router_pre_start`);
     }) as unknown as type_on_router_pre_start;
     export const on_router_start = ffi.Callback('void', ['pointer'], (router: Buffer) => {
-        console.log(`on_router_start`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_router_start`);
     }) as unknown as type_on_router_start;
     export const on_router_stop = ffi.Callback('void', [], () => {
-        console.log(`on_router_stop:`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_router_stop:`);
     }) as unknown as type_on_router_stop;
     export const on_router_error = ffi.Callback('void', [], (error_code: number) => {
-        console.log(`on_router_error: ${error_code}`);
+        debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_router_error: ${error_code}`);
     }) as unknown as type_on_router_error;
 
     qh3serverplugin.spawn_qh3router(

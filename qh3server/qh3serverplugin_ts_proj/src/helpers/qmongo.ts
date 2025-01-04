@@ -1,4 +1,5 @@
 import { MongoClient, Db, Collection, Document } from "mongodb";
+import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_2, LOG_LEVEL_4 } from "./sdktypes";
 
 type ErrorHandler = (error: Error) => void;
 type type_qmongo_findupdate_find_query_cb = (findQuery: Document) => void;
@@ -6,6 +7,7 @@ type type_qmongo_findupdate_update_query_cb = (updateQuery: Document) => void;
 type type_qmongo_findupdate_insert_query_cb = (insertQuery: Document) => void;
 
 export class qmongo {
+    private static __LOGTAG__: string = `qmongo`;
     private appName: string;
     private dbName: string;
     private uri: string;
@@ -32,10 +34,10 @@ export class qmongo {
     async connect(): Promise<void> {
         try {
             this.client = new MongoClient(this.uri, { appName: this.appName, serverSelectionTimeoutMS: 30000});
-            console.log(`trying to connect mongo ${this.uri}, appName ${this.appName}`);
+            debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `trying to connect mongo ${this.uri}, appName ${this.appName}`);
             await this.client.connect();
             this.database = this.client.db(this.dbName);
-            console.log(`Connected to MongoDB: ${this.uri}`);
+            debug_print(LOG_LEVEL_0, qmongo.__LOGTAG__, `Connected to MongoDB: ${this.uri}`);
         } catch (error) {
             this.handleError(error as Error);
             throw error;
@@ -48,7 +50,7 @@ export class qmongo {
             this.client = null;
             this.database = null;
             this.collections.clear();
-            console.log("Disconnected from MongoDB");
+            debug_print(LOG_LEVEL_0, qmongo.__LOGTAG__, "Disconnected from MongoDB");
         }
     }
 
@@ -72,7 +74,7 @@ export class qmongo {
             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
 
             await collection.insertOne(document);
-            console.log(`Document inserted into ${collectionName}`);
+            debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Document inserted into ${collectionName}`);
         } catch (error) {
             this.handleError(error as Error);
             throw error;
@@ -86,7 +88,7 @@ export class qmongo {
 
             const result = await collection.findOneAndUpdate(filter, { $set: update }, { upsert: true, returnDocument: "after" });
             if (!result || !result.value) throw new Error("Update failed or document not found.");
-            console.log(`Document updated in ${collectionName}`);
+            debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Document updated in ${collectionName}`);
         } catch (error) {
             this.handleError(error as Error);
             throw error;
@@ -99,7 +101,7 @@ export class qmongo {
             if (!collection) throw new Error(`Collection "${collectionName}" not found.`);
 
             const documents = await collection.find(filter).toArray();
-            console.log(`Found ${documents.length} documents in ${collectionName}`);
+            debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Found ${documents.length} documents in ${collectionName}`);
             return documents;
         } catch (error) {
             this.handleError(error as Error);
@@ -137,10 +139,13 @@ export class qmongo {
             // Perform the update (upsert)
             const result = await collection.updateOne(find_query, update_ops, { upsert: true });
             if (result.modifiedCount > 0 || result.upsertedCount > 0) {
-                console.log(`Upsert successful for ${collection_name}`);
+                debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Upsert successful for ${collection_name}`);
+                return 0;
+            } else if (result.matchedCount > 0 && result.modifiedCount === 0){
+                debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `No change in the fields ${collection_name}`);
                 return 0;
             } else {
-                console.log(`No document was updated or inserted in ${collection_name}`);
+                debug_error(qmongo.__LOGTAG__, `No document was updated or inserted in ${collection_name}`);
                 return 1;
             }
         } catch (error) {
@@ -157,9 +162,9 @@ export class qmongo {
             const indexExists = await collection.indexExists(Object.keys(indexKey));
             if (!indexExists) {
                 await collection.createIndex(indexKey);
-                console.log(`Index created for ${collectionName}`);
+                debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Index created for ${collectionName}`);
             } else {
-                console.log(`Index already exists for ${collectionName}`);
+                debug_print(LOG_LEVEL_4, qmongo.__LOGTAG__, `Index already exists for ${collectionName}`);
             }
         } catch (error) {
             this.handleError(error as Error);

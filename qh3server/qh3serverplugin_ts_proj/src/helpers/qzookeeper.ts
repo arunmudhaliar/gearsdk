@@ -1,4 +1,5 @@
 import zookeeper, { Exception, Stat } from 'node-zookeeper-client';
+import { debug_print, debug_warn, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
 
 /**
  * Type definition for the callback function triggered on ZooKeeper value changes.
@@ -31,7 +32,8 @@ interface interface_qzookeeper {
 }
 
 
-class qzookeeper implements interface_qzookeeper{
+class qzookeeper implements interface_qzookeeper {
+    private static __LOGTAG__: string = `qzookeeper`;
     private client: zookeeper.Client;
     private zk_connection_string: string;
     private retry_attempts: number;
@@ -51,11 +53,11 @@ class qzookeeper implements interface_qzookeeper{
 
         // Add event listeners for various Zookeeper events
         this.client.on('connected', () => {
-            console.log('qzookeeper client connected.');
+            debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, 'qzookeeper client connected.');
         });
 
         this.client.on('disconnected', () => {
-            console.log(`qzookeeper client disconnected. ${this.close_issued}`);
+            debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, `qzookeeper client disconnected. ${this.close_issued}`);
             if (!this.close_issued) {
                 this.reconnect();
             } else {
@@ -64,16 +66,16 @@ class qzookeeper implements interface_qzookeeper{
         });
 
         this.client.on('auth_failed', () => {
-            console.log('qzookeeper client authentication failed.');
+            debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, 'qzookeeper client authentication failed.');
         });
 
         this.client.on('session_expired', () => {
-            console.log('qzookeeper session expired.');
+            debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, 'qzookeeper session expired.');
             this.reconnect();
         });
 
         // this.client.on('error', (err: Error | Exception) => {
-        //     // console.log(`Zookeeper client encountered an error: ${err.message}`);
+        //     // debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, `Zookeeper client encountered an error: ${err.message}`);
         // });
     }
     
@@ -97,7 +99,7 @@ class qzookeeper implements interface_qzookeeper{
     public connect(): Promise<void> {
         return new Promise((resolve, reject) => {
             this.client.connect();
-            console.log('qzookeeper trying to connect');
+            debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, 'qzookeeper trying to connect');
 
             // Listen for the 'connected' event to confirm the connection is established
             this.client.once('connected', () => {
@@ -107,13 +109,13 @@ class qzookeeper implements interface_qzookeeper{
     }
 
     private reconnect(): void {
-        console.log('Closing current session...');
+        debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, 'Closing current session...');
         // Store all the watchers before closing the client
         const watchers_to_restore = new Map(this.active_watchers);
         this.client.close();
         this.client = zookeeper.createClient(this.zk_connection_string);
         this.connect().then(() => {
-            console.log('Reconnected to ZooKeeper');
+            debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, 'Reconnected to ZooKeeper');
             // Reapply the stored watchers to the new client
             watchers_to_restore.forEach((watcher, path) => {
                 this.set_watcher(path);
@@ -130,11 +132,11 @@ class qzookeeper implements interface_qzookeeper{
                     if (error) {
                         // Ignore NO_NODE exception (typically means the node doesn't exist)
                         if (error instanceof zookeeper.Exception && error.code === zookeeper.Exception.NO_NODE) {
-                            console.log(`Node does not exist at path ${zk_path}. Ignoring NO_NODE error.`);
+                            debug_warn(qzookeeper.__LOGTAG__, `Node does not exist at path ${zk_path}. Ignoring NO_NODE error.`);
                             get_data_callback(null, Buffer.from(default_value));  // Return default value or null data
                             return;
                         }
-                        console.log(`Error fetching data (Attempt ${retry_count}):`, error);
+                        debug_warn(qzookeeper.__LOGTAG__, `Error fetching data (Attempt ${retry_count}):`, error);
                         setTimeout(() => attempt_get_data(retry_count + 1), this.retry_interval);
                     } else {
                         get_data_callback(null, data);
@@ -142,7 +144,7 @@ class qzookeeper implements interface_qzookeeper{
                     }
                 });
             } else {
-                console.log('Max retry attempts reached for get_data');
+                debug_warn(qzookeeper.__LOGTAG__, 'Max retry attempts reached for get_data');
                 get_data_callback(new Error('Max retry attempts reached'), Buffer.from(default_value));
             }
         };
@@ -158,7 +160,7 @@ class qzookeeper implements interface_qzookeeper{
      */
     public set_watcher(zk_path: string): void {
         const watcher = (event: zookeeper.Event) => {
-            console.log(`Watcher triggered for ${zk_path}. Event: ${event.type}`);
+            debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, `Watcher triggered for ${zk_path}. Event: ${event.type}`);
             // Fetch the updated data after the watch has been triggered
             this.client.getData(zk_path, (error: Error | Exception, data: Buffer) => {
                 if (error) {
@@ -176,7 +178,7 @@ class qzookeeper implements interface_qzookeeper{
                 if (err) {
                     console.error(`Error checking node existence: ${err.message}`);
                 }/* else {
-                    console.log(`Node exists at ${zk_path}. Stat:`, stat);
+                    debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, `Node exists at ${zk_path}. Stat:`, stat);
                 }*/
             });
         };
@@ -188,7 +190,7 @@ class qzookeeper implements interface_qzookeeper{
             if (err) {
                 console.error(`Error checking node existence: ${err.message}`);
             } /*else {
-                console.log(`Node exists at ${zk_path}. Stat:`, stat);
+                debug_print(LOG_LEVEL_4, qzookeeper.__LOGTAG__, `Node exists at ${zk_path}. Stat:`, stat);
             }*/
         });
     }
@@ -196,7 +198,7 @@ class qzookeeper implements interface_qzookeeper{
     public close(): void {
         this.close_issued = true;
         this.client.close();
-        console.log('qzookeeper close');
+        debug_print(LOG_LEVEL_0, qzookeeper.__LOGTAG__, 'qzookeeper close');
     }
 }
 
@@ -210,6 +212,6 @@ export default qzookeeper;
 //     if (err) {
 //         console.error('Error:', err);
 //     } else {
-//         console.log('Data:', data.toString());
+//         debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, 'Data:', data.toString());
 //     }
 // });

@@ -1,8 +1,10 @@
 import * as ffi from 'ffi-napi';
 import { qh3serversdk } from '../helpers/qh3serversdk';
+import { debug_error, debug_print, LOG_LEVEL_4 } from '../helpers/sdktypes';
 
 export namespace server {
     export class router {
+        private static __LOGTAG__: string = `router`;
         private router_config : qh3serversdk.qh3_router_input_config = {
             router_address: `127.0.0.1:4004`,
             mongodb_uri: `mongodb://3.109.144.159:27017`,
@@ -13,25 +15,25 @@ export namespace server {
             router_port_return: 4005,
             app_id: `qh3serverplugin-app`
         };
-        private on_router_start_cb: (router: Buffer) => Promise<void>;
-        constructor(on_router_start_cb:(router: Buffer) => Promise<void>) {
+        private on_router_start_cb: (native_router: Buffer) => Promise<void>;
+        constructor(on_router_start_cb:(native_router: Buffer) => Promise<void>) {
             this.on_router_start_cb = on_router_start_cb;
         }
 
         public async run() : Promise<void> {
             // router events
-            const on_router_pre_start = ffi.Callback('void', ['pointer'], (router: Buffer) => {
-                console.log(`on_router_pre_start`);
+            const on_router_pre_start = ffi.Callback('void', ['pointer'], (native_router: Buffer) => {
+                debug_print(LOG_LEVEL_4, router.__LOGTAG__, `on_router_pre_start`);
             }) as unknown as qh3serversdk.type_on_router_pre_start;
-            const on_router_start = ffi.Callback('void', ['pointer'], (router: Buffer) => {
-                console.log(`on_router_start`);
-                this.on_router_start_cb(router);
+            const on_router_start = ffi.Callback('void', ['pointer'], (native_router: Buffer) => {
+                debug_print(LOG_LEVEL_4, router.__LOGTAG__, `on_router_start`);
+                this.on_router_start_cb(native_router);
             }) as unknown as qh3serversdk.type_on_router_start;
             const on_router_stop = ffi.Callback('void', [], () => {
-                console.log(`on_router_stop:`);
+                debug_print(LOG_LEVEL_4, router.__LOGTAG__, `on_router_stop:`);
             }) as unknown as qh3serversdk.type_on_router_stop;
             const on_router_error = ffi.Callback('void', [], (error_code: number) => {
-                console.log(`on_router_error: ${error_code}`);
+                debug_error(router.__LOGTAG__, `on_router_error: ${error_code}`);
             }) as unknown as qh3serversdk.type_on_router_error;
 
             qh3serversdk.qh3serverplugin.spawn_qh3router(
