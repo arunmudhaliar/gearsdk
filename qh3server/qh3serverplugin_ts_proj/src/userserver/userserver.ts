@@ -1,20 +1,30 @@
 import * as ffi from 'ffi-napi';
 import { qh3serversdk } from '../helpers/qh3serversdk';
 import * as ref from 'ref-napi';
-import { plainToClass } from "class-transformer";
-import { msg_room_config_list, res_msg_user_get, rq_msg_user_get } from './messages';
 import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
 import qhiredis from '../helpers/qhiredis';
 import qzookeeper from '../helpers/qzookeeper';
-import { debug_print, debug_error, EXIT_SUCCESS, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
+import { debug_print, debug_error, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
 import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
 
 export namespace server {
-    const DEFAULT_USER_TOKEN_EXPIRY_TIME = 300;
+    type type_api_callback = (user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number) => Promise<string | null | any>;
 
-    export class userserver {
+    export interface interface_userserver {
+        get_mongo_driver(): qmongo | null;
+        get_hiredis_driver(): qhiredis | null;
+        get_qzookeeper_driver(): qzookeeper | null;
+        get_zkconfig(): serverconfig | null;
+    }
+
+    export interface interface_api {
+        get_path(): string;
+        get_post_cb(): type_api_callback;
+    }
+
+    export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
         private router_config : qh3serversdk.qh3_router_input_config = {
             router_address: `127.0.0.1:4004`,
@@ -30,6 +40,20 @@ export namespace server {
         private hiredis: qhiredis | null = null;
         private qzk: qzookeeper | null = null;
         private zkconfig: serverconfig | null = null;
+        private api_callbacks: Map<string, interface_api> = new Map();
+
+        public get_mongo_driver(): qmongo | null {
+            return this.mongo;
+        }
+        public get_hiredis_driver(): qhiredis | null {
+            return this.hiredis;
+        }
+        public get_qzookeeper_driver(): qzookeeper | null {
+            return this.qzk;
+        }
+        public get_zkconfig(): serverconfig | null {
+            return this.zkconfig;
+        }
 
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
@@ -46,11 +70,12 @@ export namespace server {
         protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', 'int'], async (native_server: Buffer, conn: Buffer, path: string, buffer: string, len: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
-            if (path === '/user_get') {
-                result = await this.parse_user_get(buffer);
-            } else if (path === '/whoami') {
-                // not implemented
+
+            if (this.api_callbacks.has(path)) {
+                let api_instance: interface_api | any= this.api_callbacks.get(path);
+                result = await api_instance?.get_post_cb()?.(this, api_instance, path, buffer, len);
             }
+
             if (result) {
                 qh3serversdk.qh3serverplugin.qh3server_try_send_response(native_server, conn, result, result.length, null, 0);
             } else {
@@ -66,82 +91,26 @@ export namespace server {
             // return result; // Return the pointer to C++
         }) as unknown as qh3serversdk.type_on_server_parse;
 
-        private async parse_user_get(request_payload: string) : Promise<string | null> {
-            const user_get_msg_rq = plainToClass(rq_msg_user_get, JSON.parse(request_payload));
-            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "Deserialized Message:", user_get_msg_rq);
-
-            let crc : number = qh3serversdk.qh3serverplugin.mod_crc32(0, null, 0);
-            crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.sys_name, user_get_msg_rq.device.sys_name.length);
-            crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.node_name, user_get_msg_rq.device.node_name.length);
-            crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.release, user_get_msg_rq.device.release.length);
-            crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.arch, user_get_msg_rq.device.arch.length);
-
-            let user_get_msg_respose: res_msg_user_get = new res_msg_user_get();
-            user_get_msg_respose.pid = `${crc.toString(16)}`;
-            user_get_msg_respose.user_name = `guest-${crc.toString(16)}`;
-            let time_result = essentials.get_time_utc_readable();
-            let last_login_utc_time_value : number = time_result.utc_date_number;
-            user_get_msg_respose.last_login = time_result.utc_date_string;
-
-            let redis_format_pid: string = `tokens:${user_get_msg_respose.pid}`;
-            let token_in_redis: string | null | undefined = await this.hiredis?.get_value(redis_format_pid);
-            if (token_in_redis!=null && token_in_redis?.length != 0) {
-                user_get_msg_respose.token = token_in_redis ?? '';
-                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `token '${user_get_msg_respose.token}' retreived from redis for user id : ${crc}`);
-            } else {
-                user_get_msg_respose.token = essentials.sha256(JSON.stringify(user_get_msg_respose));
-                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `new token '${user_get_msg_respose.token}' for user id : ${crc}`);
+        public register_api(api_instance : interface_api) : void {
+            if (this.api_callbacks.has(api_instance.get_path())) {
+                return;
             }
-
-            let user_token_expiry_time: number = DEFAULT_USER_TOKEN_EXPIRY_TIME;
-            if ((await this.hiredis?.set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time)) !== 0) {
-                debug_error(userserver.__LOGTAG__, `Failed to set token on redis.`);
-            }
-
-            let gservers_map: Map<string, string[]> = new Map<string, string[]>();
-            await this.getgservers(gservers_map);
-            user_get_msg_respose.gservers = Object.fromEntries(gservers_map);
-
-            const query_result = await this.mongo?.find_and_upsert(
-                'users',
-                (find_query: Record<string, any>) => {
-                    find_query['user.pid'] = user_get_msg_respose.pid;
-                },
-                (update_query: Record<string, any>) => {
-                    update_query['user.last_login'] = user_get_msg_respose.last_login;
-                    update_query['user.last_login_timestamp'] = last_login_utc_time_value;
-                },
-                (insert_query: Record<string, any>) => {
-                    insert_query['user.pid'] = user_get_msg_respose.pid;
-                    insert_query['user.name'] = user_get_msg_respose.user_name;
-                    insert_query['user.device.sys_name'] = user_get_msg_rq.device.sys_name;
-                    insert_query['user.device.node_name'] = user_get_msg_rq.device.node_name;
-                    insert_query['user.device.arch'] = user_get_msg_rq.device.arch;
-                }
-            );
-
-            if (query_result === EXIT_SUCCESS) {
-                let room_config : string | any = this.zkconfig?.get_string(`gserver/roomconfig`, '');
-                user_get_msg_respose.room_list = JSON.parse(room_config) as msg_room_config_list;
-            } else {
-                debug_error(userserver.__LOGTAG__, `user_get failed`);
-                return '{}';
-            }
-            let response_json = JSON.stringify(user_get_msg_respose);
-            // debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `${response_json}`);
-            return response_json;
+            this.api_callbacks.set(api_instance.get_path(), api_instance);
+            debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api registered - ${api_instance.get_path()}`);
         }
-        
-                
-        private async getgservers(gservers_map: Map<string, string[]>) : Promise<void> {
-            await this.hiredis?.scan(`gservers`, (key: string, field: string, value: string, arg?: any) => {
-                debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `${key} - ${field}:${value}`);
-                if (gservers_map.has(key)) {
-                    gservers_map.get(key)!.push(value);
-                } else {
-                    gservers_map.set(key, [value]);
-                }
-            });
+
+        public unregister_api(path:string) : void {
+            if (this.api_callbacks.has(path)) {
+                this.api_callbacks.delete(path);
+                debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api un-registered - ${path}`);
+            }
+        }
+
+        public unregister_api_instance(api_instance : interface_api) : void {
+            if (this.api_callbacks.has(api_instance.get_path())) {
+                this.api_callbacks.delete(api_instance.get_path());
+                debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api un-registered - ${api_instance.get_path()}`);
+            }
         }
 
         public async run(native_router: Buffer) : Promise<void> {
@@ -194,59 +163,8 @@ export namespace server {
                 this.on_server_error,
                 this.on_server_parse
             );
-
-            /*
-            this.mongo = new qmongo("", "gsdk_mongodb", this.router_config.mongodb_uri);
-            try {
-                this.mongo.connect().then(() => {
-                    debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "MongoDB connection successful");
-                    // Do something after the connection
-                    qh3serversdk.qh3serverplugin.spawn_qh3server(
-                        ref.NULL,
-                        this.router_config.router_address,
-                        this.router_config.mongodb_uri,
-                        this.router_config.redis_address,
-                        this.router_config.zk_uri,
-                        this.router_config.root_dir,
-                        this.router_config.command_port,
-                        this.router_config.router_port_return,
-                        this.router_config.app_id,
-                        this.on_server_pre_start,
-                        this.on_server_start,
-                        this.on_server_stop,
-                        this.on_server_error,
-                        this.on_server_parse
-                    );
-                })
-                .catch((error) => {
-                    debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "Error connecting to MongoDB:", error);
-                })
-                .finally(() => {
-                    debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "Finished attempting MongoDB connection");
-                    // this.mongo?.disconnect();
-                    // This block will always execute, regardless of success or failure
-                });
-            } catch (error) {
-                console.error(error);
-            }
- */
-
-            // qh3serversdk.qh3serverplugin.spawn_qh3server(
-            //     ref.NULL,
-            //     this.router_config.router_address,
-            //     this.router_config.mongodb_uri,
-            //     this.router_config.redis_address,
-            //     this.router_config.zk_uri,
-            //     this.router_config.root_dir,
-            //     this.router_config.command_port,
-            //     this.router_config.router_port_return,
-            //     this.router_config.app_id,
-            //     this.on_server_pre_start,
-            //     this.on_server_start,
-            //     this.on_server_stop,
-            //     this.on_server_error,
-            //     this.on_server_parse
-            // );
         }
     }
 }
+
+export default server;

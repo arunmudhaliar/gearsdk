@@ -1,6 +1,7 @@
 import * as ref from 'ref-napi';
 import { server as routerserver} from "./userserver/router";
 import { server as qh3server} from './userserver/userserver';
+import api_user_get from './features/user_get/api_user_get';
 
 namespace app {
     export class qh3serverplugin_app {
@@ -17,6 +18,7 @@ namespace app {
 
         private async start_userserver() : Promise<void> {
             let userserver_instance: qh3server.userserver = new qh3server.userserver();
+            userserver_instance.register_api(new api_user_get())
             userserver_instance.run(ref.NULL);
         }
         public async run() : Promise<void> {
