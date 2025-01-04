@@ -273,6 +273,32 @@ struct conn_io_req_res {
 		return it != headers.end() ? it->second : nullptr;
 	}
 
+	void headers_to_json(qstring& json_string) {
+		rapidjson::Document document;
+		document.SetObject();
+
+		// Get the allocator for the JSON object
+		rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+
+		for (const auto& [crc, header_ptr] : headers) {
+			if (header_ptr) {
+				// Create a JSON object for each header
+				rapidjson::Value header_obj(rapidjson::kObjectType);
+				header_obj.AddMember("name", rapidjson::Value(header_ptr->name.c_str(), allocator), allocator);
+				header_obj.AddMember("value", rapidjson::Value(header_ptr->value.c_str(), allocator), allocator);
+
+				// Add the header object to the main JSON object with the CRC as the key
+				document.AddMember(rapidjson::Value(std::to_string(crc).c_str(), allocator), header_obj, allocator);
+			}
+		}
+
+		// Convert the JSON document to a string
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		document.Accept(writer);
+		json_string.copy(buffer.GetString());
+	}
+
 	bool is_postrequest() const { return data.buffer.length() > 0; }
 	bool validate();
 	bool has_crc_header();

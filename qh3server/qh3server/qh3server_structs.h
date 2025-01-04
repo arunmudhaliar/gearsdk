@@ -43,11 +43,12 @@
 // MARK: -
 class bridge_h3_connection {
    public:
+	enum parse_return { parse_sync, parse_async };
 	virtual ssize_t flush_egress(struct conn_io_qh3* conn_io) = 0;
 	virtual void destroy_connection(struct conn_io_qh3* conn_io) = 0;
 	inline virtual EVENT_LOOP_TYPE* get_mainloop() = 0;
 	virtual void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) = 0;
-	virtual void parse(struct conn_io_qh3* conn_io) = 0;
+	virtual parse_return parse(struct conn_io_qh3* conn_io) = 0;
 	virtual bool is_log_quiche() = 0;
 	virtual float get_router_hb_interval_in_sec() = 0;
 };
@@ -152,6 +153,6 @@ class observer_qh3server_events {
 	virtual void on_server_start(qh3server*) = 0;
 	virtual void on_server_stop(qh3server*) = 0;
 	virtual void on_server_error(qh3server*, int error_code) = 0;
-	virtual char* on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) = 0;
+	virtual void on_serevr_parse(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) = 0;
 };
 #endif /* qh3server_structs_h */

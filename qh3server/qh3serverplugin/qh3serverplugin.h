@@ -54,7 +54,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 	typedef void (*type_on_server_start)(qh3server* server);
 	typedef void (*type_on_server_stop)(qh3server* server);
 	typedef void (*type_on_server_error)(qh3server* server, int error_code);
-	typedef char* (*type_on_server_parse)(qh3server*, const char* path, const char* buffer, unsigned long len);
+	typedef void (*type_on_server_parse)(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size);
 	qh3plugin_server_event_listener(type_on_server_pre_start pre_start_cb, type_on_server_start start_cb, type_on_server_stop stop_cb, type_on_server_error error_cb, type_on_server_parse parse_cb)
 		: cb_on_server_pre_start(pre_start_cb), cb_on_server_start(start_cb), cb_on_server_stop(stop_cb), cb_on_server_error(error_cb), cb_on_server_parse(parse_cb) {}
 
@@ -63,7 +63,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 	void on_server_start(qh3server*) override;
 	void on_server_stop(qh3server*) override;
 	void on_server_error(qh3server*, int error_code) override;
-	char* on_serevr_parse(qh3server*, const char* path, const char* buffer, unsigned long len) override;
+	void on_serevr_parse(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) override;
 
    private:
 	type_on_server_pre_start cb_on_server_pre_start = nullptr;
@@ -80,7 +80,7 @@ class qh3plugin_server : public qh3server {
 
    protected:
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
-	void parse(struct conn_io_qh3* conn_io) override;
+	parse_return parse(struct conn_io_qh3* conn_io) override;
 
 	bool on_server_pre_init() override;
 	void on_server_uninitialise() override;
@@ -97,7 +97,12 @@ EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri,
 EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb, qh3plugin_server_event_listener::type_on_server_stop stop_cb,
 							qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb);
+EXPORT unsigned long get_crc32(const char* guid, int guid_len);
+EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
 EXPORT int test_func();
+void* spawn_qh3server_internal(void* data);
+EXPORT void qh3server_try_send_response(qh3server*, conn_io_qh3* conn, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
+EXPORT unsigned int get_live_connection_count(qh3server*);
 }
 
 }  // namespace server
