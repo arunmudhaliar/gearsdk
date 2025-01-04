@@ -78,6 +78,13 @@ export namespace rq_msg_user_get {
     }
 }
 
+export class rq_msg_ping {
+    public msg: string;
+    constructor() {
+        this.msg = "";
+    }
+}
+
 export class FX {
     public static Q_FACTOR: number = 12;
     public static FX_ONE: number = 1 << FX.Q_FACTOR;

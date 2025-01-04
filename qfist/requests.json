@@ -22,5 +22,9 @@
     {
         "api": "/whoami",
         "payload": "{}"
+    },
+    {
+        "api": "/ping",
+        "payload": "{\"msg\":\"hello\"}"
     }
 ]
