@@ -7,12 +7,19 @@ import api_ping from './features/user_get/api_ping';
 
 namespace app {
     export class qh3serverplugin_app {
-        constructor(){
+        private static instance : qh3serverplugin_app;
+        constructor() {
+            qh3serverplugin_app.instance = this;
+        }
+        public get_instance() : qh3serverplugin_app {
+            return qh3serverplugin_app.instance;
+        }
+        private async on_router_start_cb(native_router: Buffer) {
+            qh3serverplugin_app.instance.start_userserver(native_router);
+            qh3serverplugin_app.instance.start_userserver(native_router);
+            qh3serverplugin_app.instance.start_userserver(native_router);
         }
 
-        private async on_router_start_cb(native_router: Buffer) {
-            this.start_userserver(native_router);
-        }
         private async start_router() : Promise<void> {
             let router_instance: routerserver.router = new routerserver.router(this.on_router_start_cb);
             router_instance.run();
@@ -25,8 +32,9 @@ namespace app {
             userserver_instance.register_api(new api_user_get());
             userserver_instance.run(native_router);
         }
+
         public async run() : Promise<void> {
-            // this.start_router();
+            // await this.start_router();
             await this.start_userserver();
         }
     }

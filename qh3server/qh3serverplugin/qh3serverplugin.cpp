@@ -46,9 +46,9 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_pre_start(qh3serve
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server) {
+void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server, const char* ip, uint16_t port) {
 	if (cb_on_server_start) {
-		cb_on_server_start(server);
+		cb_on_server_start(server, ip, port);
 	}
 }
 
@@ -133,35 +133,51 @@ EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char
 										  qh3plugin_router_event_listener::type_on_router_error error_cb) {
 	qaddress router_addr(router_address);
 	qaddress redis_addr(redis_address);
-	server_config_in config(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, router_addr.port, zk_uri, router_port_return, app_id);
-	config.print();
-	http3_sample_router router(config);
-	qh3plugin_router_event_listener listener(pre_start_cb, start_cb, stop_cb, error_cb);
-	router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, &listener);
+	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, router_addr.port, zk_uri,
+														  router_port_return, app_id);
+	qh3plugin_router_event_listener* listener = DEBUG_NEW qh3plugin_router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
+	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_router_event_listener*>(config, listener);
+	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3router_internal, (void*) tuple_in) < 0) {
+		debug_print_error(__LOGTAG__, "spawn_qh3router - could not create thread: %s - %d", strerror(errno), errno);
+		GX_DELETE(tuple_in);
+		GX_DELETE(config);
+		GX_DELETE(listener);
+	}
+}
+void* gsdk::server::spawn_qh3router_internal(void* data) {
+	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = (std::tuple<server_config_in*, qh3plugin_router_event_listener*>*) data;
+	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
+	qh3plugin_router_event_listener* listener = (qh3plugin_router_event_listener*) std::get<1>(*tuple_in);
+
+	config->print();
+	http3_sample_router router(*config);
+	router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, listener);
+	GX_DELETE(tuple_in);
+	GX_DELETE(listener);
+	GX_DELETE(config);
+	pthread_exit(0);
 }
 
 void* gsdk::server::spawn_qh3server_internal(void* data) {
-	//    server_config_in* config = (server_config_in*) std::get<0>(data);
 	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = (std::tuple<server_config_in*, observer_qh3server_events*>*) data;
 	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
-	qh3plugin_server_event_listener* event_observer = (qh3plugin_server_event_listener*) std::get<1>(*tuple_in);
-
+	qh3plugin_server_event_listener* listener = (qh3plugin_server_event_listener*) std::get<1>(*tuple_in);
 	port_range range;
 	int index = 0;
 	int free_port = qh3router::next_available_port(config->host, range, index);
 	if (free_port == 0) {
 		debug_print_error(__LOGTAG__, "NO PORT AVAILABLE !!!");
-		GX_DELETE(event_observer);
+		GX_DELETE(tuple_in);
+		GX_DELETE(listener);
 		GX_DELETE(config);
 		pthread_exit(0);
 	}
-
-	//    qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
 	PTHREAD_NAME(qh3plugin_server::get_server_name());
 	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(*config);
-	new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, nullptr, config->command_feedback_port, 0, config->app_id, event_observer);
+	new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, listener);
 	GX_DELETE(new_server);
-	GX_DELETE(event_observer);
+	GX_DELETE(tuple_in);
+	GX_DELETE(listener);
 	GX_DELETE(config);
 	pthread_exit(0);
 }
@@ -171,16 +187,8 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 										  qh3plugin_server_event_listener::type_on_server_stop stop_cb, qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb) {
 	qaddress server_addr(server_address);
 	qaddress redis_addr(redis_address);
-	server_config_in* config =
-		new server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, server_addr.port, zk_uri, router_port_return, app_id);
-
-	//	port_range range;
-	//	int index = 0;
-	//	int free_port = qh3router::next_available_port(config.host, range, index);
-	//	if (free_port == 0) {
-	//		debug_print_error(__LOGTAG__, "NO PORT AVAILABLE !!!");
-	//		return;
-	//	}
+	server_config_in* config = new server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), (router) ? router->get_router_addrinfo() : nullptr,
+													command_port, server_addr.port, zk_uri, router_port_return, app_id);
 
 	qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
 	std::tuple<server_config_in*, qh3plugin_server_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_server_event_listener*>(config, listener);
@@ -190,12 +198,6 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 		GX_DELETE(config);
 		GX_DELETE(listener);
 	}
-
-	//	PTHREAD_NAME(qh3plugin_server::get_server_name());
-	//	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(config);
-	//	new_server->run(config.host, qstring::format_string("%d", free_port), config.root_dir, nullptr, config.command_feedback_port, 0, config.app_id, listener);
-	//	GX_DELETE(new_server);
-	//	GX_DELETE(listener);
 
 	/*
 	bool fork_result = false;  // only valid inside FORK_QH3_SERVER preprocessor
@@ -249,4 +251,8 @@ EXPORT unsigned long gsdk::server::mod_crc32(uLong adler, const Bytef* buf, z_si
 EXPORT int gsdk::server::test_func() {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "test_func");
 	return 100;
+}
+
+EXPORT const char* gsdk::server::get_device_public_ip() {
+	return gsdk::device::public_ip;
 }

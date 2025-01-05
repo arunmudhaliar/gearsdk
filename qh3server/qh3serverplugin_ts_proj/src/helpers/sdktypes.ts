@@ -5,6 +5,7 @@ export const LOG_LEVEL_2 = 2
 export const LOG_LEVEL_3 = 3
 export const LOG_LEVEL_4 = 4
 export const LOG_LEVEL_5 = 5
+export const LOG_LEVEL_6 = 6
 
 export const EXIT_SUCCESS = 0
 export const EXIT_FAILURE = 1

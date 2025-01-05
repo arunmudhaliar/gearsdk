@@ -334,7 +334,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -655,7 +655,7 @@ void* qnetworkserver::run_internal(void* data) {
 	struct addrinfo* local;
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
-		debug_print_error(__LOGTAG__, "failed to resolve host");
+		debug_print_error(__LOGTAG__, "f:run_internal - failed to resolve host");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -666,7 +666,7 @@ void* qnetworkserver::run_internal(void* data) {
 	int sock = socket(local->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		freeaddrinfo(local);
-		debug_print_error(__LOGTAG__, "failed to create socket");
+		debug_print_error(__LOGTAG__, "f:run_internal - failed to create socket");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -676,7 +676,7 @@ void* qnetworkserver::run_internal(void* data) {
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
 		freeaddrinfo(local);
-		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
+		debug_print_error(__LOGTAG__, "f:run_internal - failed to make socket non-blocking");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -686,7 +686,7 @@ void* qnetworkserver::run_internal(void* data) {
 
 	if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
 		freeaddrinfo(local);
-		debug_print_error(__LOGTAG__, "failed to connect socket");
+		debug_print_error(__LOGTAG__, "f:run_internal - failed to bind socket");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;
@@ -697,7 +697,7 @@ void* qnetworkserver::run_internal(void* data) {
 	thiz->config = quiche_config_new(QUICHE_PROTOCOL_VERSION);
 	if (thiz->config == nullptr) {
 		freeaddrinfo(local);
-		debug_print_error(__LOGTAG__, "failed to create config");
+		debug_print_error(__LOGTAG__, "f:run_internal - failed to create config");
 		thiz->exit_services_gracefully();
 		run_config->pthread_return_value = -1;
 		run_config->finished = true;

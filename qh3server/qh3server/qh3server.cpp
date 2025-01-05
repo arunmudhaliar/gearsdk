@@ -22,11 +22,11 @@
 		}                                              \
 	} while (0)
 
-#define QH3SERVER_EVENT_START(thiz)                \
-	do {                                           \
-		if (event_observer && thiz) {              \
-			event_observer->on_server_start(thiz); \
-		}                                          \
+#define QH3SERVER_EVENT_START(thiz, ip, port)                \
+	do {                                                     \
+		if (event_observer && thiz) {                        \
+			event_observer->on_server_start(thiz, ip, port); \
+		}                                                    \
 	} while (0)
 
 #define QH3SERVER_EVENT_STOP(thiz)                \
@@ -267,7 +267,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				debug_print(LOG_LEVEL_5, const_logtag, "recv would block");
+				debug_print(LOG_LEVEL_6, const_logtag, "recv would block");
 				break;
 			}
 
@@ -302,7 +302,7 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 			getnameinfo((struct sockaddr*) &peer_original_client_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 			debug_print_important2(const_logtag, "original-client-address %s:%s", name, port);
 			getnameinfo((struct sockaddr*) &peer_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
-			debug_print_important2(const_logtag, "modified-peer address %s:%s", name, port);
+			debug_print_important2(const_logtag, "modified-peer address %s:%s port_return:%d", name, port, server->relay_through_router_info->port_return);
 #endif
 		} else {
 			memcpy(&peer_original_client_addr, &peer_addr, peer_addr_len);
@@ -926,6 +926,9 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
 	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
+
+	try_report_router("qh3server-start", sock, command_center_feedback_port);
+
 	// dangling connection check timer
 	TIMER_SCHEDuLER_TYPE close_dangling_connections_scheduler;
 	close_dangling_connections_scheduler.set_loop(mainloop);
@@ -936,7 +939,11 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	TIMER_TYPE* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
 	QH3SERVER_EVENT_PRE_START(this);
 	on_run_started();
-	QH3SERVER_EVENT_START(this);
+	int port_in_number = 0;
+	if (gsdk::str2int(&port_in_number, port.c_str(), port.length(), 10) != gsdk::STR2INT_SUCCESS) {
+		debug_print_error(__LOGTAG__, "Unable to parse server port, defaulting to %d !!!", port_in_number);
+	}
+	QH3SERVER_EVENT_START(this, host_id.c_str(), (uint16_t) port_in_number);
 	// main event loop
 #if USE_UV_MAIN_LOOP
 	uv_run(mainloop, UV_RUN_DEFAULT);
@@ -1035,6 +1042,24 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);
 	debug_print_important(const_logtag, "services finish successfully !!!");
+}
+
+void qh3server::try_report_router(const qstring& cmd_string, int sock, uint16_t command_center_feedback_port) {
+	const char* const_logtag = logtag.c_str();
+	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
+	qstring command_center_feedback_port_str = qstring::format_string("%d", command_center_feedback_port);
+	struct addrinfo* cmd_center_feedback_address;
+	if (getaddrinfo(host_id.c_str(), command_center_feedback_port_str.c_str(), &HINTS, &cmd_center_feedback_address) != 0) {
+		debug_print_error(const_logtag, "f:try_report_router - failed to resolve host - port[%s]", command_center_feedback_port_str.c_str());
+		return;
+	}
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "f:try_report_router - Sending %s to %s:%s", cmd_string.c_str(), host_id.c_str(), command_center_feedback_port_str.c_str());
+	qstring cmd = qstring::format_string("%s-%s", cmd_string.c_str(), port_id.c_str());
+	ssize_t sent = sendto(sock, cmd.c_str(), cmd.length(), 0, cmd_center_feedback_address->ai_addr, cmd_center_feedback_address->ai_addrlen);
+	if (sent != (ssize_t) cmd.length()) {
+		debug_print_error(const_logtag, "f:try_report_router - ERROR sending %s event to command center !!!", cmd_string.c_str());
+	}
+	freeaddrinfo(cmd_center_feedback_address);
 }
 
 void qh3server::destroy_pending_connections() {
@@ -1172,7 +1197,7 @@ TIMER_TYPE* qh3server::router_hb_loop(TIMER_SCHEDuLER_TYPE& router_hb_scheduler,
 				debug_print_error(const_logtag, "failed to resolve host - port[%s]", command_center_feedback_port_str.c_str());
 				return;
 			}
-			debug_print(LOG_LEVEL_5, __LOGTAG__, "Sending heartbeat to %s:%s", host.c_str(), command_center_feedback_port_str.c_str());
+			debug_print(LOG_LEVEL_6, __LOGTAG__, "Sending heartbeat to %s:%s", host.c_str(), command_center_feedback_port_str.c_str());
 			qstring hb_cmd = qstring::format_string("hb-%s", port_id.c_str());
 			ssize_t sent = sendto(sock, hb_cmd.c_str(), hb_cmd.length(), 0, cmd_center_feedback_address->ai_addr, cmd_center_feedback_address->ai_addrlen);
 			if (sent != (ssize_t) hb_cmd.length()) {

@@ -55,6 +55,9 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 	static int next_available_port(const qstring& host, port_range& range, int& index);	 // index starts with 0
 	static int is_port_available(const qstring& host, int port_number);
 
+	inline struct addrinfo* get_router_addrinfo() { return this->router; }
+	route* create_qh3server_route(const qstring& host, const qstring& port, pid_t child_process_id = -1);
+
    protected:
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
 	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;

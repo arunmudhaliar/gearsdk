@@ -150,7 +150,7 @@ class observer_qh3server_events {
 	};
 	virtual ~observer_qh3server_events() {};
 	virtual void on_server_pre_start(qh3server*) = 0;
-	virtual void on_server_start(qh3server*) = 0;
+	virtual void on_server_start(qh3server*, const char* ip, uint16_t port) = 0;
 	virtual void on_server_stop(qh3server*) = 0;
 	virtual void on_server_error(qh3server*, int error_code) = 0;
 	virtual void on_serevr_parse(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) = 0;

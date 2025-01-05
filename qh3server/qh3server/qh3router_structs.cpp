@@ -28,7 +28,7 @@ void test_router_command_recv_cb(EV_P_ ev_io* w, int revents)  {
 
         if (read < 0) {
             if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-                debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+                debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
                 break;
             }
 
