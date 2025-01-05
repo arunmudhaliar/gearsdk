@@ -448,7 +448,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 		if (read < 0) {
 			int error = WSAGetLastError();
 			if (error == WSAEWOULDBLOCK) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
             debug_print_error(__LOGTAG__, "failed to read");
@@ -458,7 +458,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 		ssize_t read = recvfrom(qconnection->sock, qconnection->recv_buf, sizeof(qconnection->recv_buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
 

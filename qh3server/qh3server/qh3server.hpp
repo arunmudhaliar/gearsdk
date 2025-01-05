@@ -90,6 +90,8 @@ class qh3server : public bridge_h3_connection {
 	virtual void on_run_started() = 0;
 	virtual void on_run_end() = 0;
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
+	void try_report_router(const qstring& cmd_string, int sock, uint16_t command_center_feedback_port);
+
 	qcustomlogger* logger = nullptr;
 	qstatslogger* stats_logger = nullptr;
 	qstring logtag = __LOGTAG__;

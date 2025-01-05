@@ -18,8 +18,6 @@ namespace app {
             qh3serverplugin_app.instance.start_userserver(native_router);
             qh3serverplugin_app.instance.start_userserver(native_router);
             qh3serverplugin_app.instance.start_userserver(native_router);
-            qh3serverplugin_app.instance.start_userserver(native_router);
-            qh3serverplugin_app.instance.start_userserver(native_router);
         }
 
         private async start_router() : Promise<void> {
@@ -36,8 +34,8 @@ namespace app {
         }
 
         public async run() : Promise<void> {
-            await this.start_router();
-            // await this.start_userserver();
+            // await this.start_router();
+            await this.start_userserver();
         }
     }
 }

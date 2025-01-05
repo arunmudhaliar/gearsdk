@@ -231,7 +231,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 		if (read < 0) {
 			int error = WSAGetLastError();
 			if (error == WSAEWOULDBLOCK) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
 			debug_print_error(__LOGTAG__, "failed to read");
@@ -241,7 +241,7 @@ void qh3client::recv_cb(EV_P_ ev_io* w, int revents) {
 		ssize_t read = recvfrom(conn_io->sock, conn_io->buf, sizeof(conn_io->buf), 0, (struct sockaddr*) &peer_addr, &peer_addr_len);
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -638,9 +638,8 @@ int qh3client::send_request(const conn_io_req_res* data_get, type_qh3client_help
 	char port[10];
 	getnameinfo((struct sockaddr*) &conn_io->local_addr, sizeof(struct sockaddr), name, sizeof(name), port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "local client address %s:%s", name, port);
-	DEBUG_PRINT_scid(LOG_LEVEL_0, (const uint8_t*) scid, sizeof(scid));
+    debug_print_scid(LOG_LEVEL_0, (const uint8_t*) scid, sizeof(scid));
 #endif
-
 	//    conn_io->two_byte_port_check = two_byte_port_check;
 	conn_io->sock = sock;
 	conn_io->conn = conn;

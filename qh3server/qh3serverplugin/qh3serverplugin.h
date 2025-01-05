@@ -51,7 +51,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
    public:
 	~qh3plugin_server_event_listener() {}
 	typedef void (*type_on_server_pre_start)(qh3server* server);
-	typedef void (*type_on_server_start)(qh3server* server);
+	typedef void (*type_on_server_start)(qh3server* server, const char* ip, uint16_t port);
 	typedef void (*type_on_server_stop)(qh3server* server);
 	typedef void (*type_on_server_error)(qh3server* server, int error_code);
 	typedef void (*type_on_server_parse)(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size);
@@ -60,7 +60,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 
    protected:
 	void on_server_pre_start(qh3server*) override;
-	void on_server_start(qh3server*) override;
+	void on_server_start(qh3server*, const char* ip, uint16_t port) override;
 	void on_server_stop(qh3server*) override;
 	void on_server_error(qh3server*, int error_code) override;
 	void on_serevr_parse(qh3server*, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) override;
@@ -104,6 +104,7 @@ void* spawn_qh3router_internal(void* data);
 void* spawn_qh3server_internal(void* data);
 EXPORT void qh3server_try_send_response(qh3server*, conn_io_qh3* conn, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
 EXPORT unsigned int get_live_connection_count(qh3server*);
+EXPORT const char* get_device_public_ip();
 }
 
 }  // namespace server

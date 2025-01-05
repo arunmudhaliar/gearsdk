@@ -46,9 +46,9 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_pre_start(qh3serve
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server) {
+void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server, const char* ip, uint16_t port) {
 	if (cb_on_server_start) {
-		cb_on_server_start(server);
+		cb_on_server_start(server, ip, port);
 	}
 }
 
@@ -174,7 +174,7 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
 	}
 	PTHREAD_NAME(qh3plugin_server::get_server_name());
 	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(*config);
-	new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, nullptr, config->command_feedback_port, 0, config->app_id, listener);
+	new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, listener);
 	GX_DELETE(new_server);
 	GX_DELETE(tuple_in);
 	GX_DELETE(listener);
@@ -251,4 +251,8 @@ EXPORT unsigned long gsdk::server::mod_crc32(uLong adler, const Bytef* buf, z_si
 EXPORT int gsdk::server::test_func() {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "test_func");
 	return 100;
+}
+
+EXPORT const char* gsdk::server::get_device_public_ip() {
+	return gsdk::device::public_ip;
 }

@@ -67,7 +67,7 @@ void qh3router::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		if (read < 0) {
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "recv would block");
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
 
@@ -138,7 +138,7 @@ void qh3router::recv_return_cb(EV_P_ ev_io* w, int revents) {
 		}
 
 		if (router->routes.size() == 0) {
-			//            debug_print_error(__LOGTAG__, "zero routes !!!");
+			debug_print_error(__LOGTAG__, "zero routes !!!");
 			return;
 		}
 
@@ -199,26 +199,26 @@ int qh3router::is_port_available(const qstring& host, int port_number) {
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;
 	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
-		debug_print_error(__LOGTAG__, "failed to resolve host. port:%d", port_number);
+		debug_print_error(__LOGTAG__, "f:is_port_available - failed to resolve host. port:%d", port_number);
 		return -1;
 	}
 
 	int sock = socket(local->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
-		debug_print_error(__LOGTAG__, "failed to create socket. port:%d", port_number);
+		debug_print_error(__LOGTAG__, "f:is_port_available - failed to create socket. port:%d", port_number);
 		freeaddrinfo(local);
 		return -1;
 	}
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-		debug_print_error(__LOGTAG__, "failed to make socket non-blocking. port:%d", port_number);
+		debug_print_error(__LOGTAG__, "f:is_port_available - failed to make socket non-blocking. port:%d", port_number);
 		freeaddrinfo(local);
 		close(sock);
 		return -1;
 	}
 
 	if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
-		debug_print_error(__LOGTAG__, "failed to connect socket. port:%d", port_number);
+		debug_print_error(__LOGTAG__, "f:is_port_available - failed to bind socket. port:%d", port_number);
 		freeaddrinfo(local);
 		close(sock);
 		return -1;
@@ -268,29 +268,33 @@ void qh3router::cmd_feedback_from_client(struct sockaddr* client_addr, const qst
 							UNUSED(client_specific_data);
 							UNUSED(arg);
 							UNUSED(success);
-							debug_print(LOG_LEVEL_0, __LOGTAG__, "shutdown-return");
+							debug_print(LOG_LEVEL_0, __LOGTAG__, "f:cmd_feedback_from_client - shutdown-return");
 						},
 						1);
 				}
 			}
 		} else if (cmd.compare(qstring::format_string("hb-%s", port)) == 0) {  // HB
 			found->refresh_hb_timestamp(mainloop);
-			debug_print(LOG_LEVEL_5, __LOGTAG__, "HB received route %s:%s", found->host.c_str(), found->port.c_str());
+			debug_print(LOG_LEVEL_6, __LOGTAG__, "f:cmd_feedback_from_client - HB received route %s:%s", found->host.c_str(), found->port.c_str());
 		}
 	} else {
 		// check if its command server or not
 		if (command_route->host == host && command_route->port == port) {
 			if (cmd.compare(qstring::format_string("shut-ack-%s", port)) == 0) {  // shut downed
 				assert(routes.size() == 0);										  // command center must be destroyed last.
-				debug_print(LOG_LEVEL_0, __LOGTAG__, "Removed command-route %s:%s from router", host, port);
+				debug_print(LOG_LEVEL_0, __LOGTAG__, "f:cmd_feedback_from_client - Removed command-route %s:%s from router", host, port);
 				GX_DELETE(command_route);
 				ev_break(mainloop, EVBREAK_ONE);
 			} else if (cmd.compare(qstring::format_string("hb-%s", port)) == 0) {  // HB
 				command_route->refresh_hb_timestamp(mainloop);
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "HB received cmd route %s:%s", host, port);
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "f:cmd_feedback_from_client - HB received cmd route %s:%s", host, port);
 			}
 		} else {
-			debug_print_error(__LOGTAG__, "route not found %s:%s in the list !!!", host, port);
+			if (cmd.compare(qstring::format_string("qh3server-start-%s", port)) == 0) {
+				create_qh3server_route(host, port);
+			} else {
+				debug_print_error(__LOGTAG__, "f:cmd_feedback_from_client - route not found %s:%s in the list !!!", host, port);
+			}
 		}
 	}
 	//
@@ -449,4 +453,13 @@ void qh3router::push_to_routes(route* r) {
 	const qstring& hash_key = qstring::format_string("servers:%s", gsdk::device::public_ip);
 	hiredis->set_hash_value(hash_key, qstring::format_string("server-%s", r->port.c_str()), qstring::format_string("%s:%s", r->host.c_str(), r->port.c_str()));
 	routes.push_back(r);
+}
+
+route* qh3router::create_qh3server_route(const qstring& host, const qstring& port, pid_t child_process_id) {
+	route* route_obj = DEBUG_NEW route(host, port, server_counter++);
+	route_obj->refresh_hb_timestamp(mainloop);
+	routes.push_back(route_obj);
+	debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), route_obj->server_id);
+	route_obj->create_bridge(mainloop, route_obj, nullptr);
+	return route_obj;
 }

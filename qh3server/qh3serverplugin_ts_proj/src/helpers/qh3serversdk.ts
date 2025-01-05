@@ -47,7 +47,7 @@ export namespace qh3serversdk {
 
     // server events
     export type type_on_server_pre_start = (server: Buffer) => void;
-    export type type_on_server_start = (router: Buffer) => void;
+    export type type_on_server_start = (router: Buffer, ip: string, port:number) => void;
     export type type_on_server_stop = (server: Buffer) => void;
     export type type_on_server_error = (server: Buffer, error_code: number) => void;
     export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
@@ -91,6 +91,7 @@ export namespace qh3serversdk {
         qh3server_try_send_response(native_server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
         test_func() : number;
         get_live_connection_count(native_server: Buffer) : number;
+        get_device_public_ip() : string;
     }
 
     // Load the C library and cast it to the interface_qh3serverplugin
@@ -104,6 +105,7 @@ export namespace qh3serversdk {
         qh3server_try_send_response: ['void', ['pointer', 'pointer', 'string', size_t, 'string', size_t]],
         test_func: ['int', []],
         get_live_connection_count: ['uint', ['pointer']],
+        get_device_public_ip: ['string', []],
     }) as interface_qh3serverplugin;
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'qh3serverplugin loaded successfully.');

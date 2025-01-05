@@ -330,7 +330,7 @@ void* qtextfilelogger::run_log_session(void* data) {
 			// Calculate elapsed time
 			double elapsed_time = (now.tv_sec - creation_time.tv_sec) + (now.tv_usec - creation_time.tv_usec) / 1e6;
 			if (logger->logfile->flush(true) > 0) {
-				debug_print(LOG_LEVEL_5, __LOGTAG__, "flush - t:%10.2fs", elapsed_time);
+				debug_print(LOG_LEVEL_6, __LOGTAG__, "flush - t:%10.2fs", elapsed_time);
 			}
 		},
 		config->flush_time);

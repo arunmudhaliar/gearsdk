@@ -107,6 +107,7 @@ namespace fs = std::__fs::filesystem;
 #define LOG_LEVEL_3 3
 #define LOG_LEVEL_4 4
 #define LOG_LEVEL_5 5
+#define LOG_LEVEL_6 6
 
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_LEVEL_3  ///< Default log level

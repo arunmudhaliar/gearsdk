@@ -75,7 +75,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 	sock = socket(router->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
-		debug_print_error(__LOGTAG__, "failed to create socket");
+		debug_print_error(__LOGTAG__, "f:run - failed to create socket");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -85,7 +85,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-		debug_print_error(__LOGTAG__, "failed to make socket non-blocking");
+		debug_print_error(__LOGTAG__, "f:run - failed to make socket non-blocking");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -96,7 +96,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 
 	if (bind(sock, router->ai_addr, router->ai_addrlen) < 0) {
-		debug_print_error(__LOGTAG__, "failed to connect socket");
+		debug_print_error(__LOGTAG__, "f:run - failed to bind socket");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -112,7 +112,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 	sock_return = socket(router_return->ai_family, SOCK_DGRAM, 0);
 	if (sock_return < 0) {
-		debug_print_error(__LOGTAG__, "failed to create sock_return");
+		debug_print_error(__LOGTAG__, "f:run - failed to create sock_return");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -123,7 +123,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 
 	if (fcntl(sock_return, F_SETFL, O_NONBLOCK) != 0) {
-		debug_print_error(__LOGTAG__, "failed to make sock_return non-blocking");
+		debug_print_error(__LOGTAG__, "f:run - failed to make sock_return non-blocking");
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -135,7 +135,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	}
 
 	if (bind(sock_return, router_return->ai_addr, router_return->ai_addrlen) < 0) {
-		debug_print_error(__LOGTAG__, "failed to connect sock_return. port[%u]", config.router_port_return);
+		debug_print_error(__LOGTAG__, "f:run - failed to bind sock_return. port[%u]", config.router_port_return);
 		freeaddrinfo(router);
 		freeaddrinfo(router_return);
 		router_return = nullptr;
@@ -403,12 +403,7 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 		fork_result = true;
 		// Code executed by the parent process
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process after fork (PID: %d) [%d]", getpid(), child_process_id);
-		route* child = DEBUG_NEW route(host, port, router->server_counter++);
-		child->child_process_id = child_process_id;
-		child->refresh_hb_timestamp(router->mainloop);
-		router->routes.push_back(child);
-		debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
-		child->create_bridge(router->mainloop, child, nullptr);
+		router->create_qh3server_route(host, port, child_process_id);
 		return 0;
 	}
 #else
@@ -423,11 +418,7 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 		GX_DELETE(server_event_observer);
 		return -1;
 	}
-	route* child = DEBUG_NEW route(host, port, router->server_counter++);
-	child->refresh_hb_timestamp(router->mainloop);
-	router->routes.push_back(child);
-	debug_print_important2(__LOGTAG__, "spawned qh3server: %s:%s id-%d", host.c_str(), port.c_str(), child->server_id);
-	child->create_bridge(router->mainloop, child, nullptr);
+	router->create_qh3server_route(host, port);
 	return 0;
 #endif
 	return -1;

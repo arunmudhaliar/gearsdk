@@ -58,10 +58,11 @@ export namespace server {
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
         }) as unknown as qh3serversdk.type_on_server_pre_start;
-        protected on_server_start = ffi.Callback('void', ['pointer'], async (native_server: Buffer) => {
+        protected on_server_start = ffi.Callback('void', ['pointer', 'string', 'uint16'], async (native_server: Buffer, ip: string, port: number) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
+            await this.hiredis?.set_hash_value(`servers:${qh3serversdk.qh3serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
         }) as unknown as qh3serversdk.type_on_server_start;
-        protected on_server_stop = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
+        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: Buffer) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
         }) as unknown as qh3serversdk.type_on_server_stop;
         protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: Buffer, error_code: number) => {
