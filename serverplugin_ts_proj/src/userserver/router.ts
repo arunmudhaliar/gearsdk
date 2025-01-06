@@ -1,11 +1,11 @@
 import * as ffi from 'ffi-napi';
-import { qh3serversdk } from '../helpers/qh3serversdk';
+import { qh3serversdk } from '../helpers/serversdk';
 import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
 
 export namespace server {
     export class router {
         private static __LOGTAG__: string = `router`;
-        private router_config : qh3serversdk.qh3_router_input_config = {
+        private router_config: qh3serversdk.qh3_router_input_config = {
             router_address: `127.0.0.1:4004`,
             mongodb_uri: `mongodb://3.109.144.159:27017`,
             redis_address: `3.109.144.159:6379`,
@@ -13,10 +13,10 @@ export namespace server {
             root_dir: process.cwd(),
             command_port: 4010,
             router_port_return: 4005,
-            app_id: `qh3serverplugin-app`
+            app_id: `serverplugin-app`
         };
         private on_router_start_cb: (native_router: Buffer) => Promise<void>;
-        constructor(on_router_start_cb:(native_router: Buffer) => Promise<void>) {
+        constructor(on_router_start_cb: (native_router: Buffer) => Promise<void>) {
             this.on_router_start_cb = on_router_start_cb;
         }
 
@@ -35,8 +35,8 @@ export namespace server {
             debug_error(router.__LOGTAG__, `on_router_error: ${error_code}`);
         }) as unknown as qh3serversdk.type_on_router_error;
 
-        public async run() : Promise<void> {
-            qh3serversdk.qh3serverplugin.spawn_qh3router(
+        public async run(): Promise<void> {
+            qh3serversdk.serverplugin.spawn_qh3router(
                 this.router_config.router_address,
                 this.router_config.mongodb_uri,
                 this.router_config.redis_address,
@@ -50,10 +50,6 @@ export namespace server {
                 this.on_router_stop,
                 this.on_router_error
             );
-
-            setInterval(() => {
-                console.log('Keep-alive ping...');
-            }, 60 * 1000); // Every minute
         }
     }
 }

@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 import { essentials } from '../../helpers/essentials';
-import { qh3serversdk } from '../../helpers/qh3serversdk';
+import { qh3serversdk } from '../../helpers/serversdk';
 import { debug_error, debug_print, EXIT_SUCCESS, LOG_LEVEL_4 } from '../../helpers/sdktypes';
 import { rq_msg_user_get, res_msg_user_get, msg_room_config_list } from '../../userserver/messages';
 import server from '../../userserver/userserver';
@@ -20,11 +20,11 @@ class api_user_get implements server.interface_api {
         const user_get_msg_rq = plainToClass(rq_msg_user_get, JSON.parse(buffer));
         // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "Deserialized Message:", user_get_msg_rq);
 
-        let crc : number = qh3serversdk.qh3serverplugin.mod_crc32(0, null, 0);
-        crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.sys_name, user_get_msg_rq.device.sys_name.length);
-        crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.node_name, user_get_msg_rq.device.node_name.length);
-        crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.release, user_get_msg_rq.device.release.length);
-        crc = qh3serversdk.qh3serverplugin.mod_crc32(crc, user_get_msg_rq.device.arch, user_get_msg_rq.device.arch.length);
+        let crc : number = qh3serversdk.serverplugin.mod_crc32(0, null, 0);
+        crc = qh3serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.sys_name, user_get_msg_rq.device.sys_name.length);
+        crc = qh3serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.node_name, user_get_msg_rq.device.node_name.length);
+        crc = qh3serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.release, user_get_msg_rq.device.release.length);
+        crc = qh3serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.arch, user_get_msg_rq.device.arch.length);
 
         let user_get_msg_respose: res_msg_user_get = new res_msg_user_get();
         user_get_msg_respose.pid = `${crc.toString(16)}`;

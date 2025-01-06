@@ -1,5 +1,5 @@
 import * as ffi from 'ffi-napi';
-import { qh3serversdk } from '../helpers/qh3serversdk';
+import { qh3serversdk } from '../helpers/serversdk';
 import * as ref from 'ref-napi';
 import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
@@ -26,7 +26,7 @@ export namespace server {
 
     export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
-        private router_config : qh3serversdk.qh3_router_input_config = {
+        private router_config: qh3serversdk.qh3_router_input_config = {
             router_address: `127.0.0.1:4004`,
             mongodb_uri: `mongodb://3.109.144.159:27017`,
             redis_address: `3.109.144.159:6379`,
@@ -34,9 +34,9 @@ export namespace server {
             root_dir: process.cwd(),
             command_port: 4010,
             router_port_return: 4005,
-            app_id: `qh3serverplugin-app`
+            app_id: `serverplugin-app`
         };
-        private mongo : qmongo | null = null;
+        private mongo: qmongo | null = null;
         private hiredis: qhiredis | null = null;
         private qzk: qzookeeper | null = null;
         private zkconfig: serverconfig | null = null;
@@ -56,31 +56,31 @@ export namespace server {
         }
 
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
-            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
+            debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
         }) as unknown as qh3serversdk.type_on_server_pre_start;
         protected on_server_start = ffi.Callback('void', ['pointer', 'string', 'uint16'], async (native_server: Buffer, ip: string, port: number) => {
-            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
-            await this.hiredis?.set_hash_value(`servers:${qh3serversdk.qh3serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
+            debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
+            await this.hiredis?.set_hash_value(`servers:${qh3serversdk.serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
         }) as unknown as qh3serversdk.type_on_server_start;
         protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: Buffer) => {
-            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
+            debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
         }) as unknown as qh3serversdk.type_on_server_stop;
         protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: Buffer, error_code: number) => {
-            // debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
+            debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as qh3serversdk.type_on_server_error;
         protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', qh3serversdk.size_t, 'string', qh3serversdk.size_t], async (native_server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
-            debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
+            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
 
             if (this.api_callbacks.has(path)) {
-                let api_instance: interface_api | any= this.api_callbacks.get(path);
+                let api_instance: interface_api | any = this.api_callbacks.get(path);
                 result = await api_instance?.get_post_cb()?.(native_server, conn, this, api_instance, path, buffer, len, headers, header_buffer_size);
             }
 
             if (result) {
-                qh3serversdk.qh3serverplugin.qh3server_try_send_response(native_server, conn, result, result.length, null, 0);
+                qh3serversdk.serverplugin.qh3server_try_send_response(native_server, conn, result, result.length, null, 0);
             } else {
-                qh3serversdk.qh3serverplugin.qh3server_try_send_response(native_server, conn, `{}`, 2, null, 0);
+                qh3serversdk.serverplugin.qh3server_try_send_response(native_server, conn, `{}`, 2, null, 0);
             }
 
             // const response_string = `{msg:\"test message\"}`;
@@ -92,7 +92,7 @@ export namespace server {
             // return result; // Return the pointer to C++
         }) as unknown as qh3serversdk.type_on_server_parse;
 
-        public register_api(api_instance : interface_api) : void {
+        public register_api(api_instance: interface_api): void {
             if (this.api_callbacks.has(api_instance.get_path())) {
                 return;
             }
@@ -100,21 +100,21 @@ export namespace server {
             debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api registered - ${api_instance.get_path()}`);
         }
 
-        public unregister_api(path:string) : void {
+        public unregister_api(path: string): void {
             if (this.api_callbacks.has(path)) {
                 this.api_callbacks.delete(path);
                 debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api un-registered - ${path}`);
             }
         }
 
-        public unregister_api_instance(api_instance : interface_api) : void {
+        public unregister_api_instance(api_instance: interface_api): void {
             if (this.api_callbacks.has(api_instance.get_path())) {
                 this.api_callbacks.delete(api_instance.get_path());
                 debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api un-registered - ${api_instance.get_path()}`);
             }
         }
 
-        public async run(native_router: Buffer) : Promise<void> {
+        public async run(native_router: Buffer): Promise<void> {
             // mongo setup
             this.mongo = new qmongo("", "gsdk_mongodb", this.router_config.mongodb_uri);
             await this.mongo?.connect();
@@ -148,7 +148,7 @@ export namespace server {
             await this.zkconfig.load(config_path, this.qzk, `/qh3server`);
 
             // server spawn
-            qh3serversdk.qh3serverplugin.spawn_qh3server(
+            qh3serversdk.serverplugin.spawn_qh3server(
                 native_router,
                 this.router_config.router_address,
                 this.router_config.mongodb_uri,

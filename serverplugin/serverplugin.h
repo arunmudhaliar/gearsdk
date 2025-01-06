@@ -1,19 +1,19 @@
 //
-//  qh3serverplugin.h
+//  serverplugin.h
 //  qh3server
 //
 //  Created by Arun A on 22/12/24.
 //
 
-#ifndef QH3SERVERPLUGIN_H
-#define QH3SERVERPLUGIN_H
+#ifndef SERVERPLUGIN_H
+#define SERVERPLUGIN_H
 
-#include "../../../common/sdktypes.hpp"
-#include "../qh3server/qh3router.hpp"
-#include "../qh3server/qh3server.hpp"
+#include "../common/sdktypes.hpp"
+#include "../qh3server/qh3server/qh3router.hpp"
+#include "../qh3server/qh3server/qh3server.hpp"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "qh3serverplugin"
+#define __LOGTAG__ "serverplugin"
 
 namespace gsdk {
 namespace server {
@@ -90,7 +90,7 @@ class qh3plugin_server : public qh3server {
 
 extern "C" {
 EXPORT void setup_signal_handler();
-EXPORT void pre_init_qh3serverplugin_sdk();
+EXPORT void pre_init_serverplugin_sdk();
 EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
 							qh3plugin_router_event_listener::type_on_router_error error_cb);
@@ -110,4 +110,4 @@ EXPORT const char* get_device_public_ip();
 }  // namespace server
 }  // namespace gsdk
 
-#endif /* QH3SERVERPLUGIN_H */
+#endif /* SERVERPLUGIN_H */
