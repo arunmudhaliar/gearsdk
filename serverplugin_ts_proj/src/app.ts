@@ -6,18 +6,18 @@ import api_whoami from './features/user_get/api_whoami';
 import api_ping from './features/user_get/api_ping';
 
 namespace app {
-    export class qh3serverplugin_app {
-        private static instance: qh3serverplugin_app;
+    export class server_app {
+        private static instance: server_app;
         constructor() {
-            qh3serverplugin_app.instance = this;
+            server_app.instance = this;
         }
-        public get_instance(): qh3serverplugin_app {
-            return qh3serverplugin_app.instance;
+        public get_instance(): server_app {
+            return server_app.instance;
         }
         private async on_router_start_cb(native_router: Buffer) {
-            qh3serverplugin_app.instance.start_userserver(native_router);
-            qh3serverplugin_app.instance.start_userserver(native_router);
-            qh3serverplugin_app.instance.start_userserver(native_router);
+            server_app.instance.start_userserver(native_router);
+            server_app.instance.start_userserver(native_router);
+            server_app.instance.start_userserver(native_router);
         }
 
         private async start_router(): Promise<void> {
@@ -40,7 +40,7 @@ namespace app {
     }
 }
 
-export const app_instance = new app.qh3serverplugin_app();
+export const app_instance = new app.server_app();
 app_instance.run();
 setInterval(() => {
     console.log('Keep-alive ping...');

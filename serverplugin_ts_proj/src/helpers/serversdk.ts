@@ -3,7 +3,7 @@ import * as path from 'path';
 import ref from "ref-napi";
 import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
 
-export namespace qh3serversdk {
+export namespace serversdk {
     // Import libc's malloc and free
     export const libc = ffi.Library('libc', {
         strdup: ['pointer', ['string']], // strdup allocates memory for the string copy
@@ -14,7 +14,7 @@ export namespace qh3serversdk {
     export const uLong = ref.types.ulong; // Represents `unsigned long`
     export const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
     export const size_t = ref.types.size_t; // Represents size_t
-    const __LOGTAG__: string = `qh3serversdk`;
+    const __LOGTAG__: string = `serversdk`;
 
     let lib_path: string;
     if (process.platform === 'darwin') {
@@ -24,7 +24,7 @@ export namespace qh3serversdk {
         lib_path = path.join(__dirname, './../serverplugin/libserverplugin-debug.so');
         // lib_path = path.join(__dirname, './../serverplugin/libserverplugin.so');            // release version
     } else {
-        throw new Error('Unsupported platform');
+        throw new Error('unsupported platform');
     }
 
     // Define the exported C functions' TypeScript types
@@ -53,7 +53,7 @@ export namespace qh3serversdk {
     export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
 
     // Define the interface for the library's methods
-    interface interface_qh3serverplugin {
+    interface interface_serverplugin {
         setup_signal_handler(): void;
         pre_init_serverplugin_sdk(): void;
         spawn_qh3router(
@@ -106,7 +106,7 @@ export namespace qh3serversdk {
         test_func: ['int', []],
         get_live_connection_count: ['uint', ['pointer']],
         get_device_public_ip: ['string', []],
-    }) as interface_qh3serverplugin;
+    }) as interface_serverplugin;
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');
     debug_print(LOG_LEVEL_0, __LOGTAG__, "current directory:", process.cwd());
