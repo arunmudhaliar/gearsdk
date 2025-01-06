@@ -1,18 +1,18 @@
 //
-//  qh3serverplugin.cpp
+//  serverplugin.cpp
 //  qh3server
 //
 //  Created by Arun A on 22/12/24.
 //
 
-#include "qh3serverplugin.h"
+#include "serverplugin.h"
 
-#include "../../common/signal_handler/signal_handler.hpp"
-#include "../../servercommon/source/servercommon.hpp"
-#include "../qh3server/http3_command_server.hpp"
+#include "../common/signal_handler/signal_handler.hpp"
+#include "../servercommon/source/servercommon.hpp"
+#include "../qh3server/qh3server/http3_command_server.hpp"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "qh3serverplugin"
+#define __LOGTAG__ "serverplugin"
 
 // qh3plugin_router_event_listener
 void gsdk::server::qh3plugin_router_event_listener::on_router_pre_start(qh3router* router) {
@@ -123,7 +123,7 @@ EXPORT void gsdk::server::setup_signal_handler() {
 	signal_handler::setup_signal_handler();
 }
 
-EXPORT void gsdk::server::pre_init_qh3serverplugin_sdk() {
+EXPORT void gsdk::server::pre_init_serverplugin_sdk() {
 	init_gsdk();
 	gsdk::servercommon::init_server_common();
 }

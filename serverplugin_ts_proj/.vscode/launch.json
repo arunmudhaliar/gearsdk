@@ -7,7 +7,7 @@
         "name": "Launch qh3server SDK",
         "program": "${workspaceFolder}/dist/app.js",
         "env": {
-          "DYLD_LIBRARY_PATH": "${workspaceFolder}/../qh3serverplugin"
+          "DYLD_LIBRARY_PATH": "${workspaceFolder}/../serverplugin"
         },
         "outFiles": ["${workspaceFolder}/dist/**/*.js"],
         "sourceMaps": true,
@@ -35,7 +35,7 @@
             }
         ],
         "sourceFileMap": {
-          "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/qh3server/qh3serverplugin": "${workspaceFolder}/../qh3serverplugin"
+          "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/serverplugin": "${workspaceFolder}/../serverplugin"
         }
       }    
     ]

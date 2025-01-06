@@ -1,11 +1,11 @@
 {
-    "name": "qh3serverplugin-ts",
+    "name": "serverplugin-ts",
     "version": "1.0.0",
     "description": "A project using ffi-napi and ref-napi with TypeScript.",
-    "main": "dist/qh3serverplugin.js",
+    "main": "dist/serverplugin.js",
     "scripts": {
         "build": "tsc",
-        "start": "DYLD_LIBRARY_PATH='../qh3serverplugin' node dist/qh3serverplugin.js",
+        "start": "DYLD_LIBRARY_PATH='../serverplugin' node dist/serverplugin.js",
         "watch": "tsc --watch"
     },
     "dependencies": {

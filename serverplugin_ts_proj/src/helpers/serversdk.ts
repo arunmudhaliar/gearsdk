@@ -3,7 +3,7 @@ import * as path from 'path';
 import ref from "ref-napi";
 import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
 
-export namespace qh3serversdk {
+export namespace serversdk {
     // Import libc's malloc and free
     export const libc = ffi.Library('libc', {
         strdup: ['pointer', ['string']], // strdup allocates memory for the string copy
@@ -14,17 +14,17 @@ export namespace qh3serversdk {
     export const uLong = ref.types.ulong; // Represents `unsigned long`
     export const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
     export const size_t = ref.types.size_t; // Represents size_t
-    const __LOGTAG__: string = `qh3serversdk`;
+    const __LOGTAG__: string = `serversdk`;
 
     let lib_path: string;
     if (process.platform === 'darwin') {
-        lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.dylib');
-        // lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.dylib');         // release version
+        lib_path = path.join(__dirname, './../serverplugin/libserverplugin-debug.dylib');
+        // lib_path = path.join(__dirname, './../serverplugin/libserverplugin.dylib');         // release version
     } else if (process.platform === 'linux') {
-        lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin-debug.so');
-        // lib_path = path.join(__dirname, './../../qh3serverplugin/libqh3serverplugin.so');            // release version
+        lib_path = path.join(__dirname, './../serverplugin/libserverplugin-debug.so');
+        // lib_path = path.join(__dirname, './../serverplugin/libserverplugin.so');            // release version
     } else {
-        throw new Error('Unsupported platform');
+        throw new Error('unsupported platform');
     }
 
     // Define the exported C functions' TypeScript types
@@ -47,15 +47,15 @@ export namespace qh3serversdk {
 
     // server events
     export type type_on_server_pre_start = (server: Buffer) => void;
-    export type type_on_server_start = (router: Buffer, ip: string, port:number) => void;
+    export type type_on_server_start = (router: Buffer, ip: string, port: number) => void;
     export type type_on_server_stop = (server: Buffer) => void;
     export type type_on_server_error = (server: Buffer, error_code: number) => void;
     export type type_on_server_parse = (server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
 
     // Define the interface for the library's methods
-    interface interface_qh3serverplugin {
-        setup_signal_handler() : void;
-        pre_init_qh3serverplugin_sdk() : void;
+    interface interface_serverplugin {
+        setup_signal_handler(): void;
+        pre_init_serverplugin_sdk(): void;
         spawn_qh3router(
             router_address: string,
             mongodb_uri: string,
@@ -86,18 +86,18 @@ export namespace qh3serversdk {
             error_cb: type_on_server_error,
             parse_cb: type_on_server_parse
         ): void;
-        get_crc32(str:string, len:number) : number;
-        mod_crc32(adler:number, buf:string | null, len:number) : number;
-        qh3server_try_send_response(native_server: Buffer, conn: Buffer, payload: string, len: number, user_data: string|null, user_data_len: number): void;
-        test_func() : number;
-        get_live_connection_count(native_server: Buffer) : number;
-        get_device_public_ip() : string;
+        get_crc32(str: string, len: number): number;
+        mod_crc32(adler: number, buf: string | null, len: number): number;
+        qh3server_try_send_response(native_server: Buffer, conn: Buffer, payload: string, len: number, user_data: string | null, user_data_len: number): void;
+        test_func(): number;
+        get_live_connection_count(native_server: Buffer): number;
+        get_device_public_ip(): string;
     }
 
     // Load the C library and cast it to the interface_qh3serverplugin
-    export const qh3serverplugin = ffi.Library(lib_path, {
+    export const serverplugin = ffi.Library(lib_path, {
         setup_signal_handler: ['void', []],
-        pre_init_qh3serverplugin_sdk: ['void', []],
+        pre_init_serverplugin_sdk: ['void', []],
         spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', 'uint16', 'uint16', 'string', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', 'uint16', 'uint16', 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         get_crc32: ['ulong', ['string', 'int']],
@@ -106,12 +106,12 @@ export namespace qh3serversdk {
         test_func: ['int', []],
         get_live_connection_count: ['uint', ['pointer']],
         get_device_public_ip: ['string', []],
-    }) as interface_qh3serverplugin;
+    }) as interface_serverplugin;
 
-    debug_print(LOG_LEVEL_0, __LOGTAG__, 'qh3serverplugin loaded successfully.');
-    debug_print(LOG_LEVEL_0, __LOGTAG__, "Current Directory:", process.cwd());
-    qh3serverplugin.setup_signal_handler();
-    qh3serverplugin.pre_init_qh3serverplugin_sdk();
+    debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "current directory:", process.cwd());
+    serverplugin.setup_signal_handler();
+    serverplugin.pre_init_serverplugin_sdk();
 
     // const router_config : qh3_router_input_config = {
     //     router_address: `127.0.0.1:4004`,
@@ -121,7 +121,7 @@ export namespace qh3serversdk {
     //     root_dir: process.cwd(),
     //     command_port: 4010,
     //     router_port_return: 4005,
-    //     app_id: `qh3serverplugin-app`
+    //     app_id: `serverplugin-app`
     // };
 
     // const structFactory = StructType(ref);
@@ -156,7 +156,7 @@ export namespace qh3serversdk {
         return result; // Return the pointer to C++
     }) as unknown as type_on_server_parse;
 
-    qh3serverplugin.spawn_qh3server(
+    serverplugin.spawn_qh3server(
         ref.NULL,
         router_config.router_address,
         router_config.mongodb_uri,
@@ -189,7 +189,7 @@ export namespace qh3serversdk {
         debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_router_error: ${error_code}`);
     }) as unknown as type_on_router_error;
 
-    qh3serverplugin.spawn_qh3router(
+    serverplugin.spawn_qh3router(
         router_config.router_address,
         router_config.mongodb_uri,
         router_config.redis_address,

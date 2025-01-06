@@ -1,10 +1,10 @@
-NETWORK_COMMON_SRCDIR = ../../networkcommon/source
-QHIREDIS_SRCDIR = ../../qhiredis/source
-SERVER_COMMON_SRCDIR = ../../servercommon/source
-COMMON_SRCDIR = ../../common
-QUTILS_SRCDIR = ../../qutils
-ZK_SRCDIR = ../../qzookeeper
-QH3_CLIENT_SRCDIR = ../../qh3client/qh3client
+NETWORK_COMMON_SRCDIR = ../networkcommon/source
+QHIREDIS_SRCDIR = ../qhiredis/source
+SERVER_COMMON_SRCDIR = ../servercommon/source
+COMMON_SRCDIR = ../common
+QUTILS_SRCDIR = ../qutils
+ZK_SRCDIR = ../qzookeeper
+QH3_CLIENT_SRCDIR = ../qh3client/qh3client
 NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
 $(NETWORK_COMMON_SRCDIR)/qbuffer.cpp \
 $(NETWORK_COMMON_SRCDIR)/qtextfilelogger.cpp \
@@ -29,13 +29,18 @@ $(ZK_SRCDIR)/source/qzookeeper.cpp \
 # Add debug_new.cpp conditionally for the debug build
 debug: NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
 
-INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" -I "$(QUTILS_SRCDIR)" -I "$(QH3_CLIENT_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/zlib" -I "../../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)"
+INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" -I "$(QUTILS_SRCDIR)" -I "$(QH3_CLIENT_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)"
 SRCDIR = .
-SRCS = $(SRCDIR)/qh3serverplugin.cpp \
-$(SRCDIR)/../qh3server/qh3server.cpp \
-$(SRCDIR)/../qh3server/qh3router.cpp \
-$(SRCDIR)/../qh3server/http3_command_server.cpp \
-$(SRCDIR)/../qh3server/qh3router_structs.cpp \
+QSRCDIR = ./../qserver/source
+SRCS = $(SRCDIR)/serverplugin.cpp \
+$(SRCDIR)/../qh3server/qh3server/qh3server.cpp \
+$(SRCDIR)/../qh3server/qh3server/qh3router.cpp \
+$(SRCDIR)/../qh3server/qh3server/http3_command_server.cpp \
+$(SRCDIR)/../qh3server/qh3server/qh3router_structs.cpp \
+$(QSRCDIR)/room.cpp \
+$(QSRCDIR)/roomserver.cpp \
+$(QSRCDIR)/gameserver.cpp \
+$(QSRCDIR)/qnetworkserver.cpp \
 $(NCOMMONSRCS) \
 
 C_SRCS =$(COMMON_SRCDIR)/crypto/sha256.c \
@@ -60,12 +65,14 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
 	LINUX_LIB_DIR = linux
-	LIBS = $(ZK_SRCDIR)/libs/$(LINUX_LIB_DIR)/libzookeeper_mt.a ../../networkcommon/libs/$(LINUX_LIB_DIR)/libquiche.a ../../networkcommon/libs/$(LINUX_LIB_DIR)/libev.a ../../networkcommon/libs/$(LINUX_LIB_DIR)/libuv.a ../../qhiredis/libs/$(LINUX_LIB_DIR)/libhiredis.a ../../common/libs/$(LINUX_LIB_DIR)/libz.a -lssl -lcrypto -lsasl2 -pthread -lrt -lzookeeper_mt -Wl,--no-as-needed -ldl -lsnappy -lzstd -lresolv -lcurl -lunwind
+	LIBS = $(ZK_SRCDIR)/libs/$(LINUX_LIB_DIR)/libzookeeper_mt.a ../networkcommon/libs/$(LINUX_LIB_DIR)/libquiche.a ../networkcommon/libs/$(LINUX_LIB_DIR)/libev.a ../networkcommon/libs/$(LINUX_LIB_DIR)/libuv.a ../qhiredis/libs/$(LINUX_LIB_DIR)/libhiredis.a ../common/libs/$(LINUX_LIB_DIR)/libz.a -lssl -lcrypto -lsasl2 -pthread -lrt -lzookeeper_mt -Wl,--no-as-needed -ldl -lsnappy -lzstd -lresolv -lcurl -lunwind
 	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(LINUX_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(LINUX_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(LINUX_LIB_DIR)
 	LDFLAGS += -shared
 	RPATH_FLAGS = -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(LINUX_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(LINUX_LIB_DIR)
-	RPATH_FLAGS += -Wl,-rpath,'$$ORIGIN/../../networkcommon/libs/$(LINUX_LIB_DIR)'
+	RPATH_FLAGS += -Wl,-rpath,'$$ORIGIN/../networkcommon/libs/$(LINUX_LIB_DIR)'
 	LIB_EXT = so
+	DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	RELEASE_LIB = libserverplugin.$(LIB_EXT)
 endif
 ifeq ($(UNAME),Darwin)
 	# Define a variable that gets the architecture
@@ -79,14 +86,15 @@ ifeq ($(UNAME),Darwin)
 	# 	exit 1
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
-	LIBS = ../../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -lresolv -lsasl2 -lcurl
+	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -lresolv -lsasl2 -lcurl
 	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	LDFLAGS += -dynamiclib
-	DEBUG_LDFLAGS = -install_name @rpath/libqh3serverplugin-debug.dylib
-	RELEASE_LDFLAGS = -install_name @rpath/libqh3serverplugin.dylib
-	RPATH_FLAGS = -Wl,-rpath,../../networkcommon/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	RPATH_FLAGS = -Wl,-rpath,../networkcommon/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	LIB_EXT = dylib
-
+	DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	RELEASE_LIB = libserverplugin.$(LIB_EXT)
+	DEBUG_LDFLAGS = -install_name @rpath/$(DEBUG_LIB)
+	RELEASE_LDFLAGS = -install_name @rpath/$(RELEASE_LIB)
     # Set architecture flags based on the detected architecture
     ifeq ($(ARCH), arm64)
         ARCH_FLAGS = -arch arm64
@@ -99,8 +107,6 @@ ifeq ($(UNAME),Darwin)
     LDFLAGS += -mmacosx-version-min=12.4 $(ARCH_FLAGS) -Wl,-dead_strip
 endif
 
-DEBUG_LIB = libqh3serverplugin-debug.$(LIB_EXT)
-RELEASE_LIB = libqh3serverplugin.$(LIB_EXT)
 CXX ?= clang
 CC ?= clang
 

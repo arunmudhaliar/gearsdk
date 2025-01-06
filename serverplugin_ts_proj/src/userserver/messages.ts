@@ -1,4 +1,4 @@
-import { qh3serversdk } from "../helpers/qh3serversdk";
+import { serversdk } from "../helpers/serversdk";
 
 export class message_base {
     constructor() {}
@@ -9,7 +9,7 @@ export class message_base {
 
     public static get_type_string_crc(): bigint {
         const type_string = message_base.get_type_string();
-        const type_string_crc = qh3serversdk.qh3serverplugin.get_crc32(type_string, type_string.length);
+        const type_string_crc = serversdk.serverplugin.get_crc32(type_string, type_string.length);
         // type_string_crc = essentials.mod_crc32_z(type_string_crc, type_string, type_string.length);
         return BigInt(type_string_crc);
     }
@@ -48,7 +48,7 @@ export class rq_msg_user_get extends rq_msg_user_base {
 
     public static get_type_string_crc(): bigint {
         const type_string = rq_msg_user_get.get_type_string();
-        const type_string_crc = qh3serversdk.qh3serverplugin.get_crc32(type_string, type_string.length);
+        const type_string_crc = serversdk.serverplugin.get_crc32(type_string, type_string.length);
         // type_string_crc = essentials.mod_crc32_z(type_string_crc, type_string, type_string.length);
         return BigInt(type_string_crc);
     }
@@ -113,7 +113,7 @@ export class msg_room_config extends message_base {
 
     public static get_type_string_crc(): bigint {
         const type_string = msg_room_config.get_type_string();
-        const type_string_crc = qh3serversdk.qh3serverplugin.get_crc32(type_string, type_string.length);
+        const type_string_crc = serversdk.serverplugin.get_crc32(type_string, type_string.length);
         // type_string_crc = essentials.mod_crc32_z(type_string_crc, type_string, type_string.length);
         return BigInt(type_string_crc);
     }
