@@ -14,6 +14,7 @@ int room::room_id_counter = 0;
 
 // MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) : ROOM_ID(room::room_id_counter++), CREATION_TIME(ev_now(interface->get_netowrk_main_loop())), ROOM_CONFIG(room_config), roomserverinterface(interface) {
+	observer = (roomserverinterface != nullptr) ? roomserverinterface->get_main_observer() : nullptr;
 	set_loop(roomserverinterface->get_netowrk_main_loop());
 	set_state(ROOM_WAITING);
 }
@@ -29,10 +30,6 @@ room::~room() {
 	destroy_all_disconnected_players();
 	debug_print_important(__LOGTAG__, "room %d: destructor", ROOM_ID);
 }
-
-void room::onroom_create() {}
-
-void room::onroom_start() {}
 
 void room::send_event_player_add_or_remove(player* p, bool add) {
 	std::vector<room_player*>* players = nullptr;
@@ -101,26 +98,57 @@ void room::send_event_room_start_or_end(bool room_start) {
 	}
 }
 
+void room::onroom_create() {
+	if (observer) {
+		observer->room_event_create(roomserverinterface, this->ROOM_ID);
+	}
+}
+
+void room::onroom_start() {
+	if (observer) {
+		observer->room_event_start(roomserverinterface, this->ROOM_ID);
+	}
+}
+
 void room::onroom_player_added(player* p) {
-	UNUSED(p);
+	if (observer) {
+		observer->room_event_player_added(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val);
+	}
 }
 void room::onroom_message(player* p, const qstring& msg) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+	if (observer) {
+		observer->room_event_message(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val, msg);
+	}
 }
 void room::onroom_player_removed(player* p) {
-	UNUSED(p);
+	if (observer) {
+		observer->room_event_player_removed(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val);
+	}
 }
-void room::onroom_end() {}
+void room::onroom_end() {
+	if (observer) {
+		observer->room_event_end(roomserverinterface, this->ROOM_ID);
+	}
+}
 
-void room::onroom_countdown_to_start(int count, int max_count) {}
-void room::onroom_countdown_cancelled() {}
+void room::onroom_countdown_to_start(int count, int max_count) {
+	if (observer) {
+		observer->room_event_countdown_to_start(roomserverinterface, this->ROOM_ID, count, max_count);
+	}
+}
+void room::onroom_countdown_cancelled() {
+	if (observer) {
+		observer->room_event_countdown_cancelled(roomserverinterface, this->ROOM_ID);
+	}
+}
 bool room::can_allow_reconnection(unsigned cid_hash) {
 	return false;
 }
 void room::pass_message_to_room(player* p, const qstring& msg) {
 	onroom_message(p, msg);
 }
-ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val) {
+ssize_t room::try_add_connection(qconn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val) {
 	replaced_by_disconnected_player = false;
 	if (qconnection == nullptr) {
 		debug_print_error(__LOGTAG__, "room %d: try_add_connection: qconnection == null !!!", ROOM_ID);
@@ -194,7 +222,7 @@ ssize_t room::try_add_connection(conn_io* qconnection, const qstring& pid, bool&
 	return playermap.size();
 }
 
-player* room::get_player(conn_io* qconnection) {
+player* room::get_player(qconn_io* qconnection) {
 	if (qconnection == nullptr) {
 		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection == null !!!", ROOM_ID);
 		return nullptr;
@@ -270,7 +298,7 @@ void room::print_disconnected_players() {
 	}
 }
 
-ssize_t room::remove_connection(conn_io* qconnection) {
+ssize_t room::remove_connection(qconn_io* qconnection) {
 	if (qconnection == nullptr) {
 		debug_print_error(__LOGTAG__, "room %d: f:remove_connection - qconnection == null !!!", ROOM_ID);
 		return -1;
@@ -318,7 +346,7 @@ ssize_t room::remove_connection(conn_io* qconnection) {
 	return playermap.size();
 }
 
-void room::kick_all_except(conn_io* qconnection) {
+void room::kick_all_except(qconn_io* qconnection) {
 	debug_print_important(__LOGTAG__, "room %d: kick all", ROOM_ID);
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ptr = it->second;

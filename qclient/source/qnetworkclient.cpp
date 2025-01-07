@@ -451,7 +451,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				debug_print(LOG_LEVEL_6, __LOGTAG__, "recv would block");
 				break;
 			}
-            debug_print_error(__LOGTAG__, "failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #else
@@ -462,7 +462,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				break;
 			}
 
-            debug_print_error(__LOGTAG__, "failed to read");
+			debug_print_error(__LOGTAG__, "failed to read");
 			return;
 		}
 #endif

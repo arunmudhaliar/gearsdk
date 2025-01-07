@@ -31,15 +31,16 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	roomserver(const qstring& zk_uri);
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
+	inline observer_qserver_events* get_main_observer() override final { return get_observer(); }
 
    protected:
 	bool on_network_server_begin() override final;
 	void on_network_server_init() override;
 	void on_network_server_end() override final;
-	void onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) override final;
-	void onconnection_connect(conn_io* qconnection) override final;
-	void onconnection_connected(conn_io* qconnection) override final;
-	void onconnection_destroy(conn_io* qconnection) override final;
+	void onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) override final;
+	void onconnection_connect(qconn_io* qconnection) override final;
+	void onconnection_connected(qconn_io* qconnection) override final;
+	void onconnection_destroy(qconn_io* qconnection) override final;
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
 	void on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) override;
 	void on_qhiredis_connect() override;
@@ -57,8 +58,8 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 
 	room* create_waiting_room(const msg_room_config* room_config);
 
-	void process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
-	void process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data);
+	void process_match_request(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection, rapidjson::Document& doc, void* user_data);
+	void process_shutdown_request(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection, rapidjson::Document& doc, void* user_data);
 
 	room* find_room(int room_id);
 
@@ -87,9 +88,9 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
    private:
 	const qstring zk_uri;
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
-	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, conn_io*, rapidjson::Document&, void*)>> message_handlers;
+	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, qconn_io*, rapidjson::Document&, void*)>> message_handlers;
 
-	void do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg);
+	void do_process_roomjoin(qconn_io* qconnection, const msg_room_match_request& room_match_request_msg);
 	qtimer* schedule_update_redis_about_gserver_timer();
 };
 

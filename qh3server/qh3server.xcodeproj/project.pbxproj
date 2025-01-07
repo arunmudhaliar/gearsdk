@@ -33,6 +33,15 @@
 		557F7BB92D2C6C3A00A3B9CB /* serverplugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BB72D2C6C3A00A3B9CB /* serverplugin.cpp */; };
 		557F7BBA2D2C6C3A00A3B9CB /* serverplugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BB72D2C6C3A00A3B9CB /* serverplugin.cpp */; };
 		557F7BBB2D2C6C3A00A3B9CB /* serverplugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 557F7BB82D2C6C3A00A3B9CB /* serverplugin.h */; };
+		557F7BBF2D2C7B5800A3B9CB /* plugin_gameserver.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 557F7BBD2D2C7B5800A3B9CB /* plugin_gameserver.hpp */; };
+		557F7BC02D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BBE2D2C7B5800A3B9CB /* plugin_gameserver.cpp */; };
+		557F7BC12D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BBE2D2C7B5800A3B9CB /* plugin_gameserver.cpp */; };
+		557F7BC52D2C825400A3B9CB /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC22D2C825400A3B9CB /* room.cpp */; };
+		557F7BC62D2C825400A3B9CB /* room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC22D2C825400A3B9CB /* room.cpp */; };
+		557F7BC72D2C825400A3B9CB /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC32D2C825400A3B9CB /* roomserver.cpp */; };
+		557F7BC82D2C825400A3B9CB /* roomserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC32D2C825400A3B9CB /* roomserver.cpp */; };
+		557F7BC92D2C825400A3B9CB /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC42D2C825400A3B9CB /* qnetworkserver.cpp */; };
+		557F7BCA2D2C825400A3B9CB /* qnetworkserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 557F7BC42D2C825400A3B9CB /* qnetworkserver.cpp */; };
 		5593E1CF2B337E2B00D8E98B /* qh3router.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5593E1CD2B337E2B00D8E98B /* qh3router.cpp */; };
 		5594E2232B3A309700E47984 /* http3_command_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E2212B3A309700E47984 /* http3_command_server.cpp */; };
 		5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
@@ -111,6 +120,11 @@
 		5576DA772BED514D00B39413 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		557F7BB72D2C6C3A00A3B9CB /* serverplugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = serverplugin.cpp; path = ../serverplugin/serverplugin.cpp; sourceTree = "<group>"; };
 		557F7BB82D2C6C3A00A3B9CB /* serverplugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = serverplugin.h; path = ../serverplugin/serverplugin.h; sourceTree = "<group>"; };
+		557F7BBD2D2C7B5800A3B9CB /* plugin_gameserver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = plugin_gameserver.hpp; path = ../serverplugin/plugin_gameserver.hpp; sourceTree = "<group>"; };
+		557F7BBE2D2C7B5800A3B9CB /* plugin_gameserver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = plugin_gameserver.cpp; path = ../serverplugin/plugin_gameserver.cpp; sourceTree = "<group>"; };
+		557F7BC22D2C825400A3B9CB /* room.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = room.cpp; path = ../qserver/source/room.cpp; sourceTree = "<group>"; };
+		557F7BC32D2C825400A3B9CB /* roomserver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = roomserver.cpp; path = ../qserver/source/roomserver.cpp; sourceTree = "<group>"; };
+		557F7BC42D2C825400A3B9CB /* qnetworkserver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qnetworkserver.cpp; path = ../qserver/source/qnetworkserver.cpp; sourceTree = "<group>"; };
 		5593E1CD2B337E2B00D8E98B /* qh3router.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3router.cpp; sourceTree = "<group>"; };
 		5593E1CE2B337E2B00D8E98B /* qh3router.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qh3router.hpp; sourceTree = "<group>"; };
 		5594E2212B3A309700E47984 /* http3_command_server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = http3_command_server.cpp; sourceTree = "<group>"; };
@@ -197,6 +211,11 @@
 			children = (
 				557F7BB72D2C6C3A00A3B9CB /* serverplugin.cpp */,
 				557F7BB82D2C6C3A00A3B9CB /* serverplugin.h */,
+				557F7BC42D2C825400A3B9CB /* qnetworkserver.cpp */,
+				557F7BC22D2C825400A3B9CB /* room.cpp */,
+				557F7BC32D2C825400A3B9CB /* roomserver.cpp */,
+				557F7BBE2D2C7B5800A3B9CB /* plugin_gameserver.cpp */,
+				557F7BBD2D2C7B5800A3B9CB /* plugin_gameserver.hpp */,
 			);
 			name = sserverplugin;
 			sourceTree = "<group>";
@@ -302,6 +321,7 @@
 			files = (
 				557F7BBB2D2C6C3A00A3B9CB /* serverplugin.h in Headers */,
 				55AE97032D1DD8E20019FB9D /* qh3server_structs.h in Headers */,
+				557F7BBF2D2C7B5800A3B9CB /* plugin_gameserver.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,11 +462,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				557F7BC62D2C825400A3B9CB /* room.cpp in Sources */,
+				557F7BCA2D2C825400A3B9CB /* qnetworkserver.cpp in Sources */,
+				557F7BC82D2C825400A3B9CB /* roomserver.cpp in Sources */,
 				555EB0EB2C2F0D34001F1B21 /* qh3client_helper.cpp in Sources */,
 				555EB0EA2C2F0D31001F1B21 /* qh3client.cpp in Sources */,
 				557F7BBA2D2C6C3A00A3B9CB /* serverplugin.cpp in Sources */,
 				555EB0EC2C2F0D37001F1B21 /* qzookeeper.cpp in Sources */,
 				555EB0ED2C2F0D3B001F1B21 /* debug_new.cpp in Sources */,
+				557F7BC12D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */,
 				555EB0EE2C2F0D40001F1B21 /* qh3server.cpp in Sources */,
 				555EB0EF2C2F0D46001F1B21 /* http3_command_server.cpp in Sources */,
 				555EB0F02C2F0D4D001F1B21 /* http3_sample_server.cpp in Sources */,
@@ -461,8 +485,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */,
+				557F7BC72D2C825400A3B9CB /* roomserver.cpp in Sources */,
 				5594E2322B3FC9EB00E47984 /* qh3client_helper.cpp in Sources */,
+				557F7BC52D2C825400A3B9CB /* room.cpp in Sources */,
 				5594E2232B3A309700E47984 /* http3_command_server.cpp in Sources */,
+				557F7BC92D2C825400A3B9CB /* qnetworkserver.cpp in Sources */,
 				5594E2372B3FCD4200E47984 /* qh3router_structs.cpp in Sources */,
 				5574F2112B1FA779007C93AA /* qh3server.cpp in Sources */,
 				5574F2122B1FA779007C93AA /* http3_sample_server.cpp in Sources */,
@@ -471,6 +498,7 @@
 				55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */,
 				555EB08F2C2B0B5A001F1B21 /* qh3router_extended.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
+				557F7BC02D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3router.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

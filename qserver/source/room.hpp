@@ -21,9 +21,9 @@
 
 // MARK: -
 struct player {
-	player(conn_io* qcon, const qstring& pid) : qconnection(qcon), pid(pid) {}
+	player(qconn_io* qcon, const qstring& pid) : qconnection(qcon), pid(pid) {}
 	~player() { debug_print(LOG_LEVEL_3, __LOGTAG__, "player destructor"); }
-	conn_io* qconnection;
+	qconn_io* qconnection;
 	qstring pid;
 };
 
@@ -41,6 +41,7 @@ class roomserver_interface {
    public:
 	virtual void onroom_pre_start(room* r) = 0;
 	virtual struct ev_loop* get_netowrk_main_loop() = 0;
+	inline virtual observer_qserver_events* get_main_observer() = 0;
 };
 
 class room_interface {
@@ -78,16 +79,16 @@ class room : public room_interface, public qtimer_scheduler {
 	room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~room();
 
-	ssize_t try_add_connection(conn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val = 0);
-	ssize_t remove_connection(conn_io* qconnection);
-	player* get_player(conn_io* qconnection);
+	ssize_t try_add_connection(qconn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val = 0);
+	ssize_t remove_connection(qconn_io* qconnection);
+	player* get_player(qconn_io* qconnection);
 	inline bool is_min_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MIN_PLAYERS; }
 	inline bool is_max_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MAX_PLAYERS; }
 	inline ssize_t get_playermap_count() { return playermap.size(); }
 	states get_state() { return state; }
 	const qstring& get_state_string();
 	bool is_state(states state) { return this->state == state; }
-	void kick_all_except(conn_io* qconnection);
+	void kick_all_except(qconn_io* qconnection);
 	void print_info();
 	ev_tstamp since_creation();
 
@@ -130,7 +131,8 @@ class room : public room_interface, public qtimer_scheduler {
 
 	const roomconfig ROOM_CONFIG;
 	states state = ROOM_UNINITIALISED;
-	roomserver_interface* roomserverinterface;
+	roomserver_interface* roomserverinterface = nullptr;
+	observer_qserver_events* observer = nullptr;
 	static int room_id_counter;
 	qstring states_string[4] = {"uninitialised", "waiting", "start", "end"};
 	qtimer* count_down_timer = nullptr;	 // Note :- Do not try to access this timer outside the waiting period, since it may get destroyed by the scheduler.
