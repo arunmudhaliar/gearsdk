@@ -61,9 +61,9 @@ int32_t main(int32_t argc, const char* argv[]) {
 			UNUSED(timer);
 			UNUSED(creation_time);
 			// debug_print(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
-			if (server.is_run()) {
-				ev_break(loop, EVBREAK_ONE);
-			}
+			// if (server.is_run()) {
+			//      ev_break(loop, EVBREAK_ONE);
+			// }
 		},
 		15);
 

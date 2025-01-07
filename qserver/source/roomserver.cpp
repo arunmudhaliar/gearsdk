@@ -224,7 +224,7 @@ void roomserver::onroom_pre_start(room* r) {
 	}
 }
 
-void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data) {
+void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection, rapidjson::Document& doc, void* user_data) {
 	msg_room_match_request rq;
 	if (!rq.deserialize(doc)) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:process_match_request - packet deserialize failed !!!. returning.");
@@ -237,7 +237,7 @@ void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, conn_io* 
 	do_process_roomjoin(qconnection, rq);
 }
 
-void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_io* qconnection, rapidjson::Document& doc, void* user_data) {
+void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection, rapidjson::Document& doc, void* user_data) {
 	UNUSED(doc);
 	msg_room_server_shutdown* room_server_shutdown_msg = msg_parser.parse<msg_room_server_shutdown>(recv_len, buf);
 	if (room_server_shutdown_msg) {
@@ -251,7 +251,7 @@ void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, conn_i
 	}
 }
 
-void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* qconnection) {
+void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
 	if ((qconnection->user_data & FLAG_ROOM_CONFIG_RECEIVED) == 0) {
 		// check if he is a fresh connection or not
 		std::map<unsigned, ev_tstamp>::iterator itr_found = new_connections.end();
@@ -308,11 +308,11 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, conn_io* q
 	room_ptr->pass_message_to_room(player_ptr, qstring(buf, recv_len));
 }
 
-void roomserver::onconnection_connect(conn_io* qconnection) {
+void roomserver::onconnection_connect(qconn_io* qconnection) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:onconnection_connect - incoming connection %0x", qconnection->cid_hash_val);
 }
 
-void roomserver::onconnection_connected(conn_io* qconnection) {
+void roomserver::onconnection_connected(qconn_io* qconnection) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:onconnection_connected - connected %0x", qconnection->cid_hash_val);
 	new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
 }
@@ -327,7 +327,7 @@ room* roomserver::find_room(int room_id) {
 	return nullptr;
 }
 
-void roomserver::do_process_roomjoin(conn_io* qconnection, const msg_room_match_request& room_match_request_msg) {
+void roomserver::do_process_roomjoin(qconn_io* qconnection, const msg_room_match_request& room_match_request_msg) {
 	const msg_room_config& room_config_msg = room_match_request_msg.room_config;
 	// check if he was part of any active room.
 	room* room_ptr = nullptr;
@@ -431,7 +431,7 @@ room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	return room_ptr;
 }
 
-void roomserver::onconnection_destroy(conn_io* qconnection) {
+void roomserver::onconnection_destroy(qconn_io* qconnection) {
 	room* room_ptr = nullptr;
 	std::map<unsigned, room*>::iterator iterator = connection_map.find(qconnection->cid_hash_val);
 	if (iterator != connection_map.end()) {

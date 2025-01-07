@@ -33,6 +33,7 @@ INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" -I "$(QUTILS_SRCDIR)" -I "$(QH3_CLIENT_SR
 SRCDIR = .
 QSRCDIR = ./../qserver/source
 SRCS = $(SRCDIR)/serverplugin.cpp \
+$(SRCDIR)/plugin_gameserver.cpp \
 $(SRCDIR)/../qh3server/qh3server/qh3server.cpp \
 $(SRCDIR)/../qh3server/qh3server/qh3router.cpp \
 $(SRCDIR)/../qh3server/qh3server/http3_command_server.cpp \
