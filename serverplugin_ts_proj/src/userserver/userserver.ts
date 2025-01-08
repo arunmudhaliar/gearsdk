@@ -8,9 +8,10 @@ import qzookeeper from '../helpers/qzookeeper';
 import { debug_print, debug_error, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
 import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
+import * as filelogger from '../helpers/filelogger';
 
 export namespace server {
-    export type type_api_callback = (native_server: Buffer, conn: Buffer, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
+    export type type_api_callback = (native_server: serversdk.qh3server_ptr, conn: Buffer, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
 
     export interface interface_userserver {
         get_mongo_driver(): qmongo | null;
@@ -55,20 +56,20 @@ export namespace server {
             return this.zkconfig;
         }
 
-        protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
+        protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: serversdk.qh3server_ptr) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
         }) as unknown as serversdk.type_on_server_pre_start;
-        protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: Buffer, ip: string, port: number) => {
+        protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: serversdk.qh3server_ptr, ip: string, port: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
             await this.hiredis?.set_hash_value(`servers:${serversdk.serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
         }) as unknown as serversdk.type_on_server_start;
-        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: Buffer) => {
+        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: serversdk.qh3server_ptr) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
         }) as unknown as serversdk.type_on_server_stop;
-        protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: Buffer, error_code: number) => {
+        protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: serversdk.qh3server_ptr, error_code: number) => {
             debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as serversdk.type_on_server_error;
-        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: Buffer, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
+        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
 

@@ -18,12 +18,6 @@
 namespace gsdk {
 namespace server {
 
-#if PLATFORM == PLATFORM_WINDOWS
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default"))) __attribute__((unused))
-#endif
-
 class qh3plugin_router_event_listener : public observer_router_events {
    public:
 	~qh3plugin_router_event_listener() {}
@@ -99,12 +93,14 @@ EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const
 							qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb);
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);
 EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
-EXPORT int test_func();
 void* spawn_qh3router_internal(void* data);
 void* spawn_qh3server_internal(void* data);
 EXPORT void qh3server_try_send_response(qh3server*, conn_io_qh3* conn, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
 EXPORT unsigned int get_live_connection_count(qh3server*);
 EXPORT const char* get_device_public_ip();
+EXPORT uint64_t qh3server_logfile(qh3server*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);
+EXPORT size_t qh3server_stats_count(qh3server* server, const char* counter, long count_val, const char* session, const char* pid, const char* version = "", const char* epic = "", const char* myth = "", const char* legend = "",
+                    const char* story = "", const char* message = "");
 }
 
 }  // namespace server
