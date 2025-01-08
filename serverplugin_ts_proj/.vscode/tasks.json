@@ -2,14 +2,30 @@
 	"version": "2.0.0",
 	"tasks": [
 	  {
-		"label": "tsc: watch",
+		"label": "build:debug",
 		"type": "shell",
-		"command": "source ~/.nvm/nvm.sh && npm run watch",  // Load nvm and then run npm
+		"command": "source ~/.nvm/nvm.sh && npm run watch -- -p tsconfig.debug.json", // Load nvm and then run npm
 		"isBackground": true,
-		"problemMatcher": ["$tsc-watch"],
+		"problemMatcher": [
+			"$tsc-watch"
+		],
 		"group": {
-		  "kind": "build",
-		  "isDefault": true
+			"kind": "build",
+			"isDefault": true
+		},
+		"options": {
+			"env": {
+				"PATH": "~/.nvm/versions/node/v16.16.0/bin:${env:PATH}"
+			}
+		}
+	},
+	{
+		"label": "build:release",
+		"type": "shell",
+		"command": "source ~/.nvm/nvm.sh && npm run build:release -- -p tsconfig.json && npm run start:release", // Load nvm and then run npm
+		"isBackground": false,
+		"group": {
+			"kind": "build"
 		},
 		"options": {
 			"env": {

@@ -4,23 +4,42 @@
       {
         "type": "node",
         "request": "launch",
-        "name": "Launch qh3server SDK",
+        "name": "Debug - Launch serverplugin SDK",
         "program": "${workspaceFolder}/dist/app.js",
         "env": {
           "DYLD_LIBRARY_PATH": "${workspaceFolder}/../serverplugin"
         },
-        "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+        "outFiles": [
+          "${workspaceFolder}/dist/**/*.js"
+        ],
         "sourceMaps": true,
         "runtimeVersion": "16.16.0",
         "runtimeExecutable": "node",
-        "preLaunchTask": "tsc: watch",
+        "preLaunchTask": "build:debug",
         "runtimeArgs": [
           "--trace-exit"
-      ],
-      "outputCapture": "std"
+        ],
+        "outputCapture": "std"
       },
       {
-        "name": "Debug C++ from Node.js",
+        "type": "node",
+        "request": "launch",
+        "name": "Release - Launch serverplugin SDK",
+        "program": "${workspaceFolder}/dist/app.js",
+        "env": {
+          "DYLD_LIBRARY_PATH": "${workspaceFolder}/../serverplugin"
+        },
+        "outFiles": [
+          "${workspaceFolder}/dist/**/*.js"
+        ],
+        "sourceMaps": false,
+        "runtimeVersion": "16.16.0",
+        "runtimeExecutable": "node",
+        "preLaunchTask": "build:release",
+        "outputCapture": "std"
+      },
+      {
+        "name": "Debug serverplugin C++ from Node.js",
         "type": "cppdbg",
         "request": "attach",
         "program": "/Users/amudaliar/.nvm/versions/node/v16.16.0/bin/node",
