@@ -56,14 +56,20 @@ namespace app {
 
         public async run(): Promise<void> {
             try {
-                await this.start_router();
+                // await this.start_router();
                 // await this.start_userserver();
-                // await this.start_gameserver();
+                await this.start_gameserver();
             } catch (error) {
                 debug_error(server_app.__LOGTAG__, `Error starting server: ${error}`);
             }
         }
     }
+}
+
+if (process.env.NODE_ENV === "production") {
+    console.log("Running in production mode");
+} else {
+    console.log("Running in development mode");
 }
 
 export const app_instance = new app.server_app();
