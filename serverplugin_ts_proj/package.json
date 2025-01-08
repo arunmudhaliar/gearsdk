@@ -2,7 +2,7 @@
     "name": "serverplugin-ts",
     "version": "1.0.0",
     "description": "A project using ffi-napi and ref-napi with TypeScript.",
-    "main": "dist/serverplugin.js",
+    "main": "dist/app.js",
     "scripts": {
         "build": "tsc",
         "build:debug": "tsc",

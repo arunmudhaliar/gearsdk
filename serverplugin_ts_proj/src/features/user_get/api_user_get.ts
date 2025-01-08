@@ -50,7 +50,12 @@ class api_user_get implements server.interface_api {
 
         let gservers_map: Map<string, string[]> = new Map<string, string[]>();
         await api_user_get.getgservers(user_server_interface, gservers_map);
-        user_get_msg_respose.gservers = Object.fromEntries(gservers_map);
+        user_get_msg_respose.gservers = Array.from(gservers_map.entries()).map(([addr, ports]) => {
+            return {
+                addr,      // The key of the Map (gservers:15.206.79.30)
+                ports,     // The array of ports (e.g., ["172.17.0.4:4000"])
+            };
+        });
 
         const query_result = await user_server_interface.get_mongo_driver()?.find_and_upsert(
             'users',
