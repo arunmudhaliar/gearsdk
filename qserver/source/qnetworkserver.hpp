@@ -146,7 +146,9 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	void network_server_end();
 	inline size_t get_connection_count() { return conns ? HASH_COUNT(conns->h) : 0; }
 	inline bool is_log_quiche() override { return false; }
-
+    qcustomlogger* get_file_logger() { return &logger; }
+    qstatslogger* get_stats_loggeer() { return &stats_logger; }
+    
    protected:
 	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
@@ -164,8 +166,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline observer_qserver_events* get_observer() final { return server_event_observer; }
 	void exit_services_gracefully();
 	const struct runserverconfig& get_run_server_config() { return run_server_config; }
-	qcustomlogger* get_file_logger() { return &logger; }
-
+    
 	static int run_id;
 	qcustomlogger logger;
 	qstatslogger stats_logger;

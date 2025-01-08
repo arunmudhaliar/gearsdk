@@ -16,12 +16,6 @@
 namespace gsdk {
 namespace server {
 
-#if PLATFORM == PLATFORM_WINDOWS
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default"))) __attribute__((unused))
-#endif
-
 class qplugin_qserver_event_listener : public observer_qserver_events {
 public:
     ~qplugin_qserver_event_listener() {}
@@ -121,7 +115,10 @@ EXPORT int spawn_qserver(const char* server_address, const char* redis_address, 
                          qplugin_qserver_event_listener::type_room_event_end room_event_end_cb,
                          qplugin_qserver_event_listener::type_room_event_countdown_to_start room_event_countdown_to_start_cb,
                          qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb);
-    void* spawn_qserver_internal(void* data);
+void* spawn_qserver_internal(void* data);
+EXPORT uint64_t qserver_logfile(qnetworkserver*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);
+EXPORT size_t qserver_stats_count(qnetworkserver* server, const char* counter, long count_val, const char* session, const char* pid, const char* version = "", const char* epic = "", const char* myth = "", const char* legend = "",
+                    const char* story = "", const char* message = "");
 }
 }}
 #endif /* plugin_gameserver_hpp */

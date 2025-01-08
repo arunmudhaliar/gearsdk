@@ -3,9 +3,6 @@ import { serversdk } from "../helpers/serversdk";
 import * as ffi from 'ffi-napi';
 
 export namespace server {
-    export class room {
-
-    }
     export class gameserver {
         private static __LOGTAG__: string = `gameserver`;
         private qserver_config: serversdk.qserver_input_config = {
@@ -18,48 +15,48 @@ export namespace server {
 
         // private rooms: Map<Buffer, Map<Buffer, room>> = new Map<Buffer, Map<Buffer, room>>();
 
-        protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: Buffer) => {
+        protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: serversdk.qserver_ptr) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_pre_start`);
         }) as unknown as serversdk.type_on_qserver_pre_start;
-        protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: Buffer, ip: string, port: number) => {
+        protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: serversdk.qserver_ptr, ip: string, port: number) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_start ${ip}:${port}`);
         }) as unknown as serversdk.type_on_qserver_start;
-        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: Buffer) => {
+        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: serversdk.qserver_ptr) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_stop:`);
         }) as unknown as serversdk.type_on_qserver_stop;
-        protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: Buffer, error_code: number) => {
+        protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: serversdk.qserver_ptr, error_code: number) => {
             debug_error(gameserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as serversdk.type_on_qserver_error;
 
-        protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: Buffer, room: number) => {
+        protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
             debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_create called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_create;
 
-        protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: Buffer, room: number) => {
+        protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
             debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_start called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_start;
 
-        protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: Buffer, room: number, pid: string, cid_hash: number) => {
+        protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
             debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_player_added called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
         }) as unknown as serversdk.type_on_room_event_player_added;
 
-        protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint, 'string'], (native_server: Buffer, room: number, pid: string, cid_hash: number, message: string) => {
+        protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint, 'string'], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number, message: string) => {
             debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_message called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}, msg:${message}`);
         }) as unknown as serversdk.type_on_room_event_message;
 
-        protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: Buffer, room: number, pid: string, cid_hash: number) => {
+        protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
             debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_player_removed called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
         }) as unknown as serversdk.type_on_room_event_player_removed;
 
-        protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: Buffer, room: number) => {
+        protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
             debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_end called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_end;
 
-        protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.int, serversdk.int], (native_server: Buffer, room: number, count: number, max_count: number) => {
+        protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.int, serversdk.int], (native_server: serversdk.qserver_ptr, room: number, count: number, max_count: number) => {
             debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_countdown_to_start called r:${room} - ${count}/${max_count}`);
         }) as unknown as serversdk.type_on_room_event_countdown_to_start;
 
-        protected room_event_countdown_cancelled = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: Buffer, room: number) => {
+        protected room_event_countdown_cancelled = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
             debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_countdown_cancelled called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_countdown_cancelled;
 

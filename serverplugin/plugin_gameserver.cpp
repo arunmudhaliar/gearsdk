@@ -176,3 +176,12 @@ void* gsdk::server::spawn_qserver_internal(void* data) {
     GX_DELETE(listener);
     pthread_exit(0);
 }
+
+EXPORT uint64_t gsdk::server::qserver_logfile(qnetworkserver* server, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message) {
+    return server->get_file_logger()->log(lvl, type, tag, pid, roomid, message);
+}
+
+EXPORT size_t gsdk::server::qserver_stats_count(qnetworkserver* server, const char* counter, long count_val, const char* session, const char* pid, const char* version, const char* epic, const char* myth, const char* legend,
+                           const char* story, const char* message) {
+    return server->get_stats_loggeer()->server_count(counter, count_val, session, pid, version, epic, myth, legend, story, message);
+}

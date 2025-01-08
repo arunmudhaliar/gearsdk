@@ -248,11 +248,15 @@ EXPORT unsigned long gsdk::server::mod_crc32(uLong adler, const Bytef* buf, z_si
 	return essentials::mod_crc32_z(adler, buf, len);
 }
 
-EXPORT int gsdk::server::test_func() {
-	debug_print(LOG_LEVEL_0, __LOGTAG__, "test_func");
-	return 100;
-}
-
 EXPORT const char* gsdk::server::get_device_public_ip() {
 	return gsdk::device::public_ip;
+}
+
+EXPORT uint64_t gsdk::server::qh3server_logfile(qh3server* server, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message) {
+    return server->get_file_logger()->log(lvl, type, tag, pid, roomid, message);
+}
+
+EXPORT size_t gsdk::server::qh3server_stats_count(qh3server* server, const char* counter, long count_val, const char* session, const char* pid, const char* version, const char* epic, const char* myth, const char* legend,
+                           const char* story, const char* message) {
+    return server->get_stats_loggeer()->server_count(counter, count_val, session, pid, version, epic, myth, legend, story, message);
 }

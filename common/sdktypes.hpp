@@ -40,6 +40,12 @@
 #error "Platform not supported."
 #endif
 
+#if PLATFORM == PLATFORM_WINDOWS
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __attribute__((visibility("default"))) __attribute__((unused))
+#endif
+
 #include <assert.h>	 // assert
 #include <filesystem>
 
