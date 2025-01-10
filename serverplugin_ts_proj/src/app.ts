@@ -6,6 +6,8 @@ import api_user_get from './features/user_get/api_user_get';
 import api_whoami from './features/user_get/api_whoami';
 import api_ping from './features/user_get/api_ping';
 import { debug_error } from './helpers/sdktypes';
+import { server_config_reader } from './helpers/serverconfig-reader';
+import * as path from 'path';
 
 namespace app {
     export class server_app {
@@ -68,8 +70,10 @@ namespace app {
 
 if (process.env.NODE_ENV === "production") {
     console.log("Running in production mode");
+    server_config_reader.get_instance().load_config('./serversonfig.rel.inf');
 } else {
     console.log("Running in development mode");
+    server_config_reader.get_instance().load_config('./serversonfig.rel.inf');
 }
 
 export const app_instance = new app.server_app();

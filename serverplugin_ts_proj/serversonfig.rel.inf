@@ -1,0 +1,15 @@
+# app
+app_id = "serverplugin-app"
+
+# router
+router_address = "127.0.0.1:4004"
+router_mongodb_uri = "mongodb://3.109.144.159:27017"
+router_redis_uri = "3.109.144.159:6379"
+router_zk_uri = "3.109.144.159:2181"
+command_port = 4010
+router_port_return = 4005
+
+# gameserver
+gameserver_address = "127.0.0.1:4000"
+gameserver_redis_uri = "3.109.144.159:6379"
+gameserver_zk_uri = "3.109.144.159:2181"

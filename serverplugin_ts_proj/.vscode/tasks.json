@@ -17,7 +17,8 @@
 			"env": {
 				"PATH": "~/.nvm/versions/node/v16.16.0/bin:${env:PATH}"
 			}
-		}
+		},
+		"dependsOn": "(Debug Make C++) Build serverplugin with Clang"
 	},
 	{
 		"label": "build:release",
@@ -31,8 +32,78 @@
 			"env": {
 			"PATH": "~/.nvm/versions/node/v16.16.0/bin:${env:PATH}"
 			}
-		}
-	  }
+		},
+		"dependsOn": "(Release Make C++) Build serverplugin with Clang"
+	},
+	{
+		"label": "(Debug Make C++) Build serverplugin with Clang",
+		"type": "shell",
+		"command": "make",
+		"args": [
+			"-C",
+			"../serverplugin",
+			"debug",
+			"DDEV_BUILD=1",
+			"LOG_LEVEL=2"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": false
+		},
+		"problemMatcher": [
+			"$gcc"
+		],
+		"options": {
+			"env": {
+				"CXX": "clang++",
+				"CC": "clang"
+			}
+		},
+		"dependsOn": "Clean serverplugin",
+		"detail": "Build debug serverplugin with Clang",
+	},
+	{
+		"label": "(Release Make C++) Build serverplugin with Clang",
+		"type": "shell",
+		"command": "make",
+		"args": [
+			"-C",
+			"../serverplugin",
+			"release",
+			"DPROD_BUILD=1",
+			"LOG_LEVEL=2"
+		],
+		"group": {
+			"kind": "build",
+			"isDefault": false
+		},
+		"problemMatcher": [
+			"$gcc"
+		],
+		"options": {
+			"env": {
+				"CXX": "clang++",
+				"CC": "clang"
+			}
+		},
+		"dependsOn": "Clean serverplugin",
+		"detail": "Build release serverplugin with Clang",
+	},
+	{
+		"label": "Clean serverplugin",
+		"type": "shell",
+		"command": "make",
+		"args": [
+			"-C",
+			"../serverplugin",
+			"clean"
+		],
+		"group": "build",
+		"problemMatcher": [
+			"$gcc"
+		],
+		"detail": "Clean the project."
+	}
 	]
   }
   

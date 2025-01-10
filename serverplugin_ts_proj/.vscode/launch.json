@@ -42,7 +42,7 @@
         "name": "Debug serverplugin C++ from Node.js",
         "type": "cppdbg",
         "request": "attach",
-        "program": "/Users/amudaliar/.nvm/versions/node/v16.16.0/bin/node",
+        "program": "~/.nvm/versions/node/v16.16.0/bin/node",
         "processId": "${command:pickProcess}",
         "targetArchitecture": "x86_64",
         "MIMode": "lldb", // Use "gdb" if you are on Linux and prefer GDB

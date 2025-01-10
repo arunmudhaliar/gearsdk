@@ -1,19 +1,20 @@
 import * as ffi from 'ffi-napi';
 import { serversdk } from '../helpers/serversdk';
 import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
+import { server_config_reader } from '../helpers/serverconfig-reader';
 
 export namespace server {
     export class router {
         private static __LOGTAG__: string = `router`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: `127.0.0.1:4004`,
-            mongodb_uri: `mongodb://3.109.144.159:27017`,
-            redis_address: `3.109.144.159:6379`,
-            zk_uri: `3.109.144.159:2181`,
+            router_address: server_config_reader.get_instance().get_value('router_address'),
+            mongodb_uri: server_config_reader.get_instance().get_value('router_mongodb_uri'),
+            redis_address: server_config_reader.get_instance().get_value('router_redis_uri'),
+            zk_uri: server_config_reader.get_instance().get_value('router_zk_uri'),
             root_dir: process.cwd(),
-            command_port: 4010,
-            router_port_return: 4005,
-            app_id: `serverplugin-app`
+            command_port: server_config_reader.get_instance().get_value_as_number('command_port', 4010),
+            router_port_return: server_config_reader.get_instance().get_value_as_number('router_port_return', 4005),
+            app_id: server_config_reader.get_instance().get_value('app_id')
         };
         private on_router_start_cb: (native_router: Buffer) => Promise<void>;
         constructor(on_router_start_cb: (native_router: Buffer) => Promise<void>) {

@@ -567,6 +567,12 @@ void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
 	}
 }
 
+struct conn_io_qh3* qh3server::get_conn(uint8_t* dcid, uint16_t dcid_len) {
+	struct conn_io_qh3* conn_io = NULL;
+	HASH_FIND(hh, conns->h, dcid, dcid_len, conn_io);
+	return conn_io;
+}
+
 void qh3server::try_send_response(struct conn_io_qh3* conn_io) {
 	send_response(conn_io);
 	flush_egress(conn_io);

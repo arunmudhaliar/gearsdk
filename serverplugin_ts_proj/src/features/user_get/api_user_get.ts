@@ -14,7 +14,7 @@ class api_user_get implements server.interface_api {
     public get_post_cb(): server.type_api_callback {
         return this.parse_user_get;
     }
-    private async parse_user_get(native_server: serversdk.qh3server_ptr, conn: Buffer, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number): Promise<string | null> {
+    private async parse_user_get(native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number): Promise<string | null> {
         let thiz:api_user_get = api_instance as api_user_get;
 
         const user_get_msg_rq = plainToClass(rq_msg_user_get, JSON.parse(buffer));
