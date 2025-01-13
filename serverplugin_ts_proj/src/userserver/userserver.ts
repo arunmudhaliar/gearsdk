@@ -9,9 +9,10 @@ import { debug_print, debug_error, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/s
 import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
 import * as filelogger from '../helpers/filelogger';
+import { server_config_reader } from '../helpers/serverconfig-reader';
 
 export namespace server {
-    export type type_api_callback = (native_server: serversdk.qh3server_ptr, conn: Buffer, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
+    export type type_api_callback = (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
 
     export interface interface_userserver {
         get_mongo_driver(): qmongo | null;
@@ -28,15 +29,16 @@ export namespace server {
     export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: `127.0.0.1:4004`,
-            mongodb_uri: `mongodb://3.109.144.159:27017`,
-            redis_address: `3.109.144.159:6379`,
-            zk_uri: `3.109.144.159:2181`,
+            router_address: server_config_reader.get_instance().get_value('router_address'),
+            mongodb_uri: server_config_reader.get_instance().get_value('router_mongodb_uri'),
+            redis_address: server_config_reader.get_instance().get_value('router_redis_uri'),
+            zk_uri: server_config_reader.get_instance().get_value('router_zk_uri'),
             root_dir: process.cwd(),
-            command_port: 4010,
-            router_port_return: 4005,
-            app_id: `serverplugin-app`
+            command_port: server_config_reader.get_instance().get_value_as_number('command_port', 4010),
+            router_port_return: server_config_reader.get_instance().get_value_as_number('router_port_return', 4005),
+            app_id: server_config_reader.get_instance().get_value('app_id')
         };
+
         private mongo: qmongo | null = null;
         private hiredis: qhiredis | null = null;
         private qzk: qzookeeper | null = null;
@@ -69,19 +71,19 @@ export namespace server {
         protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: serversdk.qh3server_ptr, error_code: number) => {
             debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as serversdk.type_on_server_error;
-        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
+        protected on_server_parse = ffi.Callback('void', ['pointer', serversdk.uint8_p, serversdk.uint16, 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
             let result: string | null = null;
 
             if (this.api_callbacks.has(path)) {
                 let api_instance: interface_api | any = this.api_callbacks.get(path);
-                result = await api_instance?.get_post_cb()?.(native_server, conn, this, api_instance, path, buffer, len, headers, header_buffer_size);
+                result = await api_instance?.get_post_cb()?.(native_server, cid, cid_len, this, api_instance, path, buffer, len, headers, header_buffer_size);
             }
 
             if (result) {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, conn, result, result.length, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, result, result.length, null, 0);
             } else {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, conn, `{}`, 2, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, `{}`, 2, null, 0);
             }
 
             // const response_string = `{msg:\"test message\"}`;

@@ -23,7 +23,7 @@ class bridge_command_center {
 
 struct server_config_in {
 	server_config_in(const qstring& host, const qstring& port, const qstring& mongodb_uri, const qstring& redis_ip, uint16_t redis_port_, const fs::path& root_dir, struct addrinfo* router, uint16_t command_port, const qstring& router_port,
-					 const qstring& zk_uri, uint16_t router_port_return, const qstring& app_id)
+					 const qstring& zk_uri, uint16_t router_port_return, const qstring& app_id, void* user_arg = nullptr)
 		: host(host),
 		  port(port),
 		  mongodb_uri(mongodb_uri),
@@ -35,7 +35,8 @@ struct server_config_in {
 		  command_port(command_port),
 		  router_port(router_port),
 		  router_port_return(router_port_return),
-		  app_id(app_id) {}
+		  app_id(app_id),
+		  user_arg(user_arg) {}
 
 	server_config_in(const server_config_in& config)
 		: host(config.host),
@@ -51,7 +52,8 @@ struct server_config_in {
 		  ref(config.ref),
 		  router_port(config.router_port),
 		  router_port_return(config.router_port_return),
-		  app_id(config.app_id) {}
+		  app_id(config.app_id),
+		  user_arg(config.user_arg) {}
 
 	void print() {
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "server_config_in values:\n{");
@@ -71,6 +73,7 @@ struct server_config_in {
 		debug_raw(LOG_LEVEL_0, qstring::format_string("Router Port: %s", router_port.c_str()).c_str());
 		debug_raw(LOG_LEVEL_0, qstring::format_string("Router Port Return: %u", router_port_return).c_str());
 		debug_raw(LOG_LEVEL_0, qstring::format_string("App ID: %s\n}", app_id.c_str()).c_str());
+		debug_raw(LOG_LEVEL_0, qstring::format_string("User Arg: %s", user_arg ? "Set" : "Not Set").c_str());
 	}
 
 	qstring host = "localhost";
@@ -89,6 +92,7 @@ struct server_config_in {
 	qstring router_port;
 	uint16_t router_port_return = 4005;
 	qstring app_id = "default";
+	void* user_arg = nullptr;
 };
 
 struct route {

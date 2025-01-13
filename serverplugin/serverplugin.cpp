@@ -17,25 +17,25 @@
 // qh3plugin_router_event_listener
 void gsdk::server::qh3plugin_router_event_listener::on_router_pre_start(qh3router* router) {
 	if (cb_on_router_pre_start) {
-		cb_on_router_pre_start(router);
+		cb_on_router_pre_start(router, router->get_server_config().user_arg);
 	}
 }
 
 void gsdk::server::qh3plugin_router_event_listener::on_router_start(qh3router* router) {
 	if (cb_on_router_start) {
-		cb_on_router_start(router);
+		cb_on_router_start(router, router->get_server_config().user_arg);
 	}
 }
 
-void gsdk::server::qh3plugin_router_event_listener::on_router_stop() {
+void gsdk::server::qh3plugin_router_event_listener::on_router_stop(qh3router* router) {
 	if (cb_on_router_stop) {
-		cb_on_router_stop();
+		cb_on_router_stop(router, router->get_server_config().user_arg);
 	}
 }
 
-void gsdk::server::qh3plugin_router_event_listener::on_router_error(int error_code) {
+void gsdk::server::qh3plugin_router_event_listener::on_router_error(qh3router* router, int error_code) {
 	if (cb_on_router_error) {
-		cb_on_router_error(error_code);
+		cb_on_router_error(router, router->get_server_config().user_arg, error_code);
 	}
 }
 
@@ -66,7 +66,7 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* s
 
 void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
 	if (cb_on_server_parse) {
-		cb_on_server_parse(server, conn, path, buffer, len, headers_buffer, headers_buffer_size);
+		cb_on_server_parse(server, (uint8_t *)conn->cid, sizeof(conn->cid), path, buffer, len, headers_buffer, headers_buffer_size);
 	}
 }
 
@@ -130,11 +130,11 @@ EXPORT void gsdk::server::pre_init_serverplugin_sdk() {
 
 EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 										  qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
-										  qh3plugin_router_event_listener::type_on_router_error error_cb) {
+										  qh3plugin_router_event_listener::type_on_router_error error_cb, void* user_arg) {
 	qaddress router_addr(router_address);
 	qaddress redis_addr(redis_address);
 	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, router_addr.port, zk_uri,
-														  router_port_return, app_id);
+														  router_port_return, app_id, user_arg);
 	qh3plugin_router_event_listener* listener = DEBUG_NEW qh3plugin_router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
 	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_router_event_listener*>(config, listener);
 	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3router_internal, (void*) tuple_in) < 0) {
@@ -224,9 +224,12 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 	 */
 }
 
-EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, conn_io_qh3* conn_io, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
-	conn_io->http_response->set_payload(qstring(payload, len));
-	server->try_send_response(conn_io);
+EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
+    struct conn_io_qh3* conn_io = server->get_conn(cid, cid_len);
+    if (conn_io != nullptr) {
+        conn_io->http_response->set_payload(qstring(payload, len));
+        server->try_send_response(conn_io);
+    }
 }
 
 EXPORT unsigned int gsdk::server::get_live_connection_count(qh3server* server) {

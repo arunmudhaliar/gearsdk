@@ -11,7 +11,7 @@ class api_ping implements server.interface_api {
     public get_post_cb(): server.type_api_callback {
         return this.parse_ping;
     }
-    private async parse_ping(native_server: serversdk.qh3server_ptr, conn: Buffer, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number): Promise<string | null> {
+    private async parse_ping(native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number): Promise<string | null> {
         const ping_rq = plainToClass(rq_msg_ping, JSON.parse(buffer));
         const response_json = {
             pong:'qh3pluginserver',

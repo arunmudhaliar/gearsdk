@@ -20,6 +20,7 @@ export namespace serversdk {
     export const int = ref.types.int;
     export const uint = ref.types.uint;
     export const uint8 = ref.types.uint8;
+    export const uint8_p = ref.refType(uint8);
     export const uint16 = ref.types.uint16;
     export const uint64 = ref.types.uint64;
 
@@ -32,12 +33,13 @@ export namespace serversdk {
     const __LOGTAG__: string = `serversdk`;
 
     let lib_path: string;
+    let lib_debug: string = 'libserverplugin-debug';
+    let lib_release: string = 'libserverplugin';
+    let lib_serverplugin: string = (process.env.NODE_ENV === 'production') ? lib_release : lib_debug;
     if (process.platform === 'darwin') {
-        lib_path = path.join(__dirname, './../serverplugin/libserverplugin-debug.dylib');
-        // lib_path = path.join(__dirname, './../serverplugin/libserverplugin.dylib');         // release version
+        lib_path = path.join(__dirname, `./../serverplugin/${lib_serverplugin}.dylib`);
     } else if (process.platform === 'linux') {
-        lib_path = path.join(__dirname, './../serverplugin/libserverplugin-debug.so');
-        // lib_path = path.join(__dirname, './../serverplugin/libserverplugin.so');            // release version
+        lib_path = path.join(__dirname, `./../serverplugin/${lib_serverplugin}.so`);
     } else {
         throw new Error('unsupported platform');
     }
@@ -63,17 +65,17 @@ export namespace serversdk {
     }
 
     // router events
-    export type type_on_router_pre_start = (router: Buffer) => void;
-    export type type_on_router_start = (router: Buffer) => void;
-    export type type_on_router_stop = () => void;
-    export type type_on_router_error = (error_code: number) => void;
+    export type type_on_router_pre_start = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_start = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_stop = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_error = (router: Buffer, user_arg: Buffer, error_code: number) => void;
 
     // qh3server events
     export type type_on_server_pre_start = (server: qh3server_ptr) => void;
     export type type_on_server_start = (router: qh3server_ptr, ip: string, port: number) => void;
     export type type_on_server_stop = (server: qh3server_ptr) => void;
     export type type_on_server_error = (server: qh3server_ptr, error_code: number) => void;
-    export type type_on_server_parse = (server: qh3server_ptr, conn: Buffer, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
+    export type type_on_server_parse = (server: qh3server_ptr, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
 
     // qserver events
     export type type_on_qserver_pre_start = (server: qserver_ptr) => void;
@@ -107,7 +109,8 @@ export namespace serversdk {
             pre_start_cb: type_on_router_pre_start,
             start_cb: type_on_router_start,
             stop_cb: type_on_router_stop,
-            error_cb: type_on_router_error
+            error_cb: type_on_router_error,
+            user_arg: any
         ): void;
         spawn_qh3server(
             native_router: Buffer,
@@ -146,7 +149,7 @@ export namespace serversdk {
         ): number;
         get_crc32(str: string, len: number): number;
         mod_crc32(adler: number, buf: string | null, len: number): number;
-        qh3server_try_send_response(native_server: qh3server_ptr, conn: Buffer, payload: string, len: number, user_data: string | null, user_data_len: number): void;
+        qh3server_try_send_response(native_server: qh3server_ptr, cid: Buffer, cid_len: number, payload: string, len: number, user_data: string | null, user_data_len: number): void;
         get_live_connection_count(native_server: qh3server_ptr): number;
         get_device_public_ip(): string;
         qh3server_logfile(native_server: qh3server_ptr, lvl: log_lvls, type: elog_type, tag: string, pid: string, roomid: string, message: string): number;
@@ -161,12 +164,12 @@ export namespace serversdk {
     export const serverplugin = ffi.Library(lib_path, {
         setup_signal_handler: ['void', []],
         pre_init_serverplugin_sdk: ['void', []],
-        spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer']],
+        spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qserver: [int, ['string', 'string', 'string', 'string', 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         get_crc32: [ulong, ['string', int]],
         mod_crc32: [ulong, [ulong, 'string', size_t]],
-        qh3server_try_send_response: ['void', ['pointer', 'pointer', 'string', size_t, 'string', size_t]],
+        qh3server_try_send_response: ['void', ['pointer', uint8_p, uint16, 'string', size_t, 'string', size_t]],
         get_live_connection_count: [uint, ['pointer']],
         get_device_public_ip: ['string', []],
         qh3server_logfile: [uint64, ['pointer', int, int, 'string', 'string', 'string', 'string']],

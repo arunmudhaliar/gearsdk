@@ -1,4 +1,5 @@
 import { debug_error, debug_print, LOG_LEVEL_1, LOG_LEVEL_2, LOG_LEVEL_4 } from "../helpers/sdktypes";
+import { server_config_reader } from "../helpers/serverconfig-reader";
 import { serversdk } from "../helpers/serversdk";
 import * as ffi from 'ffi-napi';
 
@@ -6,11 +7,11 @@ export namespace server {
     export class gameserver {
         private static __LOGTAG__: string = `gameserver`;
         private qserver_config: serversdk.qserver_input_config = {
-            server_address: `127.0.0.1:4000`,
-            redis_address: `3.109.144.159:6379`,
-            zk_uri: `3.109.144.159:2181`,
+            server_address: server_config_reader.get_instance().get_value('gameserver_address'),
+            redis_address: server_config_reader.get_instance().get_value('gameserver_redis_uri'),
+            zk_uri: server_config_reader.get_instance().get_value('gameserver_zk_uri'),
             root_dir: process.cwd(),
-            app_id: `serverplugin-app`
+            app_id: server_config_reader.get_instance().get_value('app_id')
         };
 
         // private rooms: Map<Buffer, Map<Buffer, room>> = new Map<Buffer, Map<Buffer, room>>();
@@ -29,15 +30,15 @@ export namespace server {
         }) as unknown as serversdk.type_on_qserver_error;
 
         protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_create called r:${room}`);
+            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_create called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_create;
 
         protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_start called r:${room}`);
+            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_start called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_start;
 
         protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
-            debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_player_added called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
+            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_player_added called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
         }) as unknown as serversdk.type_on_room_event_player_added;
 
         protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint, 'string'], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number, message: string) => {
@@ -45,11 +46,11 @@ export namespace server {
         }) as unknown as serversdk.type_on_room_event_message;
 
         protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
-            debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_player_removed called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
+            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_player_removed called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
         }) as unknown as serversdk.type_on_room_event_player_removed;
 
         protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_1, gameserver.__LOGTAG__, `room_event_end called r:${room}`);
+            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_end called r:${room}`);
         }) as unknown as serversdk.type_on_room_event_end;
 
         protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.int, serversdk.int], (native_server: serversdk.qserver_ptr, room: number, count: number, max_count: number) => {

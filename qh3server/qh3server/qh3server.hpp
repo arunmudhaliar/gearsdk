@@ -107,6 +107,7 @@ class qh3server : public bridge_h3_connection {
 	qstatslogger* get_stats_loggeer() { return stats_logger; }
 	unsigned int get_live_connection_count() { return HASH_COUNT(conns->h); }
 	void try_send_response(struct conn_io_qh3* conn_io);
+	struct conn_io_qh3* get_conn(uint8_t* dcid, uint16_t dcid_len);
 
 	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
 			observer_qh3server_events* event_observer = nullptr);
