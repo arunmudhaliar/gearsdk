@@ -16,6 +16,9 @@
 #include <quiche.h>
 #include <uthash.h>
 
+#undef __LOGTAG__
+#define __LOGTAG__ "qh3server_structs"
+
 #define LOCAL_CONN_ID_LEN 16
 #undef ORIGINAL_CLIENT_ADDR_SZ
 #define ORIGINAL_CLIENT_ADDR_SZ (3 * sizeof(uint16_t))
@@ -89,7 +92,8 @@ struct conn_io_qh3 {
 		if (conn) {
 			bool is_closed = quiche_conn_is_closed(conn);
 			if (!is_closed) {
-				int close_result = quiche_conn_close(conn, true, 0, NULL, 0);
+				const char* reason = "closure by server";
+				int close_result = quiche_conn_close(conn, true, 0, (const uint8_t*) reason, strlen(reason));
 				if (close_result < 0) {
 					bool is_draining = quiche_conn_is_draining(conn);
 					if (!is_draining) {

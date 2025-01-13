@@ -34,10 +34,10 @@ class qh3router;
 class observer_router_events {
    public:
 	virtual ~observer_router_events() {};
-	virtual void on_router_pre_start(qh3router*) = 0;
-	virtual void on_router_start(qh3router*) = 0;
-	virtual void on_router_stop() = 0;
-	virtual void on_router_error(int error_code) = 0;
+	virtual void on_router_pre_start(qh3router* router) = 0;
+	virtual void on_router_start(qh3router* router) = 0;
+	virtual void on_router_stop(qh3router* router) = 0;
+	virtual void on_router_error(qh3router* router, int error_code) = 0;
 };
 
 class qh3router : public bridge_command_center, protected interface_qhiredis_async {
@@ -57,6 +57,7 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 
 	inline struct addrinfo* get_router_addrinfo() { return this->router; }
 	route* create_qh3server_route(const qstring& host, const qstring& port, pid_t child_process_id = -1);
+	inline server_config_in& get_server_config() { return config; }
 
    protected:
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;

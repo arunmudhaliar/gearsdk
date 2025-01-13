@@ -11,11 +11,11 @@
 
 #include "qh3router.hpp"
 
-#define ROUTER_EVENT_ERROR(error_code)                   \
-	do {                                                 \
-		if (event_observer) {                            \
-			event_observer->on_router_error(error_code); \
-		}                                                \
+#define ROUTER_EVENT_ERROR(thiz, error_code)                   \
+	do {                                                       \
+		if (event_observer && thiz) {                          \
+			event_observer->on_router_error(thiz, error_code); \
+		}                                                      \
 	} while (0)
 
 #define ROUTER_EVENT_PRE_START(thiz)                   \
@@ -32,11 +32,11 @@
 		}                                          \
 	} while (0)
 
-#define ROUTER_EVENT_STOP()                   \
-	do {                                      \
-		if (event_observer) {                 \
-			event_observer->on_router_stop(); \
-		}                                     \
+#define ROUTER_EVENT_STOP(thiz)                   \
+	do {                                          \
+		if (event_observer && thiz) {             \
+			event_observer->on_router_stop(thiz); \
+		}                                         \
 	} while (0)
 
 using namespace client;
@@ -55,7 +55,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	freeaddrinfo(router);
 	if (getaddrinfo(config.host.c_str(), config.port.c_str(), &HINTS, &router) != 0) {
 		debug_print_error(__LOGTAG__, "failed to resolve host");
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 	// return
@@ -64,7 +64,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		debug_print_error(__LOGTAG__, "failed to resolve host (port_return)");
 		freeaddrinfo(router);
 		router = nullptr;
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 	//
@@ -80,7 +80,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		freeaddrinfo(router_return);
 		router_return = nullptr;
 		router = nullptr;
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -91,7 +91,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -102,7 +102,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -118,7 +118,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		router_return = nullptr;
 		router = nullptr;
 		close(sock);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -130,7 +130,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		router = nullptr;
 		close(sock_return);
 		close(sock);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -142,7 +142,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		router = nullptr;
 		close(sock_return);
 		close(sock);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 	//
@@ -162,7 +162,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		shutdown_zk();
 		GX_DELETE(hiredis_async);
 		GX_DELETE(hiredis);
-		ROUTER_EVENT_ERROR(-1);
+		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
 
@@ -233,7 +233,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 			close(sock);
 			debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 			GX_DELETE(qzk);
-			ROUTER_EVENT_ERROR(-1);
+			ROUTER_EVENT_ERROR(this, -1);
 			return -1;
 		}
 #endif
@@ -248,7 +248,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		if (!zkconfig->load(config_path, qzk, "/qh3router")) {
 			debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
 			GX_DELETE(zkconfig);
-			ROUTER_EVENT_ERROR(-1);
+			ROUTER_EVENT_ERROR(this, -1);
 			return -1;
 		}
 		debug_print_important2(__LOGTAG__, "pre-start - finish:config");
@@ -265,7 +265,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 			close(sock);
 			shutdown_zk();
 			GX_DELETE(hiredis);
-			ROUTER_EVENT_ERROR(-1);
+			ROUTER_EVENT_ERROR(this, -1);
 			return -1;
 		}
 
@@ -293,7 +293,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 			close(sock);
 			shutdown_zk();
 			GX_DELETE(hiredis);
-			ROUTER_EVENT_ERROR(-1);
+			ROUTER_EVENT_ERROR(this, -1);
 			return -1;
 		}
 
@@ -328,7 +328,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		close(sock);
 		shutdown_zk();
 		debug_print_important2(__LOGTAG__, "Stop router !!!");
-		ROUTER_EVENT_STOP();
+		ROUTER_EVENT_STOP(this);
 		return 0;
 	} else {
 		freeaddrinfo(router);

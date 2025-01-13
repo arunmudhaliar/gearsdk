@@ -22,17 +22,17 @@ export namespace server {
         }
 
         // router events
-        protected on_router_pre_start = ffi.Callback('void', ['pointer'], (native_router: Buffer) => {
+        protected on_router_pre_start = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_pre_start`);
         }) as unknown as serversdk.type_on_router_pre_start;
-        protected on_router_start = ffi.Callback('void', ['pointer'], (native_router: Buffer) => {
+        protected on_router_start = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_start`);
             this.on_router_start_cb(native_router);
         }) as unknown as serversdk.type_on_router_start;
-        protected on_router_stop = ffi.Callback('void', [], () => {
+        protected on_router_stop = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_stop:`);
         }) as unknown as serversdk.type_on_router_stop;
-        protected on_router_error = ffi.Callback('void', [], (error_code: number) => {
+        protected on_router_error = ffi.Callback('void', ['pointer', 'pointer', 'int'], (native_router: Buffer, user_arg: Buffer, error_code: number) => {
             debug_error(router.__LOGTAG__, `on_router_error: ${error_code}`);
         }) as unknown as serversdk.type_on_router_error;
 
@@ -49,7 +49,8 @@ export namespace server {
                 this.on_router_pre_start,
                 this.on_router_start,
                 this.on_router_stop,
-                this.on_router_error
+                this.on_router_error,
+                serversdk.nullptr
             );
         }
     }

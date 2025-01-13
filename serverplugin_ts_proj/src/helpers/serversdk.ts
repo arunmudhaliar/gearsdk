@@ -65,10 +65,10 @@ export namespace serversdk {
     }
 
     // router events
-    export type type_on_router_pre_start = (router: Buffer) => void;
-    export type type_on_router_start = (router: Buffer) => void;
-    export type type_on_router_stop = () => void;
-    export type type_on_router_error = (error_code: number) => void;
+    export type type_on_router_pre_start = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_start = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_stop = (router: Buffer, user_arg: Buffer) => void;
+    export type type_on_router_error = (router: Buffer, user_arg: Buffer, error_code: number) => void;
 
     // qh3server events
     export type type_on_server_pre_start = (server: qh3server_ptr) => void;
@@ -109,7 +109,8 @@ export namespace serversdk {
             pre_start_cb: type_on_router_pre_start,
             start_cb: type_on_router_start,
             stop_cb: type_on_router_stop,
-            error_cb: type_on_router_error
+            error_cb: type_on_router_error,
+            user_arg: any
         ): void;
         spawn_qh3server(
             native_router: Buffer,
@@ -163,7 +164,7 @@ export namespace serversdk {
     export const serverplugin = ffi.Library(lib_path, {
         setup_signal_handler: ['void', []],
         pre_init_serverplugin_sdk: ['void', []],
-        spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer']],
+        spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qserver: [int, ['string', 'string', 'string', 'string', 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         get_crc32: [ulong, ['string', int]],
