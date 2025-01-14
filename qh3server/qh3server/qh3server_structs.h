@@ -104,6 +104,10 @@ struct conn_io_qh3 {
 			quiche_conn_free(conn);
 			conn = nullptr;
 		}
+		if (http3) {
+			quiche_h3_conn_free(http3);
+			http3 = nullptr;
+		}
 		GX_DELETE(http_response);
 		GX_DELETE(http_request);
 	}
