@@ -8,12 +8,13 @@ import api_ping from './features/user_get/api_ping';
 import { debug_error } from './helpers/sdktypes';
 import { server_config_reader } from './helpers/serverconfig-reader';
 import * as path from 'path';
+import { custom_gameserver } from './gameroom/custom_gameserver';
 
 namespace app {
     export class server_app {
         private static __LOGTAG__: string = `server_app`;
         private static instance: server_app;
-        private gameserver_instance?: qserver.gameserver;
+        private custom_gameserver_instance?: custom_gameserver;
         private router_instance?: routerserver.router;
         private userserver_instances?: qh3server.userserver[] = [];
 
@@ -25,8 +26,8 @@ namespace app {
         }
         private async on_router_start_cb(native_router: Buffer) {
             server_app.instance.start_userserver(native_router);
-            server_app.instance.start_userserver(native_router);
-            server_app.instance.start_userserver(native_router);
+            // server_app.instance.start_userserver(native_router);
+            // server_app.instance.start_userserver(native_router);
         }
 
         private async start_router(): Promise<void> {
@@ -48,19 +49,19 @@ namespace app {
         }
 
         private async start_gameserver(): Promise<void> {
-            if (this.gameserver_instance != null) {
-                debug_error(server_app.__LOGTAG__, `gameserver_instance not null !!!`);
+            if (this.custom_gameserver_instance != null) {
+                debug_error(server_app.__LOGTAG__, `custom_gameserver_instance not null !!!`);
                 return;
             }
-            this.gameserver_instance = new qserver.gameserver();
-            this.gameserver_instance.run();
+            this.custom_gameserver_instance = new custom_gameserver();
+            await this.custom_gameserver_instance.start_custom_gameserver();
         }
 
         public async run(): Promise<void> {
             try {
-                await this.start_router();
+                // await this.start_router();
                 // await this.start_userserver();
-                // await this.start_gameserver();
+                await this.start_gameserver();
             } catch (error) {
                 debug_error(server_app.__LOGTAG__, `Error starting server: ${error}`);
             }
