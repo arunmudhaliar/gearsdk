@@ -1,9 +1,26 @@
-import { debug_error, debug_print, LOG_LEVEL_1, LOG_LEVEL_2, LOG_LEVEL_4 } from "../helpers/sdktypes";
+import { pid } from "process";
+import { debug_error, debug_print, debug_warn, LOG_LEVEL_1, LOG_LEVEL_2, LOG_LEVEL_4 } from "../helpers/sdktypes";
 import { server_config_reader } from "../helpers/serverconfig-reader";
 import { serversdk } from "../helpers/serversdk";
 import * as ffi from 'ffi-napi';
 
 export namespace server {
+    export interface interface_gameserver {
+        ongameserver_room_create(room: number, bet_id: string): interface_room;
+    }
+
+    export interface interface_room {
+        onroom_create(room: number, bet_id: string): void;
+        onroom_start(): void;
+        onroom_player_added(pid: string, cid_hash: number): void;
+        onroom_message(pid: string, cid_hash: number, msg: string): void;
+        onroom_player_removed(pid: string, cid_hash: number): void;
+        onroom_end(): void;
+        onroom_countdown_to_start(count: number, max_count: number): void;
+        onroom_countdown_cancelled(): void;
+        can_allow_reconnection(pid: string, cid_hash: number): boolean;
+    }
+
     export class gameserver {
         private static __LOGTAG__: string = `gameserver`;
         private qserver_config: serversdk.qserver_input_config = {
@@ -13,73 +30,130 @@ export namespace server {
             root_dir: process.cwd(),
             app_id: server_config_reader.get_instance().get_value('app_id')
         };
+        private gameserver_interface: interface_gameserver | undefined;
+        private static gserver_id_cntr: number = 0;
+        private gserver_id: number = 0;
 
-        // private rooms: Map<Buffer, Map<Buffer, room>> = new Map<Buffer, Map<Buffer, room>>();
+        constructor(gameserver_interface: interface_gameserver) {
+            this.gameserver_interface = gameserver_interface;
+            this.gserver_id = ++gameserver.gserver_id_cntr;
+        }
+
+        private rooms: Map<number, Map<number, interface_room>> = new Map<number, Map<number, interface_room>>();
 
         protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: serversdk.qserver_ptr) => {
-            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_pre_start`);
+            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_pre_start, server_id: ${this.gserver_id}`);
         }) as unknown as serversdk.type_on_qserver_pre_start;
         protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: serversdk.qserver_ptr, ip: string, port: number) => {
-            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_start ${ip}:${port}`);
+            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_start ${ip}:${port}, server_id: ${this.gserver_id}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                this.rooms.set(this.gserver_id, new Map<number, interface_room>());
+            } else {
+                debug_error(gameserver.__LOGTAG__, `native_server already present in rooms map !!!. This need to check !!!, server_id: ${this.gserver_id}`);
+            }
         }) as unknown as serversdk.type_on_qserver_start;
         protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: serversdk.qserver_ptr) => {
-            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_stop:`);
+            debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_stop:, server_id: ${this.gserver_id}`);
+            // TODO(amudaliar): need to gracefully remove all rooms
         }) as unknown as serversdk.type_on_qserver_stop;
         protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: serversdk.qserver_ptr, error_code: number) => {
-            debug_error(gameserver.__LOGTAG__, `on_server_error: ${error_code}`);
+            debug_error(gameserver.__LOGTAG__, `on_server_error: ${error_code}, server_id: ${this.gserver_id}`);
+            // TODO(amudaliar): need to gracefully remove all rooms if the error cant be recoverable
         }) as unknown as serversdk.type_on_qserver_error;
 
         protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_create called r:${room}`);
+            if (!this.gameserver_interface) {
+                return;
+            }
+
+            if (this.rooms.has(this.gserver_id)) {
+                if (this.rooms.get(this.gserver_id)?.has(room)) {
+                    debug_warn(gameserver.__LOGTAG__, `room already present in rooms map !!!, server_id: ${this.gserver_id}`);
+                } else {
+                    let bet_id = "";
+                    let room_interface: interface_room = this.gameserver_interface.ongameserver_room_create(room, bet_id);
+                    if (room_interface) {
+                        this.rooms.get(this.gserver_id)?.set(room, room_interface);
+                        room_interface.onroom_create(room, bet_id);
+                    } else {
+                        debug_error(gameserver.__LOGTAG__, `ongameserver_room_create returned null !!!, server_id: ${this.gserver_id}`);
+                    }
+                }
+            } else {
+                debug_error(gameserver.__LOGTAG__, `native_server not present in rooms map !!!, server_id: ${this.gserver_id}`);
+            }
+
         }) as unknown as serversdk.type_on_room_event_create;
 
         protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_start called r:${room}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_start();
+            }
         }) as unknown as serversdk.type_on_room_event_start;
 
         protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_player_added called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_player_added(pid, cid_hash);
+            }
         }) as unknown as serversdk.type_on_room_event_player_added;
 
         protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint, 'string'], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number, message: string) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_message called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}, msg:${message}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_message(pid, cid_hash, message);
+            }
         }) as unknown as serversdk.type_on_room_event_message;
 
         protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_player_removed called r:${room}, pid:${pid}, h:${cid_hash.toString(16)}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_player_removed(pid, cid_hash);
+            }
         }) as unknown as serversdk.type_on_room_event_player_removed;
 
         protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_end called r:${room}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_end();
+            }
         }) as unknown as serversdk.type_on_room_event_end;
 
         protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.int, serversdk.int], (native_server: serversdk.qserver_ptr, room: number, count: number, max_count: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_countdown_to_start called r:${room} - ${count}/${max_count}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_countdown_to_start(count, max_count);
+            }
         }) as unknown as serversdk.type_on_room_event_countdown_to_start;
 
         protected room_event_countdown_cancelled = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
-            debug_print(LOG_LEVEL_4, gameserver.__LOGTAG__, `room_event_countdown_cancelled called r:${room}`);
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_countdown_cancelled();
+            }
         }) as unknown as serversdk.type_on_room_event_countdown_cancelled;
-
-        // private add_room(native_server: Buffer, room: Buffer): room | undefined {
-        //     if (!this.rooms.has(native_server)) {
-        //         this.rooms.set(native_server, new Map<Buffer, room>());
-        //     }
-        //     if (!this.rooms.get(native_server)?.has(room)) {
-        //         this.rooms.get(native_server)?.set(room, new room());
-        //     }
-        //     return this.rooms.get(native_server)?.get(room);
-        // }
-
-        // private remove_room(native_server: Buffer, room: Buffer): room | undefined {
-        //     if (!this.rooms.has(native_server)) {
-        //         this.rooms.set(native_server, new Map<Buffer, room>());
-        //     }
-        //     if (!this.rooms.get(native_server)?.has(room)) {
-        //         this.rooms.get(native_server)?.set(room, new room());
-        //     }
-        //     return this.rooms.get(native_server)?.get(room);
-        // }
 
         public async run(): Promise<number> {
             let spawned = serversdk.serverplugin.spawn_qserver(

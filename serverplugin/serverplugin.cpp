@@ -66,6 +66,7 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* s
 
 void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
 	if (cb_on_server_parse) {
+//        debug_print_scid(LOG_LEVEL_0, conn->cid, sizeof(conn->cid));
 		cb_on_server_parse(server, (uint8_t *)conn->cid, sizeof(conn->cid), path, buffer, len, headers_buffer, headers_buffer_size);
 	}
 }
@@ -225,6 +226,7 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 }
 
 EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
+//    debug_print_scid(LOG_LEVEL_0, cid, cid_len);
     struct conn_io_qh3* conn_io = server->get_conn(cid, cid_len);
     if (conn_io != nullptr) {
         conn_io->http_response->set_payload(qstring(payload, len));
