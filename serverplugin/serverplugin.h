@@ -44,14 +44,16 @@ class qh3plugin_router_event_listener : public observer_router_events {
 class qh3plugin_server_event_listener : public observer_qh3server_events {
    public:
 	~qh3plugin_server_event_listener() {}
-	typedef void (*type_on_server_pre_start)(qh3server* server);
-	typedef void (*type_on_server_start)(qh3server* server, const char* ip, uint16_t port);
-	typedef void (*type_on_server_stop)(qh3server* server);
-	typedef void (*type_on_server_error)(qh3server* server, int error_code);
-	typedef void (*type_on_server_parse)(qh3server*, uint8_t *cid, uint16_t cid_len, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size);
+	typedef void (*type_on_server_pre_start)(qh3server* server, void* user_arg);
+	typedef void (*type_on_server_start)(qh3server* server, void* user_arg, const char* ip, uint16_t port);
+	typedef void (*type_on_server_stop)(qh3server* server, void* user_arg);
+	typedef void (*type_on_server_error)(qh3server* server, void* user_arg, int error_code);
+	typedef void (*type_on_server_parse)(qh3server* server, void* user_arg, uint8_t *cid, uint16_t cid_len, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size);
 	qh3plugin_server_event_listener(type_on_server_pre_start pre_start_cb, type_on_server_start start_cb, type_on_server_stop stop_cb, type_on_server_error error_cb, type_on_server_parse parse_cb)
 		: cb_on_server_pre_start(pre_start_cb), cb_on_server_start(start_cb), cb_on_server_stop(stop_cb), cb_on_server_error(error_cb), cb_on_server_parse(parse_cb) {}
 
+    // std::mutex callback_mutex;
+    
    protected:
 	void on_server_pre_start(qh3server*) override;
 	void on_server_start(qh3server*, const char* ip, uint16_t port) override;
@@ -65,6 +67,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 	type_on_server_stop cb_on_server_stop = nullptr;
 	type_on_server_error cb_on_server_error = nullptr;
 	type_on_server_parse cb_on_server_parse = nullptr;
+    
 };
 
 class qh3plugin_server : public qh3server {
@@ -90,7 +93,7 @@ EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri,
 							qh3plugin_router_event_listener::type_on_router_error error_cb, void* user_arg = nullptr);
 EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb, qh3plugin_server_event_listener::type_on_server_stop stop_cb,
-							qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb);
+							qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb, void* user_arg);
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);
 EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
 void* spawn_qh3router_internal(void* data);

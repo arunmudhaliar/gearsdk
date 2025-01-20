@@ -34,6 +34,8 @@ SRCDIR = .
 QSRCDIR = ./../qserver/source
 SRCS = $(SRCDIR)/serverplugin.cpp \
 $(SRCDIR)/plugin_gameserver.cpp \
+$(SRCDIR)/plugin_qhiredis.cpp \
+$(SRCDIR)/plugin_qzookeeper.cpp \
 $(SRCDIR)/../qh3server/qh3server/qh3server.cpp \
 $(SRCDIR)/../qh3server/qh3server/qh3router.cpp \
 $(SRCDIR)/../qh3server/qh3server/http3_command_server.cpp \
@@ -88,7 +90,7 @@ ifeq ($(UNAME),Darwin)
 	# endif
 	MACOS_LIB_DIR = macos_$(ARCH)
 	LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a ../common/libs/$(MACOS_LIB_DIR)/libz.a -framework CoreFoundation -framework Security -lzookeeper_mt -lresolv -lsasl2 -lcurl
-	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
+	LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -L$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR) 
 	LDFLAGS += -dynamiclib
 	RPATH_FLAGS = -Wl,-rpath,../networkcommon/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) -Wl,-rpath,$(QUTILS_SRCDIR)/libs/$(MACOS_LIB_DIR)
 	LIB_EXT = dylib

@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Rust Program",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/serverplugin_rust_proj",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "cargo build",
+            "stopOnEntry": false,
+            "sourceLanguages": ["rust"],
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "${env:PATH}:/Users/amudaliar/.cargo/bin",
+                "LIBRARY_PATH": "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/serverplugin",
+                // "DYLD_LIBRARY_PATH": "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/serverplugin",
+                "DYLD_LIBRARY_PATH": "/Users/amudaliar/Documents/PROJECTS/PERSONAL/gearsdk/serverplugin:${env:DYLD_LIBRARY_PATH}"
+              }
+        },
+        {
+            "name": "Run Rust Program",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/serverplugin_rust_proj",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "cargo run",
+            "stopOnEntry": false,
+            "sourceLanguages": ["rust"],
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "${env:PATH}:/Users/amudaliar/.cargo/bin"
+              }
+        }
+    ]
+}
