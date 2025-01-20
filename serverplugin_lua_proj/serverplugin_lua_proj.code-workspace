@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../serverplugin"
+		},
+		{
+			"path": "../serverplugin_ts_proj"
+		}
+	],
+	"settings": {}
+}

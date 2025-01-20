@@ -1,0 +1,50 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "lua",
+        "request": "launch",
+        "name": "Launch Lua Program",
+        "program": "${workspaceFolder}/src/main.lua",
+        "cwd": "${workspaceFolder}",
+        "stopOnEntry": false,
+        "env": {
+          "SERVER_ENV": "development"  // Set the SERVER_ENV variable
+        }
+      }
+    ]
+  }
+
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "type": "LuaHelper-Debug",
+//             "request": "launch",
+//             "name": "LuaHelper-Attach",
+//             "description": "serverplugin",
+//             "cwd": "${workspaceFolder}",
+//             "program": "${workspaceFolder}/main.lua",
+//             "luaFileExtension": "",
+//             "connectionPort": 8818,
+//             "stopOnEntry": true,
+//             "useCHook": true,
+//             "autoPathMode": true
+//         },
+//         {
+//             "type": "LuaHelper-Debug",
+//             "request": "launch",
+//             "name": "LuaHelper-DebugFile",
+//             "description": "serverplugin",
+//             "luaPath": "",
+//             "packagePath": [],
+//             "luaFileExtension": "",
+//             "connectionPort": 8818,
+//             "stopOnEntry": true,
+//             "useCHook": true
+//         }
+//     ]
+// }

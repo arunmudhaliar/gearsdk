@@ -126,3 +126,8 @@ qunityplugin/qunityplugin_ts_proj/dist
 qunityplugin/qunityplugin_ts_proj/node_modules
 serverplugin_ts_proj/glogs
 serverplugin_ts_proj/gstats
+serverplugin_lua_proj/stats
+serverplugin_lua_proj/logs
+serverplugin_rust_proj/logs
+serverplugin_rust_proj/stats
+serverplugin_rust_proj/target
