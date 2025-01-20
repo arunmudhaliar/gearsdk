@@ -576,18 +576,18 @@ struct conn_io_qh3* qh3server::get_conn(uint8_t* dcid, uint16_t dcid_len) {
 void qh3server::try_send_response(struct conn_io_qh3* conn_io) {
 	send_response(conn_io);
 	flush_egress(conn_io);
-	if (quiche_conn_is_closed(conn_io->conn)) {
-		quiche_stats stats;
-		quiche_path_stats path_stats;
-
-		quiche_conn_stats(conn_io->conn, &stats);
-		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
-
-		debug_print(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
-
-		HASH_DELETE(hh, conns->h, conn_io);
-		GX_DELETE(conn_io);
-	}
+	//	if (quiche_conn_is_closed(conn_io->conn)) {
+	//		quiche_stats stats;
+	//		quiche_path_stats path_stats;
+	//
+	//		quiche_conn_stats(conn_io->conn, &stats);
+	//		quiche_conn_path_stats(conn_io->conn, 0, &path_stats);
+	//
+	//		debug_print(LOG_LEVEL_4, __LOGTAG__, "connection closed, recv=%zu sent=%zu lost=%zu rtt=%" PRIu64 "ns cwnd=%zu", stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd);
+	//
+	//		HASH_DELETE(hh, conns->h, conn_io);
+	//		GX_DELETE(conn_io);
+	//	}
 }
 
 void qh3server::send_response(struct conn_io_qh3* conn_io) {
@@ -755,8 +755,9 @@ void qh3server::libev_idle_cb(EV_P_ ev_idle* w, int revents) {
 #endif
 
 int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
-				   observer_qh3server_events* event_observer) {
+				   observer_qh3server_events* event_observer, void* user_arg_ptr) {
 	server_event_observer = event_observer;
+	user_arg = user_arg_ptr;
 	app_directory = root_dir;
 	host_id = host;
 	port_id = port;
@@ -1142,7 +1143,8 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 								stats.recv, stats.sent, stats.lost, path_stats.rtt, path_stats.cwnd, elapsed);
 
 					if (!is_closed) {
-						int close_result = quiche_conn_close(conn_io->conn, true, 0, NULL, 0);
+						const char* reason = "closure by server - dangling tout";
+						int close_result = quiche_conn_close(conn_io->conn, true, 0, (const uint8_t*) reason, strlen(reason));
 						if (close_result < 0) {
 							conn_io->skip_destroy_counter++;
 							if (conn_io->skip_destroy_counter < 3) {
