@@ -45,7 +45,7 @@ end
 -- end
 
 api_ping.parse_ping = ffi.cast("type_on_api_parse", function(
-    native_server, userserver_registry_id, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+    native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
     local ping_rq = cjson.decode(ffi.string(native_buffer, len))  -- Parse the JSON string into a Lua table
 
     -- Assuming the `ping_rq` contains a `msg` field

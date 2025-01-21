@@ -1,43 +1,24 @@
--- local serversdk = require("src/helpers/serversdk")
-
--- local function main()
---     print("Welcome to Lua!")
---     serversdk.get_crc32("hello", 5)
--- end
--- main()
-
 print("Lua version: " .. _VERSION)
-local handle = io.popen("which luajit")
-local result = handle:read("*a")
-handle:close()
-print("LuaJIT executable path: " .. result)
+os.execute("which lua")
+os.execute("which luajit")
 
--- Add LuaJIT's lib path to package.cpath
--- package.cpath = package.cpath .. ";/usr/local/Cellar/luajit/2.1.1736781742/lib/lua/5.1/?.so" .. ";/usr/local/lib/lua/5.4/?.so"
-package.cpath = package.cpath .. ";/Users/amudaliar/.luarocks/lib/lua/5.1/?.so"
--- Optionally, add LuaJIT's lua path to package.path if needed
--- package.path = package.path .. ";/usr/local/Cellar/luajit/2.1.1736781742/share/lua/5.1/?.lua" .. ";/usr/local/Cellar/luarocks/3.11.1/share/lua/5.4/?.lua"
-package.path = package.path .. ";/Users/amudaliar/.luarocks/share/lua/5.1/?.lua"
+package.cpath = package.cpath .. ";" .. os.getenv("HOME") .. "/.luarocks/lib/lua/5.1/?.so" .. ";" .. os.getenv("HOME") .. "/.asdf/installs/lua/5.1.5/luarocks/lib/lua/5.1/?.so"
+package.path = package.path .. ";" .. os.getenv("HOME") ..  "/.luarocks/share/lua/5.1/?.lua" .. ";" .. os.getenv("HOME") .. "/.asdf/installs/lua/5.1.5/luarocks/share/lua/5.1/?.lua"
 
-local serversdk = require("src.helpers.serversdk")
-local api_whoami = require("src.features.api_whoami")
-local api_ping = require("src.features.api_ping")
-
+print(package.path)
+print(package.cpath)
 if jit then
     print("LuaJIT detected")
 else
     print("LuaJIT not available")
 end
 
+local api_whoami = require("src.features.api_whoami")
+local api_ping = require("src.features.api_ping")
+local api_user_get = require("src.features.api_user_get")
 local routerserver = require("src.userserver.router")
 local userserver = require("src.userserver.userserver")
 local sdktypes = require("src.helpers.sdktypes")
--- local qh3server = require("userserver.userserver")
--- local api_user_get = require("features.user_get.api_user_get")
--- local api_whoami = require("features.user_get.api_whoami")
--- local api_ping = require("features.user_get.api_ping")
--- local server_config_reader = require("src.helpers.serverconfig-reader")
--- local platform = require("src/helpers/platform")
 
 -- Server Application class
 local server_app = {}
@@ -66,8 +47,8 @@ end
 function server_app:on_router_start_cb(native_router, thiz)
     sdktypes.debug_print(sdktypes.LOG_LEVEL_0, server_app.__LOGTAG__, "on_router_start_cb")
     thiz:start_userserver(native_router)
-    -- self:start_userserver(native_router)
-    -- self:start_userserver(native_router)
+    -- thiz:start_userserver(native_router)
+    -- thiz:start_userserver(native_router)
 end
 
 -- Start the router
@@ -82,13 +63,12 @@ end
 
 -- -- Start the user server
 function server_app:start_userserver(native_router)
---     native_router = native_router or nil
     local userserver_instance = userserver.userserver:new()
     userserver_instance:register_api(api_whoami:new())
     userserver_instance:register_api(api_ping:new())
---     userserver_instance:register_api(api_user_get:new())
-    userserver_instance:run(native_router)
+    userserver_instance:register_api(api_user_get:new())
     table.insert(self.userserver_instances, userserver_instance)
+    userserver_instance:run(native_router)
 end
 
 -- Run the server application
@@ -102,15 +82,6 @@ function server_app:run()
         sdktypes.debug_error(server_app.__LOGTAG__, "Error starting server %s", err)
     end
 end
-
-print(package.path)
-print(package.cpath)
-
--- -- Create a new instance
--- local api_instance = api_whoami:new()
-
--- -- Get the path
--- print(api_instance:get_path())  -- Output: /whoami
 
 -- Main execution
 local app_instance = server_app:new()

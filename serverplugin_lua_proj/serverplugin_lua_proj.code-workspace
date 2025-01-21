@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../serverplugin_ts_proj"
+		},
+		{
+			"path": "../qfist"
 		}
 	],
 	"settings": {}

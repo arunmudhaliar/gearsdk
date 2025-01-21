@@ -31,18 +31,6 @@ local server = {}
 server.userserver = {}
 server.userserver.__LOGTAG__ = "userserver"
 
--- -- Router configuration
--- server.router.router_config = {
---     router_address = serverconfig_reader:get_instance():get_value("router_address"),
---     mongodb_uri = serverconfig_reader:get_instance():get_value("router_mongodb_uri"),
---     redis_address = serverconfig_reader:get_instance():get_value("router_redis_uri"),
---     zk_uri = serverconfig_reader:get_instance():get_value("router_zk_uri"),
---     root_dir = os.getenv("PWD") or ".", -- Get the current working directory
---     command_port = serverconfig_reader:get_instance():get_value_as_number("command_port", 4010),
---     router_port_return = serverconfig_reader:get_instance():get_value_as_number("router_port_return", 4005),
---     app_id = serverconfig_reader:get_instance():get_value("app_id"),
--- }
-
 -- Constructor
 function server.userserver:new()
     local obj = {}
@@ -56,6 +44,22 @@ function server.userserver:new()
     self.registry_id = serversdk.serverplugin.add_lua_object_to_registry(self)
     self.__index = self
     return obj
+end
+
+function server.userserver:get_mongo_driver()
+    return self.mongo
+end
+
+function server.userserver:get_hiredis_driver()
+    return self.hiredis
+end
+
+function server.userserver:get_qzookeeper_driver()
+    return self.zk
+end
+
+function server.userserver:get_zkconfig()
+    return self.zkconfig
 end
 
 function server.userserver:register_api(api_instance)
@@ -110,7 +114,7 @@ end)
 server.userserver.on_server_parse = ffi.cast("type_on_server_parse", function(
     native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
     local lua_path = ffi.string(native_path)
-    print("on_server_parse triggered: Path = " .. lua_path)
+    -- print("on_server_parse triggered: Path = " .. lua_path)
     local thiz = serversdk.serverplugin.get_from_registry(native_user_arg);
     local result = "{}"
     if thiz.api_callbacks and thiz.api_callbacks[lua_path] then
@@ -118,7 +122,7 @@ server.userserver.on_server_parse = ffi.cast("type_on_server_parse", function(
         if api_instance and api_instance.get_post_cb then
             local post_cb = api_instance:get_post_cb()
             if post_cb then
-                local c_result = post_cb(native_server, ffi.cast("int", thiz.registry_id), native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+                local c_result = post_cb(native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
                 result = ffi.string(c_result)
             end
         end

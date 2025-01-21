@@ -151,6 +151,23 @@ function qhiredis:delete_key(key)
     return sdklib.qhiredis_delete_key(self.redis, key)
 end
 
+-- Function to scan Redis keys with a callback
+function qhiredis:scan(prefix_key, user_arg, callback)
+    -- Define the callback function in Lua
+    local redis_scan_callback = ffi.cast("redis_scan_iterator_cb", function(key, field, value, arg)
+        -- Convert C strings to Lua strings
+        local key_str = ffi.string(key)
+        local field_str = ffi.string(field)
+        local value_str = ffi.string(value)
+
+        -- Call the Lua callback with the extracted key, field, and value
+        callback(key_str, field_str, value_str)
+    end)
+    -- Call the C qhiredis_scan function with the callback
+    local redis_scan_callback_c = ffi.cast("redis_scan_iterator_cb", redis_scan_callback)
+    sdklib.qhiredis_scan(self.redis, prefix_key, nil, redis_scan_callback_c)
+end
+
 -- Destructor for garbage collection
 function qhiredis:__gc()
     self:destroy()

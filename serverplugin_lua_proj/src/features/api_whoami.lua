@@ -29,7 +29,7 @@ end
 
 
 api_whoami.parse_whoami = ffi.cast("type_on_api_parse", function(
-    native_server, userserver_registry_id, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+    native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
     local response_json = {
         name = "qh3pluginserver",
         active_connections = serversdk.sdklib.get_live_connection_count(native_server)
