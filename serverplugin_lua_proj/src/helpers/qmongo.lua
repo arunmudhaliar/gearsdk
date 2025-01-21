@@ -150,8 +150,10 @@ function qmongo:find_and_upsert(collectionName, find_query_cb, update_query_cb, 
             ["$set"] = update_doc,
             ["$setOnInsert"] = set_on_insert
         }
-
-        return collection:updateOne(find_query, update_ops, { upsert = true })
+        -- if type(collection.update_one) == "function" then
+        --     print(string.format("%s: update_one Found", self.__LOGTAG__))
+        -- end
+        return collection:update_one(find_query, update_ops, true)
     end)
     if not success then
         self:handleError(result)

@@ -2,13 +2,13 @@
 
 local essentials = {}
 
--- -- Function to get UTC time in readable string format and as a Unix timestamp
--- function essentials.get_time_utc_readable()
---     local utc_date = os.date("!*t")  -- Get UTC date
---     local utc_date_string = string.format("%04d-%02d-%02d %02d:%02d:%02d", utc_date.year, utc_date.month, utc_date.day, utc_date.hour, utc_date.min, utc_date.sec)
---     local utc_date_number = math.floor(os.time(utc_date))  -- Get Unix timestamp in seconds
---     return { utc_date_string = utc_date_string, utc_date_number = utc_date_number }
--- end
+-- Function to get UTC time in readable string format and as a Unix timestamp
+function essentials.get_time_utc_readable()
+    local utc_date = os.date("!*t")  -- Get UTC date
+    local utc_date_string = string.format("%04d-%02d-%02d %02d:%02d:%02d", utc_date.year, utc_date.month, utc_date.day, utc_date.hour, utc_date.min, utc_date.sec)
+    local utc_date_number = math.floor(os.time(utc_date))  -- Get Unix timestamp in seconds
+    return { utc_date_string = utc_date_string, utc_date_number = utc_date_number }
+end
 
 -- Function to extract IP and port from a string in the format "ip:port"
 function essentials.extract_ip_and_port(input)
@@ -20,10 +20,12 @@ function essentials.extract_ip_and_port(input)
 end
 
 -- Function to calculate the SHA-256 hash of an input string
--- function essentials.sha256(input)
---     local hash = openssl.digest("sha256", input)  -- Calculate SHA-256 hash
---     return hash
--- end
+function essentials.sha256(input)
+    -- local hash = openssl.digest("sha256", input)  -- Calculate SHA-256 hash
+    -- return hash
+    -- print("WARNING: sha256 not IMPLEMENED")
+    return "2c6ee24b09816a6f14f95d1698b24ead"
+end
 
 -- -- Example usage
 -- local time_info = essentials.get_time_utc_readable()

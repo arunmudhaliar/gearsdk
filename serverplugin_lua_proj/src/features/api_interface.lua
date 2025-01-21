@@ -5,7 +5,7 @@ local ffi = require("ffi")
 ffi.cdef[[
     typedef const char* (*type_on_api_parse)(
         void* server,
-        int userserver_registry_id,
+        void* user_arg,
         uint8_t* cid,
         uint16_t cid_len,
         const char* path,
