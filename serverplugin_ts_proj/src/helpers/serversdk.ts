@@ -71,11 +71,11 @@ export namespace serversdk {
     export type type_on_router_error = (router: Buffer, user_arg: Buffer, error_code: number) => void;
 
     // qh3server events
-    export type type_on_server_pre_start = (server: qh3server_ptr) => void;
-    export type type_on_server_start = (router: qh3server_ptr, ip: string, port: number) => void;
-    export type type_on_server_stop = (server: qh3server_ptr) => void;
-    export type type_on_server_error = (server: qh3server_ptr, error_code: number) => void;
-    export type type_on_server_parse = (server: qh3server_ptr, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
+    export type type_on_server_pre_start = (server: qh3server_ptr, user_arg: Buffer) => void;
+    export type type_on_server_start = (router: qh3server_ptr, user_arg: Buffer, ip: string, port: number) => void;
+    export type type_on_server_stop = (server: qh3server_ptr, user_arg: Buffer) => void;
+    export type type_on_server_error = (server: qh3server_ptr, user_arg: Buffer, error_code: number) => void;
+    export type type_on_server_parse = (server: qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => void;
 
     // qserver events
     export type type_on_qserver_pre_start = (server: qserver_ptr) => void;
@@ -126,7 +126,8 @@ export namespace serversdk {
             start_cb: type_on_server_start,
             stop_cb: type_on_server_stop,
             error_cb: type_on_server_error,
-            parse_cb: type_on_server_parse
+            parse_cb: type_on_server_parse,
+            user_arg: Buffer
         ): void;
         spawn_qserver(
             server_address: string,
@@ -165,7 +166,7 @@ export namespace serversdk {
         setup_signal_handler: ['void', []],
         pre_init_serverplugin_sdk: ['void', []],
         spawn_qh3router: ['void', ['string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
-        spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
+        spawn_qh3server: ['void', ['pointer', 'string', 'string', 'string', 'string', 'string', uint16, uint16, 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         spawn_qserver: [int, ['string', 'string', 'string', 'string', 'string', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
         get_crc32: [ulong, ['string', int]],
         mod_crc32: [ulong, [ulong, 'string', size_t]],

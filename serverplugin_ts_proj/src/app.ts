@@ -59,9 +59,9 @@ namespace app {
 
         public async run(): Promise<void> {
             try {
-                // await this.start_router();
+                await this.start_router();
                 // await this.start_userserver();
-                await this.start_gameserver();
+                // await this.start_gameserver();
             } catch (error) {
                 debug_error(server_app.__LOGTAG__, `Error starting server: ${error}`);
             }
