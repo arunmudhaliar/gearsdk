@@ -40,6 +40,9 @@ function server.userserver:new()
     obj.zk = nil
     obj.zkconfig = nil
     obj.zk_value_change_callback_handle = nil
+    obj.request_counter = 0
+    obj.total_execution_time = 0
+    obj.start_time = serversdk.sdklib.get_current_time_in_ms()
     setmetatable(obj, self)
     self.registry_id = serversdk.serverplugin.add_lua_object_to_registry(self)
     self.__index = self
@@ -113,9 +116,39 @@ end)
 
 server.userserver.on_server_parse = ffi.cast("type_on_server_parse", function(
     native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+    local thiz = serversdk.serverplugin.get_from_registry(native_user_arg);
+    thiz.request_counter = thiz.request_counter + 1
+    local parse_start_time = serversdk.sdklib.get_current_time_in_ms();
+
+    -- Using pcall to safely call the process_request function
+    local success, result = pcall(function()
+        return thiz.process_request(native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+    end)
+
+    -- Check if the call was successful
+    if success then
+        if result then
+            serversdk.serverplugin.qh3server_try_send_response(native_server, native_cid, cid_len, result, #result, nil, 0)
+        else
+            serversdk.serverplugin.qh3server_try_send_response(native_server, native_cid, cid_len, "{}", 2, nil, 0)
+        end
+    else
+        local error_msg = result  -- `result` will contain the error message
+        print("Error occurred during process_request: " .. error_msg)
+        serversdk.serverplugin.qh3server_try_send_response(native_server, native_cid, cid_len, "{}", 2, nil, 0)
+    end
+
+    local execution_time = serversdk.sdklib.get_current_time_in_ms() - parse_start_time
+    thiz.total_execution_time = thiz.total_execution_time + execution_time
+    thiz:calculate_rps()
+end)
+
+server.userserver.process_request = ffi.cast("type_on_server_parse", function(
+    native_server, native_user_arg, native_cid, cid_len, native_path, native_buffer, len, native_headers_buffer, native_headers_buffer_size)
+    -- local parse_start_time = serversdk.sdklib.get_current_time_in_ms();
+    local thiz = serversdk.serverplugin.get_from_registry(native_user_arg);
     local lua_path = ffi.string(native_path)
     -- print("on_server_parse triggered: Path = " .. lua_path)
-    local thiz = serversdk.serverplugin.get_from_registry(native_user_arg);
     local result = "{}"
     if thiz.api_callbacks and thiz.api_callbacks[lua_path] then
         local api_instance = thiz.api_callbacks[lua_path]
@@ -127,12 +160,28 @@ server.userserver.on_server_parse = ffi.cast("type_on_server_parse", function(
             end
         end
     end
-    if result then
-        serversdk.serverplugin.qh3server_try_send_response(native_server, native_cid, cid_len, result, #result, nil, 0)
-    else
-        serversdk.serverplugin.qh3server_try_send_response(native_server, native_cid, cid_len, "{}", 2, nil, 0)
-    end
+    return result;
 end)
+
+-- Function to calculate and display requests per second on the same line
+function server.userserver:calculate_rps()
+    local current_time = serversdk.sdklib.get_current_time_in_ms()
+    local elapsed_time_ms = current_time - self.start_time
+
+    if elapsed_time_ms >= 1000 then
+        local rps = (self.request_counter * 1000) / elapsed_time_ms
+        local avg_execution_time = self.total_execution_time / math.max(self.request_counter, 1) -- Avoid division by zero
+
+        io.write(string.format("\rRequests per second: %.2f | Avg execution time: %.2f ms", tonumber(rps), tonumber(avg_execution_time)))
+        -- io.write(string.format("\rRequests per second: %.2f", tonumber(rps)))
+        io.flush() -- Ensure the output is written to the terminal
+
+        -- Reset the counter and time for the next interval
+        self.request_counter = 0
+        self.total_execution_time = 0
+        self.start_time = current_time
+    end
+end
 
 -- Run function to start the router
 function server.userserver:run(native_router)

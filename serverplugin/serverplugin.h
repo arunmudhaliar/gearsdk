@@ -104,6 +104,8 @@ EXPORT const char* get_device_public_ip();
 EXPORT uint64_t qh3server_logfile(qh3server*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);
 EXPORT size_t qh3server_stats_count(qh3server* server, const char* counter, long count_val, const char* session, const char* pid, const char* version = "", const char* epic = "", const char* myth = "", const char* legend = "",
                     const char* story = "", const char* message = "");
+EXPORT unsigned long get_current_time_in_ms();
+EXPORT void sleep_for(int milliseconds);
 }
 
 }  // namespace server

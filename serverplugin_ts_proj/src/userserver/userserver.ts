@@ -45,6 +45,16 @@ export namespace server {
         private zkconfig: serverconfig | null = null;
         private api_callbacks: Map<string, interface_api> = new Map();
 
+        private start_time: number;
+        private request_counter: number;
+        private total_execution_time: number;
+
+        constructor() {
+            this.start_time = Date.now(); // Initialize the start time
+            this.request_counter = 0;     // Initialize the request counter
+            this.total_execution_time = 0; // Initialize the total execution time
+        }
+
         public get_mongo_driver(): qmongo | null {
             return this.mongo;
         }
@@ -58,41 +68,42 @@ export namespace server {
             return this.zkconfig;
         }
 
-        protected on_server_pre_start = ffi.Callback('void', ['pointer'], (native_server: serversdk.qh3server_ptr) => {
+        protected on_server_pre_start = ffi.Callback('void', ['pointer', 'pointer'], (native_server: serversdk.qh3server_ptr, user_arg: Buffer) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
         }) as unknown as serversdk.type_on_server_pre_start;
-        protected on_server_start = ffi.Callback('void', ['pointer', 'string', serversdk.uint16], async (native_server: serversdk.qh3server_ptr, ip: string, port: number) => {
+        protected on_server_start = ffi.Callback('void', ['pointer', 'pointer', 'string', serversdk.uint16], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer, ip: string, port: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
-            await this.hiredis?.set_hash_value(`servers:${serversdk.serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
+            setImmediate(async () => {
+                await this.hiredis?.set_hash_value(`servers:${serversdk.serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
+            });
         }) as unknown as serversdk.type_on_server_start;
-        protected on_server_stop = ffi.Callback('void', ['pointer'], async (native_server: serversdk.qh3server_ptr) => {
+        protected on_server_stop = ffi.Callback('void', ['pointer', 'pointer'], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
         }) as unknown as serversdk.type_on_server_stop;
-        protected on_server_error = ffi.Callback('void', ['pointer'], (native_server: serversdk.qh3server_ptr, error_code: number) => {
+        protected on_server_error = ffi.Callback('void', ['pointer', 'pointer'], (native_server: serversdk.qh3server_ptr, user_arg: Buffer, error_code: number) => {
             debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
         }) as unknown as serversdk.type_on_server_error;
-        protected on_server_parse = ffi.Callback('void', ['pointer', serversdk.uint8_p, serversdk.uint16, 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
+        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', serversdk.uint8_p, serversdk.uint16, 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
-            let result: string | null = null;
+            this.request_counter = this.request_counter + 1
+            const parse_start_time = Date.now();
+            const cached_cid = Buffer.from(ref.reinterpret(cid, cid_len));
 
+            // setImmediate(async () => {
+            let result: string | null = null;
             if (this.api_callbacks.has(path)) {
                 let api_instance: interface_api | any = this.api_callbacks.get(path);
-                result = await api_instance?.get_post_cb()?.(native_server, cid, cid_len, this, api_instance, path, buffer, len, headers, header_buffer_size);
+                result = await api_instance?.get_post_cb()?.(native_server, cached_cid, cached_cid.length, this, api_instance, path, buffer, len, headers, header_buffer_size);
             }
-
             if (result) {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, result, result.length, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cached_cid, cached_cid.length, result, result.length, null, 0);
             } else {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, `{}`, 2, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cached_cid, cached_cid.length, `{}`, 2, null, 0);
             }
-
-            // const response_string = `{msg:\"test message\"}`;
-            // // Use strdup to allocate and return a copy of the string
-            // result = qh3serversdk.libc.strdup(response_string);
-            // if (result.isNull()) {
-            //     throw new Error('Memory allocation failed using strdup.');
-            // }
-            // return result; // Return the pointer to C++
+            const execution_time = Date.now() - parse_start_time
+            this.total_execution_time = this.total_execution_time + execution_time
+            this.calculate_rps()
+            // });
         }) as unknown as serversdk.type_on_server_parse;
 
         public register_api(api_instance: interface_api): void {
@@ -114,6 +125,26 @@ export namespace server {
             if (this.api_callbacks.has(api_instance.get_path())) {
                 this.api_callbacks.delete(api_instance.get_path());
                 debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `api un-registered - ${api_instance.get_path()}`);
+            }
+        }
+
+        private calculate_rps(): void {
+            const current_time = Date.now(); // Get current time in milliseconds
+            const elapsed_time_ms = current_time - this.start_time;
+
+            if (elapsed_time_ms >= 1000) {
+                const rps = (this.request_counter * 1000) / elapsed_time_ms;
+                const avg_execution_time = this.total_execution_time / Math.max(this.request_counter, 1); // Avoid division by zero
+
+                // Output the results to the console
+                process.stdout.write(`\rRequests per second: ${rps.toFixed(2)} | Avg execution time: ${avg_execution_time.toFixed(2)} ms`);
+                // process.stdout.write(`\rRequests per second: ${rps.toFixed(2)}`); // Uncomment if you don't need avg execution time
+                process.stdout.write('\n'); // Ensure the output is written to the terminal
+
+                // Reset the counter and time for the next interval
+                this.request_counter = 0;
+                this.total_execution_time = 0;
+                this.start_time = current_time;
             }
         }
 
@@ -165,7 +196,8 @@ export namespace server {
                 this.on_server_start,
                 this.on_server_stop,
                 this.on_server_error,
-                this.on_server_parse
+                this.on_server_parse,
+                serversdk.nullptr
             );
         }
     }

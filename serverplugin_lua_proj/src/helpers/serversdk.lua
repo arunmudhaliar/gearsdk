@@ -59,6 +59,8 @@ ffi.cdef[[
         void* parse_cb,
         void* user_arg
     );
+    unsigned long get_current_time_in_ms();
+    void sleep_for(int milliseconds);
 ]]
 
 -- Detect platform and load library
@@ -143,7 +145,6 @@ serverplugin.qh3server_try_send_response = function(native_server, cid, cid_len,
                                                 payload, len, 
                                                 user_data, user_data_len);
 end
-
 
 print(serverplugin.get_device_public_ip())
 sdklib.setup_signal_handler()
