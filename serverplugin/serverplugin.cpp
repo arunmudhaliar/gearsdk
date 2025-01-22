@@ -271,3 +271,11 @@ EXPORT size_t gsdk::server::qh3server_stats_count(qh3server* server, const char*
                            const char* story, const char* message) {
     return server->get_stats_loggeer()->server_count(counter, count_val, session, pid, version, epic, myth, legend, story, message);
 }
+
+EXPORT unsigned long gsdk::server::get_current_time_in_ms() {
+    return timer::get_current_time_in_milli_sec();
+}
+
+EXPORT void gsdk::server::sleep_for(int milliseconds) {
+    essentials::sleep_for(milliseconds);
+}
