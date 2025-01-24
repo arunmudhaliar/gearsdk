@@ -37,9 +37,9 @@ export namespace serversdk {
     let lib_release: string = 'libserverplugin';
     let lib_serverplugin: string = (process.env.NODE_ENV === 'production') ? lib_release : lib_debug;
     if (process.platform === 'darwin') {
-        lib_path = path.join(__dirname, `./../serverplugin/${lib_serverplugin}.dylib`);
+        lib_path = path.join(__dirname, `./${lib_serverplugin}.dylib`);
     } else if (process.platform === 'linux') {
-        lib_path = path.join(__dirname, `./../serverplugin/${lib_serverplugin}.so`);
+        lib_path = path.join(__dirname, `./${lib_serverplugin}.so`);
     } else {
         throw new Error('unsupported platform');
     }
