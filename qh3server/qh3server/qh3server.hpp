@@ -49,7 +49,6 @@ class qh3server : public bridge_h3_connection {
 	quiche_h3_config* http3_config = nullptr;
 	struct connections* conns = nullptr;
 	EVENT_LOOP_TYPE* mainloop = nullptr;
-	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }
 	static void debug_quiche_log(const char* line, void* argp);
 	ssize_t flush_egress(struct conn_io_qh3* conn_io) final;
 	void destroy_connection(struct conn_io_qh3* conn_io) final;
@@ -85,6 +84,7 @@ class qh3server : public bridge_h3_connection {
 	routerinfo* relay_through_router_info = nullptr;  // only valid for servers else NULL
 
    protected:
+	inline EVENT_LOOP_TYPE* get_mainloop() final { return mainloop; }
 	virtual bool on_server_pre_init() = 0;
 	virtual void on_server_uninitialise() = 0;
 	virtual void on_run_started() = 0;

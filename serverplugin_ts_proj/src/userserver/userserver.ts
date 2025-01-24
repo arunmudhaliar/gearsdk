@@ -85,26 +85,27 @@ export namespace server {
         }) as unknown as serversdk.type_on_server_error;
         protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', serversdk.uint8_p, serversdk.uint16, 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
             // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
+            this.process_request(native_server, user_arg, cid, cid_len, path, buffer, len, headers, header_buffer_size);
+        }) as unknown as serversdk.type_on_server_parse;
+
+        private async process_request(native_server: serversdk.qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) {
             this.request_counter = this.request_counter + 1
             const parse_start_time = Date.now();
-            const cached_cid = Buffer.from(ref.reinterpret(cid, cid_len));
-
-            // setImmediate(async () => {
+            // const cached_cid = Buffer.from(ref.reinterpret(cid, cid_len));
             let result: string | null = null;
             if (this.api_callbacks.has(path)) {
                 let api_instance: interface_api | any = this.api_callbacks.get(path);
-                result = await api_instance?.get_post_cb()?.(native_server, cached_cid, cached_cid.length, this, api_instance, path, buffer, len, headers, header_buffer_size);
+                result = await api_instance?.get_post_cb()?.(native_server, cid, cid_len, this, api_instance, path, buffer, len, headers, header_buffer_size);
             }
             if (result) {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cached_cid, cached_cid.length, result, result.length, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, result, result.length, null, 0);
             } else {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cached_cid, cached_cid.length, `{}`, 2, null, 0);
+                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, `{}`, 2, null, 0);
             }
             const execution_time = Date.now() - parse_start_time
             this.total_execution_time = this.total_execution_time + execution_time
             this.calculate_rps()
-            // });
-        }) as unknown as serversdk.type_on_server_parse;
+        }
 
         public register_api(api_instance: interface_api): void {
             if (this.api_callbacks.has(api_instance.get_path())) {

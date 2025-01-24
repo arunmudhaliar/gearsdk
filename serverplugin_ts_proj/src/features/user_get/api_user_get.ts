@@ -26,31 +26,31 @@ class api_user_get implements server.interface_api {
         crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.release, user_get_msg_rq.device.release.length);
         crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.arch, user_get_msg_rq.device.arch.length);
 
-        let user_get_msg_respose: res_msg_user_get = new res_msg_user_get();
-        user_get_msg_respose.pid = `${crc.toString(16)}`;
-        user_get_msg_respose.user_name = `guest-${crc.toString(16)}`;
+        let user_get_msg_response: res_msg_user_get = new res_msg_user_get();
+        user_get_msg_response.pid = `${crc.toString(16)}`;
+        user_get_msg_response.user_name = `guest-${crc.toString(16)}`;
         let time_result = essentials.get_time_utc_readable();
         let last_login_utc_time_value : number = time_result.utc_date_number;
-        user_get_msg_respose.last_login = time_result.utc_date_string;
+        user_get_msg_response.last_login = time_result.utc_date_string;
 
-        let redis_format_pid: string = `tokens:${user_get_msg_respose.pid}`;
+        let redis_format_pid: string = `tokens:${user_get_msg_response.pid}`;
         let token_in_redis: string | null | undefined = await user_server_interface.get_hiredis_driver()?.get_value(redis_format_pid);
         if (token_in_redis!=null && token_in_redis?.length != 0) {
-            user_get_msg_respose.token = token_in_redis ?? '';
-            debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `token '${user_get_msg_respose.token}' retreived from redis for user id : ${crc}`);
+            user_get_msg_response.token = token_in_redis ?? '';
+            debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `token '${user_get_msg_response.token}' retreived from redis for user id : ${crc}`);
         } else {
-            user_get_msg_respose.token = essentials.sha256(JSON.stringify(user_get_msg_respose));
-            debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `new token '${user_get_msg_respose.token}' for user id : ${crc}`);
+            user_get_msg_response.token = essentials.sha256(JSON.stringify(user_get_msg_response));
+            debug_print(LOG_LEVEL_4, api_user_get.__LOGTAG__, `new token '${user_get_msg_response.token}' for user id : ${crc}`);
         }
 
         let user_token_expiry_time: number | undefined = user_server_interface.get_zkconfig()?.get_int32("server_config/user_token_expiry_time", thiz.DEFAULT_USER_TOKEN_EXPIRY_TIME);
-        if ((await user_server_interface.get_hiredis_driver()?.set_value(redis_format_pid, user_get_msg_respose.token, user_token_expiry_time)) !== 0) {
+        if ((await user_server_interface.get_hiredis_driver()?.set_value(redis_format_pid, user_get_msg_response.token, user_token_expiry_time)) !== 0) {
             debug_error(api_user_get.__LOGTAG__, `Failed to set token on redis.`);
         }
 
         let gservers_map: Map<string, string[]> = new Map<string, string[]>();
         await api_user_get.getgservers(user_server_interface, gservers_map);
-        user_get_msg_respose.gservers = Array.from(gservers_map.entries()).map(([addr, ports]) => {
+        user_get_msg_response.gservers = Array.from(gservers_map.entries()).map(([addr, ports]) => {
             return {
                 addr,      // The key of the Map (gservers:15.206.79.30)
                 ports,     // The array of ports (e.g., ["172.17.0.4:4000"])
@@ -60,15 +60,15 @@ class api_user_get implements server.interface_api {
         const query_result = await user_server_interface.get_mongo_driver()?.find_and_upsert(
             'users',
             (find_query: Record<string, any>) => {
-                find_query['user.pid'] = user_get_msg_respose.pid;
+                find_query['user.pid'] = user_get_msg_response.pid;
             },
             (update_query: Record<string, any>) => {
-                update_query['user.last_login'] = user_get_msg_respose.last_login;
+                update_query['user.last_login'] = user_get_msg_response.last_login;
                 update_query['user.last_login_timestamp'] = last_login_utc_time_value;
             },
             (insert_query: Record<string, any>) => {
-                insert_query['user.pid'] = user_get_msg_respose.pid;
-                insert_query['user.name'] = user_get_msg_respose.user_name;
+                insert_query['user.pid'] = user_get_msg_response.pid;
+                insert_query['user.name'] = user_get_msg_response.user_name;
                 insert_query['user.device.sys_name'] = user_get_msg_rq.device.sys_name;
                 insert_query['user.device.node_name'] = user_get_msg_rq.device.node_name;
                 insert_query['user.device.arch'] = user_get_msg_rq.device.arch;
@@ -77,12 +77,12 @@ class api_user_get implements server.interface_api {
 
         if (query_result === EXIT_SUCCESS) {
             let room_config : string | any = user_server_interface.get_zkconfig()?.get_string(`gserver/roomconfig`, '');
-            user_get_msg_respose.room_list = JSON.parse(room_config) as msg_room_config_list;
+            user_get_msg_response.room_list = JSON.parse(room_config) as msg_room_config_list;
         } else {
             debug_error(api_user_get.__LOGTAG__, `user_get failed`);
             return '{}';
         }
-        let response_json = JSON.stringify(user_get_msg_respose);
+        let response_json = JSON.stringify(user_get_msg_response);
         // debug_print(LOG_LEVEL_0, api_user_get.__LOGTAG__, `${response_json}`);
         return response_json;
     }

@@ -69,7 +69,9 @@ void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* s
 }
 
 void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
-    // std::lock_guard<std::mutex> lock(callback_mutex);
+
+    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
+    plugin_server->increment_request_counter();
 	if (cb_on_server_parse) {
 //        debug_print_scid(LOG_LEVEL_0, conn->cid, sizeof(conn->cid));
 		cb_on_server_parse(server, server->get_user_arg(), (uint8_t *)conn->cid, sizeof(conn->cid), path, buffer, len, headers_buffer, headers_buffer_size);
@@ -77,7 +79,8 @@ void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* s
 }
 
 // qh3plugin_server
-gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {}
+gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {
+}
 
 void gsdk::server::qh3plugin_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
@@ -121,9 +124,27 @@ bool gsdk::server::qh3plugin_server::on_server_pre_init() {
 
 void gsdk::server::qh3plugin_server::on_server_uninitialise() {}
 
-void gsdk::server::qh3plugin_server::on_run_started() {}
+void gsdk::server::qh3plugin_server::on_run_started() {
+    ev_async_init(&async_watcher_notify_server, notify_server_async_cb);
+    async_watcher_notify_server.data = this;
+    ev_async_start(get_server_main_loop(), &async_watcher_notify_server);
+}
 
 void gsdk::server::qh3plugin_server::on_run_end() {}
+
+void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
+    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(w->data);
+    while (st_response_packet* response_packet = plugin_server->dequeue_response()) {
+        struct conn_io_qh3* conn_io = plugin_server->get_conn(response_packet->cid, response_packet->cid_len);
+        if (conn_io != nullptr) {
+            conn_io->http_response->set_payload(response_packet->payload);
+            plugin_server->try_send_response(conn_io);
+        }
+        GX_DELETE(response_packet);
+        plugin_server->increment_response_served_counter();
+    }
+    plugin_server->print_request_response_summary();
+}
 
 EXPORT void gsdk::server::setup_signal_handler() {
 	signal_handler::setup_signal_handler();
@@ -230,14 +251,10 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 }
 
 EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
-    qh3plugin_server_event_listener* observer = (qh3plugin_server_event_listener*)server->get_server_observer();
-    // std::lock_guard<std::mutex> lock(observer->callback_mutex);
-//    debug_print_scid(LOG_LEVEL_0, cid, cid_len);
-    struct conn_io_qh3* conn_io = server->get_conn(cid, cid_len);
-    if (conn_io != nullptr) {
-        conn_io->http_response->set_payload(qstring(payload, len));
-        server->try_send_response(conn_io);
-    }
+    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
+    struct st_response_packet* response_packet = DEBUG_NEW st_response_packet(server, cid, cid_len, payload, len, user_data, user_data_len);
+    plugin_server->enqueue_response(response_packet);
+    plugin_server->notify_main_thread();
 }
 
 EXPORT unsigned int gsdk::server::get_live_connection_count(qh3server* server) {
