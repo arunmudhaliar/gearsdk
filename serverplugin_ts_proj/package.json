@@ -5,11 +5,11 @@
     "main": "dist/app.js",
     "scripts": {
         "build": "tsc",
-        "build:debug": "tsc",
-        "build:release": "tsc",
-        "start": "NODE_ENV=development DYLD_LIBRARY_PATH='../serverplugin' node dist/app.js",
-        "start:release": "NODE_ENV=production DYLD_LIBRARY_PATH='../serverplugin' node dist/app.js",
-        "watch": "tsc --watch -p tsconfig.debug.json"
+        "build:debug": "tsc -p tsconfig.debug.json && cp ../serverplugin/libserverplugin-debug.$(uname | sed -e 's/Linux/so/' -e 's/Darwin/dylib/') ./dist/",
+        "build:release": "tsc -p tsconfig.json && cp ../serverplugin/libserverplugin.$(uname | sed -e 's/Linux/so/' -e 's/Darwin/dylib/') ./dist/",
+        "start": "NODE_ENV=development DYLD_LIBRARY_PATH='./dist' node dist/app.js",
+        "start:release": "NODE_ENV=production DYLD_LIBRARY_PATH='./dist' node dist/app.js",
+        "watch": "tsc --watch -p tsconfig.debug.json && cp ../serverplugin/libserverplugin-debug.$(uname | sed -e 's/Linux/so/' -e 's/Darwin/dylib/') ./dist/"
     },
     "dependencies": {
         "class-transformer": "^0.5.1",
