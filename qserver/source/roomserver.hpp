@@ -32,7 +32,8 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 	inline observer_qserver_events* get_main_observer() override final { return get_observer(); }
-
+    room* try_get_room_if_in_map(room* room_ptr) override final;
+    
    protected:
 	bool on_network_server_begin() override final;
 	void on_network_server_init() override;
@@ -67,7 +68,7 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 
 	qtimer_scheduler scheduler;
 	std::vector<room*> waiting_rooms;
-	std::vector<room*> rooms;
+	std::map<room*, room*> rooms;
 	std::map<unsigned, room*> connection_map;
 	std::map<unsigned, ev_tstamp> new_connections;
 	size_t zombie_rooms = 0;

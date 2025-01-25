@@ -109,6 +109,19 @@ class qstring {
 		}
 		utstring_printf(ut_string, "%.*s", (int) len, str);
 	}
+
+	/**
+	 * @brief Constructs from a substring with size_t length.
+	 * @param str C-style string.
+	 * @param len Length of the substring.
+	 */
+	qstring(const char* str, unsigned len) {
+		utstring_new(ut_string);
+		if (str == nullptr) {
+			return;
+		}
+		utstring_printf(ut_string, "%.*s", (int) len, str);
+	}
 	//    qstring(const uint8_t* str, int len) {
 	//        utstring_new(ut_string);
 	//        utstring_printf(ut_string, "%.*s", len, str);
