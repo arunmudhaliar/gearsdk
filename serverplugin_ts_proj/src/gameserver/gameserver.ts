@@ -6,19 +6,34 @@ import * as ffi from 'ffi-napi';
 
 export namespace server {
     export interface interface_gameserver {
-        ongameserver_room_create(room: number, bet_id: string): interface_room;
+        ongameserver_room_create(native_server: serversdk.qserver_ptr, room: number, bet_id: string): interface_room;
     }
 
     export interface interface_room {
-        onroom_create(room: number, bet_id: string): void;
-        onroom_start(): void;
-        onroom_player_added(pid: string, cid_hash: number): void;
-        onroom_message(pid: string, cid_hash: number, msg: string): void;
-        onroom_player_removed(pid: string, cid_hash: number): void;
-        onroom_end(): void;
-        onroom_countdown_to_start(count: number, max_count: number): void;
-        onroom_countdown_cancelled(): void;
-        can_allow_reconnection(pid: string, cid_hash: number): boolean;
+        onroom_create(room: number, room_ptr: serversdk.room_ptr, bet_id: string): void;
+        onroom_start(room: number, room_ptr: serversdk.room_ptr): void;
+        onroom_player_added(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number): void;
+        onroom_message(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number, msg: string): void;
+        onroom_player_removed(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number): void;
+        onroom_end(room_ptr: serversdk.room_ptr): void;
+        onroom_countdown_to_start(room_ptr: serversdk.room_ptr, count: number, max_count: number): void;
+        onroom_countdown_cancelled(room_ptr: serversdk.room_ptr): void;
+        can_allow_reconnection(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number): boolean;
+
+        broadcast_except(
+            room_ptr: serversdk.room_ptr,
+            cid_hash: number,
+            message: string
+        ): boolean;
+        broadcast(
+            room_ptr: serversdk.room_ptr,
+            message: string
+        ): void;
+        send_to(
+            room_ptr: serversdk.room_ptr,
+            cid_hash: number,
+            message: string
+        ): boolean;
     }
 
     export class gameserver {
@@ -61,7 +76,7 @@ export namespace server {
             // TODO(amudaliar): need to gracefully remove all rooms if the error cant be recoverable
         }) as unknown as serversdk.type_on_qserver_error;
 
-        protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
+        protected room_event_create = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
             if (!this.gameserver_interface) {
                 return;
             }
@@ -71,10 +86,10 @@ export namespace server {
                     debug_warn(gameserver.__LOGTAG__, `room already present in rooms map !!!, server_id: ${this.gserver_id}`);
                 } else {
                     let bet_id = "";
-                    let room_interface: interface_room = this.gameserver_interface.ongameserver_room_create(room, bet_id);
+                    let room_interface: interface_room = this.gameserver_interface.ongameserver_room_create(native_server, room, bet_id);
                     if (room_interface) {
                         this.rooms.get(this.gserver_id)?.set(room, room_interface);
-                        room_interface.onroom_create(room, bet_id);
+                        room_interface.onroom_create(room, room_ptr, bet_id);
                     } else {
                         debug_error(gameserver.__LOGTAG__, `ongameserver_room_create returned null !!!, server_id: ${this.gserver_id}`);
                     }
@@ -85,73 +100,73 @@ export namespace server {
 
         }) as unknown as serversdk.type_on_room_event_create;
 
-        protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
+        protected room_event_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_start();
+                native_server_buffer.get(room)?.onroom_start(room, room_ptr);
             }
         }) as unknown as serversdk.type_on_room_event_start;
 
-        protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
+        protected room_event_player_added = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr, pid: string, cid_hash: number) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_player_added(pid, cid_hash);
+                native_server_buffer.get(room)?.onroom_player_added(room_ptr, pid, cid_hash);
             }
         }) as unknown as serversdk.type_on_room_event_player_added;
 
-        protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint, 'string'], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number, message: string) => {
+        protected room_event_message = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp, 'string', serversdk.uint, 'string'], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr, pid: string, cid_hash: number, message: string) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_message(pid, cid_hash, message);
+                native_server_buffer.get(room)?.onroom_message(room_ptr, pid, cid_hash, message);
             }
         }) as unknown as serversdk.type_on_room_event_message;
 
-        protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, pid: string, cid_hash: number) => {
+        protected room_event_player_removed = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp, 'string', serversdk.uint], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr, pid: string, cid_hash: number) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_player_removed(pid, cid_hash);
+                native_server_buffer.get(room)?.onroom_player_removed(room_ptr, pid, cid_hash);
             }
         }) as unknown as serversdk.type_on_room_event_player_removed;
 
-        protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
+        protected room_event_end = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_end();
+                native_server_buffer.get(room)?.onroom_end(room_ptr);
             }
         }) as unknown as serversdk.type_on_room_event_end;
 
-        protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.int, serversdk.int], (native_server: serversdk.qserver_ptr, room: number, count: number, max_count: number) => {
+        protected room_event_countdown_to_start = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp, serversdk.int, serversdk.int], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr, count: number, max_count: number) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_countdown_to_start(count, max_count);
+                native_server_buffer.get(room)?.onroom_countdown_to_start(room_ptr, count, max_count);
             }
         }) as unknown as serversdk.type_on_room_event_countdown_to_start;
 
-        protected room_event_countdown_cancelled = ffi.Callback('void', [serversdk.voidp, serversdk.int], (native_server: serversdk.qserver_ptr, room: number) => {
+        protected room_event_countdown_cancelled = ffi.Callback('void', [serversdk.voidp, serversdk.int, serversdk.voidp], (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
             }
             let native_server_buffer = this.rooms.get(this.gserver_id);
             if (native_server_buffer?.has(room)) {
-                native_server_buffer.get(room)?.onroom_countdown_cancelled();
+                native_server_buffer.get(room)?.onroom_countdown_cancelled(room_ptr);
             }
         }) as unknown as serversdk.type_on_room_event_countdown_cancelled;
 

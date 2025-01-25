@@ -15,7 +15,7 @@ export namespace serversdk {
     export const long = ref.types.long;
     export const Bytef = ref.refType(ref.types.uchar); // Pointer to a buffer
     export const size_t = ref.types.size_t;
-    export const voidp = ref.refType('void');
+    export const voidp = ref.refType(ref.types.void);
     export const nullptr = ref.NULL;
     export const int = ref.types.int;
     export const uint = ref.types.uint;
@@ -23,9 +23,11 @@ export namespace serversdk {
     export const uint8_p = ref.refType(uint8);
     export const uint16 = ref.types.uint16;
     export const uint64 = ref.types.uint64;
+    export const bool = ref.types.bool;
 
     export type qh3server_ptr = ref.Pointer<void>;
     export type qserver_ptr = ref.Pointer<void>;
+    export type room_ptr = ref.Pointer<void>;
 
     export enum log_lvls { LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4 };
     export enum elog_type { INFO_LOG, DEBUG_LOG, WARN_LOG, ERROR_LOG, LOG_TYPE_MAX };
@@ -84,14 +86,14 @@ export namespace serversdk {
     export type type_on_qserver_error = (server: qserver_ptr, error_code: number) => void;
 
     // room events
-    export type type_on_room_event_create = (native_server: qserver_ptr, room: number) => void;
-    export type type_on_room_event_start = (native_server: qserver_ptr, room: number) => void;
-    export type type_on_room_event_player_added = (native_server: qserver_ptr, room: number, pid: string, cid_hash: number) => void;
-    export type type_on_room_event_message = (native_server: qserver_ptr, room: number, pid: string, cid_hash: number, message: string) => void;
-    export type type_on_room_event_player_removed = (native_server: qserver_ptr, room: number, pid: string, cid_hash: number) => void;
-    export type type_on_room_event_end = (native_server: qserver_ptr, room: number) => void;
-    export type type_on_room_event_countdown_to_start = (native_server: qserver_ptr, room: number, count: number, max_count: number) => void;
-    export type type_on_room_event_countdown_cancelled = (native_server: qserver_ptr, room: number) => void;
+    export type type_on_room_event_create = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
+    export type type_on_room_event_start = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
+    export type type_on_room_event_player_added = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, pid: string, cid_hash: number) => void;
+    export type type_on_room_event_message = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, pid: string, cid_hash: number, message: string) => void;
+    export type type_on_room_event_player_removed = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, pid: string, cid_hash: number) => void;
+    export type type_on_room_event_end = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
+    export type type_on_room_event_countdown_to_start = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, count: number, max_count: number) => void;
+    export type type_on_room_event_countdown_cancelled = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
 
     // Define the interface for the library's methods
     interface interface_serverplugin {
@@ -159,6 +161,23 @@ export namespace serversdk {
         qserver_logfile(native_server: qh3server_ptr, lvl: log_lvls, type: elog_type, tag: string, pid: string, roomid: string, message: string): number;
         qserver_stats_count(native_server: qh3server_ptr, counter: string, count_val: number, session: string, pid: string, version: string /*= ``*/, epic: string /*= ``*/, myth: string /*= ``*/, legend: string /*= ``*/,
             story: string /*= ``*/, message: string /*= ``*/): number;
+        room_broadcast_except(native_server: qserver_ptr,
+            room: room_ptr,
+            cid_hash: number,
+            message: string,
+            length: number
+        ): boolean;
+        room_broadcast(native_server: qserver_ptr,
+            room: room_ptr,
+            message: string,
+            length: number
+        ): void;
+        room_send_to(native_server: qserver_ptr,
+            room: room_ptr,
+            cid_hash: number,
+            message: string,
+            length: number
+        ): boolean;
     }
 
     // Load the C library and cast it to the interface_qh3serverplugin
@@ -177,6 +196,9 @@ export namespace serversdk {
         qh3server_stats_count: [size_t, ['pointer', 'string', long, 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']],
         qserver_logfile: [uint64, ['pointer', int, int, 'string', 'string', 'string', 'string']],
         qserver_stats_count: [size_t, ['pointer', 'string', long, 'string', 'string', 'string', 'string', 'string', 'string', 'string', 'string']],
+        room_broadcast_except: [bool, [voidp, voidp, uint, 'string', uint]],
+        room_broadcast: ['void', [voidp, voidp, 'string', uint]],
+        room_send_to: [bool, [voidp, voidp, uint, 'string', uint]],
     }) as interface_serverplugin;
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');

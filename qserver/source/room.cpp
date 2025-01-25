@@ -14,6 +14,7 @@ int room::room_id_counter = 0;
 
 // MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) : ROOM_ID(room::room_id_counter++), CREATION_TIME(ev_now(interface->get_netowrk_main_loop())), ROOM_CONFIG(room_config), roomserverinterface(interface) {
+    native_server = dynamic_cast<qnetworkserver*>(interface);
 	observer = (roomserverinterface != nullptr) ? roomserverinterface->get_main_observer() : nullptr;
 	set_loop(roomserverinterface->get_netowrk_main_loop());
 	set_state(ROOM_WAITING);
@@ -100,46 +101,46 @@ void room::send_event_room_start_or_end(bool room_start) {
 
 void room::onroom_create() {
 	if (observer) {
-		observer->room_event_create(roomserverinterface, this->ROOM_ID);
+		observer->room_event_create(native_server, this->ROOM_ID, this);
 	}
 }
 
 void room::onroom_start() {
 	if (observer) {
-		observer->room_event_start(roomserverinterface, this->ROOM_ID);
+		observer->room_event_start(native_server, this->ROOM_ID, this);
 	}
 }
 
 void room::onroom_player_added(player* p) {
 	if (observer) {
-		observer->room_event_player_added(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val);
+		observer->room_event_player_added(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val);
 	}
 }
 void room::onroom_message(player* p, const qstring& msg) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 	if (observer) {
-		observer->room_event_message(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val, msg);
+		observer->room_event_message(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val, msg);
 	}
 }
 void room::onroom_player_removed(player* p) {
 	if (observer) {
-		observer->room_event_player_removed(roomserverinterface, this->ROOM_ID, p->pid, p->qconnection->cid_hash_val);
+		observer->room_event_player_removed(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val);
 	}
 }
 void room::onroom_end() {
 	if (observer) {
-		observer->room_event_end(roomserverinterface, this->ROOM_ID);
+		observer->room_event_end(native_server, this->ROOM_ID, this);
 	}
 }
 
 void room::onroom_countdown_to_start(int count, int max_count) {
 	if (observer) {
-		observer->room_event_countdown_to_start(roomserverinterface, this->ROOM_ID, count, max_count);
+		observer->room_event_countdown_to_start(native_server, this->ROOM_ID, this, count, max_count);
 	}
 }
 void room::onroom_countdown_cancelled() {
 	if (observer) {
-		observer->room_event_countdown_cancelled(roomserverinterface, this->ROOM_ID);
+		observer->room_event_countdown_cancelled(native_server, this->ROOM_ID, this);
 	}
 }
 bool room::can_allow_reconnection(unsigned cid_hash) {
@@ -232,7 +233,16 @@ player* room::get_player(qconn_io* qconnection) {
 		debug_print_error(__LOGTAG__, "room %d: f:get_player: qconnection not in the playermap !!! %0x", ROOM_ID, qconnection->cid_hash_val);
 		return nullptr;
 	}
-	return (*it).second;
+	return it->second;
+}
+
+player* room::get_player(unsigned cid_hash) {
+    std::map<unsigned, player*>::iterator it = playermap.find(cid_hash);
+    if (it != playermap.end()) {
+        return it->second;
+    }
+    debug_print_error(__LOGTAG__, "room %d: f:get_player: cid_hash not in the playermap !!! %0x", ROOM_ID, cid_hash);
+    return nullptr;
 }
 
 // Function to find a player by hash in the hash table
@@ -413,11 +423,11 @@ void room::broadcast(const qstring& msg) {
 	}
 }
 
-void room::broadcast_except(player* p, const qstring& msg) {
+bool room::broadcast_except(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it_except = playermap.find(p->qconnection->cid_hash_val);
 	if (it_except == playermap.end()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:broadcast_except - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
-		return;
+		return false;
 	}
 
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
@@ -427,15 +437,17 @@ void room::broadcast_except(player* p, const qstring& msg) {
 		}
 		player_ptr->qconnection->sendmessage(msg, true);
 	}
+    return true;
 }
 
-void room::sendto(player* p, const qstring& msg) {
+bool room::sendto(player* p, const qstring& msg) {
 	std::map<unsigned, player*>::iterator it = playermap.find(p->qconnection->cid_hash_val);
 	if (it == playermap.end()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:sendto - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
-		return;
+		return false;
 	}
 	p->qconnection->sendmessage(msg, true);
+    return true;
 }
 
 qstring room::get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id) {

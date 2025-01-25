@@ -143,8 +143,8 @@ void roomserver::on_network_server_end() {
 	}
 	waiting_rooms.clear();
 
-	for (auto* r : rooms) {
-		GX_DELETE(r);
+	for (auto& pairs : rooms) {
+		GX_DELETE(pairs.second);
 	}
 	rooms.clear();
 	new_connections.clear();
@@ -206,8 +206,8 @@ void roomserver::onroom_pre_start(room* r) {
 		debug_warn_cond(__LOGTAG__, result != 0, "hiredis delete_key failed for key %s, result %d", wkey.c_str(), result);
 	}
 
-	if (std::find(rooms.begin(), rooms.end(), r) == rooms.end()) {
-		rooms.push_back(r);
+	if (rooms.find(r) == rooms.end()) {
+		rooms[r] = r;
 		debug_print_important(__LOGTAG__, "room %d: removed from waiting list and pushed to rooms list", r->ROOM_ID);
 		// update the room status on redis
 		long long count_room_of_this_type = 0;
@@ -318,8 +318,8 @@ void roomserver::onconnection_connected(qconn_io* qconnection) {
 }
 
 room* roomserver::find_room(int room_id) {
-	for (auto it = rooms.cbegin(); it != rooms.cend(); it++) {
-		room* room_ptr = *it;
+    for (const auto& pair : rooms) {
+		room* room_ptr = pair.first;
 		if (room_ptr->ROOM_ID == room_id) {
 			return room_ptr;
 		}
@@ -451,7 +451,7 @@ void roomserver::onconnection_destroy(qconn_io* qconnection) {
 		waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), room_ptr), waiting_rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (waiting_room_size == (ssize_t) waiting_rooms.size()), "check this");	// still in waiting room ???
 		ssize_t rooms_size = rooms.size();
-		rooms.erase(std::remove(rooms.begin(), rooms.end(), room_ptr), rooms.end());
+        rooms.erase(room_ptr);
 		DEBUG_ASSERT(__LOGTAG__, (rooms_size > (ssize_t) rooms.size()), "check this");	// still in waiting room ???
 
 		// update the room status on redis
@@ -506,4 +506,14 @@ void roomserver::on_heartbeat_check() {
 	max_wrooms_reached = MAX(curr_wrooms, max_wrooms_reached);
 	debug_raw_no_newline(LOG_LEVEL_0, "\r", "connections %zu (max %zu), rooms %zu (max %zu), wrooms %zu (max %zu), conn map %zu\t\t", curr_conns, max_conns_reached, curr_rooms, max_rooms_reached, curr_wrooms, max_wrooms_reached,
 						 connection_map.size());
+}
+
+room* roomserver::try_get_room_if_in_map(room* room_ptr) {
+    std::map<room*, room*>::iterator it = rooms.find(room_ptr);
+    if (it != rooms.end()) {
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "FOUND");
+        return room_ptr;
+    }
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "NOT FOUND");
+    return nullptr;
 }

@@ -35,47 +35,93 @@ void qplugin_qserver_event_listener::on_server_error(qnetworkserver* server, int
     }
 }
 
-void qplugin_qserver_event_listener::room_event_create(void* server, int room) {
+void qplugin_qserver_event_listener::room_event_create(qnetworkserver* server, int room, class room* room_ptr) {
     if (cb_room_event_create) {
-        cb_room_event_create(server, room);
+        cb_room_event_create(server, room, room_ptr);
     }
 }
-void qplugin_qserver_event_listener::room_event_start(void* server, int room) {
+void qplugin_qserver_event_listener::room_event_start(qnetworkserver* server, int room, class room* room_ptr) {
     if (cb_room_event_start) {
-        cb_room_event_start(server, room);
+        cb_room_event_start(server, room, room_ptr);
     }
 }
-void qplugin_qserver_event_listener::room_event_player_added(void* server, int room, const qstring& pid, unsigned cid_hash) {
+void qplugin_qserver_event_listener::room_event_player_added(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) {
     if (cb_room_event_player_added) {
-        cb_room_event_player_added(server, room, pid.c_str(), cid_hash);
+        cb_room_event_player_added(server, room, room_ptr, pid.c_str(), cid_hash);
     }
 }
-void qplugin_qserver_event_listener::room_event_message(void* server, int room, const qstring& pid, unsigned cid_hash, const qstring& msg) {
+void qplugin_qserver_event_listener::room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) {
     if (cb_room_event_message) {
-        cb_room_event_message(server, room, pid.c_str(), cid_hash, msg.c_str());
+        cb_room_event_message(server, room, room_ptr, pid.c_str(), cid_hash, msg.c_str());
     }
 }
-void qplugin_qserver_event_listener::room_event_player_removed(void* server, int room, const qstring& pid, unsigned cid_hash) {
+void qplugin_qserver_event_listener::room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) {
     if (cb_room_player_removed) {
-        cb_room_player_removed(server, room, pid.c_str(), cid_hash);
+        cb_room_player_removed(server, room, room_ptr, pid.c_str(), cid_hash);
     }
 }
-void qplugin_qserver_event_listener::room_event_end(void* server, int room) {
+void qplugin_qserver_event_listener::room_event_end(qnetworkserver* server, int room, class room* room_ptr) {
     if (cb_room_event_end) {
-        cb_room_event_end(server, room);
+        cb_room_event_end(server, room, room_ptr);
     }
 }
-void qplugin_qserver_event_listener::room_event_countdown_to_start(void* server, int room, int count, int max_count) {
+void qplugin_qserver_event_listener::room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) {
     if (cb_room_event_countdown_to_start) {
-        cb_room_event_countdown_to_start(server, room, count, max_count);
+        cb_room_event_countdown_to_start(server, room, room_ptr, count, max_count);
     }
 }
-void qplugin_qserver_event_listener::room_event_countdown_cancelled(void* server, int room) {
+void qplugin_qserver_event_listener::room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) {
     if (cb_room_event_countdown_cancelled) {
-        cb_room_event_countdown_cancelled(server, room);
+        cb_room_event_countdown_cancelled(server, room, room_ptr);
     }
 }
 
+EXPORT bool gsdk::server::room_broadcast_except(qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, unsigned length) {
+    if (msg == nullptr || length == 0) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "msg is empty or null. Ignoring room_broadcast_except");
+        return false;
+    }
+    plugin_gameserver* pserver = static_cast<plugin_gameserver*>(server);
+    room_ptr = pserver->try_get_room_if_in_map(room_ptr);
+    if (room_ptr == nullptr) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_broadcast_except for message %.*s", length, msg);
+    }
+    player* p = room_ptr->get_player(cid_hash);
+    if (p) {
+        return room_ptr->broadcast_except(p, qstring(msg, length));
+    }
+    return false;
+}
+
+EXPORT void gsdk::server::room_broadcast(qnetworkserver* server, class room* room_ptr, const char* msg, unsigned length) {
+    if (msg == nullptr || length == 0) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "msg is empty or null. Ignoring room_broadcast");
+        return;
+    }
+    plugin_gameserver* pserver = static_cast<plugin_gameserver*>(server);
+    room_ptr = pserver->try_get_room_if_in_map(room_ptr);
+    if (room_ptr == nullptr) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_broadcast for message %.*s", length, msg);
+    }
+    room_ptr->broadcast(qstring(msg, length));
+}
+
+EXPORT bool gsdk::server::room_send_to(qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, unsigned length) {
+    if (msg == nullptr || length == 0) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "msg is empty or null. Ignoring room_send_to");
+        return false;
+    }
+    plugin_gameserver* pserver = static_cast<plugin_gameserver*>(server);
+    room_ptr = pserver->try_get_room_if_in_map(room_ptr);
+    if (room_ptr == nullptr) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_send_to for message %.*s", length, msg);
+    }
+    player* p = room_ptr->get_player(cid_hash);
+    if (p) {
+        return room_ptr->sendto(p, qstring(msg, length));
+    }
+    return false;
+}
 // MARK: - plugin_game_room
 plugin_game_room::plugin_game_room(roomserver_interface* interface, const roomconfig& room_config) : room(interface, room_config) {}
 
@@ -92,9 +138,9 @@ void plugin_game_room::onroom_player_added(player* p) {
 }
 void plugin_game_room::onroom_message(player* p, const qstring& msg) {
     room::onroom_message(p, msg);
-    debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
-    // passing to other clients
-    broadcast_except(p, msg);
+//    debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+//    // passing to other clients
+//    broadcast_except(p, msg);
 }
 void plugin_game_room::onroom_player_removed(player* p) {
     room::onroom_player_removed(p);

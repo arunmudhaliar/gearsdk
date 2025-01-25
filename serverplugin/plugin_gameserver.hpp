@@ -25,14 +25,14 @@ public:
     typedef void (*type_on_qserver_error)(qnetworkserver* server, int error_code);
     
     // room event cb
-    typedef void (*type_room_event_create)(void* server, int room);
-    typedef void (*type_room_event_start)(void* server, int room);
-    typedef void (*type_room_event_player_added)(void* server, int room, const char* pid, unsigned cid_hash);
-    typedef void (*type_room_event_message)(void* server, int room, const char* pid, unsigned cid_hash, const char* msg);
-    typedef void (*type_room_event_player_removed)(void* server, int room, const char* pid, unsigned cid_hash);
-    typedef void (*type_room_event_end)(void* server, int room);
-    typedef void (*type_room_event_countdown_to_start)(void* server, int room, int count, int max_count);
-    typedef void (*type_room_event_countdown_cancelled)(void* server, int room);
+    typedef void (*type_room_event_create)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_room_event_start)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_room_event_player_added)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
+    typedef void (*type_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg);
+    typedef void (*type_room_event_player_removed)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
+    typedef void (*type_room_event_end)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_room_event_countdown_to_start)(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count);
+    typedef void (*type_room_event_countdown_cancelled)(qnetworkserver* server, int room, class room* room_ptr);
     
     qplugin_qserver_event_listener(type_on_qserver_pre_start pre_start_cb, type_on_qserver_start start_cb, type_on_qserver_stop stop_cb, type_on_qserver_error error_cb,
                                    type_room_event_create room_event_create_cb,
@@ -52,14 +52,14 @@ protected:
     void on_server_stop(qnetworkserver*) override final;
     void on_server_error(qnetworkserver*, int error_code) override final;
 
-    void room_event_create(void* server, int room) override final;
-    void room_event_start(void* server, int room) override final;
-    void room_event_player_added(void* server, int room, const qstring& pid, unsigned cid_hash) override final;
-    void room_event_message(void* server, int room, const qstring& pid, unsigned cid_hash, const qstring& msg) override final;
-    void room_event_player_removed(void* server, int room, const qstring& pid, unsigned cid_hash) override final;
-    void room_event_end(void* server, int room) override final;
-    void room_event_countdown_to_start(void* server, int room, int count, int max_count) override final;
-    void room_event_countdown_cancelled(void* server, int room) override final;
+    void room_event_create(qnetworkserver* server, int room, class room* room_ptr) override final;
+    void room_event_start(qnetworkserver* server, int room, class room* room_ptr) override final;
+    void room_event_player_added(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) override final;
+    void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) override final;
+    void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) override final;
+    void room_event_end(qnetworkserver* server, int room, class room* room_ptr) override final;
+    void room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) override final;
+    void room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) override final;
     
 private:
     type_on_qserver_pre_start cb_on_server_pre_start = nullptr;
@@ -119,6 +119,9 @@ void* spawn_qserver_internal(void* data);
 EXPORT uint64_t qserver_logfile(qnetworkserver*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);
 EXPORT size_t qserver_stats_count(qnetworkserver* server, const char* counter, long count_val, const char* session, const char* pid, const char* version = "", const char* epic = "", const char* myth = "", const char* legend = "",
                     const char* story = "", const char* message = "");
+EXPORT bool room_broadcast_except(qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, unsigned length);
+EXPORT void room_broadcast(qnetworkserver* server, class room* room_ptr, const char* msg, unsigned length);
+EXPORT bool room_send_to(qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, unsigned length);
 }
 }}
 #endif /* plugin_gameserver_hpp */
