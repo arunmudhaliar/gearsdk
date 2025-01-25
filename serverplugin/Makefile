@@ -27,6 +27,9 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
     $(ZK_SRCDIR)/source/qzookeeper.cpp \
 
+# Add debug_new.cpp conditionally for the debug build
+debug: NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
     -I "$(QUTILS_SRCDIR)" \
     -I "$(QH3_CLIENT_SRCDIR)" \
