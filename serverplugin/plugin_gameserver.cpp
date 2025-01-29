@@ -178,7 +178,9 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
                                        qplugin_qserver_event_listener::type_room_event_player_removed room_player_removed_cb,
                                        qplugin_qserver_event_listener::type_room_event_end room_event_end_cb,
                                        qplugin_qserver_event_listener::type_room_event_countdown_to_start room_event_countdown_to_start_cb,
-                                       qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb) {
+                                       qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
+                                       void* user_arg
+                                       ) {
     qaddress server_addr(server_address);
     qaddress redis_addr(redis_address);
     struct qnetworkserver::runserverconfig* config = new struct qnetworkserver::runserverconfig();
@@ -189,7 +191,7 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
     config->zk_uri = zk_uri;
     config->root_dir = fs::path(root_dir);
     config->app_id = app_id;
-
+    config->user_arg = user_arg;
     qplugin_qserver_event_listener* listener = DEBUG_NEW qplugin_qserver_event_listener(
                                                                                         pre_start_cb, start_cb, stop_cb, error_cb,
                                                                                         room_event_create_cb,
@@ -216,7 +218,7 @@ void* gsdk::server::spawn_qserver_internal(void* data) {
     qnetworkserver::runserverconfig* config = (qnetworkserver::runserverconfig*)std::get<0>(*tuple_in);
     qplugin_qserver_event_listener* listener = (qplugin_qserver_event_listener*)std::get<1>(*tuple_in);
     plugin_gameserver server(config->zk_uri);
-    server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener);
+    server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener, config->user_arg);
     GX_DELETE(tuple_in);
     GX_DELETE(config);
     GX_DELETE(listener);

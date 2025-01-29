@@ -1,4 +1,4 @@
-import { serversdk } from "./serversdk";
+import { serversdk } from './libserverplugin';
 
 export type header = {
     name: string;
@@ -45,7 +45,7 @@ export class header_utils {
     }
 
     public static get_header(name: string, headers: Map<number, header>) : header | undefined | null {
-        let crc: number = serversdk.serverplugin.mod_crc32(0, name, name.length);
+        let crc: number = serversdk.sdklib.mod_crc32(0, Buffer.from(name));
         if (headers.has(crc)) {
             return headers.get(crc);
         }

@@ -65,7 +65,10 @@ USE_NAPI ?= 0
 ifeq ($(USE_NAPI), 1)
     INCLUDES += -I $(shell node -p "require('node-addon-api').include")
 	INCLUDES += -I $(shell . ~/.nvm/nvm.sh && nvm which current | sed 's|bin/node|include/node|')
-	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp
+	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp \
+        $(SRCDIR)/gserverplugin_napi_addon.cpp \
+        $(SRCDIR)/napi_helper.cpp
+
 	NAPI_DEFINES := \
 	'-DNODE_GYP_MODULE_NAME=serverplugin_addon' \
 	'-DUSING_UV_SHARED=1' \

@@ -53,10 +53,10 @@ class qnetworkserver;
 class observer_qserver_events {
    public:
 	virtual ~observer_qserver_events() { debug_print(LOG_LEVEL_0, __LOGTAG__, "observer_qserver_events destroyed"); };
-	virtual void on_server_pre_start(qnetworkserver*) = 0;
-	virtual void on_server_start(qnetworkserver*, const char* ip, uint16_t port) = 0;
-	virtual void on_server_stop(qnetworkserver*) = 0;
-	virtual void on_server_error(qnetworkserver*, int error_code) = 0;
+	virtual void on_server_pre_start(qnetworkserver* server) = 0;
+	virtual void on_server_start(qnetworkserver* server, const char* ip, uint16_t port) = 0;
+	virtual void on_server_stop(qnetworkserver* server) = 0;
+	virtual void on_server_error(qnetworkserver* server, int error_code) = 0;
 
 	// room events
 	virtual void room_event_create(qnetworkserver* server, int room, class room* room_ptr) = 0;
@@ -137,10 +137,11 @@ class qnetworkserver : protected bridge_qpeerconnection {
 		observer_qserver_events* observer = nullptr;
 		pthread_t run_thread_id;
 		qstring zk_uri;
+        void* user_arg = nullptr;
 	};
 	qnetworkserver() {};
 	virtual ~qnetworkserver() {}
-	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer = nullptr);
+	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
 	void broadcast_message(const qstring& buffer, bool flush);
 	bool network_server_begin();
 	void network_server_end();
@@ -148,7 +149,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline bool is_log_quiche() override { return false; }
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
-
+    void* get_user_arg() { return user_arg; }
+    
    protected:
 	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
@@ -194,10 +196,12 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	struct qconnections* conns = nullptr;
 	ev_timer heartbeat_check_timer;
 	struct runserverconfig run_server_config;
-
+    void* user_arg = nullptr;
+    
 #if QTHREADPOOL
 	ev_timer threadpool_mainthread_dispatcher_timer;
-
+    
+    
    protected:
 	struct thread_pool_context {
 		qhiredis* hiredis = nullptr;

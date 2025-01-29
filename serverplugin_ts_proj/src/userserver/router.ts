@@ -1,5 +1,4 @@
-import * as ffi from 'ffi-napi';
-import { serversdk } from '../helpers/serversdk';
+import { serversdk } from '../helpers/libserverplugin';
 import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
 import { server_config_reader } from '../helpers/serverconfig-reader';
 
@@ -16,28 +15,28 @@ export namespace server {
             router_port_return: server_config_reader.get_instance().get_value_as_number('router_port_return', 4005),
             app_id: server_config_reader.get_instance().get_value('app_id')
         };
-        private on_router_start_cb: (native_router: Buffer) => Promise<void>;
-        constructor(on_router_start_cb: (native_router: Buffer) => Promise<void>) {
+        private on_router_start_cb: (native_router: any) => Promise<void>;
+        constructor(on_router_start_cb: (native_router: any) => Promise<void>) {
             this.on_router_start_cb = on_router_start_cb;
         }
 
         // router events
-        protected on_router_pre_start = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
+        protected on_router_pre_start = (native_router: any) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_pre_start`);
-        }) as unknown as serversdk.type_on_router_pre_start;
-        protected on_router_start = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
+        }
+        protected on_router_start = (native_router: any) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_start`);
             this.on_router_start_cb(native_router);
-        }) as unknown as serversdk.type_on_router_start;
-        protected on_router_stop = ffi.Callback('void', ['pointer', 'pointer'], (native_router: Buffer, user_arg: Buffer) => {
+        }
+        protected on_router_stop = (native_router: any) => {
             debug_print(LOG_LEVEL_0, router.__LOGTAG__, `on_router_stop:`);
-        }) as unknown as serversdk.type_on_router_stop;
-        protected on_router_error = ffi.Callback('void', ['pointer', 'pointer', 'int'], (native_router: Buffer, user_arg: Buffer, error_code: number) => {
+        }
+        protected on_router_error = (router: any, error_code: any) => {
             debug_error(router.__LOGTAG__, `on_router_error: ${error_code}`);
-        }) as unknown as serversdk.type_on_router_error;
+        }
 
         public async run(): Promise<void> {
-            serversdk.serverplugin.spawn_qh3router(
+            serversdk.sdklib.spawn_qh3router(
                 this.router_config.router_address,
                 this.router_config.mongodb_uri,
                 this.router_config.redis_address,
@@ -49,8 +48,7 @@ export namespace server {
                 this.on_router_pre_start,
                 this.on_router_start,
                 this.on_router_stop,
-                this.on_router_error,
-                serversdk.nullptr
+                this.on_router_error
             );
         }
     }

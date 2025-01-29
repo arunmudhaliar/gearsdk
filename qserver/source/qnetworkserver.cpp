@@ -685,7 +685,8 @@ void qnetworkserver::exit_services_gracefully() {
 	ev_loop_destroy(wait_loop);
 }
 
-int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer) {
+int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer, void* user_arg_ptr) {
+    user_arg = user_arg_ptr;
 	run_server_config.host = host;
 	run_server_config.port = port;
 	run_server_config.redis_ip = redis_ip;

@@ -143,7 +143,7 @@ void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, i
         GX_DELETE(response_packet);
         plugin_server->increment_response_served_counter();
     }
-    plugin_server->print_request_response_summary();
+//    plugin_server->print_request_response_summary();
 }
 
 EXPORT void gsdk::server::setup_signal_handler() {
@@ -250,9 +250,9 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 	 */
 }
 
-EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
+EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len) {
     qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
-    struct st_response_packet* response_packet = DEBUG_NEW st_response_packet(server, cid, cid_len, payload, len, user_data, user_data_len);
+    struct st_response_packet* response_packet = DEBUG_NEW st_response_packet(server, cid, cid_len, payload, len);
     plugin_server->enqueue_response(response_packet);
     plugin_server->notify_main_thread();
 }

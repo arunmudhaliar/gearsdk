@@ -4,7 +4,7 @@
 	  {
 		"label": "build:debug",
 		"type": "shell",
-		"command": "source ~/.nvm/nvm.sh && mkdir -p ./dist && cp ../serverplugin/libserverplugin-debug.$(uname | sed -e 's/Linux/so/' -e 's/Darwin/dylib/') ./dist/ && npm run watch -- -p tsconfig.debug.json", // Load nvm and then run npm
+		"command": "source ~/.nvm/nvm.sh && mkdir -p ./dist && cp ../serverplugin/libserverplugin-debug.node ./dist/ && npm run watch -- -p tsconfig.debug.json", // Load nvm and then run npm
 		"isBackground": true,
 		"problemMatcher": [
 			"$tsc-watch"
@@ -43,6 +43,7 @@
 			"-C",
 			"../serverplugin",
 			"debug",
+			"USE_NAPI=1",
 			"DDEV_BUILD=1",
 			"LOG_LEVEL=2"
 		],
@@ -70,6 +71,7 @@
 			"-C",
 			"../serverplugin",
 			"release",
+			"USE_NAPI=1",
 			"DPROD_BUILD=1",
 			"LOG_LEVEL=2"
 		],

@@ -1,6 +1,6 @@
 import { server as qserver } from '../gameserver/gameserver';
 import { debug_error, debug_print, LOG_LEVEL_4 } from '../helpers/sdktypes';
-import { serversdk } from '../helpers/serversdk';
+import { serversdk } from '../helpers/libserverplugin';
 
 // namespace app {
 export class custom_room implements qserver.interface_room {
@@ -45,13 +45,15 @@ export class custom_room implements qserver.interface_room {
 
     // broadcast and send
     broadcast_except(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        return serversdk.serverplugin.room_broadcast_except(this.native_server, room_ptr, cid_hash, message, message.length);
+        // return serversdk.serverplugin.room_broadcast_except(this.native_server, room_ptr, cid_hash, message, message.length);
+        return false;
     }
     broadcast(room_ptr: serversdk.room_ptr, message: string): void {
-        serversdk.serverplugin.room_broadcast(this.native_server, room_ptr, message, message.length);
+        // serversdk.serverplugin.room_broadcast(this.native_server, room_ptr, message, message.length);
     }
     send_to(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        return serversdk.serverplugin.room_send_to(this.native_server, room_ptr, cid_hash, message, message.length);
+        // return serversdk.serverplugin.room_send_to(this.native_server, room_ptr, cid_hash, message, message.length);
+        return false;
     }
 }
 

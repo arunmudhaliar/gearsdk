@@ -77,7 +77,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 };
 
 struct st_response_packet {
-    st_response_packet(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
+    st_response_packet(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len) {
         this->server = server;
         this->cid_len = cid_len;
         if (cid && cid_len>0) {
@@ -85,28 +85,17 @@ struct st_response_packet {
             memcpy(this->cid, cid, cid_len);
         }
         this->payload.bin_copy((const uint8_t*)payload, len);
-        if (user_data && user_data_len>0) {
-            this->user_data_len = user_data_len;
-            this->user_data = (char *)malloc(user_data_len);
-            memcpy(this->user_data, user_data, user_data_len);
-        }
     }
     ~st_response_packet() {
         if (this->cid) {
             free(this->cid);
             this->cid = nullptr;
         }
-        if (this->user_data) {
-            free(this->user_data);
-            this->user_data = nullptr;
-        }
     }
     qh3server* server = nullptr;
     uint8_t *cid = nullptr;
     uint16_t cid_len = 0;
     qstring payload;
-    char* user_data = 0;
-    size_t user_data_len = 0;
 };
 
 class qh3plugin_server : public qh3server {
@@ -180,7 +169,7 @@ EXPORT unsigned long get_crc32(const char* guid, int guid_len);
 EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
 void* spawn_qh3router_internal(void* data);
 void* spawn_qh3server_internal(void* data);
-EXPORT void qh3server_try_send_response(qh3server*, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
+EXPORT void qh3server_try_send_response(qh3server*, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len);
 EXPORT unsigned int get_live_connection_count(qh3server*);
 EXPORT const char* get_device_public_ip();
 EXPORT uint64_t qh3server_logfile(qh3server*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);

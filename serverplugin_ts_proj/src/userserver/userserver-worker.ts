@@ -1,6 +1,5 @@
 import { parentPort } from 'worker_threads';
 import { server } from './userserver';
-import * as ref from 'ref-napi';
 
 const userserver_instance: server.userserver = new server.userserver();
 
@@ -11,7 +10,7 @@ if (parentPort) {
 }
 
 try {
-    userserver_instance.run(ref.NULL);
+    userserver_instance.run(null);
     parentPort?.postMessage('userserver.run() executed successfully');
 } catch (error) {
     parentPort?.postMessage(`Error in userserver.run(): ${error}`);
