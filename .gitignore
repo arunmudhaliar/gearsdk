@@ -133,3 +133,10 @@ serverplugin_rust_proj/stats
 serverplugin_rust_proj/target
 libserverplugin-debug.node
 libserverplugin.node
+server_app_ts_proj/dist
+server_app_ts_proj/glogs
+server_app_ts_proj/gstats
+server_app_ts_proj/logs
+server_app_ts_proj/node_modules
+server_app_ts_proj/stats
+libserverplugin-darwin.node

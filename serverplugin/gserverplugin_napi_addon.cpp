@@ -250,4 +250,71 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
 
     return env.Null();
 }
+
+Napi::Value napi_room_broadcast_except(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Validate arguments count
+    if (info.Length() < 4 || !info[0].IsExternal() || !info[1].IsExternal() ||
+        !info[2].IsNumber() || !info[3].IsString()) {
+        Napi::TypeError::New(env, "Expected (qnetworkserver*, room*, unsigned, string)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract arguments
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    room* room_ptr = info[1].As<Napi::External<room>>().Data();
+    unsigned cid_hash = info[2].As<Napi::Number>().Uint32Value();
+    std::string msg = info[3].As<Napi::String>().Utf8Value();
+
+    // Call the actual function
+    bool result = gsdk::server::room_broadcast_except(server, room_ptr, cid_hash, msg.c_str(), msg.length());
+
+    // Return result as a boolean
+    return Napi::Boolean::New(env, result);
+}
+
+Napi::Value napi_room_broadcast(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Validate arguments
+    if (info.Length() < 3 || !info[0].IsExternal() || !info[1].IsExternal() || !info[2].IsString()) {
+        Napi::TypeError::New(env, "Expected (qnetworkserver*, room*, string)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract arguments
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    room* room_ptr = info[1].As<Napi::External<room>>().Data();
+    std::string msg = info[2].As<Napi::String>().Utf8Value();
+
+    // Call the actual C++ function
+    gsdk::server::room_broadcast(server, room_ptr, msg.c_str(), msg.length());
+
+    // No return value (void function)
+    return env.Undefined();
+}
+
+
+Napi::Value napi_room_send_to(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Validate arguments
+    if (info.Length() < 4 || !info[0].IsExternal() || !info[1].IsExternal() || !info[2].IsNumber() || !info[3].IsString()) {
+        Napi::TypeError::New(env, "Expected (qnetworkserver*, room*, unsigned, string)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract arguments
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    room* room_ptr = info[1].As<Napi::External<room>>().Data();
+    unsigned cid_hash = info[2].As<Napi::Number>().Uint32Value();
+    std::string msg = info[3].As<Napi::String>().Utf8Value();
+
+    // Call the actual C++ function
+    bool success = gsdk::server::room_send_to(server, room_ptr, cid_hash, msg.c_str(), msg.length());
+
+    // Return success status as a boolean
+    return Napi::Boolean::New(env, success);
+}
 }

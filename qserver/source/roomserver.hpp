@@ -22,8 +22,9 @@
 #undef __LOGTAG__
 #define __LOGTAG__ "roomserver"
 
-#define WAITING_ROOM_ZOMBIE_CHECK_TIMER 30.0
-#define WAITING_ROOM_ZOMBIE_THRESHOLD 200.0
+#define ZOMBIE_WAITING_ROOM_CHECK_TIMER 25.0
+#define ZOMBIE_WAITING_ROOM_TIMEOUT 20.0
+#define ZOMBIE_ROOM_TIMEOUT 60.0 * 60.0
 
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async, observer_serverconfig {
@@ -32,8 +33,11 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 	inline observer_qserver_events* get_main_observer() override final { return get_observer(); }
-    room* try_get_room_if_in_map(room* room_ptr) override final;
-    
+	room* try_get_room_if_in_map(room* room_ptr) override final;
+	inline qhiredis* get_hiredis() override final { return hiredis; }
+	inline const qstring& get_host_id() override final { return host_id; }
+	inline const qstring& get_port_id() override final { return port_id; }
+
    protected:
 	bool on_network_server_begin() override final;
 	void on_network_server_init() override;
@@ -70,8 +74,8 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	std::vector<room*> waiting_rooms;
 	std::map<room*, room*> rooms;
 	std::map<unsigned, room*> connection_map;
-	std::map<unsigned, ev_tstamp> new_connections;
-	size_t zombie_rooms = 0;
+	std::map<qconn_io*, ev_tstamp> new_connections;
+	//	size_t zombie_rooms = 0;
 	size_t max_conns_reached = 0;
 	size_t max_rooms_reached = 0;
 	size_t max_wrooms_reached = 0;

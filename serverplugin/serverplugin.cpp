@@ -125,16 +125,17 @@ bool gsdk::server::qh3plugin_server::on_server_pre_init() {
 void gsdk::server::qh3plugin_server::on_server_uninitialise() {}
 
 void gsdk::server::qh3plugin_server::on_run_started() {
-    ev_async_init(&async_watcher_notify_server, notify_server_async_cb);
-    async_watcher_notify_server.data = this;
-    ev_async_start(get_server_main_loop(), &async_watcher_notify_server);
+    ev_notifier.init(get_server_main_loop(), notify_server_async_cb, this);
+//    ev_async_init(&async_watcher_notify_server, notify_server_async_cb);
+//    async_watcher_notify_server.data = this;
+//    ev_async_start(get_server_main_loop(), &async_watcher_notify_server);
 }
 
 void gsdk::server::qh3plugin_server::on_run_end() {}
 
 void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
     qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(w->data);
-    while (st_response_packet* response_packet = plugin_server->dequeue_response()) {
+    while (st_response_packet* response_packet = plugin_server->get_ev_notifier().dequeue_response()) {
         struct conn_io_qh3* conn_io = plugin_server->get_conn(response_packet->cid, response_packet->cid_len);
         if (conn_io != nullptr) {
             conn_io->http_response->set_payload(response_packet->payload);
@@ -253,8 +254,9 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len) {
     qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
     struct st_response_packet* response_packet = DEBUG_NEW st_response_packet(server, cid, cid_len, payload, len);
-    plugin_server->enqueue_response(response_packet);
-    plugin_server->notify_main_thread();
+    plugin_server->get_ev_notifier().enqueue_response(response_packet);
+    plugin_server->get_ev_notifier().notify_main_thread();
+    plugin_server->increment_response_notified();
 }
 
 EXPORT unsigned int gsdk::server::get_live_connection_count(qh3server* server) {

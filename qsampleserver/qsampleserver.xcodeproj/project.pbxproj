@@ -442,6 +442,7 @@
 					"\"$(SRCROOT)/../qhiredis/libs/macos\"",
 					"\"$(SRCROOT)/../qutils/libs/macos\"",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_TIDY = 0;
 			};

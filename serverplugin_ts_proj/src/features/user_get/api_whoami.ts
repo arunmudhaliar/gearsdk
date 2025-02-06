@@ -1,4 +1,4 @@
-import { header, header_utils } from '../../helpers/header_utils';
+import { header, header_utils } from '../../helpers/headerutils';
 import { serversdk } from '../../helpers/libserverplugin';
 import server from '../../userserver/userserver';
 

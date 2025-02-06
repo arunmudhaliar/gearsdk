@@ -45,15 +45,13 @@ export class custom_room implements qserver.interface_room {
 
     // broadcast and send
     broadcast_except(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        // return serversdk.serverplugin.room_broadcast_except(this.native_server, room_ptr, cid_hash, message, message.length);
-        return false;
+        return serversdk.sdklib.room_broadcast_except(this.native_server, room_ptr, cid_hash, message);
     }
     broadcast(room_ptr: serversdk.room_ptr, message: string): void {
-        // serversdk.serverplugin.room_broadcast(this.native_server, room_ptr, message, message.length);
+        serversdk.sdklib.room_broadcast(this.native_server, room_ptr, message);
     }
     send_to(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        // return serversdk.serverplugin.room_send_to(this.native_server, room_ptr, cid_hash, message, message.length);
-        return false;
+        return serversdk.sdklib.room_send_to(this.native_server, room_ptr, cid_hash, message);
     }
 }
 

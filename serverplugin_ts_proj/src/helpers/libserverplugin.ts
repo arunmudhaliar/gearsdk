@@ -1,13 +1,25 @@
 import * as path from 'path';
+import * as fs from "fs";
+import os from 'os';
 import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
 
 export namespace serversdk {
     const __LOGTAG__: string = `serversdk`;
     let lib_path: string;
-    let lib_debug: string = 'libserverplugin-debug.node';
-    let lib_release: string = 'libserverplugin.node';
-    let lib_serverplugin: string = (process.env.NODE_ENV === 'production') ? lib_release : lib_debug;
-    lib_path = path.join(process.cwd(), `./dist/${lib_serverplugin}`);
+    let lib_debug: string = `libserverplugin-${os.platform()}-debug.node`;
+    let lib_release: string = `libserverplugin-${os.platform()}.node`;
+    let lib_debug_path: string = path.join(__dirname, `./../../dist/${lib_debug}`);
+    let lib_release_path: string = path.join(__dirname, `./../../dist/${lib_release}`);
+    if (fs.existsSync(lib_debug_path)) {
+        lib_path = lib_debug_path;
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "DEBUG version:", lib_path);
+    } else if (fs.existsSync(lib_release_path)) {
+        lib_path = lib_release_path;
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "RELEASE version:", lib_path);
+    } else {
+        throw new Error("No valid libserverplugin{configuration}.node file found!");
+    }
+
     export const sdklib = require(lib_path) as serversdk.interface_serverplugin;
 
     export interface qh3_router_input_config {
@@ -133,10 +145,25 @@ export namespace serversdk {
             room_event_countdown_to_start: type_on_room_event_countdown_to_start,
             room_event_countdown_cancelled: type_on_room_event_countdown_cancelled
         ): number;
+        room_broadcast_except(native_server: qserver_ptr,
+            room: room_ptr,
+            cid_hash: number,
+            message: string
+        ): boolean;
+        room_broadcast(native_server: qserver_ptr,
+            room: room_ptr,
+            message: string
+        ): void;
+        room_send_to(native_server: qserver_ptr,
+            room: room_ptr,
+            cid_hash: number,
+            message: string
+        ): boolean;
     }
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');
     debug_print(LOG_LEVEL_0, __LOGTAG__, "current directory:", process.cwd());
+
     sdklib.setup_signal_handler();
     sdklib.pre_init_serverplugin_sdk();
 }

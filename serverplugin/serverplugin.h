@@ -17,6 +17,7 @@
 #include "../qh3server/qh3server/qh3router.hpp"
 #include "../qh3server/qh3server/qh3server.hpp"
 #include "../networkcommon/source/qthreadpool.hpp"
+#include "serverplugin_helper.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "serverplugin"
@@ -103,28 +104,30 @@ class qh3plugin_server : public qh3server {
 	qh3plugin_server(const server_config_in& config);
 	static inline const char* get_server_name() { return "qh3plugin_server"; }
 
-    ev_async async_watcher_notify_server;
+//    ev_async async_watcher_notify_server;
     
-    // Thread-safe enqueue
-    void enqueue_response(st_response_packet* response_packet) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        response_queue.push(response_packet);
-    }
+//    // Thread-safe enqueue
+//    void enqueue_response(st_response_packet* response_packet) {
+//        std::lock_guard<std::mutex> lock(queue_mutex);
+//        response_queue.push(response_packet);
+//    }
 
-    // Thread-safe dequeue (main thread calls this)
-    st_response_packet* dequeue_response() {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        if (response_queue.empty()) return nullptr;
-        st_response_packet* response_packet = response_queue.front();
-        response_queue.pop();
-        return response_packet;
-    }
+//    // Thread-safe dequeue (main thread calls this)
+//    st_response_packet* dequeue_response() {
+//        std::lock_guard<std::mutex> lock(queue_mutex);
+//        if (response_queue.empty()) return nullptr;
+//        st_response_packet* response_packet = response_queue.front();
+//        response_queue.pop();
+//        return response_packet;
+//    }
 
-    // Notify main thread
-    void notify_main_thread() {
-        total_response_notified.fetch_add(1, std::memory_order_relaxed);
-        ev_async_send(get_server_main_loop(), &async_watcher_notify_server);
-    }
+//    // Notify main thread
+//    void notify_main_thread() {
+//        total_response_notified.fetch_add(1, std::memory_order_relaxed);
+//        ev_async_send(get_server_main_loop(), &async_watcher_notify_server);
+//    }
+    
+    async_ev_notifier<struct st_response_packet>& get_ev_notifier()   { return ev_notifier; }
     
     void increment_request_counter() {
         total_requests.fetch_add(1, std::memory_order_relaxed);
@@ -132,7 +135,9 @@ class qh3plugin_server : public qh3server {
     void increment_response_served_counter() {
         total_response_served.fetch_add(1, std::memory_order_relaxed);
     }
-    
+    void increment_response_notified() {
+        total_response_notified.fetch_add(1, std::memory_order_relaxed);
+    }
     void print_request_response_summary() {
         debug_print(LOG_LEVEL_0, __LOGTAG__, "rq:%d, notify:%d, res:%d", total_requests.load(std::memory_order_relaxed), total_response_notified.load(std::memory_order_relaxed), total_response_served.load(std::memory_order_relaxed));
     }
@@ -148,8 +153,7 @@ class qh3plugin_server : public qh3server {
 	void on_run_end() override;
     
 private:
-    std::queue<st_response_packet*> response_queue;
-    std::mutex queue_mutex;
+    async_ev_notifier<struct st_response_packet> ev_notifier;
     static void notify_server_async_cb(EV_P_ ev_async *w, int revents);
     std::atomic<int> total_requests = {0};
     std::atomic<int> total_response_notified = {0};

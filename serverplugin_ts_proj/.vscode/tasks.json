@@ -1,10 +1,10 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-	  {
+	{
 		"label": "build:debug",
 		"type": "shell",
-		"command": "source ~/.nvm/nvm.sh && mkdir -p ./dist && cp ../serverplugin/libserverplugin-debug.node ./dist/ && npm run watch -- -p tsconfig.debug.json", // Load nvm and then run npm
+		"command": "source ~/.nvm/nvm.sh && npm run clean && npm run build:debug && npm run watch",
 		"isBackground": true,
 		"problemMatcher": [
 			"$tsc-watch"
@@ -17,13 +17,12 @@
 			"env": {
 				"PATH": "~/.nvm/versions/node/v16.16.0/bin:${env:PATH}"
 			}
-		},
-		"dependsOn": "(Debug Make C++) Build serverplugin with Clang"
+		}
 	},
 	{
 		"label": "build:release",
 		"type": "shell",
-		"command": "source ~/.nvm/nvm.sh && npm run build:release && npm run start:release",
+		"command": "source ~/.nvm/nvm.sh && npm run clean && npm run build:release && npm run start:release",
 		"isBackground": false,
 		"group": {
 			"kind": "build"
@@ -32,79 +31,7 @@
 			"env": {
 			"PATH": "~/.nvm/versions/node/v16.16.0/bin:${env:PATH}"
 			}
-		},
-		"dependsOn": "(Release Make C++) Build serverplugin with Clang"
-	},
-	{
-		"label": "(Debug Make C++) Build serverplugin with Clang",
-		"type": "shell",
-		"command": "make",
-		"args": [
-			"-C",
-			"../serverplugin",
-			"debug",
-			"USE_NAPI=1",
-			"DDEV_BUILD=1",
-			"LOG_LEVEL=2"
-		],
-		"group": {
-			"kind": "build",
-			"isDefault": false
-		},
-		"problemMatcher": [
-			"$gcc"
-		],
-		"options": {
-			"env": {
-				"CXX": "clang++",
-				"CC": "clang"
-			}
-		},
-		"dependsOn": "Clean serverplugin",
-		"detail": "Build debug serverplugin with Clang",
-	},
-	{
-		"label": "(Release Make C++) Build serverplugin with Clang",
-		"type": "shell",
-		"command": "make",
-		"args": [
-			"-C",
-			"../serverplugin",
-			"release",
-			"USE_NAPI=1",
-			"DPROD_BUILD=1",
-			"LOG_LEVEL=2"
-		],
-		"group": {
-			"kind": "build",
-			"isDefault": false
-		},
-		"problemMatcher": [
-			"$gcc"
-		],
-		"options": {
-			"env": {
-				"CXX": "clang++",
-				"CC": "clang"
-			}
-		},
-		"dependsOn": "Clean serverplugin",
-		"detail": "Build release serverplugin with Clang",
-	},
-	{
-		"label": "Clean serverplugin",
-		"type": "shell",
-		"command": "make",
-		"args": [
-			"-C",
-			"../serverplugin",
-			"clean"
-		],
-		"group": "build",
-		"problemMatcher": [
-			"$gcc"
-		],
-		"detail": "Clean the project."
+		}
 	}
 	]
   }

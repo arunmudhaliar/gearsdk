@@ -26,6 +26,7 @@
 		551CDD872C9DFAA000ED9D65 /* libuv.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD842C9DFA9900ED9D65 /* libuv.1.dylib */; };
 		551CDD892C9DFAB400ED9D65 /* libquiche.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 551CDD882C9DFAB400ED9D65 /* libquiche.dylib */; };
 		551CDD8A2C9DFAB400ED9D65 /* libquiche.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 551CDD882C9DFAB400ED9D65 /* libquiche.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		553F7F472D52C1C100411520 /* messages.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7F462D52BF9A00411520 /* messages.json */; };
 		55E0F77B2CA9C942009748DF /* requests.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55E0F77A2CA9C917009748DF /* requests.json */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 			dstSubfolderSpec = 16;
 			files = (
 				55E0F77B2CA9C942009748DF /* requests.json in CopyFiles */,
+				553F7F472D52C1C100411520 /* messages.json in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +76,7 @@
 		551CDD802C9DFA7C00ED9D65 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		551CDD842C9DFA9900ED9D65 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
 		551CDD882C9DFAB400ED9D65 /* libquiche.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquiche.dylib; path = ../networkcommon/libs/macos/libquiche.dylib; sourceTree = "<group>"; };
+		553F7F462D52BF9A00411520 /* messages.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = messages.json; sourceTree = "<group>"; };
 		55E0F77A2CA9C917009748DF /* requests.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = requests.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -104,6 +107,7 @@
 		551CDD462C9D131F00ED9D65 = {
 			isa = PBXGroup;
 			children = (
+				553F7F462D52BF9A00411520 /* messages.json */,
 				55E0F77A2CA9C917009748DF /* requests.json */,
 				551CDD6F2C9DF6C700ED9D65 /* debug_new.cpp */,
 				551CDD5A2C9D13B800ED9D65 /* gclient.cpp */,

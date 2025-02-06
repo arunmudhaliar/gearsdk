@@ -1,12 +1,19 @@
 {
 	"folders": [
 		{
+			"name": "serverplugin_ts_proj",
 			"path": "."
 		},
 		{
+			"name": "server_app_ts_proj",
+			"path": "../server_app_ts_proj"
+		},
+		{
+			"name": "serverplugin",
 			"path": "../serverplugin"
 		},
 		{
+			"name": "gearsdk",
 			"path": ".."
 		}
 	]

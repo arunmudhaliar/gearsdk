@@ -99,6 +99,12 @@
 /* Begin PBXFileReference section */
 		1763DC0B2BC8175300F71F07 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAA2B97ADB800BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		553F7F3B2D45739E00411520 /* serverplugin_napi_addon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = serverplugin_napi_addon.cpp; path = ../serverplugin/serverplugin_napi_addon.cpp; sourceTree = "<group>"; };
+		553F7F3E2D4A4ED400411520 /* napi_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = napi_helper.hpp; path = ../serverplugin/napi_helper.hpp; sourceTree = "<group>"; };
+		553F7F3F2D4A4ED400411520 /* napi_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = napi_helper.cpp; path = ../serverplugin/napi_helper.cpp; sourceTree = "<group>"; };
+		553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gserverplugin_napi_addon.cpp; path = ../serverplugin/gserverplugin_napi_addon.cpp; sourceTree = "<group>"; };
+		553F7F432D4ABBA900411520 /* gserverplugin_napi_addon.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = gserverplugin_napi_addon.hpp; path = ../serverplugin/gserverplugin_napi_addon.hpp; sourceTree = "<group>"; };
+		553F7F442D512C9200411520 /* serverplugin_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = serverplugin_helper.hpp; path = ../serverplugin/serverplugin_helper.hpp; sourceTree = "<group>"; };
 		555BA6F02C3AEDA600E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB08E2C2B0B5A001F1B21 /* qh3router_extended.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3router_extended.cpp; sourceTree = "<group>"; };
 		555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -215,8 +221,14 @@
 		557F7BBC2D2C6C4C00A3B9CB /* sserverplugin */ = {
 			isa = PBXGroup;
 			children = (
+				553F7F3F2D4A4ED400411520 /* napi_helper.cpp */,
+				553F7F3E2D4A4ED400411520 /* napi_helper.hpp */,
+				553F7F432D4ABBA900411520 /* gserverplugin_napi_addon.hpp */,
+				553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */,
+				553F7F3B2D45739E00411520 /* serverplugin_napi_addon.cpp */,
 				55A0B47E2D3D096B0075DF23 /* plugin_qhiredis.cpp */,
 				55A0B47F2D3D096B0075DF23 /* plugin_qhiredis.hpp */,
+				553F7F442D512C9200411520 /* serverplugin_helper.hpp */,
 				557F7BB72D2C6C3A00A3B9CB /* serverplugin.cpp */,
 				557F7BB82D2C6C3A00A3B9CB /* serverplugin.h */,
 				557F7BC42D2C825400A3B9CB /* qnetworkserver.cpp */,
@@ -749,6 +761,8 @@
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 					"\"$(SRCROOT)/../common\"",
 					"\"$(SRCROOT)/../qutils\"",
+					"\"/Users/amudaliar/node_modules/node-addon-api\"",
+					"\"/Users/amudaliar/.nvm/versions/node/v16.20.2/include/node\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",
@@ -797,6 +811,8 @@
 					"\"$(SRCROOT)/../qzookeeper/zookeeper\"",
 					"\"$(SRCROOT)/../common\"",
 					"\"$(SRCROOT)/../qutils\"",
+					"\"/Users/amudaliar/node_modules/node-addon-api\"",
+					"\"/Users/amudaliar/.nvm/versions/node/v16.20.2/include/node\"",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/libs/macos\"",

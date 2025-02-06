@@ -129,9 +129,12 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
+	    DEBUG_LIB = libserverplugin-linux-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-linux.$(LIB_EXT)
+    else
+	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
     endif
-    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
-    RELEASE_LIB = libserverplugin.$(LIB_EXT)
 endif
 
 ifeq ($(UNAME), Darwin)
@@ -155,9 +158,13 @@ ifeq ($(UNAME), Darwin)
     LIB_EXT = dylib
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
+	    DEBUG_LIB = libserverplugin-darwin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-darwin.$(LIB_EXT)
+    else
+	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
     endif
-    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
-    RELEASE_LIB = libserverplugin.$(LIB_EXT)
+
     DEBUG_LDFLAGS = -install_name @rpath/$(DEBUG_LIB)
     RELEASE_LDFLAGS = -install_name @rpath/$(RELEASE_LIB)
     ifeq ($(ARCH), arm64)
@@ -194,7 +201,7 @@ endif
 all: debug
 
 clean:
-	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) $(basename $(DEBUG_LIB)).node $(basename $(RELEASE_LIB)).node serverplugin_napi_addon.o
+	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o
 
 $(OBJS): Makefile
 

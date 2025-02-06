@@ -34,7 +34,9 @@ class gclient : public qnetworkclient {
 	virtual ~gclient();
 
 	size_t get_user_data() const { return worker_id; }
-	bool is_finished() { return finished; }
+	bool is_finished() { return finished.load(); }
+	bool is_room_started() { return room_started.load(); }
+	void room_started_for_client() { room_started = true; }
 
    protected:
 	void onconnect(conn_io_client* qconnection) override;
@@ -51,6 +53,7 @@ class gclient : public qnetworkclient {
 
 	size_t worker_id = -1;
 	std::atomic<bool> finished = {false};
+	std::atomic<bool> room_started = {false};
 };
 
 #endif /* gclient_hpp */

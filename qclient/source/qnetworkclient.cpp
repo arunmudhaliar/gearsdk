@@ -45,11 +45,10 @@ void conn_io_client::release() {
 		conn = nullptr;
 	}
 
-	for (auto it = send_buffer.cbegin(); it != send_buffer.cend(); it++) {
-		qdata* sd = *it;
-		GX_DELETE(sd);
-	}
-	send_buffer.clear();
+    while (!send_buffer.empty()) {
+        GX_DELETE(send_buffer.front());
+        send_buffer.pop();
+    }
 }
 
 // Note: This function is not fully tested.
@@ -329,7 +328,12 @@ ssize_t qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconne
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
 	double t = static_cast<double>(timeout_in_nanos) / 1e9;
 	qconnection->timer.repeat = t;
+    qconnection->last_flush_time = ev_now(loop);
 	ev_timer_again(loop, &qconnection->timer);
+    if (t <= 1e-9) {
+        ev_feed_event(loop, &qconnection->timer, EV_TIMER);
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 ", calling timeout manually !!!", t, timeout_in_nanos);
+    }
 	debug_print(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 	return sent_bytes;
 }
@@ -389,7 +393,7 @@ int qnetworkclient::close() {
 			int con_active = qclient_connection->connection_active();
 			if (con_active == 0) {
 				const uint8_t BYE[] = "Bye\r\n";
-				qclient_connection->send_buffer.push_back(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE), true));
+				qclient_connection->send_buffer.push(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE), true));
 			}
 		}
 	}
@@ -405,6 +409,9 @@ int qnetworkclient::close() {
 }
 
 int qnetworkclient::send_message(const uint8_t* buffer, ssize_t size, bool flush) {
+    if (qclient_connection == nullptr || qclient_connection->fin_received.load()) {
+        return -1;
+    }
 #if USE_PTHREAD
 	// lock
 	DEBUG_ASSERT(__LOGTAG__, (send_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
@@ -416,7 +423,7 @@ int qnetworkclient::send_message(const uint8_t* buffer, ssize_t size, bool flush
 #endif
 
 	if (qclient_connection) {
-		qclient_connection->send_buffer.push_back(DEBUG_NEW qdata(buffer, size));
+		qclient_connection->send_buffer.push(DEBUG_NEW qdata(buffer, size));
 	}
 
 #if USE_PTHREAD
@@ -524,7 +531,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 					debug_print(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
 				}
 			}
-			qconnection->fin_received = fin;
+			qconnection->fin_received.store(fin);
 			qconnection->bridge->event_msg_received(recv_len, qconnection->recv_buf, qconnection, fin);
 		}
 		quiche_stream_iter_free(readable);
@@ -551,27 +558,24 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 #endif
 
 	if (qconnection->bridge->getstate() == con_state::STATE_CONNECT) {
-		std::vector<qdata*> successfully_sent;
-		for (auto it = qconnection->send_buffer.cbegin(); it != qconnection->send_buffer.cend(); it++) {
-			qdata* sd = *it;
-			ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
-			if (sd->size != send_res) {
-				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received, qconnection->send_buffer.size());
-			} else {
-				successfully_sent.push_back(sd);
-				ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
-				debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb - flushegress returned %ld", bytes_sent);
-			}
-		}
-
-		for (auto it = successfully_sent.cbegin(); it != successfully_sent.cend(); it++) {
-			qdata* fd = *it;
-			size_t old_sz = qconnection->send_buffer.size();
-			qconnection->send_buffer.erase(std::remove(qconnection->send_buffer.begin(), qconnection->send_buffer.end(), fd), qconnection->send_buffer.end());
-			if (old_sz != qconnection->send_buffer.size()) {
-				GX_DELETE(fd);
-			}
-		}
+        while (!qconnection->send_buffer.empty()) {
+            qdata* sd = qconnection->send_buffer.front();
+            ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
+            if (sd->size != send_res) {
+                debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received.load(), qconnection->send_buffer.size());
+                ev_tstamp elapsed_since_last_flush = ev_now(loop) - qconnection->last_flush_time;
+                if (elapsed_since_last_flush > 3.0f) {  // dont flush very often
+                    ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+                    debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb (failed) - flushegress returned %ld", bytes_sent);
+                }
+                break;  // on failure it will break the loop
+            } else {
+                ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+                debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb - flushegress returned %ld", bytes_sent);
+            }
+            GX_DELETE(sd);
+            qconnection->send_buffer.pop();
+        }
 	}
 
 	//    if (qconnection->issue_close) {

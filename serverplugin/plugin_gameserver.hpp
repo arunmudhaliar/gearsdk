@@ -10,6 +10,7 @@
 #define plugin_gameserver_hpp
 
 #include "../qserver/source/roomserver.hpp"
+#include "serverplugin_helper.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "plugin_gameserver"
@@ -94,14 +95,35 @@ protected:
 };
 
 // MARK: -
+struct st_stateful_response_packet {
+    st_stateful_response_packet(short type, qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, size_t len) {
+        this->type = type;
+        this->server = server;
+        this->room_ptr = room_ptr;
+        this->cid_hash = cid_hash;
+        this->message.bin_copy((const uint8_t*)msg, len);
+    }
+    short type = -1;
+    qnetworkserver* server = nullptr;
+    class room* room_ptr = nullptr;
+    unsigned cid_hash = 0;
+    qstring message;
+};
+
+// MARK: -
 class plugin_gameserver : public roomserver {
 public:
     plugin_gameserver(const qstring& zk_uri);
     virtual ~plugin_gameserver();
     
+    async_ev_notifier<struct st_stateful_response_packet>& get_ev_notifier()   { return ev_notifier; }
+    
 protected:
     void on_network_server_init() override;
     room* create_room(const msg_room_config* room_config_msg) override;
+    
+    async_ev_notifier<struct st_stateful_response_packet> ev_notifier;
+    static void notify_server_async_cb(EV_P_ ev_async *w, int revents);
 };
 
 extern "C" {

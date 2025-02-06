@@ -14,7 +14,7 @@ int room::room_id_counter = 0;
 
 // MARK: - room
 room::room(roomserver_interface* interface, const roomconfig& room_config) : ROOM_ID(room::room_id_counter++), CREATION_TIME(ev_now(interface->get_netowrk_main_loop())), ROOM_CONFIG(room_config), roomserverinterface(interface) {
-    native_server = dynamic_cast<qnetworkserver*>(interface);
+	native_server = dynamic_cast<qnetworkserver*>(interface);
 	observer = (roomserverinterface != nullptr) ? roomserverinterface->get_main_observer() : nullptr;
 	set_loop(roomserverinterface->get_netowrk_main_loop());
 	set_state(ROOM_WAITING);
@@ -29,6 +29,15 @@ room::~room() {
 		GX_DELETE(player_to_rem);
 	}
 	destroy_all_disconnected_players();
+
+	const qstring& host_id = roomserverinterface->get_host_id();
+	const qstring& port_id = roomserverinterface->get_port_id();
+	qhiredis* hiredis = roomserverinterface->get_hiredis();
+	const qstring& key = get_room_signature(state == ROOM_WAITING ? "wroom:" : "room:", host_id, port_id);
+	long long count_waiting_room_of_this_type = 0;
+	int result = hiredis->decr_by(key, 1, count_waiting_room_of_this_type);
+	debug_warn_cond(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", key.c_str(), result);
+
 	debug_print_important(__LOGTAG__, "room %d: destructor", ROOM_ID);
 }
 
@@ -237,12 +246,12 @@ player* room::get_player(qconn_io* qconnection) {
 }
 
 player* room::get_player(unsigned cid_hash) {
-    std::map<unsigned, player*>::iterator it = playermap.find(cid_hash);
-    if (it != playermap.end()) {
-        return it->second;
-    }
-    debug_print_error(__LOGTAG__, "room %d: f:get_player: cid_hash not in the playermap !!! %0x", ROOM_ID, cid_hash);
-    return nullptr;
+	std::map<unsigned, player*>::iterator it = playermap.find(cid_hash);
+	if (it != playermap.end()) {
+		return it->second;
+	}
+	debug_print_error(__LOGTAG__, "room %d: f:get_player: cid_hash not in the playermap !!! %0x", ROOM_ID, cid_hash);
+	return nullptr;
 }
 
 // Function to find a player by hash in the hash table
@@ -282,10 +291,10 @@ void room::add_to_disconnected_players(player* player_ptr) {
 	unsigned hash = player_ptr->qconnection->cid_hash_val;
 	new_player->hash = hash;
 	new_player->player_ptr = player_ptr;
-
+	new_player->player_ptr->qconnection = nullptr;	// because server will destroy this connection in near future.
 	// Add to the hash table using HASH_ADD
 	HASH_ADD(hh, disconnected_players, hash, sizeof(unsigned), new_player);
-	debug_print_important2(__LOGTAG__, "Added player with hash: %u to disconnected_players", hash);
+	debug_print_important2(__LOGTAG__, "added player with hash: %u to disconnected_players", hash);
 }
 
 void room::destroy_all_disconnected_players() {
@@ -316,6 +325,7 @@ ssize_t room::remove_connection(qconn_io* qconnection) {
 	std::map<unsigned, player*>::iterator it = playermap.find(qconnection->cid_hash_val);
 	if (it == playermap.end()) {
 		debug_print_error(__LOGTAG__, "room %d: f:remove_connection - qconnection not in the playermap !!! %s", ROOM_ID, qconnection->cid);
+		remove_from_disconnected_players(qconnection->cid_hash_val, false);
 		return -1;
 	}
 	player* removed_player = (*it).second;
@@ -437,7 +447,7 @@ bool room::broadcast_except(player* p, const qstring& msg) {
 		}
 		player_ptr->qconnection->sendmessage(msg, true);
 	}
-    return true;
+	return true;
 }
 
 bool room::sendto(player* p, const qstring& msg) {
@@ -447,7 +457,7 @@ bool room::sendto(player* p, const qstring& msg) {
 		return false;
 	}
 	p->qconnection->sendmessage(msg, true);
-    return true;
+	return true;
 }
 
 qstring room::get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id) {

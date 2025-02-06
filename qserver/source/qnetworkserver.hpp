@@ -120,6 +120,7 @@ class qconn_io {
 	uint64_t last_stream_s = 0;
 	int user_data = 0;
 	ev_tstamp last_heartbeat_time;
+	ev_tstamp connection_start_time;
 };
 
 // MARK: -
@@ -137,7 +138,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 		observer_qserver_events* observer = nullptr;
 		pthread_t run_thread_id;
 		qstring zk_uri;
-        void* user_arg = nullptr;
+		void* user_arg = nullptr;
 	};
 	qnetworkserver() {};
 	virtual ~qnetworkserver() {}
@@ -149,8 +150,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline bool is_log_quiche() override { return false; }
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
-    void* get_user_arg() { return user_arg; }
-    
+	void* get_user_arg() { return user_arg; }
+
    protected:
 	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
@@ -196,12 +197,11 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	struct qconnections* conns = nullptr;
 	ev_timer heartbeat_check_timer;
 	struct runserverconfig run_server_config;
-    void* user_arg = nullptr;
-    
+	void* user_arg = nullptr;
+
 #if QTHREADPOOL
 	ev_timer threadpool_mainthread_dispatcher_timer;
-    
-    
+
    protected:
 	struct thread_pool_context {
 		qhiredis* hiredis = nullptr;

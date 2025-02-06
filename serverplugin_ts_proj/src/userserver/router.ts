@@ -1,19 +1,19 @@
 import { serversdk } from '../helpers/libserverplugin';
 import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
-import { server_config_reader } from '../helpers/serverconfig-reader';
+import { server_inf_reader } from '../helpers/serverinforeader';
 
 export namespace server {
     export class router {
         private static __LOGTAG__: string = `router`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: server_config_reader.get_instance().get_value('router_address'),
-            mongodb_uri: server_config_reader.get_instance().get_value('router_mongodb_uri'),
-            redis_address: server_config_reader.get_instance().get_value('router_redis_uri'),
-            zk_uri: server_config_reader.get_instance().get_value('router_zk_uri'),
+            router_address: server_inf_reader.get_instance().get_value('router_address'),
+            mongodb_uri: server_inf_reader.get_instance().get_value('router_mongodb_uri'),
+            redis_address: server_inf_reader.get_instance().get_value('router_redis_uri'),
+            zk_uri: server_inf_reader.get_instance().get_value('router_zk_uri'),
             root_dir: process.cwd(),
-            command_port: server_config_reader.get_instance().get_value_as_number('command_port', 4010),
-            router_port_return: server_config_reader.get_instance().get_value_as_number('router_port_return', 4005),
-            app_id: server_config_reader.get_instance().get_value('app_id')
+            command_port: server_inf_reader.get_instance().get_value_as_number('command_port', 4010),
+            router_port_return: server_inf_reader.get_instance().get_value_as_number('router_port_return', 4005),
+            app_id: server_inf_reader.get_instance().get_value('app_id')
         };
         private on_router_start_cb: (native_router: any) => Promise<void>;
         constructor(on_router_start_cb: (native_router: any) => Promise<void>) {

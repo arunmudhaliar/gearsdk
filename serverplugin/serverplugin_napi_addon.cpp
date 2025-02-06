@@ -535,7 +535,10 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "qh3server_stats_count"), Napi::Function::New(env, napi_qh3server_stats_count));
 
     exports.Set(Napi::String::New(env, "spawn_qserver"), Napi::Function::New(env, napi_gserver_funcs::napi_spawn_qserver));
-    
+    exports.Set(Napi::String::New(env, "room_broadcast_except"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast_except));
+    exports.Set(Napi::String::New(env, "room_broadcast"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast));
+    exports.Set(Napi::String::New(env, "room_send_to"), Napi::Function::New(env, napi_gserver_funcs::napi_room_send_to));
+
     return exports;
 }
 // Define the module

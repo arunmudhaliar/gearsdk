@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
-export class server_config_reader {
-    private static instance: server_config_reader | null = null;
+export class server_inf_reader {
+    private static instance: server_inf_reader | null = null;
     private config_map: Map<string, string>;
 
     private constructor() {
@@ -9,11 +9,11 @@ export class server_config_reader {
     }
 
     // Static method to get the instance
-    public static get_instance(): server_config_reader {
-        if (!server_config_reader.instance) {
-            server_config_reader.instance = new server_config_reader();
+    public static get_instance(): server_inf_reader {
+        if (!server_inf_reader.instance) {
+            server_inf_reader.instance = new server_inf_reader();
         }
-        return server_config_reader.instance;
+        return server_inf_reader.instance;
     }
 
     // Method to load and parse the config file

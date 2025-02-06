@@ -61,6 +61,7 @@ qconn_io::qconn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_le
 	memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
 	HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 	last_heartbeat_time = ev_now(bridge->get_mainloop());
+	connection_start_time = ev_now(bridge->get_mainloop());
 }
 
 qconn_io::~qconn_io() {
@@ -686,7 +687,7 @@ void qnetworkserver::exit_services_gracefully() {
 }
 
 int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer, void* user_arg_ptr) {
-    user_arg = user_arg_ptr;
+	user_arg = user_arg_ptr;
 	run_server_config.host = host;
 	run_server_config.port = port;
 	run_server_config.redis_ip = redis_ip;
