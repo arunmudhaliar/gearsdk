@@ -16,6 +16,6 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@amudaliar/gsdk-serverplugin": "^1.0.6"
+    "@amudaliar/gsdk-serverplugin": "^1.0.8"
   }
 }

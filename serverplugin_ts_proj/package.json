@@ -1,6 +1,6 @@
 {
   "name": "@amudaliar/gsdk-serverplugin",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "gsdk server plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,8 @@
     "start:release": "NODE_ENV=production DYLD_LIBRARY_PATH='./dist' node dist/app.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "dependencies": {
     "class-transformer": "^0.5.1",
