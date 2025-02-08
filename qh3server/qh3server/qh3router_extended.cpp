@@ -160,8 +160,6 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		close(sock_return);
 		close(sock);
 		shutdown_zk();
-		GX_DELETE(hiredis_async);
-		GX_DELETE(hiredis);
 		ROUTER_EVENT_ERROR(this, -1);
 		return -1;
 	}
@@ -317,6 +315,9 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 
 		update_redis_about_servers_scheduler.cancel_and_destroy_timer(update_redis_about_servers_timer);
 		unresponsive_routes_scheduler.cancel_and_destroy_timer(unresponsive_timer);
+
+		// NOTE: delete hiredis_async before destroying the 'mainloop'
+		GX_DELETE(hiredis_async);
 
 		ev_loop_destroy(mainloop);
 
