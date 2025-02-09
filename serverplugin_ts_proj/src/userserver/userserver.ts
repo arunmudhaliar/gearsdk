@@ -46,11 +46,15 @@ export namespace server {
         private start_time: number;
         private request_counter: number;
         private total_execution_time: number;
+        private on_server_start_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>;
+        private on_server_stop_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>;
 
-        constructor() {
+        constructor(on_server_start_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>, on_server_stop_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>) {
             this.start_time = Date.now(); // Initialize the start time
             this.request_counter = 0;     // Initialize the request counter
             this.total_execution_time = 0; // Initialize the total execution time
+            this.on_server_start_cb = on_server_start_cb;
+            this.on_server_stop_cb = on_server_stop_cb;
         }
 
         public get_mongo_driver(): qmongo | null {
@@ -72,9 +76,15 @@ export namespace server {
         protected on_server_start = async (native_server: serversdk.qh3server_ptr, ip: string, port: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
             await this.hiredis?.set_hash_value(`servers:${serversdk.sdklib.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
+            this.on_server_start_cb(native_server);
         }
         protected on_server_stop = (native_server: serversdk.qh3server_ptr) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
+            serversdk.sdklib.qh3server_release_callbacks(native_server);
+            this.on_server_stop_cb(native_server);
+            this.mongo?.disconnect();
+            this.hiredis?.disconnect_redis();
+            this.qzk?.close();
         }
         protected on_server_error = (native_server: serversdk.qh3server_ptr, error_code: number) => {
             debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);

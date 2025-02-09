@@ -162,7 +162,9 @@ bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 plugin_gameserver::plugin_gameserver(const qstring& zk_uri) : roomserver(zk_uri) {}
 
-plugin_gameserver::~plugin_gameserver() {}
+plugin_gameserver::~plugin_gameserver() {
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "plugin_gameserver destructor called");
+}
 
 void plugin_gameserver::on_network_server_init() {
     roomserver::on_network_server_init();
@@ -255,11 +257,12 @@ void* gsdk::server::spawn_qserver_internal(void* data) {
     qnetworkserver::runserverconfig* config = (qnetworkserver::runserverconfig*)std::get<0>(*tuple_in);
     qplugin_qserver_event_listener* listener = (qplugin_qserver_event_listener*)std::get<1>(*tuple_in);
     plugin_gameserver server(config->zk_uri);
-    server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener, config->user_arg);
+    int result = server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener, config->user_arg);
     GX_DELETE(tuple_in);
     GX_DELETE(config);
     GX_DELETE(listener);
-    pthread_exit(0);
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qserver_internal, result %d", result);
+    return nullptr;
 }
 
 EXPORT uint64_t gsdk::server::qserver_logfile(qnetworkserver* server, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message) {

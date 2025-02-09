@@ -16,6 +16,7 @@ public class TestScript : MonoBehaviour
     public UnityEngine.UI.Scrollbar progress;
     public UnityEngine.UI.Toggle userLoginRequestToggle;
     public TMPro.TMP_InputField server_ip;
+    public UnityEngine.UI.Toggle forceCmdServerShutdownToggle;
     private string previous_valid_ip = "192.168.0.230";
 
     public int total_requests = 0;
@@ -213,6 +214,6 @@ public class TestScript : MonoBehaviour
 
     public void Shutdown_Qh3Server() {
         OnIpAddressEntered();
-        qunitysdk.send_async_request(server_ip.text.Trim(), "4010", "/shutdown_test", "", IntPtr.Zero, null, 0);
+        qunitysdk.send_async_request(server_ip.text.Trim(), "4010", forceCmdServerShutdownToggle.isOn ? "/shutdown_cmd_center" : "/shutdown_test", "", IntPtr.Zero, null, 0);
     }
 }

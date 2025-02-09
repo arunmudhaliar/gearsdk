@@ -4,6 +4,10 @@ import { serversdk } from '../helpers/libserverplugin';
 
 export namespace server {
     export interface interface_gameserver {
+        ongameserver_pre_start(native_server: serversdk.qserver_ptr): void;
+        ongameserver_start(native_server: serversdk.qserver_ptr): void;
+        ongameserver_stop(native_server: serversdk.qserver_ptr): void;
+        ongameserver_error(native_server: serversdk.qserver_ptr, error_code: number): void;
         ongameserver_room_create(native_server: serversdk.qserver_ptr, room: number, bet_id: string): interface_room;
     }
 
@@ -56,6 +60,7 @@ export namespace server {
 
         protected on_server_pre_start: serversdk.type_on_qserver_pre_start = (native_server: serversdk.qserver_ptr) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_pre_start, server_id: ${this.gserver_id}`);
+            this.gameserver_interface?.ongameserver_pre_start(native_server);
         }
         protected on_server_start: serversdk.type_on_qserver_start = async (native_server: serversdk.qserver_ptr, ip: string, port: number) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_start ${ip}:${port}, server_id: ${this.gserver_id}`);
@@ -64,14 +69,18 @@ export namespace server {
             } else {
                 debug_error(gameserver.__LOGTAG__, `native_server already present in rooms map !!!. This need to check !!!, server_id: ${this.gserver_id}`);
             }
+            this.gameserver_interface?.ongameserver_start(native_server);
         }
         protected on_server_stop: serversdk.type_on_qserver_stop = async (native_server: serversdk.qserver_ptr) => {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_stop:, server_id: ${this.gserver_id}`);
             // TODO(amudaliar): need to gracefully remove all rooms
+            this.gameserver_interface?.ongameserver_stop(native_server);
+            serversdk.sdklib.qserver_release_callbacks(native_server);
         }
         protected on_server_error: serversdk.type_on_qserver_error = (native_server: serversdk.qserver_ptr, error_code: number) => {
             debug_error(gameserver.__LOGTAG__, `on_server_error: ${error_code}, server_id: ${this.gserver_id}`);
             // TODO(amudaliar): need to gracefully remove all rooms if the error cant be recoverable
+            this.gameserver_interface?.ongameserver_error(native_server, error_code);
         }
 
         protected room_event_create: serversdk.type_on_room_event_create = (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {

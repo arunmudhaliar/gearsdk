@@ -102,9 +102,18 @@ struct st_response_packet {
 class qh3plugin_server : public qh3server {
    public:
 	qh3plugin_server(const server_config_in& config);
+    ~qh3plugin_server();
+    
 	static inline const char* get_server_name() { return "qh3plugin_server"; }
 
-//    ev_async async_watcher_notify_server;
+    struct st_admin_cmd {
+        st_admin_cmd(short type, qh3plugin_server* server): type(type), server(server) {
+        }
+        short type = 0;
+        qh3plugin_server* server = nullptr;
+    };
+    
+    ev_async async_cmd_watcher_notify_server;
     
 //    // Thread-safe enqueue
 //    void enqueue_response(st_response_packet* response_packet) {
@@ -143,6 +152,12 @@ class qh3plugin_server : public qh3server {
     }
     inline EVENT_LOOP_TYPE* get_server_main_loop() { return get_mainloop(); }
     
+    void shutdown_server() {
+        st_admin_cmd* new_cmd = DEBUG_NEW st_admin_cmd(1, this);
+        async_cmd_watcher_notify_server.data = new_cmd;
+        ev_async_send(get_server_main_loop(), &async_cmd_watcher_notify_server);
+    }
+    
    protected:
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
 	parse_return parse(struct conn_io_qh3* conn_io) override;
@@ -155,6 +170,8 @@ class qh3plugin_server : public qh3server {
 private:
     async_ev_notifier<struct st_response_packet> ev_notifier;
     static void notify_server_async_cb(EV_P_ ev_async *w, int revents);
+    static void notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents);
+    
     std::atomic<int> total_requests = {0};
     std::atomic<int> total_response_notified = {0};
     std::atomic<int> total_response_served = {0};

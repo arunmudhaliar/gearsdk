@@ -1,6 +1,7 @@
 #include "napi_helper.hpp"
 #include "serverplugin.h"
 #include "plugin_gameserver.hpp"
+#include "gserverplugin_napi_addon.hpp"
 
 namespace napi_gserver_funcs {
 Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
@@ -35,21 +36,6 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
     std::string zkUri = info[2].As<Napi::String>();
     std::string rootDir = info[3].As<Napi::String>();
     std::string appId = info[4].As<Napi::String>();
-
-    struct CallbackData {
-        napi_threadsafe_function preStartCbRef;
-        napi_threadsafe_function startCbRef;
-        napi_threadsafe_function stopCbRef;
-        napi_threadsafe_function errorCbRef;
-        napi_threadsafe_function room_event_create_CbRef;
-        napi_threadsafe_function room_event_start_CbRef;
-        napi_threadsafe_function room_event_player_added_CbRef;
-        napi_threadsafe_function room_event_message_CbRef;
-        napi_threadsafe_function room_player_removed_CbRef;
-        napi_threadsafe_function room_event_end_CbRef;
-        napi_threadsafe_function room_event_countdown_to_start_CbRef;
-        napi_threadsafe_function room_event_countdown_cancelled_CbRef;
-    };
 
     struct CallbackPayload {
         short type = 0;
@@ -140,7 +126,7 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
         };
 
     // Extract and persist JavaScript callbacks
-    auto callbackData = DEBUG_NEW CallbackData();
+    qserver_spawn_qserver_cb_data* callbackData = DEBUG_NEW qserver_spawn_qserver_cb_data();
     callbackData->preStartCbRef = napi_funcs::create_threadsafe_func(env, info[5].As<Napi::Function>(), "PreStart Callback", return_cb);
     callbackData->startCbRef = napi_funcs::create_threadsafe_func(env, info[6].As<Napi::Function>(), "Start Callback", return_cb);
     callbackData->stopCbRef = napi_funcs::create_threadsafe_func(env, info[7].As<Napi::Function>(), "Stop Callback", return_cb);
@@ -186,68 +172,81 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
     gsdk::server::spawn_qserver(
         server_address.c_str(), redisAddress.c_str(), zkUri.c_str(), rootDir.c_str(), appId.c_str(),
         [](qnetworkserver* server){ //pre_start_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 1, server };
             napi_call_threadsafe_function(cdata->preStartCbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, const char* ip, uint16_t port){  //start_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 2, server, ip, port };
             napi_call_threadsafe_function(cdata->startCbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server){ //stop_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 3, server};
             napi_call_threadsafe_function(cdata->stopCbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int error_code){ //error_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 4, server, nullptr, 0, error_code};
             napi_call_threadsafe_function(cdata->errorCbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_create_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 5, server, nullptr, 0, 0, room, room_ptr};
             napi_call_threadsafe_function(cdata->room_event_create_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_start_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 6, server, nullptr, 0, 0, room, room_ptr};
             napi_call_threadsafe_function(cdata->room_event_start_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //type_room_event_player_added
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 7, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
             napi_call_threadsafe_function(cdata->room_event_player_added_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg){ //room_event_message_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, msg};
             napi_call_threadsafe_function(cdata->room_event_message_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //room_player_removed_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 9, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
             napi_call_threadsafe_function(cdata->room_player_removed_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_end_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 10, server, nullptr, 0, 0, room, room_ptr};
             napi_call_threadsafe_function(cdata->room_event_end_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, int count, int max_count){ //room_event_countdown_to_start_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 11, server, nullptr, 0, 0, room, room_ptr, nullptr, 0, nullptr, count, max_count};
             napi_call_threadsafe_function(cdata->room_event_countdown_to_start_CbRef, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_countdown_cancelled_cb
-            CallbackData* cdata = static_cast<CallbackData*>(server->get_user_arg());
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 12, server, nullptr, 0, 0, room, room_ptr};
             napi_call_threadsafe_function(cdata->room_event_countdown_cancelled_CbRef, payload, napi_tsfn_blocking);
         },
         callbackData
         );
 
+    return env.Null();
+}
+
+Napi::Value napi_qserver_release_callbacks(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() < 1 || !info[0].IsExternal()) {
+        Napi::TypeError::New(env, "Expected (qnetworkserver*)").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
+    cdata->release(env);
+    GX_DELETE(cdata);   // NOTE: server->get_user_arg() is now invalid. WE MUST NOT CALL ANY qserver function post this on this server.
     return env.Null();
 }
 

@@ -41,6 +41,7 @@ export namespace serversdk {
         app_id: string;
     }
 
+    export type qh3router_ptr = any;
     export type qh3server_ptr = any;
     export type qserver_ptr = any;
     export type room_ptr = any;
@@ -49,7 +50,7 @@ export namespace serversdk {
     export enum elog_type { INFO_LOG, DEBUG_LOG, WARN_LOG, ERROR_LOG, LOG_TYPE_MAX };
 
     // router events
-    export type type_on_router_pre_start = (router: any) => void;
+    export type type_on_router_pre_start = (router: any, cd_data: any) => void;
     export type type_on_router_start = (router: any) => void;
     export type type_on_router_stop = (router: any) => void;
     export type type_on_router_error = (router: any, error_code: number) => void;
@@ -123,7 +124,7 @@ export namespace serversdk {
         qh3server_logfile(native_server: qh3server_ptr, lvl: log_lvls, type: elog_type, tag: string, pid: string, roomid: string, message: string): number;
         qh3server_stats_count(native_server: qh3server_ptr, counter: string, count_val: number, session: string, pid: string, version: string /*= ``*/, epic: string /*= ``*/, myth: string /*= ``*/, legend: string /*= ``*/,
             story: string /*= ``*/, message: string /*= ``*/): number;
-
+        qh3server_shutdown(native_server: qh3server_ptr): void;
 
         // gserver
         spawn_qserver(
@@ -159,6 +160,9 @@ export namespace serversdk {
             cid_hash: number,
             message: string
         ): boolean;
+        qserver_release_callbacks(native_server: qserver_ptr): void;
+        qh3server_release_callbacks(native_server: qh3server_ptr): void;
+        qh3router_release_callbacks(cb_data: any): void;
     }
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');

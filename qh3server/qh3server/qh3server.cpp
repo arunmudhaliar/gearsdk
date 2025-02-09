@@ -1051,6 +1051,19 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	debug_print_important(const_logtag, "services finish successfully !!!");
 }
 
+void qh3server::shutdown() {
+	if (get_mainloop() == nullptr) {
+		debug_print_error(__LOGTAG__, "shutdown event CANCELLED. mainlopp is null !!!");
+		return;
+	}
+#if USE_UV_MAIN_LOOP
+	uv_stop(get_mainloop());
+//    uv_run(conn_io->bridge->get_mainloop(), UV_RUN_ONCE);
+#else
+	ev_break(get_mainloop(), EVBREAK_ONE);
+#endif
+}
+
 void qh3server::try_report_router(const qstring& cmd_string, int sock, uint16_t command_center_feedback_port) {
 	const char* const_logtag = logtag.c_str();
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};

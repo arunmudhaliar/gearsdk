@@ -82,6 +82,10 @@ void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* s
 gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {
 }
 
+gsdk::server::qh3plugin_server::~qh3plugin_server() {
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "qh3plugin_server destructor called");
+}
+
 void gsdk::server::qh3plugin_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
 }
@@ -126,12 +130,28 @@ void gsdk::server::qh3plugin_server::on_server_uninitialise() {}
 
 void gsdk::server::qh3plugin_server::on_run_started() {
     ev_notifier.init(get_server_main_loop(), notify_server_async_cb, this);
-//    ev_async_init(&async_watcher_notify_server, notify_server_async_cb);
-//    async_watcher_notify_server.data = this;
-//    ev_async_start(get_server_main_loop(), &async_watcher_notify_server);
+    ev_async_init(&async_cmd_watcher_notify_server, notify_server_cmd_async_cb);
+    async_cmd_watcher_notify_server.data = nullptr;
+    ev_async_start(get_server_main_loop(), &async_cmd_watcher_notify_server);
 }
 
 void gsdk::server::qh3plugin_server::on_run_end() {}
+
+void gsdk::server::qh3plugin_server::notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents) {
+    st_admin_cmd* cmd = static_cast<st_admin_cmd*>(w->data);
+    if (cmd == nullptr) {
+        return;
+    }
+    switch (cmd->type) {
+        case 1: {
+                if (cmd->server) {
+                    cmd->server->shutdown();
+                }
+            }
+            break;
+    }
+    GX_DELETE(cmd);
+}
 
 void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
     qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(w->data);
@@ -176,14 +196,14 @@ void* gsdk::server::spawn_qh3router_internal(void* data) {
 	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = (std::tuple<server_config_in*, qh3plugin_router_event_listener*>*) data;
 	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
 	qh3plugin_router_event_listener* listener = (qh3plugin_router_event_listener*) std::get<1>(*tuple_in);
-
 	config->print();
 	http3_sample_router router(*config);
-	router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, listener);
+	int result = router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, listener);
 	GX_DELETE(tuple_in);
 	GX_DELETE(listener);
 	GX_DELETE(config);
-	pthread_exit(0);
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qh3router_internal, result %d", result);
+    return nullptr;
 }
 
 void* gsdk::server::spawn_qh3server_internal(void* data) {
@@ -198,16 +218,18 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
 		GX_DELETE(tuple_in);
 		GX_DELETE(listener);
 		GX_DELETE(config);
-		pthread_exit(0);
+        debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qh3server_internal");
+        return nullptr;
 	}
 	PTHREAD_NAME(qh3plugin_server::get_server_name());
 	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(*config);
-	new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, listener, config->user_arg);
+	int result = new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, listener, config->user_arg);
 	GX_DELETE(new_server);
 	GX_DELETE(tuple_in);
 	GX_DELETE(listener);
 	GX_DELETE(config);
-	pthread_exit(0);
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qh3server_internal, result %d", result);
+    return nullptr;
 }
 
 EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return,

@@ -46,6 +46,7 @@ struct server_config_in {
 		  redis_port(config.redis_port),
 		  zk_uri(config.zk_uri),
 		  root_dir(config.root_dir),
+		  run_thread_id(config.run_thread_id),
 		  command_server(config.command_server),
 		  command_port(config.command_port),
 		  command_feedback_port(config.command_feedback_port),

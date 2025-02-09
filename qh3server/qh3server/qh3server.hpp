@@ -111,7 +111,7 @@ class qh3server : public bridge_h3_connection {
 	struct conn_io_qh3* get_conn(uint8_t* dcid, uint16_t dcid_len);
 	observer_qh3server_events* get_server_observer() { return server_event_observer; }
 	void* get_user_arg() { return user_arg; }
-
+	void shutdown();
 	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
 			observer_qh3server_events* event_observer = nullptr, void* user_arg = nullptr);
 };

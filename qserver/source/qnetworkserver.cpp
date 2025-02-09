@@ -157,6 +157,10 @@ void qconn_io::close() {
 }
 
 // MARK: - qnetworkserver
+qnetworkserver::~qnetworkserver() {
+	debug_print_important2(__LOGTAG__, "qnetworkserver destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
+}
+
 void qnetworkserver::debug_quiche_log(const char* line, void* argp) {
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
@@ -696,7 +700,8 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 	run_server_config.id = qnetworkserver::run_id++;
 	run_server_config.app_id = app_id;
 	run_server_config.observer = observer;
-
+    run_server_config.run_thread_id = pthread_self();
+    
 	qstring thread_name = qstring::format_string("qnetworkserver-%s %s:%s", app_id.c_str(), host.c_str(), port.c_str());
 	PTHREAD_NAME(thread_name.c_str());
 	server_event_observer = observer;

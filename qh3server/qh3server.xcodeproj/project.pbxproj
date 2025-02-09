@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAA2B97ADB800BE7723 /* libqutils.a */; };
+		553F7F8F2D57EFE800411520 /* gserverplugin_napi_addon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */; };
+		553F7F912D588FAC00411520 /* serverplugin_napi_addon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 553F7F3B2D45739E00411520 /* serverplugin_napi_addon.cpp */; };
 		555EB08F2C2B0B5A001F1B21 /* qh3router_extended.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB08E2C2B0B5A001F1B21 /* qh3router_extended.cpp */; };
 		555EB0EA2C2F0D31001F1B21 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
 		555EB0EB2C2F0D34001F1B21 /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22F2B3FC9EB00E47984 /* qh3client_helper.cpp */; };
@@ -59,7 +60,6 @@
 		55A4ADC82AEFA40F00BC4CED /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55A4ADC72AEFA40F00BC4CED /* Security.framework */; };
 		55A4ADDA2AEFBD2600BC4CED /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55A4ADD92AEFBD2600BC4CED /* main.cpp */; };
 		55AE97032D1DD8E20019FB9D /* qh3server_structs.h in Headers */ = {isa = PBXBuildFile; fileRef = 55AE97022D1DD8E20019FB9D /* qh3server_structs.h */; };
-		55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55C604EF2BC9CDDD00B1B77A /* libdpp.dylib */; };
 		55CB6FF92C7678B900E05D37 /* libuv.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB6FF82C7678B900E05D37 /* libuv.1.dylib */; };
 		55CB6FFA2C7678B900E05D37 /* libuv.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB6FF82C7678B900E05D37 /* libuv.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55CB6FFC2C76793000E05D37 /* libzookeeper_mt.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB6FFB2C76793000E05D37 /* libzookeeper_mt.2.dylib */; };
@@ -105,6 +105,7 @@
 		553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gserverplugin_napi_addon.cpp; path = ../serverplugin/gserverplugin_napi_addon.cpp; sourceTree = "<group>"; };
 		553F7F432D4ABBA900411520 /* gserverplugin_napi_addon.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = gserverplugin_napi_addon.hpp; path = ../serverplugin/gserverplugin_napi_addon.hpp; sourceTree = "<group>"; };
 		553F7F442D512C9200411520 /* serverplugin_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = serverplugin_helper.hpp; path = ../serverplugin/serverplugin_helper.hpp; sourceTree = "<group>"; };
+		553F7F902D588E6200411520 /* serverplugin_napi_addon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = serverplugin_napi_addon.hpp; path = ../serverplugin/serverplugin_napi_addon.hpp; sourceTree = "<group>"; };
 		555BA6F02C3AEDA600E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB08E2C2B0B5A001F1B21 /* qh3router_extended.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3router_extended.cpp; sourceTree = "<group>"; };
 		555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -184,10 +185,8 @@
 			files = (
 				557620542C7675F1002372E4 /* libuv.a in Frameworks */,
 				5576DA782BED515E00B39413 /* libcurl.tbd in Frameworks */,
-				55C604F02BC9CDDD00B1B77A /* libdpp.dylib in Frameworks */,
 				5594E26E2B489B9E00E47984 /* libzookeeper_mt.a in Frameworks */,
 				556AB6FE2AF5745300D688DB /* libbson-static-1.0.a in Frameworks */,
-				55384BAB2B97ADB800BE7723 /* libqutils.a in Frameworks */,
 				556AB6BE2AF514E900D688DB /* libsasl2.tbd in Frameworks */,
 				55CB6FFC2C76793000E05D37 /* libzookeeper_mt.2.dylib in Frameworks */,
 				55CB6FF92C7678B900E05D37 /* libuv.1.dylib in Frameworks */,
@@ -225,6 +224,7 @@
 				553F7F3E2D4A4ED400411520 /* napi_helper.hpp */,
 				553F7F432D4ABBA900411520 /* gserverplugin_napi_addon.hpp */,
 				553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */,
+				553F7F902D588E6200411520 /* serverplugin_napi_addon.hpp */,
 				553F7F3B2D45739E00411520 /* serverplugin_napi_addon.cpp */,
 				55A0B47E2D3D096B0075DF23 /* plugin_qhiredis.cpp */,
 				55A0B47F2D3D096B0075DF23 /* plugin_qhiredis.hpp */,
@@ -457,7 +457,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Copy the configs directory\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# Create the destination directory if it does not exist\n# if [ ! -d \"$DST_DIR\" ]; then\n#   mkdir -p \"$DST_DIR\"\n# fi\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+			shellScript = "# Copy the configs directory\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# Create the destination directory if it does not exist\n# if [ ! -d \"$DST_DIR\" ]; then\n#   mkdir -p \"$DST_DIR\"\n# fi\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\nexit 0\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
 			showEnvVarsInLog = 0;
 		};
 		5595E1222BB08AA900FA2618 /* ShellScript */ = {
@@ -508,6 +508,7 @@
 			files = (
 				5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */,
 				55A0B4832D3D61230075DF23 /* plugin_qzookeeper.cpp in Sources */,
+				553F7F912D588FAC00411520 /* serverplugin_napi_addon.cpp in Sources */,
 				557F7BC72D2C825400A3B9CB /* roomserver.cpp in Sources */,
 				55A0B4802D3D096B0075DF23 /* plugin_qhiredis.cpp in Sources */,
 				5594E2322B3FC9EB00E47984 /* qh3client_helper.cpp in Sources */,
@@ -523,6 +524,7 @@
 				555EB08F2C2B0B5A001F1B21 /* qh3router_extended.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 				557F7BC02D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */,
+				553F7F8F2D57EFE800411520 /* gserverplugin_napi_addon.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3router.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -747,6 +749,7 @@
 					"ENABLE_ZK=1",
 					"DEV_BUILD=1",
 					"ENABLE_QUICHE_LOG=1",
+					"_DEBUG_NEW_FILENAME_LEN=128",
 				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../networkcommon/source/ev\"",

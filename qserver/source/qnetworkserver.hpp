@@ -141,7 +141,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 		void* user_arg = nullptr;
 	};
 	qnetworkserver() {};
-	virtual ~qnetworkserver() {}
+	virtual ~qnetworkserver();
+
 	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
 	void broadcast_message(const qstring& buffer, bool flush);
 	bool network_server_begin();
@@ -151,7 +152,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
 	void* get_user_arg() { return user_arg; }
-
+    const struct runserverconfig& get_run_server_config() { return run_server_config; }
+    
    protected:
 	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
@@ -168,7 +170,6 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	inline observer_qserver_events* get_observer() final { return server_event_observer; }
 	void exit_services_gracefully();
-	const struct runserverconfig& get_run_server_config() { return run_server_config; }
 
 	static int run_id;
 	qcustomlogger logger;
