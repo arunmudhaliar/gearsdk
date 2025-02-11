@@ -1,5 +1,5 @@
 import { debug_error, debug_print, debug_warn, LOG_LEVEL_1, LOG_LEVEL_2, LOG_LEVEL_4 } from "../helpers/sdktypes";
-import { server_inf_reader } from "../helpers/serverinforeader";
+import { server_info_reader } from "../helpers/serverinforeader";
 import { serversdk } from '../helpers/libserverplugin';
 
 export namespace server {
@@ -41,11 +41,14 @@ export namespace server {
     export class gameserver {
         private static __LOGTAG__: string = `gameserver`;
         private qserver_config: serversdk.qserver_input_config = {
-            server_address: server_inf_reader.get_instance().get_value('gameserver_address'),
-            redis_address: server_inf_reader.get_instance().get_value('gameserver_redis_uri'),
-            zk_uri: server_inf_reader.get_instance().get_value('gameserver_zk_uri'),
+            server_address: server_info_reader.get_instance().get_value('gameserver_address'),
+            redis_address: server_info_reader.get_instance().get_value('gameserver_redis_uri'),
+            redis_user: server_info_reader.get_instance().get_value('gameserver_redis_user'),
+            redis_password: server_info_reader.get_instance().get_value('gameserver_redis_password'),
+            zk_uri: server_info_reader.get_instance().get_value('gameserver_zk_uri'),
             root_dir: process.cwd(),
-            app_id: server_inf_reader.get_instance().get_value('app_id')
+            inf_file: `${process.cwd()}/${process.env.NODE_ENV === "production" ? "serverconfig.rel.inf" : "serverconfig.dev.inf"}`,
+            app_id: server_info_reader.get_instance().get_value('app_id')
         };
         private gameserver_interface: interface_gameserver | undefined;
         private static gserver_id_cntr: number = 0;
@@ -183,6 +186,7 @@ export namespace server {
                 this.qserver_config.redis_address,
                 this.qserver_config.zk_uri,
                 this.qserver_config.root_dir,
+                this.qserver_config.inf_file,
                 this.qserver_config.app_id,
                 this.on_server_pre_start,
                 this.on_server_start,

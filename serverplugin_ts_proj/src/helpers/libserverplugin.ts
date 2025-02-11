@@ -25,9 +25,13 @@ export namespace serversdk {
     export interface qh3_router_input_config {
         router_address: string;
         mongodb_uri: string;
+        mongodb_db: string;
         redis_address: string;
+        redis_user: string,
+        redis_password: string,
         zk_uri: string;
         root_dir: string;
+        inf_file: string;
         command_port: number;
         router_port_return: number;
         app_id: string;
@@ -36,8 +40,11 @@ export namespace serversdk {
     export interface qserver_input_config {
         server_address: string;
         redis_address: string;
+        redis_user: string,
+        redis_password: string,
         zk_uri: string;
         root_dir: string;
+        inf_file: string;
         app_id: string;
     }
 
@@ -91,6 +98,7 @@ export namespace serversdk {
             redisAddress: string,
             zkUri: string,
             rootDir: string,
+            inf_file: string,
             commandPort: number,
             routerPortReturn: number,
             appId: string,
@@ -106,6 +114,7 @@ export namespace serversdk {
             redis_address: string,
             zk_uri: string,
             root_dir: string,
+            inf_file: string,
             command_port: number,
             router_port_return: number,
             app_id: string,
@@ -132,6 +141,7 @@ export namespace serversdk {
             redis_address: string,
             zk_uri: string,
             root_dir: string,
+            inf_file: string,
             app_id: string,
             pre_start_cb: type_on_qserver_pre_start,
             start_cb: type_on_qserver_start,

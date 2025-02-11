@@ -9,7 +9,9 @@
 #ifndef qh3router_hpp
 #define qh3router_hpp
 
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/serverconfig.hpp"
+#include "../../networkcommon/source/serverrunconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"

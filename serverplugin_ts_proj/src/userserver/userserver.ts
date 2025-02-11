@@ -7,7 +7,7 @@ import { debug_print, debug_error, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/s
 import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
 import * as filelogger from '../helpers/filelogger';
-import { server_inf_reader } from '../helpers/serverinforeader';
+import { server_info_reader } from '../helpers/serverinforeader';
 
 export namespace server {
     export type type_api_callback = (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, headers: string) => Promise<string | null | any>;
@@ -27,14 +27,18 @@ export namespace server {
     export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: server_inf_reader.get_instance().get_value('router_address'),
-            mongodb_uri: server_inf_reader.get_instance().get_value('router_mongodb_uri'),
-            redis_address: server_inf_reader.get_instance().get_value('router_redis_uri'),
-            zk_uri: server_inf_reader.get_instance().get_value('router_zk_uri'),
+            router_address: server_info_reader.get_instance().get_value('userserver_address'),
+            mongodb_uri: server_info_reader.get_instance().get_value('userserver_mongodb_uri'),
+            mongodb_db: server_info_reader.get_instance().get_value('userserver_mongodb_name'),
+            redis_address: server_info_reader.get_instance().get_value('userserver_redis_uri'),
+            redis_user: server_info_reader.get_instance().get_value('userserver_redis_user'),
+            redis_password: server_info_reader.get_instance().get_value('userserver_redis_password'),
+            zk_uri: server_info_reader.get_instance().get_value('userserver_zk_uri'),
             root_dir: process.cwd(),
-            command_port: server_inf_reader.get_instance().get_value_as_number('command_port', 4010),
-            router_port_return: server_inf_reader.get_instance().get_value_as_number('router_port_return', 4005),
-            app_id: server_inf_reader.get_instance().get_value('app_id')
+            inf_file: `${process.cwd()}/${process.env.NODE_ENV === "production" ? "serverconfig.rel.inf" : "serverconfig.dev.inf"}`,
+            command_port: server_info_reader.get_instance().get_value_as_number('userserver_command_port', 4010),
+            router_port_return: server_info_reader.get_instance().get_value_as_number('userserver_port_return', 4005),
+            app_id: server_info_reader.get_instance().get_value('app_id')
         };
 
         private mongo: qmongo | null = null;
@@ -158,14 +162,14 @@ export namespace server {
 
         public async run(native_router: any): Promise<void> {
             // mongo setup
-            this.mongo = new qmongo("", "gsdk_mongodb", this.router_config.mongodb_uri);
+            this.mongo = new qmongo("", this.router_config.mongodb_db, this.router_config.mongodb_uri);
             await this.mongo?.connect();
 
             // redis setup
             const redis_ip_port = essentials.extract_ip_and_port(this.router_config.redis_address);
             if (redis_ip_port) {
                 const [ip, port]: [string, number] = redis_ip_port;
-                this.hiredis = new qhiredis("hiredis", ip, port, "gsdkuser", "Fr0gmoon123");
+                this.hiredis = new qhiredis("hiredis", ip, port, this.router_config.redis_user, this.router_config.redis_password);
                 await this.hiredis.connect_redis();
             } else {
                 debug_error(userserver.__LOGTAG__, "Invalid hiredis address format");
@@ -187,7 +191,7 @@ export namespace server {
             this.zkconfig = new serverconfig(this.qzk, null);
             const config_path = path.join(this.router_config.root_dir, 'configs', (process.env.NODE_ENV === 'production') ? 'prod' : 'dev', 'runtime-config.json');
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `reading ${config_path}`);
-            let zk_root_node: string = server_inf_reader.get_instance().get_value('zk_root_node');
+            let zk_root_node: string = server_info_reader.get_instance().get_value('userserver_zk_root_node');
             await this.zkconfig.load(config_path, this.qzk, zk_root_node);
 
             // server spawn
@@ -198,6 +202,7 @@ export namespace server {
                 this.router_config.redis_address,
                 this.router_config.zk_uri,
                 this.router_config.root_dir,
+                this.router_config.inf_file,
                 this.router_config.command_port,
                 this.router_config.router_port_return,
                 this.router_config.app_id,

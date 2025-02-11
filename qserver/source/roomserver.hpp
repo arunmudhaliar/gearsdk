@@ -29,7 +29,7 @@
 // MARK: -
 class roomserver : public qnetworkserver, public roomserver_interface, protected interface_qhiredis_async, observer_serverconfig {
    public:
-	roomserver(const qstring& zk_uri);
+	roomserver();
 	virtual ~roomserver();
 	inline struct ev_loop* get_netowrk_main_loop() override final { return get_mainloop(); }
 	inline observer_qserver_events* get_main_observer() override final { return get_observer(); }
@@ -91,7 +91,6 @@ class roomserver : public qnetworkserver, public roomserver_interface, protected
 	serverconfig* zkconfig = nullptr;
 
    private:
-	const qstring zk_uri;
 	enum conn_flags { FLAG_ROOM_CONFIG_RECEIVED = (1 << 0), FLAG_FIRST_HI_RECEIVED = (1 << 1) };
 	std::map<unsigned long, std::function<void(ssize_t, uint8_t*, qconn_io*, rapidjson::Document&, void*)>> message_handlers;
 

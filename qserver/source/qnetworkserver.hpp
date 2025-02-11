@@ -20,6 +20,7 @@ extern "C" {
 #include "../../networkcommon/source/qcustomlogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qthreadpool.hpp"
+#include "../../networkcommon/source/serverrunconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 
@@ -126,24 +127,10 @@ class qconn_io {
 // MARK: -
 class qnetworkserver : protected bridge_qpeerconnection {
    public:
-	struct runserverconfig {
-		qstring host;
-		qstring port;
-		int pthread_return_value;
-		int id = -1;
-		fs::path root_dir;
-		qstring redis_ip;
-		uint16_t redis_port;
-		qstring app_id;
-		observer_qserver_events* observer = nullptr;
-		pthread_t run_thread_id;
-		qstring zk_uri;
-		void* user_arg = nullptr;
-	};
 	qnetworkserver() {};
 	virtual ~qnetworkserver();
 
-	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
+	int run(const server_config_in& in_config, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
 	void broadcast_message(const qstring& buffer, bool flush);
 	bool network_server_begin();
 	void network_server_end();
@@ -152,8 +139,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
 	void* get_user_arg() { return user_arg; }
-    const struct runserverconfig& get_run_server_config() { return run_server_config; }
-    
+	const struct server_config_in& get_run_server_config() { return run_server_config; }
+
    protected:
 	virtual bool on_network_server_begin() = 0;
 	virtual void on_network_server_init() = 0;
@@ -178,6 +165,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qstring host_id;
 	qstring port_id;
 	observer_qserver_events* server_event_observer = nullptr;
+	struct server_config_in run_server_config;
 
    private:
 	static void debug_quiche_log(const char* line, void* argp);
@@ -197,7 +185,6 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	struct ev_loop* mainloop = nullptr;
 	struct qconnections* conns = nullptr;
 	ev_timer heartbeat_check_timer;
-	struct runserverconfig run_server_config;
 	void* user_arg = nullptr;
 
 #if QTHREADPOOL

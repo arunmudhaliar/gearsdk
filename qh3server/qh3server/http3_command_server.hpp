@@ -34,9 +34,10 @@ class http3_command_server : public qh3server {
 	float get_router_hb_interval_in_sec() override;
 
 	qhiredis* hiredis = nullptr;
+	server_config_in config_copy;
 
    public:
-	http3_command_server(const server_config_in& config);
+	http3_command_server(const server_config_in& config, bridge_command_center* bridge);
 	~http3_command_server();
 	static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
 	static inline const char* get_server_name() { return "http3_command_server"; }
@@ -55,7 +56,7 @@ class http3_command_server : public qh3server {
 	void send_shutdown_to_all();
 
 	bridge_command_center* bridge;
-	qstring router_port;
+	//	qstring router_port;
 	bool is_log_quiche_flag = false;
 };
 #endif /* http3_command_server_hpp */

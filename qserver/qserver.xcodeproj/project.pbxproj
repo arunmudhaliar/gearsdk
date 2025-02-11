@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		553F7FA12D5BE98500411520 /* serverconfig.dev.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */; };
+		553F7FA22D5BE98900411520 /* serverconfig.rel.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7FA02D5BE97500411520 /* serverconfig.rel.inf */; };
 		555BA6F52C3AEE2000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; };
 		555BA6F62C3AEE2000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		555EB1222C318D82001F1B21 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7F2BED5FE700B39413 /* servercommon.cpp */; };
@@ -63,6 +65,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				553F7FA22D5BE98900411520 /* serverconfig.rel.inf in CopyFiles */,
+				553F7FA12D5BE98500411520 /* serverconfig.dev.inf in CopyFiles */,
 				55D1C6DE2AD32E9300470E01 /* cert.key in CopyFiles */,
 				55D1C6DF2AD32E9300470E01 /* cert.crt in CopyFiles */,
 			);
@@ -74,6 +78,8 @@
 		1796DF492BC8593900328EE7 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAC2B97B03D00BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../qutils/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
+		553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = serverconfig.dev.inf; path = ../qh3server/serverconfig.dev.inf; sourceTree = "<group>"; };
+		553F7FA02D5BE97500411520 /* serverconfig.rel.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = serverconfig.rel.inf; path = ../qh3server/serverconfig.rel.inf; sourceTree = "<group>"; };
 		555BA6F42C3AEE2000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB11E2C318D54001F1B21 /* libqserver-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqserver-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -180,6 +186,8 @@
 		55B372AF2AC2ABCD00F0095E = {
 			isa = PBXGroup;
 			children = (
+				553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */,
+				553F7FA02D5BE97500411520 /* serverconfig.rel.inf */,
 				55D7ACFA2CD012720011297F /* configs */,
 				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,

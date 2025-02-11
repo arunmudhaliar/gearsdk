@@ -40,6 +40,8 @@
 	} while (0)
 
 using namespace client;
+using namespace gsdk::common;
+
 template <typename U, typename V>
 int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_observer) {
 	PTHREAD_NAME(qstring::format_string("router-%s", config.port.c_str()).c_str());
@@ -218,6 +220,18 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 	debug_print_important2(__LOGTAG__, "pre-start - finish:prespawn");
 
 	if (child_process_id != 0) {
+		server_info_reader* info_reader = server_info_reader::get_instance();
+		if (!info_reader->load_config(config.inf_file.c_str())) {
+			freeaddrinfo(router);
+			freeaddrinfo(router_return);
+			router_return = nullptr;
+			router = nullptr;
+			close(sock_return);
+			close(sock);
+			debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
+			ROUTER_EVENT_ERROR(this, -1);
+			return -1;
+		}
 #if ENABLE_ZK
 		GX_DELETE(qzk);
 		qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-router-%s", config.port.c_str()));
@@ -243,8 +257,17 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 #else
 		fs::path config_path(config.root_dir / "configs/dev/runtime-config.json");
 #endif
-		if (!zkconfig->load(config_path, qzk, "/qh3router")) {
+		qstring router_zk_root_node = info_reader->get_value_else_default("router_zk_root_node", "/qh3router");
+		if (!zkconfig->load(config_path, qzk, router_zk_root_node)) {
 			debug_print_error(__LOGTAG__, "zkconfig load error - %s.", config_path.c_str());
+			freeaddrinfo(router);
+			freeaddrinfo(router_return);
+			router_return = nullptr;
+			router = nullptr;
+			close(sock_return);
+			close(sock);
+			shutdown_zk();
+			GX_DELETE(hiredis);
 			GX_DELETE(zkconfig);
 			ROUTER_EVENT_ERROR(this, -1);
 			return -1;
@@ -252,7 +275,9 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		debug_print_important2(__LOGTAG__, "pre-start - finish:config");
 
 		GX_DELETE(hiredis);
-		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
+		qstring router_redis_user = info_reader->get_value_else_default("router_redis_user", "gsdkuser");
+		qstring router_redis_password = info_reader->get_value_else_default("router_redis_password", "Fr0gmoon123");
+		hiredis = DEBUG_NEW qhiredis("router_hiredis", config.redis_ip, config.redis_port, router_redis_user, router_redis_password);
 		if (hiredis->connect_redis() != 0) {
 			debug_print_error(__LOGTAG__, "failed to create redis connection !!!");
 			freeaddrinfo(router);
@@ -279,7 +304,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 		ev_io_start(mainloop, &watcher_return);
 		watcher_return.data = this;
 
-		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
+		hiredis_async = DEBUG_NEW qhiredis_async(config.redis_ip, config.redis_port, router_redis_user, router_redis_password, this, "CONFIG SET notify-keyspace-events KEA");
 		if (hiredis_async->connect_async_redis(mainloop) != 0) {
 			debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 			GX_DELETE(hiredis_async);
@@ -343,13 +368,13 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 
 template <typename U>
 route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3router* router) {
-	server_config_in* new_config =
-		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, nullptr, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
+	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, nullptr, config.command_port, config.router_port, config.zk_uri,
+															  config.router_port_return, config.app_id);
 	new_config->command_server = true;
-	new_config->ref = router;
-
-	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3_command_server_internal<U>, (void*) new_config) < 0) {
+	std::tuple<server_config_in*, bridge_command_center*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, bridge_command_center*>(new_config, dynamic_cast<bridge_command_center*>(router));
+	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3_command_server_internal<U>, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
+		GX_DELETE(tuple_in);
 		GX_DELETE(new_config);
 		return nullptr;
 	}
@@ -409,8 +434,8 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 	}
 #else
 	fork_result = false;
-	server_config_in* new_config =
-		DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
+	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.zk_uri,
+															  config.router_port_return, config.app_id);
 	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, observer_qh3server_events*>(new_config, server_event_observer);
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3server_internal<V>, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
@@ -439,12 +464,9 @@ void* qh3router::spawn_qh3server_internal(void* data) {
 		return nullptr;
 	}
 
-	qstring& host = config->host;
-	qstring& port = config->port;
-	fs::path& root_dir = config->root_dir;
 	PTHREAD_NAME(V::get_server_name());
 	V* new_server = DEBUG_NEW V(*config);
-	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, event_observer);
+	new_server->run(*config, event_observer);
 	GX_DELETE(new_server);
 	GX_DELETE(config);
 	GX_DELETE(tuple_in);
@@ -454,20 +476,21 @@ void* qh3router::spawn_qh3server_internal(void* data) {
 
 template <typename U>
 void* qh3router::spawn_qh3_command_server_internal(void* data) {
-	server_config_in* config = (server_config_in*) data;
+	std::tuple<server_config_in*, bridge_command_center*>* tuple_in = (std::tuple<server_config_in*, bridge_command_center*>*) data;
+	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
+	bridge_command_center* bridge_ref = (bridge_command_center*) std::get<1>(*tuple_in);
 	if (!config->command_server) {
 		debug_print_error(__LOGTAG__, "spawn_qh3_command_server_internal failed, not a command server");
+		GX_DELETE(tuple_in);
 		GX_DELETE(config);
 		pthread_exit(0);
 		return nullptr;
 	}
-	qstring& host = config->host;
-	qstring& port = config->port;
-	fs::path& root_dir = config->root_dir;
 	PTHREAD_NAME(U::get_server_name());
-	U* new_server = DEBUG_NEW U(*config);
-	new_server->run(host.c_str(), port.c_str(), root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id);
+	U* new_server = DEBUG_NEW U(*config, bridge_ref);
+	new_server->run(*config);
 	GX_DELETE(new_server);
+	GX_DELETE(tuple_in);
 	GX_DELETE(config);
 	pthread_exit(0);
 }

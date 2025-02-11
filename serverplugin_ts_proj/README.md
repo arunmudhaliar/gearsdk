@@ -1,3 +1,19 @@
+## 🖥️ Platform Supported
+
+*OS:* **macOS** (Intel)
+
+*Node.js Version:*
+Requires Node.js v16.20.2+ and N-API compatibility
+
+*Architecture:*
+Supports x86_64
+
+Ensure you have the necessary dependencies installed before using the plugin. 
+
+**Note: This plugin is under development phase. Will notify once its release ready.**
+
+---
+
 # gsdk server plugin (TypeScript)
 
 This TypeScript module provides a **server plugin** that integrates with a QUIC-based networking framework. It dynamically loads a native `.node` library (`libserverplugin`), selecting either the **debug** or **release** version based on availability. The module supports both **stateful** and **stateless** server implementations.
@@ -62,8 +78,7 @@ A **stateful server** maintains session data for clients, making it suitable for
 
 ## 📌 Conclusion
 
-- **Use ****`qh3server`**** (stateless)** for request-response APIs.
-- **Use ****`qserver`**** (stateful)** for applications that need persistent sessions.
+- **Use `qh3server` (stateless)** for request-response APIs.
+- **Use `qserver` (stateful)** for applications that need persistent sessions.
 
 🔥 Get started by selecting the server type that fits your use case! 🚀
-

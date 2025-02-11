@@ -160,7 +160,7 @@ bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 //---------------------------------plugin_gameserver--------------------------
 //----------------------------------------------------------------------------
-plugin_gameserver::plugin_gameserver(const qstring& zk_uri) : roomserver(zk_uri) {}
+plugin_gameserver::plugin_gameserver() : roomserver() {}
 
 plugin_gameserver::~plugin_gameserver() {
     debug_print(LOG_LEVEL_0, __LOGTAG__, "plugin_gameserver destructor called");
@@ -208,7 +208,7 @@ void plugin_gameserver::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
     }
 }
 
-EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
+EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
     qplugin_qserver_event_listener::type_on_qserver_error error_cb,
                                        qplugin_qserver_event_listener::type_room_event_create room_event_create_cb,
                                        qplugin_qserver_event_listener::type_room_event_start room_event_start_cb,
@@ -222,13 +222,14 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
                                        ) {
     qaddress server_addr(server_address);
     qaddress redis_addr(redis_address);
-    struct qnetworkserver::runserverconfig* config = new struct qnetworkserver::runserverconfig();
+    struct server_config_in* config = new struct server_config_in();
     config->host = server_addr.ip;
     config->port = qstring::format_string("%d", server_addr.port);
     config->redis_ip = redis_addr.ip;
     config->redis_port = redis_addr.port;
     config->zk_uri = zk_uri;
     config->root_dir = fs::path(root_dir);
+    config->inf_file = fs::path(inf_file);
     config->app_id = app_id;
     config->user_arg = user_arg;
     qplugin_qserver_event_listener* listener = DEBUG_NEW qplugin_qserver_event_listener(
@@ -241,7 +242,7 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
                                                                                         room_event_end_cb,
                                                                                         room_event_countdown_to_start_cb,
                                                                                         room_event_countdown_cancelled_cb);
-    std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>(config, listener);
+    std::tuple<server_config_in*, qplugin_qserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qplugin_qserver_event_listener*>(config, listener);
     if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qserver_internal, (void*)tuple_in) < 0) {
         debug_print_error(__LOGTAG__, "spawn_qserver - could not create thread: %s - %d", strerror(errno), errno);
         GX_DELETE(tuple_in);
@@ -253,11 +254,11 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
 }
 
 void* gsdk::server::spawn_qserver_internal(void* data) {
-    std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>* tuple_in = (std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>*) data;
-    qnetworkserver::runserverconfig* config = (qnetworkserver::runserverconfig*)std::get<0>(*tuple_in);
+    std::tuple<server_config_in*, qplugin_qserver_event_listener*>* tuple_in = (std::tuple<server_config_in*, qplugin_qserver_event_listener*>*) data;
+    server_config_in* config = (server_config_in*)std::get<0>(*tuple_in);
     qplugin_qserver_event_listener* listener = (qplugin_qserver_event_listener*)std::get<1>(*tuple_in);
-    plugin_gameserver server(config->zk_uri);
-    int result = server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener, config->user_arg);
+    plugin_gameserver server;
+    int result = server.run(*config, listener, config->user_arg);
     GX_DELETE(tuple_in);
     GX_DELETE(config);
     GX_DELETE(listener);

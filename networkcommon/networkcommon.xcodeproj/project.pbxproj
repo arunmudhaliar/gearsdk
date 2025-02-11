@@ -38,6 +38,7 @@
 		55384B932B9651AF00BE7723 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = message.cpp; path = source/message.cpp; sourceTree = SOURCE_ROOT; };
 		55384BB32B9AD1D500BE7723 /* serverconfig.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = serverconfig.cpp; sourceTree = "<group>"; };
 		55384BB42B9AD1D500BE7723 /* serverconfig.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = serverconfig.hpp; sourceTree = "<group>"; };
+		553F7F9A2D5A77E400411520 /* serverrunconfig.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = serverrunconfig.hpp; sourceTree = "<group>"; };
 		556AB5F42AF260DD00D688DB /* qtextfilelogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qtextfilelogger.cpp; sourceTree = "<group>"; };
 		556AB5F52AF260DD00D688DB /* qtextfilelogger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = qtextfilelogger.hpp; sourceTree = "<group>"; };
 		556AB5F82AF3A2C700D688DB /* qbuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qbuffer.cpp; sourceTree = "<group>"; };
@@ -129,6 +130,7 @@
 				55384BB32B9AD1D500BE7723 /* serverconfig.cpp */,
 				55384BB42B9AD1D500BE7723 /* serverconfig.hpp */,
 				55E0F77D2CAE7D20009748DF /* qthreadpool.hpp */,
+				553F7F9A2D5A77E400411520 /* serverrunconfig.hpp */,
 			);
 			path = source;
 			sourceTree = "<group>";

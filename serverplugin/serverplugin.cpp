@@ -176,12 +176,12 @@ EXPORT void gsdk::server::pre_init_serverplugin_sdk() {
 	gsdk::servercommon::init_server_common();
 }
 
-EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
+EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 										  qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
 										  qh3plugin_router_event_listener::type_on_router_error error_cb, void* user_arg) {
 	qaddress router_addr(router_address);
 	qaddress redis_addr(redis_address);
-	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), nullptr, command_port, router_addr.port, zk_uri,
+	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), nullptr, command_port, router_addr.port, zk_uri,
 														  router_port_return, app_id, user_arg);
 	qh3plugin_router_event_listener* listener = DEBUG_NEW qh3plugin_router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
 	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_router_event_listener*>(config, listener);
@@ -223,7 +223,8 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
 	}
 	PTHREAD_NAME(qh3plugin_server::get_server_name());
 	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(*config);
-	int result = new_server->run(config->host, qstring::format_string("%d", free_port), config->root_dir, config->router, config->command_feedback_port, config->router_port_return, config->app_id, listener, config->user_arg);
+    config->port = qstring::format_string("%d", free_port);
+	int result = new_server->run(*config, listener, config->user_arg);
 	GX_DELETE(new_server);
 	GX_DELETE(tuple_in);
 	GX_DELETE(listener);
@@ -232,12 +233,12 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
     return nullptr;
 }
 
-EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return,
+EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return,
 										  const char* app_id, qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb,
 										  qh3plugin_server_event_listener::type_on_server_stop stop_cb, qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb, void* user_arg) {
 	qaddress server_addr(server_address);
 	qaddress redis_addr(redis_address);
-	server_config_in* config = new server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), (router) ? router->get_router_addrinfo() : nullptr,
+	server_config_in* config = new server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), (router) ? router->get_router_addrinfo() : nullptr,
 													command_port, server_addr.port, zk_uri, router_port_return, app_id, user_arg);
 	qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
 	std::tuple<server_config_in*, qh3plugin_server_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_server_event_listener*>(config, listener);

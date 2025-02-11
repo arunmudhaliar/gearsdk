@@ -113,7 +113,7 @@ struct st_stateful_response_packet {
 // MARK: -
 class plugin_gameserver : public roomserver {
 public:
-    plugin_gameserver(const qstring& zk_uri);
+    plugin_gameserver();
     virtual ~plugin_gameserver();
     
     async_ev_notifier<struct st_stateful_response_packet>& get_ev_notifier()   { return ev_notifier; }
@@ -127,7 +127,7 @@ protected:
 };
 
 extern "C" {
-EXPORT int spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
+EXPORT int spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
                          qplugin_qserver_event_listener::type_on_qserver_error error_cb,
                          qplugin_qserver_event_listener::type_room_event_create room_event_create_cb,
                          qplugin_qserver_event_listener::type_room_event_start room_event_start_cb,

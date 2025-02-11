@@ -8,12 +8,16 @@
 
 #include "roomserver.hpp"
 
+#include "../../common/serverinforeader.hpp"
+
 #include <algorithm>
 
 #define EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS 45
 
+using namespace gsdk::common;
+
 // MARK: - roomserver
-roomserver::roomserver(const qstring& zk_uri) : qnetworkserver(), zk_uri(zk_uri) {}
+roomserver::roomserver() : qnetworkserver() {}
 
 roomserver::~roomserver() {
 	GX_DELETE(hiredis_async);
@@ -82,9 +86,17 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 void roomserver::configchanged(const qstring& path, const qstring& data) {}
 
 bool roomserver::on_network_server_begin() {
-	const struct runserverconfig& run_config = get_run_server_config();
+	const struct server_config_in& run_config = get_run_server_config();
+	server_info_reader* info_reader = server_info_reader::get_instance();
+	if (!info_reader->load_config(run_server_config.inf_file.c_str())) {
+		debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
+		return false;
+	}
+	qstring userserver_redis_user = info_reader->get_value_else_default("gameserver_redis_user", "gsdkuser");
+	qstring userserver_redis_password = info_reader->get_value_else_default("gameserver_redis_password", "Fr0gmoon123");
+
 	GX_DELETE(hiredis);
-	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123");
+	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, userserver_redis_user, userserver_redis_password);
 	if (hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
 		GX_DELETE(hiredis);
@@ -92,7 +104,7 @@ bool roomserver::on_network_server_begin() {
 	}
 
 	GX_DELETE(hiredis_async);
-	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
+	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, userserver_redis_user, userserver_redis_password, this, "CONFIG SET notify-keyspace-events KEA");
 	if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 		GX_DELETE(hiredis);
@@ -102,7 +114,7 @@ bool roomserver::on_network_server_begin() {
 
 	GX_DELETE(qzk);
 	qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-%s", port_id.c_str()));
-	int zk_result = qzk->connect(zk_uri);
+	int zk_result = qzk->connect(run_config.zk_uri);
 	if (zk_result != 0) {
 		debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 		GX_DELETE(qzk);
@@ -134,7 +146,7 @@ bool roomserver::on_network_server_begin() {
 }
 
 qtimer* roomserver::schedule_update_redis_about_gserver_timer() {
-	const struct runserverconfig& run_config = get_run_server_config();
+	const struct server_config_in& run_config = get_run_server_config();
 	int grace_time = 10;
 	int expire_timer_unresponsive_gserver_check_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
 	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::device::public_ip);

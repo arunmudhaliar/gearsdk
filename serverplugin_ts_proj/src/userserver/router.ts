@@ -1,19 +1,23 @@
 import { serversdk } from '../helpers/libserverplugin';
 import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
-import { server_inf_reader } from '../helpers/serverinforeader';
+import { server_info_reader } from '../helpers/serverinforeader';
 
 export namespace server {
     export class router {
         private static __LOGTAG__: string = `router`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: server_inf_reader.get_instance().get_value('router_address'),
-            mongodb_uri: server_inf_reader.get_instance().get_value('router_mongodb_uri'),
-            redis_address: server_inf_reader.get_instance().get_value('router_redis_uri'),
-            zk_uri: server_inf_reader.get_instance().get_value('router_zk_uri'),
+            router_address: server_info_reader.get_instance().get_value('router_address'),
+            mongodb_uri: server_info_reader.get_instance().get_value('router_mongodb_uri'),
+            mongodb_db: "",
+            redis_address: server_info_reader.get_instance().get_value('router_redis_uri'),
+            redis_user: server_info_reader.get_instance().get_value('router_redis_user'),
+            redis_password: server_info_reader.get_instance().get_value('router_redis_password'),
+            zk_uri: server_info_reader.get_instance().get_value('router_zk_uri'),
             root_dir: process.cwd(),
-            command_port: server_inf_reader.get_instance().get_value_as_number('command_port', 4010),
-            router_port_return: server_inf_reader.get_instance().get_value_as_number('router_port_return', 4005),
-            app_id: server_inf_reader.get_instance().get_value('app_id')
+            inf_file: `${process.cwd()}/${process.env.NODE_ENV === "production" ? "serverconfig.rel.inf" : "serverconfig.dev.inf"}`,
+            command_port: server_info_reader.get_instance().get_value_as_number('router_command_port', 4010),
+            router_port_return: server_info_reader.get_instance().get_value_as_number('router_port_return', 4005),
+            app_id: server_info_reader.get_instance().get_value('app_id')
         };
         private on_router_start_cb: (native_router: any) => Promise<void>;
         private on_router_stop_cb: (native_router: any) => Promise<void>;
@@ -48,6 +52,7 @@ export namespace server {
                 this.router_config.redis_address,
                 this.router_config.zk_uri,
                 this.router_config.root_dir,
+                this.router_config.inf_file,
                 this.router_config.command_port,
                 this.router_config.router_port_return,
                 this.router_config.app_id,

@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		553F7F8F2D57EFE800411520 /* gserverplugin_napi_addon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 553F7F412D4A956900411520 /* gserverplugin_napi_addon.cpp */; };
-		553F7F912D588FAC00411520 /* serverplugin_napi_addon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 553F7F3B2D45739E00411520 /* serverplugin_napi_addon.cpp */; };
+		553F7F9D2D5A90E000411520 /* serverconfig.dev.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7F9C2D5A907500411520 /* serverconfig.dev.inf */; };
+		553F7F9E2D5A90E300411520 /* serverconfig.rel.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7F9B2D5A907500411520 /* serverconfig.rel.inf */; };
 		555EB08F2C2B0B5A001F1B21 /* qh3router_extended.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555EB08E2C2B0B5A001F1B21 /* qh3router_extended.cpp */; };
 		555EB0EA2C2F0D31001F1B21 /* qh3client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22E2B3FC9EB00E47984 /* qh3client.cpp */; };
 		555EB0EB2C2F0D34001F1B21 /* qh3client_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5594E22F2B3FC9EB00E47984 /* qh3client_helper.cpp */; };
@@ -91,6 +91,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				553F7F9D2D5A90E000411520 /* serverconfig.dev.inf in CopyFiles */,
+				553F7F9E2D5A90E300411520 /* serverconfig.rel.inf in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +108,8 @@
 		553F7F432D4ABBA900411520 /* gserverplugin_napi_addon.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = gserverplugin_napi_addon.hpp; path = ../serverplugin/gserverplugin_napi_addon.hpp; sourceTree = "<group>"; };
 		553F7F442D512C9200411520 /* serverplugin_helper.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = serverplugin_helper.hpp; path = ../serverplugin/serverplugin_helper.hpp; sourceTree = "<group>"; };
 		553F7F902D588E6200411520 /* serverplugin_napi_addon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = serverplugin_napi_addon.hpp; path = ../serverplugin/serverplugin_napi_addon.hpp; sourceTree = "<group>"; };
+		553F7F9B2D5A907500411520 /* serverconfig.rel.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = serverconfig.rel.inf; sourceTree = "<group>"; };
+		553F7F9C2D5A907500411520 /* serverconfig.dev.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = serverconfig.dev.inf; sourceTree = "<group>"; };
 		555BA6F02C3AEDA600E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB08E2C2B0B5A001F1B21 /* qh3router_extended.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = qh3router_extended.cpp; sourceTree = "<group>"; };
 		555EB0E62C2F0D0D001F1B21 /* libqh3server-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqh3server-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -254,6 +258,8 @@
 		55A4AD962AEF825700BC4CED = {
 			isa = PBXGroup;
 			children = (
+				553F7F9C2D5A907500411520 /* serverconfig.dev.inf */,
+				553F7F9B2D5A907500411520 /* serverconfig.rel.inf */,
 				557F7BBC2D2C6C4C00A3B9CB /* sserverplugin */,
 				55CE94EB2B9F0263002C0278 /* configs */,
 				5594E26F2B489BEF00E47984 /* qzookeeper.cpp */,
@@ -508,7 +514,6 @@
 			files = (
 				5594E2312B3FC9EB00E47984 /* qh3client.cpp in Sources */,
 				55A0B4832D3D61230075DF23 /* plugin_qzookeeper.cpp in Sources */,
-				553F7F912D588FAC00411520 /* serverplugin_napi_addon.cpp in Sources */,
 				557F7BC72D2C825400A3B9CB /* roomserver.cpp in Sources */,
 				55A0B4802D3D096B0075DF23 /* plugin_qhiredis.cpp in Sources */,
 				5594E2322B3FC9EB00E47984 /* qh3client_helper.cpp in Sources */,
@@ -524,7 +529,6 @@
 				555EB08F2C2B0B5A001F1B21 /* qh3router_extended.cpp in Sources */,
 				5574F20F2B1F727C007C93AA /* debug_new.cpp in Sources */,
 				557F7BC02D2C7B5800A3B9CB /* plugin_gameserver.cpp in Sources */,
-				553F7F8F2D57EFE800411520 /* gserverplugin_napi_addon.cpp in Sources */,
 				5593E1CF2B337E2B00D8E98B /* qh3router.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
