@@ -19,7 +19,7 @@ using namespace rapidjson;
 using namespace client;
 using namespace gsdk::common;
 
-http3_command_server::http3_command_server(const server_config_in& config, bridge_command_center* bridge) : qh3server(), bridge(bridge), config_copy(config) {
+http3_command_server::http3_command_server(const server_config_in& config, bridge_command_center* bridge) : qh3server(), config_copy(config), bridge(bridge) {
 	UNUSED(bridge);
 }
 
@@ -208,6 +208,7 @@ void http3_command_server::send_shutdown_to_all() {
 	qh3client_helper::send_async_request<client::qh3client>(
 		host_id, config_copy.router_port, req, nullptr,
 		[](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+			UNUSED(request);
 			UNUSED(response);
 			UNUSED(client_specific_data);
 			UNUSED(arg);

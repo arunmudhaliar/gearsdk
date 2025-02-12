@@ -248,7 +248,8 @@ void qh3server::recv_cb(uv_poll_t* w, int status, int events) {
 	}
 #else
 void qh3server::recv_cb(EV_P_ ev_io* w, int revents) {
-	UNUSED(revents);
+    UNUSED(loop);
+    UNUSED(revents);
 #endif
 	qh3server* server = reinterpret_cast<qh3server*>(w->data);
 	struct connections* conns = server->conns;
@@ -723,7 +724,8 @@ void qh3server::destroy_connection(struct conn_io_qh3* conn_io) {
 void qh3server::timeout_cb(uv_timer_t* w) {
 #else
 void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
-	UNUSED(revents);
+	UNUSED(loop);
+    UNUSED(revents);
 #endif
 	struct conn_io_qh3* conn_io = (struct conn_io_qh3*) w->data;
 	quiche_conn_on_timeout(conn_io->conn);
@@ -746,6 +748,9 @@ void qh3server::timeout_cb(EV_P_ ev_timer* w, int revents) {
 
 #if !USE_UV_MAIN_LOOP
 void qh3server::libev_idle_cb(EV_P_ ev_idle* w, int revents) {
+	UNUSED(loop);
+	UNUSED(w);
+    UNUSED(revents);
 	// Your callback code, this could post work to Node.js or continue
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "libev idle callback running");
 
@@ -1201,6 +1206,7 @@ TIMER_TYPE* qh3server::dangling_connections_check_loop(TIMER_SCHEDuLER_TYPE& clo
 }
 
 TIMER_TYPE* qh3server::router_hb_loop(TIMER_SCHEDuLER_TYPE& router_hb_scheduler, const qstring& host, const qstring& port, int sock, uint16_t command_center_feedback_port) {
+	UNUSED(port);
 	float router_hb_interval_in_sec = get_router_hb_interval_in_sec();
 	debug_print_important(__LOGTAG__, "router_hb_interval_in_sec timer %5.1f", router_hb_interval_in_sec);
 	const char* const_logtag = logtag.c_str();

@@ -433,6 +433,7 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 		return 0;
 	}
 #else
+	UNUSED(child_process_id);
 	fork_result = false;
 	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.zk_uri,
 															  config.router_port_return, config.app_id);

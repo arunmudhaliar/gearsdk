@@ -118,7 +118,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Initialize Config and Database Connection
     unsafe {
         let config_reader = server_config_reader::server_config_reader::get_instance();
-        config_reader.load_config("./serversonfig.rel.inf");
+        config_reader.load_config("./serverconfig.rel.inf");
 
         /*
         let app_name = "app_name".to_string();
@@ -175,7 +175,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         task::block_on(async {
             unsafe {
                 let config_reader = server_config_reader::server_config_reader::get_instance();
-                config_reader.load_config("./serversonfig.rel.inf");
+                config_reader.load_config("./serverconfig.rel.inf");
             let app_name = "app_name".to_string();
             let db_name = "gsdk_mongodb".to_string();
             let uri_string = config_reader.get_value("router_mongodb_uri");

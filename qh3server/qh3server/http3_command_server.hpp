@@ -55,7 +55,7 @@ class http3_command_server : public qh3server {
 	// commands
 	void send_shutdown_to_all();
 
-	bridge_command_center* bridge;
+	[[maybe_unused]] bridge_command_center* bridge = nullptr;
 	//	qstring router_port;
 	bool is_log_quiche_flag = false;
 };

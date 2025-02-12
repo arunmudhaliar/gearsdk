@@ -563,6 +563,7 @@ bool essentials::get_json_string(rapidjson::Document& obj, qstring& output) {
 
 #if USE_LIBUV
 void essentials::close_uv_handle_callback(uv_handle_t* handle, void* arg) {
+	UNUSED(arg);
 	if (!uv_is_closing(handle)) {
 		uv_close(handle, nullptr);
 	}

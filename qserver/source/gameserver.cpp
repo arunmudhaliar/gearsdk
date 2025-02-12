@@ -35,6 +35,7 @@ void game_room::onroom_end() {
 	room::onroom_end();
 }
 bool game_room::can_allow_reconnection(unsigned cid_hash) {
+	UNUSED(cid_hash);
 	return true;
 }
 

@@ -221,7 +221,7 @@
 			path = certs;
 			sourceTree = "<group>";
 		};
-		557F7BBC2D2C6C4C00A3B9CB /* sserverplugin */ = {
+		557F7BBC2D2C6C4C00A3B9CB /* serverplugin */ = {
 			isa = PBXGroup;
 			children = (
 				553F7F3F2D4A4ED400411520 /* napi_helper.cpp */,
@@ -243,7 +243,7 @@
 				55A0B4812D3D61230075DF23 /* plugin_qzookeeper.cpp */,
 				55A0B4822D3D61230075DF23 /* plugin_qzookeeper.hpp */,
 			);
-			name = sserverplugin;
+			name = serverplugin;
 			sourceTree = "<group>";
 		};
 		5594E2342B3FCA0100E47984 /* shared_client_files */ = {
@@ -260,7 +260,7 @@
 			children = (
 				553F7F9C2D5A907500411520 /* serverconfig.dev.inf */,
 				553F7F9B2D5A907500411520 /* serverconfig.rel.inf */,
-				557F7BBC2D2C6C4C00A3B9CB /* sserverplugin */,
+				557F7BBC2D2C6C4C00A3B9CB /* serverplugin */,
 				55CE94EB2B9F0263002C0278 /* configs */,
 				5594E26F2B489BEF00E47984 /* qzookeeper.cpp */,
 				5594E2342B3FCA0100E47984 /* shared_client_files */,

@@ -9,8 +9,8 @@
 #include "../qzookeeper/source/qzookeeper.hpp"
 
 struct qzookeeper_t {
-    qzookeeper* instance;
-    std::map<qzookeeper_value_changed_cb, void*> value_change_callbacks;
+    qzookeeper* instance = nullptr;
+    std::map<qzookeeper_value_changed_cb, void*> value_change_callbacks = {};
 };
 
 EXPORT qzookeeper_t* qzookeeper_create(const char* name) {
@@ -79,6 +79,7 @@ EXPORT void qzookeeper_register_value_change_callback(qzookeeper_t* instance, qz
 }
 
 EXPORT void qzookeeper_unregister_value_change_callback(qzookeeper_t* instance, qzookeeper_value_changed_cb callback, void* context) {
+    UNUSED(context);
     std::map<qzookeeper_value_changed_cb, void*>::iterator it = instance->value_change_callbacks.find(callback);
     if (it != instance->value_change_callbacks.end()) {
         instance->value_change_callbacks.erase(it);

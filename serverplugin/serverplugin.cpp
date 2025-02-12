@@ -80,6 +80,7 @@ void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* s
 
 // qh3plugin_server
 gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {
+	UNUSED(config);
 }
 
 gsdk::server::qh3plugin_server::~qh3plugin_server() {
@@ -138,6 +139,8 @@ void gsdk::server::qh3plugin_server::on_run_started() {
 void gsdk::server::qh3plugin_server::on_run_end() {}
 
 void gsdk::server::qh3plugin_server::notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents) {
+	UNUSED(loop);
+	UNUSED(revents);
     st_admin_cmd* cmd = static_cast<st_admin_cmd*>(w->data);
     if (cmd == nullptr) {
         return;
@@ -154,6 +157,8 @@ void gsdk::server::qh3plugin_server::notify_server_cmd_async_cb(EV_P_ ev_async *
 }
 
 void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
+	UNUSED(loop);
+	UNUSED(revents);
     qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(w->data);
     while (st_response_packet* response_packet = plugin_server->get_ev_notifier().dequeue_response()) {
         struct conn_io_qh3* conn_io = plugin_server->get_conn(response_packet->cid, response_packet->cid_len);

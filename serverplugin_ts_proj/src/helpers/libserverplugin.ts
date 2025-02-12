@@ -2,12 +2,15 @@ import * as path from 'path';
 import * as fs from "fs";
 import os from 'os';
 import { debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from './sdktypes';
+import { execSync } from "child_process";
+
 
 export namespace serversdk {
     const __LOGTAG__: string = `serversdk`;
+    const ARCH = execSync("uname -m").toString().trim();
     let lib_path: string;
-    let lib_debug: string = `libserverplugin-${os.platform()}-debug.node`;
-    let lib_release: string = `libserverplugin-${os.platform()}.node`;
+    let lib_debug: string = `libserverplugin-${os.platform()}-${ARCH}-debug.node`;
+    let lib_release: string = `libserverplugin-${os.platform()}-${ARCH}.node`;
     let lib_debug_path: string = path.join(__dirname, `./../../dist/${lib_debug}`);
     let lib_release_path: string = path.join(__dirname, `./../../dist/${lib_release}`);
     if (fs.existsSync(lib_debug_path)) {

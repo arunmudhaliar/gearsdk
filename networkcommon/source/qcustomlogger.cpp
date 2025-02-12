@@ -12,6 +12,7 @@ qcustomlogger::qcustomlogger() : qtextfilelogger() {}
 qcustomlogger::~qcustomlogger() {}
 
 uint64_t qcustomlogger::log(qlogfile::log_lvls lvl, elog_type type, const char* tag, const char* pid, const char* roomid, const char* format, ...) {
+	UNUSED(lvl);
 	//	return qtextfilelogger::log(lvl, tag, <#const char *format, ...#>);
 	if (logfile == nullptr) {
 		debug_print_error(__LOGTAG__, "log file not created yet !!!");
