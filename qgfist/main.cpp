@@ -59,6 +59,7 @@ struct AppState {
 	uv_loop_t* loop;
 	uv_timer_t request_timer;
 	uv_timer_t wait_timer;
+	uv_timer_t send_timer;
 	uv_timer_t exit_timer;
 	uv_timer_t drain_timer;
 	double request_weightage;
@@ -79,6 +80,7 @@ struct AppState {
 	uv_timeval64_t start_time;
 
 	std::vector<std::pair<qstring, qstring>> requests;
+	std::vector<qstring> messages;
 };
 
 AppState app_state;
@@ -186,9 +188,27 @@ void gclient_onconnect_cb(gclient* c, conn_io_client* qconnection) {
 	}
 }
 
+bool gclient_is_room_start_event(uint8_t* buf, ssize_t len) {
+	if (buf == nullptr || len == 0) {
+		return false;
+	}
+	rapidjson::Document doc;
+	if (doc.Parse((const char*) buf, len).HasParseError()) {
+		return false;
+	}
+	// Check if "room_event" exists and is a string
+	if (!doc.HasMember("room_event") || !doc["room_event"].IsString() || strcmp(doc["room_event"].GetString(), "room_start") != 0) {
+		return false;
+	}
+	return true;
+}
+
 void gclient_onmessage_cb(gclient* c, ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
 	UNUSED(c);
-	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_3, __LOGTAG__, "gclient %x - Received message: %.*s", qconnection->cid_hash_val, recv_len, buf);
+	debug_print(app_state.single_request ? LOG_LEVEL_0 : LOG_LEVEL_0, __LOGTAG__, "gclient %x - Received message: %.*s", qconnection->cid_hash_val, recv_len, buf);
+	if (gclient_is_room_start_event(buf, recv_len)) {
+		c->room_started_for_client();
+	}
 }
 
 void gclient_onreleaseconnection_cb(gclient* c, unsigned cid_hash_val) {
@@ -321,6 +341,34 @@ std::vector<std::pair<qstring, qstring>> load_requests_from_json(const char* fil
 	return requests;
 }
 
+std::vector<qstring> load_messages_from_json(const char* filename) {
+	std::vector<qstring> requests;
+	FILE* fp = fopen(filename, "r");
+	if (!fp) {
+		std::cerr << "Failed to open file " << filename << std::endl;
+		return requests;
+	}
+
+	char readBuffer[65536];
+	rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+	rapidjson::Document document;
+	document.ParseStream(is);
+	fclose(fp);
+
+	if (!document.IsArray()) {
+		std::cerr << "mesages JSON is not an array" << std::endl;
+		return requests;
+	}
+
+	for (auto& value : document.GetArray()) {
+		if (value.IsString()) {
+			requests.emplace_back(value.GetString());
+		}
+	}
+
+	return requests;
+}
+
 // Function to initialize AppState with default values
 void initialize_app_state(AppState& app_state) {
 	app_state.host = "192.168.0.230";
@@ -340,6 +388,7 @@ void initialize_app_state(AppState& app_state) {
 
 	// Load requests from the JSON file
 	app_state.requests = load_requests_from_json("requests.json");
+	app_state.messages = load_messages_from_json("messages.json");
 }
 
 void cleanup() {
@@ -349,6 +398,7 @@ void cleanup() {
 
 	uv_timer_stop(&app_state.request_timer);
 	uv_timer_stop(&app_state.wait_timer);
+	uv_timer_stop(&app_state.send_timer);
 	uv_timer_stop(&app_state.drain_timer);
 	uv_timer_stop(&app_state.exit_timer);
 	uv_loop_close(app_state.loop);
@@ -357,7 +407,7 @@ void cleanup() {
 // Timer callback to handle exit
 void exit_after_delay(uv_timer_t* handle) {
 	UNUSED(handle);
-	std::cout << "exit_after_delay called\n" << std::flush;
+	std::cout << "exit_after_delay called. workers_map sz: " << app_state.workers_map.size() << "\n" << std::flush;
 #if PLATFORM == PLATFORM_LINUX
 	std::cout << "memory consumption: " << essentials::get_process_used_mem() << std::endl;
 #endif
@@ -400,6 +450,23 @@ void wait_delay(uv_timer_t* handle) {
 	// Start exit timer if specified
 	if (app_state.exit_after_seconds > 0) {
 		uv_timer_start(&app_state.exit_timer, exit_after_delay, app_state.exit_after_seconds * 1000, 0);
+	}
+}
+
+void send_msg_loop(uv_timer_t* handle) {
+	UNUSED(handle);
+	std::lock_guard<std::mutex> lock(app_state.workers_map_mutex);
+	for (const auto& it : app_state.workers_map) {
+		std::shared_ptr<WorkData> worker = it.second;
+		if (!worker->client->is_runfinished() && worker->client->is_room_started()) {
+			if (app_state.messages.size() == 0) {
+				worker->client->send_message("HELLO", true);
+			} else {
+				const qstring& msg = app_state.messages.at(rand() % app_state.messages.size());
+				debug_print(LOG_LEVEL_0, __LOGTAG__, "Send message: %.*s", msg.length(), msg.c_str());
+				worker->client->send_message(msg, true);
+			}
+		}
 	}
 }
 
@@ -465,6 +532,7 @@ int main(int argc, char** argv) {
 	// Initialize timers
 	uv_timer_init(app_state.loop, &app_state.request_timer);
 	uv_timer_init(app_state.loop, &app_state.wait_timer);
+	uv_timer_init(app_state.loop, &app_state.send_timer);
 	uv_timer_init(app_state.loop, &app_state.drain_timer);
 	uv_timer_init(app_state.loop, &app_state.exit_timer);
 
@@ -473,6 +541,9 @@ int main(int argc, char** argv) {
 
 	// Start the drain timer immediately
 	uv_timer_start(&app_state.drain_timer, drain_worker, 1000, 3000);
+
+	// Start the send message loop
+	uv_timer_start(&app_state.send_timer, send_msg_loop, 5 * 1000, 800);  // repeat every 800ms after 5 seconds
 
 	if (!app_state.single_request) {
 		// Start exit timer if specified

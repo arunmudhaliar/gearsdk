@@ -8,6 +8,8 @@
 
 #include "http3_command_server.hpp"
 
+#include "../../common/serverinforeader.hpp"
+
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
@@ -15,10 +17,10 @@
 
 using namespace rapidjson;
 using namespace client;
+using namespace gsdk::common;
 
-http3_command_server::http3_command_server(const server_config_in& config) : qh3server(), bridge(config.ref), router_port(config.router_port) {
+http3_command_server::http3_command_server(const server_config_in& config, bridge_command_center* bridge) : qh3server(), bridge(bridge), config_copy(config) {
 	UNUSED(bridge);
-	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
 }
 
 http3_command_server::~http3_command_server() {
@@ -31,6 +33,14 @@ void http3_command_server::on_run_started() {
 }
 
 bool http3_command_server::on_server_pre_init() {
+	server_info_reader* info_reader = server_info_reader::get_instance();
+	if (!info_reader->load_config(run_server_config.inf_file.c_str())) {
+		debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
+		return false;
+	}
+	qstring router_redis_user = info_reader->get_value_else_default("router_redis_user", "gsdkuser");
+	qstring router_redis_password = info_reader->get_value_else_default("router_redis_password", "Fr0gmoon123");
+	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", config_copy.redis_ip, config_copy.redis_port, router_redis_user, router_redis_password);
 	return hiredis->connect_redis() == 0;
 }
 
@@ -196,7 +206,7 @@ void http3_command_server::construct_response_whoami(qstring& response_string) {
 void http3_command_server::send_shutdown_to_all() {
 	conn_io_req_res* req = conn_io_req_res::create("/shutdown_test", "");
 	qh3client_helper::send_async_request<client::qh3client>(
-		host_id, router_port, req, nullptr,
+		host_id, config_copy.router_port, req, nullptr,
 		[](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
 			UNUSED(response);
 			UNUSED(client_specific_data);

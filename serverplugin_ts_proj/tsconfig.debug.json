@@ -12,7 +12,9 @@
     "resolveJsonModule": true,                // Allow importing JSON files as modules
     "lib": ["ES2020", "DOM"],                 // Include DOM and ES2020 libraries for compatibility
     "noImplicitAny": true,                    // Disallow the use of the 'any' type (optional)
-    "moduleResolution": "node"                // Use Node.js-style module resolution
+    "moduleResolution": "node", // Use Node.js-style module resolution
+    "declaration": true, // <-- This generates .d.ts files
+    "declarationMap": true, // <-- (Optional) Helps debugging
   },
   "include": [
     "./src/**/*"                              // Include all TypeScript files in the 'src' directory

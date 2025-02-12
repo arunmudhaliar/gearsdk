@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		5522CC0F2CFB0A6D00676D0B /* signal_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5522CC0D2CFB0A6D00676D0B /* signal_handler.cpp */; };
 		5522CC102CFB0A6D00676D0B /* signal_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5522CC0E2CFB0A6D00676D0B /* signal_handler.hpp */; };
+		553F7F982D5A724C00411520 /* serverinforeader.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 553F7F962D5A724C00411520 /* serverinforeader.hpp */; };
+		553F7F992D5A724C00411520 /* serverinforeader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 553F7F972D5A724C00411520 /* serverinforeader.cpp */; };
 		556AB6E02AF5736E00D688DB /* bson.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C42AF5736E00D688DB /* bson.h */; };
 		556AB6E12AF5736E00D688DB /* bson-json.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C52AF5736E00D688DB /* bson-json.h */; };
 		556AB6E22AF5736E00D688DB /* bson-prelude.h in Headers */ = {isa = PBXBuildFile; fileRef = 556AB6C62AF5736E00D688DB /* bson-prelude.h */; };
@@ -51,6 +53,8 @@
 /* Begin PBXFileReference section */
 		5522CC0D2CFB0A6D00676D0B /* signal_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = signal_handler.cpp; sourceTree = "<group>"; };
 		5522CC0E2CFB0A6D00676D0B /* signal_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = signal_handler.hpp; sourceTree = "<group>"; };
+		553F7F962D5A724C00411520 /* serverinforeader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = serverinforeader.hpp; sourceTree = "<group>"; };
+		553F7F972D5A724C00411520 /* serverinforeader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = serverinforeader.cpp; sourceTree = "<group>"; };
 		556AB6C42AF5736E00D688DB /* bson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bson.h; sourceTree = "<group>"; };
 		556AB6C52AF5736E00D688DB /* bson-json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-json.h"; sourceTree = "<group>"; };
 		556AB6C62AF5736E00D688DB /* bson-prelude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "bson-prelude.h"; sourceTree = "<group>"; };
@@ -183,6 +187,8 @@
 				55E4D3142ACAF18B00555999 /* timer.hpp */,
 				55B3730B2AC3263200F0095E /* sdktypes.hpp */,
 				55853CC72AC32A1E00901E52 /* sdktypes.cpp */,
+				553F7F972D5A724C00411520 /* serverinforeader.cpp */,
+				553F7F962D5A724C00411520 /* serverinforeader.hpp */,
 				55B372FB2AC325B200F0095E /* Products */,
 				55E4D31E2ACAF4AC00555999 /* Frameworks */,
 			);
@@ -221,6 +227,7 @@
 				556AB6EF2AF5736E00D688DB /* bson-oid.h in Headers */,
 				556AB6ED2AF5736E00D688DB /* bson-keys.h in Headers */,
 				556AB6E32AF5736E00D688DB /* bcon.h in Headers */,
+				553F7F982D5A724C00411520 /* serverinforeader.hpp in Headers */,
 				55B3730D2AC3263200F0095E /* sdktypes.hpp in Headers */,
 				556AB6FA2AF5736E00D688DB /* bson-value.h in Headers */,
 				556AB6E02AF5736E00D688DB /* bson.h in Headers */,
@@ -344,6 +351,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				55E4D3152ACAF18B00555999 /* timer.cpp in Sources */,
+				553F7F992D5A724C00411520 /* serverinforeader.cpp in Sources */,
 				556AB7152AFA8FBC00D688DB /* sha256.c in Sources */,
 				55853CC82AC32A1E00901E52 /* sdktypes.cpp in Sources */,
 				556AB71B2AFA993200D688DB /* crypto_helper.cpp in Sources */,

@@ -68,10 +68,9 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 
 	void get_gservers(res_msg_gservers& res_get_gservers);
 
-	qstring zk_uri;
 	message_parser msg_parser;
 	bool is_log_quiche_flag = false;
-
+	server_config_in config_copy;
 #if TEST_RESPONSE
 	qstring test_response;
 #endif

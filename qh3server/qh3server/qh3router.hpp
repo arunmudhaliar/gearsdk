@@ -9,7 +9,9 @@
 #ifndef qh3router_hpp
 #define qh3router_hpp
 
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/serverconfig.hpp"
+#include "../../networkcommon/source/serverrunconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 #include "../../qzookeeper/source/qzookeeper.hpp"
@@ -120,6 +122,6 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 class http3_sample_router : public qh3router {
    public:
 	http3_sample_router(const server_config_in& config) : qh3router(config) {}
-	~http3_sample_router() {}
+	~http3_sample_router() { debug_print(LOG_LEVEL_0, __LOGTAG__, "http3_sample_router destructor called."); }
 };
 #endif /* qh3router_hpp */

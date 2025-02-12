@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 import { essentials } from '../../helpers/essentials';
-import { serversdk } from '../../helpers/serversdk';
+import { serversdk } from '../../helpers/libserverplugin';
 import { debug_error, debug_print, EXIT_SUCCESS, LOG_LEVEL_4 } from '../../helpers/sdktypes';
 import { rq_msg_user_get, res_msg_user_get, msg_room_config_list } from '../../userserver/messages';
 import server from '../../userserver/userserver';
@@ -14,17 +14,17 @@ class api_user_get implements server.interface_api {
     public get_post_cb(): server.type_api_callback {
         return this.parse_user_get;
     }
-    private async parse_user_get(native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number): Promise<string | null> {
+    private async parse_user_get(native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: server.interface_userserver, api_instance: server.interface_api, path: string, buffer: string, headers: string): Promise<string | null> {
         let thiz:api_user_get = api_instance as api_user_get;
 
         const user_get_msg_rq = plainToClass(rq_msg_user_get, JSON.parse(buffer));
         // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, "Deserialized Message:", user_get_msg_rq);
 
-        let crc: number = serversdk.serverplugin.mod_crc32(0, null, 0);
-        crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.sys_name, user_get_msg_rq.device.sys_name.length);
-        crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.node_name, user_get_msg_rq.device.node_name.length);
-        crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.release, user_get_msg_rq.device.release.length);
-        crc = serversdk.serverplugin.mod_crc32(crc, user_get_msg_rq.device.arch, user_get_msg_rq.device.arch.length);
+        let crc: number = serversdk.sdklib.mod_crc32(0, Buffer.from(''));
+        crc = serversdk.sdklib.mod_crc32(crc, Buffer.from(user_get_msg_rq.device.sys_name));
+        crc = serversdk.sdklib.mod_crc32(crc, Buffer.from(user_get_msg_rq.device.node_name));
+        crc = serversdk.sdklib.mod_crc32(crc, Buffer.from(user_get_msg_rq.device.release));
+        crc = serversdk.sdklib.mod_crc32(crc, Buffer.from(user_get_msg_rq.device.arch));
 
         let user_get_msg_response: res_msg_user_get = new res_msg_user_get();
         user_get_msg_response.pid = `${crc.toString(16)}`;

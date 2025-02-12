@@ -61,6 +61,7 @@ qconn_io::qconn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_le
 	memcpy(cid, scid, Q_LOCAL_CONN_ID_LEN);
 	HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 	last_heartbeat_time = ev_now(bridge->get_mainloop());
+	connection_start_time = ev_now(bridge->get_mainloop());
 }
 
 qconn_io::~qconn_io() {
@@ -156,6 +157,10 @@ void qconn_io::close() {
 }
 
 // MARK: - qnetworkserver
+qnetworkserver::~qnetworkserver() {
+	debug_print_important2(__LOGTAG__, "qnetworkserver destroyed %s:%s !!!", host_id.c_str(), port_id.c_str());
+}
+
 void qnetworkserver::debug_quiche_log(const char* line, void* argp) {
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(argp);
 	if (server != nullptr && server->is_log_quiche()) {
@@ -685,24 +690,18 @@ void qnetworkserver::exit_services_gracefully() {
 	ev_loop_destroy(wait_loop);
 }
 
-int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer) {
-	run_server_config.host = host;
-	run_server_config.port = port;
-	run_server_config.redis_ip = redis_ip;
-	run_server_config.redis_port = REDIS_PORT;
-	run_server_config.root_dir = root_dir;
-	run_server_config.id = qnetworkserver::run_id++;
-	run_server_config.app_id = app_id;
-	run_server_config.observer = observer;
-
-	qstring thread_name = qstring::format_string("qnetworkserver-%s %s:%s", app_id.c_str(), host.c_str(), port.c_str());
+int qnetworkserver::run(const server_config_in& in_config, observer_qserver_events* observer, void* user_arg_ptr) {
+	user_arg = user_arg_ptr;
+	run_server_config = in_config;
+	qstring app_id = run_server_config.app_id;
+	host_id = run_server_config.host;
+	port_id = run_server_config.port;
+	qstring thread_name = qstring::format_string("qnetworkserver-%s %s:%s", app_id.c_str(), host_id.c_str(), port_id.c_str());
 	PTHREAD_NAME(thread_name.c_str());
 	server_event_observer = observer;
-	host_id = host;
-	port_id = port;
 
-	qstring log_path = qstring::format_string("./glogs/%s/q_logfile", port.c_str());
-	qstring stats_path = qstring::format_string("./gstats/%s/q_statfile", port.c_str());
+	qstring log_path = qstring::format_string("./glogs/%s/q_logfile", port_id.c_str());
+	qstring stats_path = qstring::format_string("./gstats/%s/q_statfile", port_id.c_str());
 	logger.start_session(log_path, log_path.length());
 	stats_logger.init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
 	stats_logger.start_session(stats_path, stats_path.length());
@@ -715,7 +714,7 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 #endif
 	struct addrinfo* local;
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
-	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
+	if (getaddrinfo(host_id.c_str(), port_id.c_str(), &HINTS, &local) != 0) {
 		debug_print_error(__LOGTAG__, "f:run_internal - failed to resolve host");
 		exit_services_gracefully();
 		QSERVER_EVENT_ERROR(this, server_event_observer, -1);
@@ -756,8 +755,8 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 		return -1;
 	}
 
-	fs::path cert_file(root_dir / "cert.crt");
-	fs::path key_file(root_dir / "cert.key");
+	fs::path cert_file(run_server_config.root_dir / "cert.crt");
+	fs::path key_file(run_server_config.root_dir / "cert.key");
 	debug_print(LOG_LEVEL_2, __LOGTAG__, "cert file %s, key file %s", cert_file.c_str(), key_file.c_str());
 	int res_crt_load = quiche_config_load_cert_chain_from_pem_file(config, cert_file.c_str());
 	if (res_crt_load != 0) {
@@ -846,10 +845,10 @@ int qnetworkserver::run(qstring host, qstring port, fs::path root_dir, const qst
 	ev_timer_again(mainloop, &heartbeat_check_timer);
 
 	int port_in_number = 0;
-	if (gsdk::str2int(&port_in_number, port.c_str(), port.length(), 10) != gsdk::STR2INT_SUCCESS) {
+	if (gsdk::str2int(&port_in_number, port_id.c_str(), port_id.length(), 10) != gsdk::STR2INT_SUCCESS) {
 		debug_print_error(__LOGTAG__, "Unable to parse server port, defaulting to %d !!!", port_in_number);
 	}
-	QSERVER_EVENT_START(this, server_event_observer, host.c_str(), port_in_number);
+	QSERVER_EVENT_START(this, server_event_observer, host_id.c_str(), port_in_number);
 
 	ev_loop(mainloop, 0);
 

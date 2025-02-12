@@ -117,7 +117,10 @@ export class qmongo {
     ): Promise<number> {
         try {
             const collection = this.getCollection(collection_name);
-            if (!collection) throw new Error(`Collection "${collection_name}" not found.`);
+            if (!collection) {
+                console.error(new Error(`Collection "${collection_name}" not found.`));
+                return 1;
+            }
 
             const find_query: Document = {};
             find_query_cb(find_query);

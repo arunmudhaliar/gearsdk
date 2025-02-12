@@ -42,7 +42,7 @@ bool game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 //---------------------------------gameserver---------------------------------
 //----------------------------------------------------------------------------
-gameserver::gameserver(const qstring& zk_uri) : roomserver(zk_uri) {}
+gameserver::gameserver() : roomserver() {}
 
 gameserver::~gameserver() {}
 

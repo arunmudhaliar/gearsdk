@@ -23,6 +23,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
     $(COMMON_SRCDIR)/sdktypes.cpp \
     $(COMMON_SRCDIR)/crypto_helper.cpp \
     $(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
+    $(COMMON_SRCDIR)/serverinforeader.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
     $(ZK_SRCDIR)/source/qzookeeper.cpp \
@@ -65,7 +66,10 @@ USE_NAPI ?= 0
 ifeq ($(USE_NAPI), 1)
     INCLUDES += -I $(shell node -p "require('node-addon-api').include")
 	INCLUDES += -I $(shell . ~/.nvm/nvm.sh && nvm which current | sed 's|bin/node|include/node|')
-	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp
+	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp \
+        $(SRCDIR)/gserverplugin_napi_addon.cpp \
+        $(SRCDIR)/napi_helper.cpp
+
 	NAPI_DEFINES := \
 	'-DNODE_GYP_MODULE_NAME=serverplugin_addon' \
 	'-DUSING_UV_SHARED=1' \
@@ -126,9 +130,12 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
+	    DEBUG_LIB = libserverplugin-linux-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-linux.$(LIB_EXT)
+    else
+	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
     endif
-    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
-    RELEASE_LIB = libserverplugin.$(LIB_EXT)
 endif
 
 ifeq ($(UNAME), Darwin)
@@ -152,9 +159,13 @@ ifeq ($(UNAME), Darwin)
     LIB_EXT = dylib
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
+	    DEBUG_LIB = libserverplugin-darwin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-darwin.$(LIB_EXT)
+    else
+	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
     endif
-    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
-    RELEASE_LIB = libserverplugin.$(LIB_EXT)
+
     DEBUG_LDFLAGS = -install_name @rpath/$(DEBUG_LIB)
     RELEASE_LDFLAGS = -install_name @rpath/$(RELEASE_LIB)
     ifeq ($(ARCH), arm64)
@@ -191,7 +202,7 @@ endif
 all: debug
 
 clean:
-	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) $(basename $(DEBUG_LIB)).node $(basename $(RELEASE_LIB)).node serverplugin_napi_addon.o
+	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o
 
 $(OBJS): Makefile
 

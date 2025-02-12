@@ -9,12 +9,12 @@
 #include "http3_sample_server.hpp"
 
 #include "../../common/crypto_helper.hpp"
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/qbuffer.hpp"
 
-http3_sample_server::http3_sample_server(const server_config_in& config) : qh3server(), zk_uri(config.zk_uri) {
-	mongo = DEBUG_NEW qmongo(this, "qh3", "gsdk_mongodb", config.mongodb_uri);
-	hiredis = DEBUG_NEW qhiredis("server_hiredis", config.redis_ip, config.redis_port, "gsdkuser", "Fr0gmoon123");
-}
+using namespace gsdk::common;
+
+http3_sample_server::http3_sample_server(const server_config_in& config) : qh3server(), config_copy(config) {}
 
 http3_sample_server::~http3_sample_server() {
 	GX_DELETE(hiredis);
@@ -29,10 +29,20 @@ void http3_sample_server::configchanged(const qstring& path, const qstring& data
 }
 
 bool http3_sample_server::on_server_pre_init() {
+	server_info_reader* info_reader = server_info_reader::get_instance();
+	if (!info_reader->load_config(run_server_config.inf_file.c_str())) {
+		debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
+		return false;
+	}
+	qstring userserver_redis_user = info_reader->get_value_else_default("userserver_redis_user", "gsdkuser");
+	qstring userserver_redis_password = info_reader->get_value_else_default("userserver_redis_password", "Fr0gmoon123");
+	qstring userserver_mongodb_name = info_reader->get_value_else_default("userserver_mongodb_name", "gsdk_mongodb");
+	mongo = DEBUG_NEW qmongo(this, "qh3", userserver_mongodb_name, config_copy.mongodb_uri);
+	hiredis = DEBUG_NEW qhiredis("server_hiredis", config_copy.redis_ip, config_copy.redis_port, userserver_redis_user, userserver_redis_password);
 #if ENABLE_ZK
 	GX_DELETE(qzk);
 	qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-%s", port_id.c_str()));
-	int zk_result = qzk->connect(zk_uri);
+	int zk_result = qzk->connect(config_copy.zk_uri);
 	if (zk_result != 0) {
 		debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 		GX_DELETE(qzk);

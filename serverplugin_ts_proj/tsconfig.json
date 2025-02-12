@@ -10,6 +10,8 @@
     "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing
     "sourceMap": false, // Generate source maps for debugging
     "resolveJsonModule": true, // Allow importing JSON files as modules
+    "declaration": true, // <-- This generates .d.ts files
+    "declarationMap": true, // <-- (Optional) Helps debugging
     "lib": [
       "ES2020",
       "DOM"

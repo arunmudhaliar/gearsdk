@@ -1,6 +1,4 @@
-import * as ffi from 'ffi-napi';
-import { serversdk } from '../helpers/serversdk';
-import * as ref from 'ref-napi';
+import { serversdk } from '../helpers/libserverplugin';
 import { essentials } from '../helpers/essentials';
 import { qmongo } from '../helpers/qmongo';
 import qhiredis from '../helpers/qhiredis';
@@ -9,10 +7,10 @@ import { debug_print, debug_error, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/s
 import { serverconfig } from '../helpers/serverconfig';
 import * as path from 'path';
 import * as filelogger from '../helpers/filelogger';
-import { server_config_reader } from '../helpers/serverconfig-reader';
+import { server_info_reader } from '../helpers/serverinforeader';
 
 export namespace server {
-    export type type_api_callback = (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => Promise<string | null | any>;
+    export type type_api_callback = (native_server: serversdk.qh3server_ptr, cid: Buffer, cid_len: number, user_server_interface: interface_userserver, api_instance: interface_api, path: string, buffer: string, headers: string) => Promise<string | null | any>;
 
     export interface interface_userserver {
         get_mongo_driver(): qmongo | null;
@@ -29,14 +27,18 @@ export namespace server {
     export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
         private router_config: serversdk.qh3_router_input_config = {
-            router_address: server_config_reader.get_instance().get_value('router_address'),
-            mongodb_uri: server_config_reader.get_instance().get_value('router_mongodb_uri'),
-            redis_address: server_config_reader.get_instance().get_value('router_redis_uri'),
-            zk_uri: server_config_reader.get_instance().get_value('router_zk_uri'),
+            router_address: server_info_reader.get_instance().get_value('userserver_address'),
+            mongodb_uri: server_info_reader.get_instance().get_value('userserver_mongodb_uri'),
+            mongodb_db: server_info_reader.get_instance().get_value('userserver_mongodb_name'),
+            redis_address: server_info_reader.get_instance().get_value('userserver_redis_uri'),
+            redis_user: server_info_reader.get_instance().get_value('userserver_redis_user'),
+            redis_password: server_info_reader.get_instance().get_value('userserver_redis_password'),
+            zk_uri: server_info_reader.get_instance().get_value('userserver_zk_uri'),
             root_dir: process.cwd(),
-            command_port: server_config_reader.get_instance().get_value_as_number('command_port', 4010),
-            router_port_return: server_config_reader.get_instance().get_value_as_number('router_port_return', 4005),
-            app_id: server_config_reader.get_instance().get_value('app_id')
+            inf_file: `${process.cwd()}/${process.env.NODE_ENV === "production" ? "serverconfig.rel.inf" : "serverconfig.dev.inf"}`,
+            command_port: server_info_reader.get_instance().get_value_as_number('userserver_command_port', 4010),
+            router_port_return: server_info_reader.get_instance().get_value_as_number('userserver_port_return', 4005),
+            app_id: server_info_reader.get_instance().get_value('app_id')
         };
 
         private mongo: qmongo | null = null;
@@ -48,11 +50,15 @@ export namespace server {
         private start_time: number;
         private request_counter: number;
         private total_execution_time: number;
+        private on_server_start_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>;
+        private on_server_stop_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>;
 
-        constructor() {
+        constructor(on_server_start_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>, on_server_stop_cb: (native_server: serversdk.qh3server_ptr) => Promise<void>) {
             this.start_time = Date.now(); // Initialize the start time
             this.request_counter = 0;     // Initialize the request counter
             this.total_execution_time = 0; // Initialize the total execution time
+            this.on_server_start_cb = on_server_start_cb;
+            this.on_server_stop_cb = on_server_stop_cb;
         }
 
         public get_mongo_driver(): qmongo | null {
@@ -68,43 +74,48 @@ export namespace server {
             return this.zkconfig;
         }
 
-        protected on_server_pre_start = ffi.Callback('void', ['pointer', 'pointer'], (native_server: serversdk.qh3server_ptr, user_arg: Buffer) => {
+        protected on_server_pre_start = (native_server: serversdk.qh3server_ptr) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_pre_start`);
-        }) as unknown as serversdk.type_on_server_pre_start;
-        protected on_server_start = ffi.Callback('void', ['pointer', 'pointer', 'string', serversdk.uint16], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer, ip: string, port: number) => {
+        }
+        protected on_server_start = async (native_server: serversdk.qh3server_ptr, ip: string, port: number) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_start`);
-            setImmediate(async () => {
-                await this.hiredis?.set_hash_value(`servers:${serversdk.serverplugin.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
-            });
-        }) as unknown as serversdk.type_on_server_start;
-        protected on_server_stop = ffi.Callback('void', ['pointer', 'pointer'], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer) => {
+            await this.hiredis?.set_hash_value(`servers:${serversdk.sdklib.get_device_public_ip()}`, `server-${port}`, `${ip}:${port}`);
+            this.on_server_start_cb(native_server);
+        }
+        protected on_server_stop = (native_server: serversdk.qh3server_ptr) => {
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_stop:`);
-        }) as unknown as serversdk.type_on_server_stop;
-        protected on_server_error = ffi.Callback('void', ['pointer', 'pointer'], (native_server: serversdk.qh3server_ptr, user_arg: Buffer, error_code: number) => {
+            serversdk.sdklib.qh3server_release_callbacks(native_server);
+            this.on_server_stop_cb(native_server);
+            this.mongo?.disconnect();
+            this.hiredis?.disconnect_redis();
+            this.qzk?.close();
+        }
+        protected on_server_error = (native_server: serversdk.qh3server_ptr, error_code: number) => {
             debug_error(userserver.__LOGTAG__, `on_server_error: ${error_code}`);
-        }) as unknown as serversdk.type_on_server_error;
-        protected on_server_parse = ffi.Callback('void', ['pointer', 'pointer', serversdk.uint8_p, serversdk.uint16, 'string', 'string', serversdk.size_t, 'string', serversdk.size_t], async (native_server: serversdk.qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) => {
-            // debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}, len ${len}`);
-            this.process_request(native_server, user_arg, cid, cid_len, path, buffer, len, headers, header_buffer_size);
-        }) as unknown as serversdk.type_on_server_parse;
+        }
+        protected on_server_parse = async (native_server: serversdk.qh3server_ptr, cid: any, cid_len: number, path: string, buffer: string, headers: string) => {
+            // debug_print(LOG_LEVEL_0, userserver.__LOGTAG__, `on_server_parse: ${path}, ${buffer}`);
+            this.process_request(native_server, cid, cid_len, path, buffer, headers);
+        }
 
-        private async process_request(native_server: serversdk.qh3server_ptr, user_arg: Buffer, cid: Buffer, cid_len: number, path: string, buffer: string, len: number, headers: string, header_buffer_size: number) {
+        private async process_request(native_server: serversdk.qh3server_ptr, cid: any, cid_len: number, path: string, buffer: string, headers: string) {
             this.request_counter = this.request_counter + 1
             const parse_start_time = Date.now();
             // const cached_cid = Buffer.from(ref.reinterpret(cid, cid_len));
             let result: string | null = null;
             if (this.api_callbacks.has(path)) {
                 let api_instance: interface_api | any = this.api_callbacks.get(path);
-                result = await api_instance?.get_post_cb()?.(native_server, cid, cid_len, this, api_instance, path, buffer, len, headers, header_buffer_size);
+                result = await api_instance?.get_post_cb()?.(native_server, cid, cid_len, this, api_instance, path, buffer, headers);
             }
             if (result) {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, result, result.length, null, 0);
+                serversdk.sdklib.qh3server_try_send_response(native_server, cid, cid_len, result, result.length);
             } else {
-                serversdk.serverplugin.qh3server_try_send_response(native_server, cid, cid_len, `{}`, 2, null, 0);
+                serversdk.sdklib.qh3server_try_send_response(native_server, cid, cid_len, `{}`, 2);
             }
             const execution_time = Date.now() - parse_start_time
             this.total_execution_time = this.total_execution_time + execution_time
             this.calculate_rps()
+            // filelogger.QH3_INFO(native_server, userserver.__LOGTAG__, "FROM TS");
         }
 
         public register_api(api_instance: interface_api): void {
@@ -149,16 +160,16 @@ export namespace server {
             }
         }
 
-        public async run(native_router: Buffer): Promise<void> {
+        public async run(native_router: any): Promise<void> {
             // mongo setup
-            this.mongo = new qmongo("", "gsdk_mongodb", this.router_config.mongodb_uri);
+            this.mongo = new qmongo("", this.router_config.mongodb_db, this.router_config.mongodb_uri);
             await this.mongo?.connect();
 
             // redis setup
             const redis_ip_port = essentials.extract_ip_and_port(this.router_config.redis_address);
             if (redis_ip_port) {
                 const [ip, port]: [string, number] = redis_ip_port;
-                this.hiredis = new qhiredis("hiredis", ip, port, "gsdkuser", "Fr0gmoon123");
+                this.hiredis = new qhiredis("hiredis", ip, port, this.router_config.redis_user, this.router_config.redis_password);
                 await this.hiredis.connect_redis();
             } else {
                 debug_error(userserver.__LOGTAG__, "Invalid hiredis address format");
@@ -178,18 +189,20 @@ export namespace server {
 
             // load server config
             this.zkconfig = new serverconfig(this.qzk, null);
-            const config_path = path.join(this.router_config.root_dir, 'configs', 'dev', 'runtime-config.json');
+            const config_path = path.join(this.router_config.root_dir, 'configs', (process.env.NODE_ENV === 'production') ? 'prod' : 'dev', 'runtime-config.json');
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `reading ${config_path}`);
-            await this.zkconfig.load(config_path, this.qzk, `/qh3server`);
+            let zk_root_node: string = server_info_reader.get_instance().get_value('userserver_zk_root_node');
+            await this.zkconfig.load(config_path, this.qzk, zk_root_node);
 
             // server spawn
-            serversdk.serverplugin.spawn_qh3server(
+            serversdk.sdklib.spawn_qh3server(
                 native_router,
                 this.router_config.router_address,
                 this.router_config.mongodb_uri,
                 this.router_config.redis_address,
                 this.router_config.zk_uri,
                 this.router_config.root_dir,
+                this.router_config.inf_file,
                 this.router_config.command_port,
                 this.router_config.router_port_return,
                 this.router_config.app_id,
@@ -197,8 +210,7 @@ export namespace server {
                 this.on_server_start,
                 this.on_server_stop,
                 this.on_server_error,
-                this.on_server_parse,
-                serversdk.nullptr
+                this.on_server_parse
             );
         }
     }

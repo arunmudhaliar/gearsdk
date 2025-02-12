@@ -17,6 +17,7 @@
 #include "../qh3server/qh3server/qh3router.hpp"
 #include "../qh3server/qh3server/qh3server.hpp"
 #include "../networkcommon/source/qthreadpool.hpp"
+#include "serverplugin_helper.hpp"
 
 #undef __LOGTAG__
 #define __LOGTAG__ "serverplugin"
@@ -77,7 +78,7 @@ class qh3plugin_server_event_listener : public observer_qh3server_events {
 };
 
 struct st_response_packet {
-    st_response_packet(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data, size_t user_data_len) {
+    st_response_packet(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len) {
         this->server = server;
         this->cid_len = cid_len;
         if (cid && cid_len>0) {
@@ -85,57 +86,57 @@ struct st_response_packet {
             memcpy(this->cid, cid, cid_len);
         }
         this->payload.bin_copy((const uint8_t*)payload, len);
-        if (user_data && user_data_len>0) {
-            this->user_data_len = user_data_len;
-            this->user_data = (char *)malloc(user_data_len);
-            memcpy(this->user_data, user_data, user_data_len);
-        }
     }
     ~st_response_packet() {
         if (this->cid) {
             free(this->cid);
             this->cid = nullptr;
         }
-        if (this->user_data) {
-            free(this->user_data);
-            this->user_data = nullptr;
-        }
     }
     qh3server* server = nullptr;
     uint8_t *cid = nullptr;
     uint16_t cid_len = 0;
     qstring payload;
-    char* user_data = 0;
-    size_t user_data_len = 0;
 };
 
 class qh3plugin_server : public qh3server {
    public:
 	qh3plugin_server(const server_config_in& config);
+    ~qh3plugin_server();
+    
 	static inline const char* get_server_name() { return "qh3plugin_server"; }
 
-    ev_async async_watcher_notify_server;
+    struct st_admin_cmd {
+        st_admin_cmd(short type, qh3plugin_server* server): type(type), server(server) {
+        }
+        short type = 0;
+        qh3plugin_server* server = nullptr;
+    };
     
-    // Thread-safe enqueue
-    void enqueue_response(st_response_packet* response_packet) {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        response_queue.push(response_packet);
-    }
+    ev_async async_cmd_watcher_notify_server;
+    
+//    // Thread-safe enqueue
+//    void enqueue_response(st_response_packet* response_packet) {
+//        std::lock_guard<std::mutex> lock(queue_mutex);
+//        response_queue.push(response_packet);
+//    }
 
-    // Thread-safe dequeue (main thread calls this)
-    st_response_packet* dequeue_response() {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        if (response_queue.empty()) return nullptr;
-        st_response_packet* response_packet = response_queue.front();
-        response_queue.pop();
-        return response_packet;
-    }
+//    // Thread-safe dequeue (main thread calls this)
+//    st_response_packet* dequeue_response() {
+//        std::lock_guard<std::mutex> lock(queue_mutex);
+//        if (response_queue.empty()) return nullptr;
+//        st_response_packet* response_packet = response_queue.front();
+//        response_queue.pop();
+//        return response_packet;
+//    }
 
-    // Notify main thread
-    void notify_main_thread() {
-        total_response_notified.fetch_add(1, std::memory_order_relaxed);
-        ev_async_send(get_server_main_loop(), &async_watcher_notify_server);
-    }
+//    // Notify main thread
+//    void notify_main_thread() {
+//        total_response_notified.fetch_add(1, std::memory_order_relaxed);
+//        ev_async_send(get_server_main_loop(), &async_watcher_notify_server);
+//    }
+    
+    async_ev_notifier<struct st_response_packet>& get_ev_notifier()   { return ev_notifier; }
     
     void increment_request_counter() {
         total_requests.fetch_add(1, std::memory_order_relaxed);
@@ -143,11 +144,19 @@ class qh3plugin_server : public qh3server {
     void increment_response_served_counter() {
         total_response_served.fetch_add(1, std::memory_order_relaxed);
     }
-    
+    void increment_response_notified() {
+        total_response_notified.fetch_add(1, std::memory_order_relaxed);
+    }
     void print_request_response_summary() {
         debug_print(LOG_LEVEL_0, __LOGTAG__, "rq:%d, notify:%d, res:%d", total_requests.load(std::memory_order_relaxed), total_response_notified.load(std::memory_order_relaxed), total_response_served.load(std::memory_order_relaxed));
     }
     inline EVENT_LOOP_TYPE* get_server_main_loop() { return get_mainloop(); }
+    
+    void shutdown_server() {
+        st_admin_cmd* new_cmd = DEBUG_NEW st_admin_cmd(1, this);
+        async_cmd_watcher_notify_server.data = new_cmd;
+        ev_async_send(get_server_main_loop(), &async_cmd_watcher_notify_server);
+    }
     
    protected:
 	void parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) override;
@@ -159,9 +168,10 @@ class qh3plugin_server : public qh3server {
 	void on_run_end() override;
     
 private:
-    std::queue<st_response_packet*> response_queue;
-    std::mutex queue_mutex;
+    async_ev_notifier<struct st_response_packet> ev_notifier;
     static void notify_server_async_cb(EV_P_ ev_async *w, int revents);
+    static void notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents);
+    
     std::atomic<int> total_requests = {0};
     std::atomic<int> total_response_notified = {0};
     std::atomic<int> total_response_served = {0};
@@ -170,17 +180,17 @@ private:
 extern "C" {
 EXPORT void setup_signal_handler();
 EXPORT void pre_init_serverplugin_sdk();
-EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
+EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
 							qh3plugin_router_event_listener::type_on_router_error error_cb, void* user_arg = nullptr);
-EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
+EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb, qh3plugin_server_event_listener::type_on_server_stop stop_cb,
 							qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb, void* user_arg);
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);
 EXPORT unsigned long mod_crc32(uLong adler, const Bytef* buf, z_size_t len);
 void* spawn_qh3router_internal(void* data);
 void* spawn_qh3server_internal(void* data);
-EXPORT void qh3server_try_send_response(qh3server*, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len, const char* user_data = nullptr, size_t user_data_len = 0);
+EXPORT void qh3server_try_send_response(qh3server*, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len);
 EXPORT unsigned int get_live_connection_count(qh3server*);
 EXPORT const char* get_device_public_ip();
 EXPORT uint64_t qh3server_logfile(qh3server*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);

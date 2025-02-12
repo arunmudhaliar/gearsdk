@@ -8,10 +8,16 @@
 
 #include "roomserver.hpp"
 
+#include "../../common/serverinforeader.hpp"
+
+#include <algorithm>
+
 #define EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS 45
 
+using namespace gsdk::common;
+
 // MARK: - roomserver
-roomserver::roomserver(const qstring& zk_uri) : qnetworkserver(), zk_uri(zk_uri) {}
+roomserver::roomserver() : qnetworkserver() {}
 
 roomserver::~roomserver() {
 	GX_DELETE(hiredis_async);
@@ -20,22 +26,59 @@ roomserver::~roomserver() {
 
 void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 	UNUSED(timer);
-	if (waiting_rooms.size()) {
+	if (waiting_rooms.size() || rooms.size()) {
 		std::vector<room*> zombies;
 		for (auto it = waiting_rooms.cbegin(); it != waiting_rooms.cend(); it++) {
 			room* waiting_room = *it;
-			if (waiting_room->since_creation() >= WAITING_ROOM_ZOMBIE_THRESHOLD) {
+			if (waiting_room->since_creation() >= ZOMBIE_WAITING_ROOM_TIMEOUT) {
 				zombies.push_back(waiting_room);
 			}
 		}
-		if (zombie_rooms != (size_t) zombies.size()) {
-			debug_print_important2(__LOGTAG__, "[%d] - zombies", zombies.size());
+
+		for (const auto& pair : rooms) {
+			room* room_ptr = pair.first;
+			if (room_ptr->since_creation() >= ZOMBIE_ROOM_TIMEOUT) {
+				zombies.push_back(room_ptr);
+			}
+		}
+
+		if (zombies.size() > 0) {
+			debug_print_important2(__LOGTAG__, "[%d] - zombie rooms", zombies.size());
 			for (auto it = zombies.cbegin(); it != zombies.cend(); it++) {
 				room* zombie = *it;
 				zombie->print_info();
-			}
+				size_t before = waiting_rooms.size();
+				waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), zombie), waiting_rooms.end());
+				if (before == waiting_rooms.size()) {
+					// the zombie is not in the waiting rooms list, check rooms list
+					rooms.erase(zombie);
+				}
+				// remove all the active players from connection_map and new_connections
+				for (const auto& [cid_hash_val, player] : *zombie->get_player_map()) {
+					std::map<unsigned, room*>::iterator cmap_it = connection_map.find(cid_hash_val);
+					if (cmap_it != connection_map.end()) {
+						connection_map.erase(cmap_it);
+					}
+					auto ncmap_it = new_connections.find(player->qconnection);
+					if (ncmap_it != new_connections.end()) {
+						new_connections.erase(ncmap_it);
+					}
+				}
 
-			zombie_rooms = zombies.size();
+				// remove all the disconnected players from connection_map and new_connections
+				struct disconnected_player *p = nullptr, *tmp = nullptr;
+				HASH_ITER(hh, zombie->get_disconnected_players(), p, tmp) {
+					std::map<unsigned, room*>::iterator cmap_it = connection_map.find(p->hash);
+					if (cmap_it != connection_map.end()) {
+						connection_map.erase(cmap_it);
+					}
+					auto ncmap_it = new_connections.find(p->player_ptr->qconnection);
+					if (ncmap_it != new_connections.end()) {
+						new_connections.erase(ncmap_it);
+					}
+				}
+				GX_DELETE(zombie);
+			}
 		}
 	}
 }
@@ -43,9 +86,17 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 void roomserver::configchanged(const qstring& path, const qstring& data) {}
 
 bool roomserver::on_network_server_begin() {
-	const struct runserverconfig& run_config = get_run_server_config();
+	const struct server_config_in& run_config = get_run_server_config();
+	server_info_reader* info_reader = server_info_reader::get_instance();
+	if (!info_reader->load_config(run_server_config.inf_file.c_str())) {
+		debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
+		return false;
+	}
+	qstring userserver_redis_user = info_reader->get_value_else_default("gameserver_redis_user", "gsdkuser");
+	qstring userserver_redis_password = info_reader->get_value_else_default("gameserver_redis_password", "Fr0gmoon123");
+
 	GX_DELETE(hiredis);
-	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123");
+	hiredis = DEBUG_NEW qhiredis("qserver_hiredis", run_config.redis_ip, run_config.redis_port, userserver_redis_user, userserver_redis_password);
 	if (hiredis->connect_redis() != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect hiredis, Exiting !!!");
 		GX_DELETE(hiredis);
@@ -53,7 +104,7 @@ bool roomserver::on_network_server_begin() {
 	}
 
 	GX_DELETE(hiredis_async);
-	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, "gsdkuser", "Fr0gmoon123", this, "CONFIG SET notify-keyspace-events KEA");
+	hiredis_async = DEBUG_NEW qhiredis_async(run_config.redis_ip, run_config.redis_port, userserver_redis_user, userserver_redis_password, this, "CONFIG SET notify-keyspace-events KEA");
 	if (hiredis_async->connect_async_redis(get_mainloop()) != 0) {
 		debug_print_error(__LOGTAG__, "failed to connect async hiredis, Exiting !!!");
 		GX_DELETE(hiredis);
@@ -63,7 +114,7 @@ bool roomserver::on_network_server_begin() {
 
 	GX_DELETE(qzk);
 	qzk = DEBUG_NEW qzookeeper(qstring::format_string("zk-%s", port_id.c_str()));
-	int zk_result = qzk->connect(zk_uri);
+	int zk_result = qzk->connect(run_config.zk_uri);
 	if (zk_result != 0) {
 		debug_print_error(__LOGTAG__, "zk failed to connect !!!, Exiting.");
 		GX_DELETE(qzk);
@@ -88,14 +139,14 @@ bool roomserver::on_network_server_begin() {
 
 	scheduler.set_loop(get_mainloop());
 	type_qtimer_cb timeout_callback = std::bind(&roomserver::on_timer_check_zombie_rooms, this, std::placeholders::_1);
-	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, WAITING_ROOM_ZOMBIE_CHECK_TIMER);
+	waiting_room_check_zombie_timer = scheduler.schedule_repeat_timer(timeout_callback, ZOMBIE_WAITING_ROOM_CHECK_TIMER);
 	update_redis_about_gserver_timer = schedule_update_redis_about_gserver_timer();
 	debug_print_important2(__LOGTAG__, "start");
 	return true;
 }
 
 qtimer* roomserver::schedule_update_redis_about_gserver_timer() {
-	const struct runserverconfig& run_config = get_run_server_config();
+	const struct server_config_in& run_config = get_run_server_config();
 	int grace_time = 10;
 	int expire_timer_unresponsive_gserver_check_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
 	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::device::public_ip);
@@ -227,10 +278,10 @@ void roomserver::onroom_pre_start(room* r) {
 void roomserver::process_match_request(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection, rapidjson::Document& doc, void* user_data) {
 	msg_room_match_request rq;
 	if (!rq.deserialize(doc)) {
-		debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:process_match_request - packet deserialize failed !!!. returning.");
+		debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:process_match_request - packet deserialize failed - %.*s !!!. returning.", recv_len, buf);
 		return;
 	}
-	const std::map<unsigned, ev_tstamp>::iterator& itr_found = *((std::map<unsigned, ev_tstamp>::iterator*) user_data);
+	const std::map<qconn_io*, ev_tstamp>::iterator& itr_found = *((std::map<qconn_io*, ev_tstamp>::iterator*) user_data);
 	qconnection->user_data |= FLAG_ROOM_CONFIG_RECEIVED;
 	new_connections.erase(itr_found);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "msg_room_config received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
@@ -241,7 +292,7 @@ void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, qconn_
 	UNUSED(doc);
 	msg_room_server_shutdown* room_server_shutdown_msg = msg_parser.parse<msg_room_server_shutdown>(recv_len, buf);
 	if (room_server_shutdown_msg) {
-		const std::map<unsigned, ev_tstamp>::iterator& itr_found = *((std::map<unsigned, ev_tstamp>::iterator*) user_data);
+		const std::map<qconn_io*, ev_tstamp>::iterator& itr_found = *((std::map<qconn_io*, ev_tstamp>::iterator*) user_data);
 		new_connections.erase(itr_found);
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "msg_room_server_shutdown received from client %0x - %.*s !!!", qconnection->cid_hash_val, recv_len, buf);
 		GX_DELETE(room_server_shutdown_msg);
@@ -254,9 +305,9 @@ void roomserver::process_shutdown_request(ssize_t recv_len, uint8_t* buf, qconn_
 void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
 	if ((qconnection->user_data & FLAG_ROOM_CONFIG_RECEIVED) == 0) {
 		// check if he is a fresh connection or not
-		std::map<unsigned, ev_tstamp>::iterator itr_found = new_connections.end();
-		for (std::map<unsigned, ev_tstamp>::iterator itr_new_connection = new_connections.begin(); itr_new_connection != new_connections.end(); itr_new_connection++) {
-			if (itr_new_connection->first == qconnection->cid_hash_val) {
+		std::map<qconn_io*, ev_tstamp>::iterator itr_found = new_connections.end();
+		for (std::map<qconn_io*, ev_tstamp>::iterator itr_new_connection = new_connections.begin(); itr_new_connection != new_connections.end(); itr_new_connection++) {
+			if (itr_new_connection->first == qconnection) {
 				itr_found = itr_new_connection;
 				// new connection
 				break;
@@ -276,14 +327,14 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* 
 			unsigned long t_crc = 0;
 			int parse_result = message_room_base::deserialize_header(recv_len, buf, sig, t_crc, doc);
 			if (parse_result != 0) {
-				debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:onconnection_message - room message header parse failed !!!. returning.");
+				debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:onconnection_message - room message header parse failed - %.*s !!!. returning.", recv_len, buf);
 				return;
 			}
 			auto handler = message_handlers.find(t_crc);
 			if (handler != message_handlers.end()) {
 				handler->second(recv_len, buf, qconnection, doc, (void*) &itr_found);
 			} else {
-				debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:onconnection_message - handler not found for CRC: %d", t_crc);
+				debug_warn(LOG_LEVEL_0, __LOGTAG__, "f:onconnection_message - handler not found for CRC: %d - %.*s", t_crc, recv_len, buf);
 			}
 			return;
 		}
@@ -314,11 +365,11 @@ void roomserver::onconnection_connect(qconn_io* qconnection) {
 
 void roomserver::onconnection_connected(qconn_io* qconnection) {
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:onconnection_connected - connected %0x", qconnection->cid_hash_val);
-	new_connections[qconnection->cid_hash_val] = ev_now(get_netowrk_main_loop());
+	new_connections[qconnection] = ev_now(get_netowrk_main_loop());
 }
 
 room* roomserver::find_room(int room_id) {
-    for (const auto& pair : rooms) {
+	for (const auto& pair : rooms) {
 		room* room_ptr = pair.first;
 		if (room_ptr->ROOM_ID == room_id) {
 			return room_ptr;
@@ -451,15 +502,11 @@ void roomserver::onconnection_destroy(qconn_io* qconnection) {
 		waiting_rooms.erase(std::remove(waiting_rooms.begin(), waiting_rooms.end(), room_ptr), waiting_rooms.end());
 		DEBUG_ASSERT(__LOGTAG__, (waiting_room_size == (ssize_t) waiting_rooms.size()), "check this");	// still in waiting room ???
 		ssize_t rooms_size = rooms.size();
-        rooms.erase(room_ptr);
+		rooms.erase(room_ptr);
 		DEBUG_ASSERT(__LOGTAG__, (rooms_size > (ssize_t) rooms.size()), "check this");	// still in waiting room ???
 
-		// update the room status on redis
-		long long count_room_of_this_type = 0;
 		const qstring& rkey = room_ptr->get_room_signature("room:", host_id, port_id);
-		int rresult = this->hiredis->decr_by(rkey, 1, count_room_of_this_type);
-		debug_warn_cond(__LOGTAG__, rresult != 0, "hiredis decr_by failed for key %s, result %d", rkey.c_str(), rresult);
-		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "destroy room (%s), count:%d, total:%d", rkey.c_str(), count_room_of_this_type, rooms.size());
+		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "destroy room (%s), total:%d", rkey.c_str(), rooms.size());
 
 		GX_DELETE(room_ptr);
 		debug_print_important2(__LOGTAG__, "room size %d", rooms.size());
@@ -509,11 +556,10 @@ void roomserver::on_heartbeat_check() {
 }
 
 room* roomserver::try_get_room_if_in_map(room* room_ptr) {
-    std::map<room*, room*>::iterator it = rooms.find(room_ptr);
-    if (it != rooms.end()) {
-        debug_print(LOG_LEVEL_0, __LOGTAG__, "FOUND");
-        return room_ptr;
-    }
-    debug_print(LOG_LEVEL_0, __LOGTAG__, "NOT FOUND");
-    return nullptr;
+	std::map<room*, room*>::iterator it = rooms.find(room_ptr);
+	if (it != rooms.end()) {
+		return room_ptr;
+	}
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "NOT FOUND");
+	return nullptr;
 }

@@ -158,7 +158,7 @@ class qhiredis {
         }
 
         const cursor = 0;
-        while (true) {
+        while (this.redis_client != null) {
             const [new_cursor, results] = await this.redis_client.hscan(hash_key, cursor);
             for (let i = 0; i < results.length; i += 2) {
                 callback(results[i], results[i + 1], arg);
@@ -177,13 +177,17 @@ class qhiredis {
         do {
             const [new_cursor, keys] = await this.redis_client.scan(cursor, "MATCH", `${prefix_key}:*`);
             for (const key of keys) {
+                if (this.redis_client == null) {
+                    console.error(`[${this.name}] Redis client is null`);
+                    return;
+                }
                 const hash_content = await this.redis_client.hgetall(key);
                 for (const [field, value] of Object.entries(hash_content)) {
                     callback(key, field, value, arg);
                 }
             }
             cursor = new_cursor;
-        } while (cursor !== "0");
+        } while (cursor !== "0" && this.redis_client != null);
     }
 
     async incr(key: string): Promise<number | null> {

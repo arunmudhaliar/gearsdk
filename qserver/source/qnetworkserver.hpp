@@ -20,6 +20,7 @@ extern "C" {
 #include "../../networkcommon/source/qcustomlogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
 #include "../../networkcommon/source/qthreadpool.hpp"
+#include "../../networkcommon/source/serverrunconfig.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "../../qhiredis/source/qhiredis_async.hpp"
 
@@ -53,10 +54,10 @@ class qnetworkserver;
 class observer_qserver_events {
    public:
 	virtual ~observer_qserver_events() { debug_print(LOG_LEVEL_0, __LOGTAG__, "observer_qserver_events destroyed"); };
-	virtual void on_server_pre_start(qnetworkserver*) = 0;
-	virtual void on_server_start(qnetworkserver*, const char* ip, uint16_t port) = 0;
-	virtual void on_server_stop(qnetworkserver*) = 0;
-	virtual void on_server_error(qnetworkserver*, int error_code) = 0;
+	virtual void on_server_pre_start(qnetworkserver* server) = 0;
+	virtual void on_server_start(qnetworkserver* server, const char* ip, uint16_t port) = 0;
+	virtual void on_server_stop(qnetworkserver* server) = 0;
+	virtual void on_server_error(qnetworkserver* server, int error_code) = 0;
 
 	// room events
 	virtual void room_event_create(qnetworkserver* server, int room, class room* room_ptr) = 0;
@@ -120,27 +121,16 @@ class qconn_io {
 	uint64_t last_stream_s = 0;
 	int user_data = 0;
 	ev_tstamp last_heartbeat_time;
+	ev_tstamp connection_start_time;
 };
 
 // MARK: -
 class qnetworkserver : protected bridge_qpeerconnection {
    public:
-	struct runserverconfig {
-		qstring host;
-		qstring port;
-		int pthread_return_value;
-		int id = -1;
-		fs::path root_dir;
-		qstring redis_ip;
-		uint16_t redis_port;
-		qstring app_id;
-		observer_qserver_events* observer = nullptr;
-		pthread_t run_thread_id;
-		qstring zk_uri;
-	};
 	qnetworkserver() {};
-	virtual ~qnetworkserver() {}
-	int run(qstring host, qstring port, fs::path executable_path, const qstring& redis_ip, const uint16_t REDIS_PORT, const qstring& app_id, observer_qserver_events* observer = nullptr);
+	virtual ~qnetworkserver();
+
+	int run(const server_config_in& in_config, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
 	void broadcast_message(const qstring& buffer, bool flush);
 	bool network_server_begin();
 	void network_server_end();
@@ -148,6 +138,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline bool is_log_quiche() override { return false; }
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
+	void* get_user_arg() { return user_arg; }
+	const struct server_config_in& get_run_server_config() { return run_server_config; }
 
    protected:
 	virtual bool on_network_server_begin() = 0;
@@ -165,7 +157,6 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	inline struct ev_loop* get_mainloop() final { return mainloop; }
 	inline observer_qserver_events* get_observer() final { return server_event_observer; }
 	void exit_services_gracefully();
-	const struct runserverconfig& get_run_server_config() { return run_server_config; }
 
 	static int run_id;
 	qcustomlogger logger;
@@ -174,6 +165,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qstring host_id;
 	qstring port_id;
 	observer_qserver_events* server_event_observer = nullptr;
+	struct server_config_in run_server_config;
 
    private:
 	static void debug_quiche_log(const char* line, void* argp);
@@ -193,7 +185,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	struct ev_loop* mainloop = nullptr;
 	struct qconnections* conns = nullptr;
 	ev_timer heartbeat_check_timer;
-	struct runserverconfig run_server_config;
+	void* user_arg = nullptr;
 
 #if QTHREADPOOL
 	ev_timer threadpool_mainthread_dispatcher_timer;

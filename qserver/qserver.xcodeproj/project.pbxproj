@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1796DF492BC8593900328EE7 /* libdpp.dylib */; };
-		55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55384BAC2B97B03D00BE7723 /* libqutils.a */; };
+		553F7FA12D5BE98500411520 /* serverconfig.dev.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */; };
+		553F7FA22D5BE98900411520 /* serverconfig.rel.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 553F7FA02D5BE97500411520 /* serverconfig.rel.inf */; };
 		555BA6F52C3AEE2000E23A51 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; };
 		555BA6F62C3AEE2000E23A51 /* libev.4.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 555BA6F42C3AEE2000E23A51 /* libev.4.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		555EB1222C318D82001F1B21 /* servercommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5576DA7F2BED5FE700B39413 /* servercommon.cpp */; };
@@ -65,6 +65,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				553F7FA22D5BE98900411520 /* serverconfig.rel.inf in CopyFiles */,
+				553F7FA12D5BE98500411520 /* serverconfig.dev.inf in CopyFiles */,
 				55D1C6DE2AD32E9300470E01 /* cert.key in CopyFiles */,
 				55D1C6DF2AD32E9300470E01 /* cert.crt in CopyFiles */,
 			);
@@ -76,6 +78,8 @@
 		1796DF492BC8593900328EE7 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../qutils/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55384BAC2B97B03D00BE7723 /* libqutils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libqutils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		55384BAE2B97B09D00BE7723 /* libdpp.10.0.30.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.10.0.30.dylib; path = ../qutils/libs/macos/libdpp.10.0.30.dylib; sourceTree = "<group>"; };
+		553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = serverconfig.dev.inf; path = ../qh3server/serverconfig.dev.inf; sourceTree = "<group>"; };
+		553F7FA02D5BE97500411520 /* serverconfig.rel.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = serverconfig.rel.inf; path = ../qh3server/serverconfig.rel.inf; sourceTree = "<group>"; };
 		555BA6F42C3AEE2000E23A51 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libev.4.dylib; path = ../networkcommon/libs/macos/libev.4.dylib; sourceTree = "<group>"; };
 		555EB11E2C318D54001F1B21 /* libqserver-st.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libqserver-st.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		556ABAE92B0AB36A00D688DB /* libservercommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libservercommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,7 +136,6 @@
 				5574F21A2B20EBC9007C93AA /* libnetworkcommon.a in Frameworks */,
 				556ABAEC2B0AB4A700D688DB /* libz.a in Frameworks */,
 				55CB702B2C77BE5E00E05D37 /* libuv.a in Frameworks */,
-				55384BAD2B97B03D00BE7723 /* libqutils.a in Frameworks */,
 				557487582AEB8E1A00C0F6CA /* libcommon.a in Frameworks */,
 				55CB70302C77BF3700E05D37 /* libquiche.dylib in Frameworks */,
 				55D7ACF92CD010B40011297F /* libsasl2.tbd in Frameworks */,
@@ -142,7 +145,6 @@
 				55D7ACF72CD0101E0011297F /* libqzookeeper.a in Frameworks */,
 				55D1C6D12AD2A49B00470E01 /* Security.framework in Frameworks */,
 				557487AF2AED548100C0F6CA /* libquiche.a in Frameworks */,
-				1796DF4A2BC8593900328EE7 /* libdpp.dylib in Frameworks */,
 				55A72F6A2B83724C00064250 /* libhiredis.a in Frameworks */,
 				55E4D32C2ACAF5AF00555999 /* CoreFoundation.framework in Frameworks */,
 			);
@@ -184,6 +186,8 @@
 		55B372AF2AC2ABCD00F0095E = {
 			isa = PBXGroup;
 			children = (
+				553F7F9F2D5BE97500411520 /* serverconfig.dev.inf */,
+				553F7FA02D5BE97500411520 /* serverconfig.rel.inf */,
 				55D7ACFA2CD012720011297F /* configs */,
 				55A9CD3E2B701314006CAD14 /* qserver.entitlements */,
 				5574F2172B20EB53007C93AA /* debug_new.cpp */,
@@ -348,7 +352,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# copy files\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
+			shellScript = "# copy files\ncp -R \"${PROJECT_DIR}/../configs\" \"${BUILT_PRODUCTS_DIR}\"\n\n# certs\ncp -R \"${PROJECT_DIR}/certs/cert.crt\" \"${BUILT_PRODUCTS_DIR}/cert.crt\"\ncp -R \"${PROJECT_DIR}/certs/cert.key\" \"${BUILT_PRODUCTS_DIR}/cert.key\"\n\nexit 0\n\n# libs\ndpplib=$(readlink \"${PROJECT_DIR}/../servercommon/libs/macos/libdpp.dylib\")\necho \"original dpp file name: $dpplib\" \ncp -R \"${PROJECT_DIR}/../servercommon/libs/macos/$dpplib\" \"${BUILT_PRODUCTS_DIR}/$dpplib\"\n";
 		};
 		5595E1252BB08BAB00FA2618 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

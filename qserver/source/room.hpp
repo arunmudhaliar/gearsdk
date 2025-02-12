@@ -42,7 +42,10 @@ class roomserver_interface {
 	virtual void onroom_pre_start(room* r) = 0;
 	virtual struct ev_loop* get_netowrk_main_loop() = 0;
 	inline virtual observer_qserver_events* get_main_observer() = 0;
-    virtual room* try_get_room_if_in_map(room* room_ptr) = 0;
+	virtual room* try_get_room_if_in_map(room* room_ptr) = 0;
+	virtual qhiredis* get_hiredis() = 0;
+	virtual const qstring& get_host_id() = 0;
+	virtual const qstring& get_port_id() = 0;
 };
 
 class room_interface {
@@ -83,7 +86,7 @@ class room : public room_interface, public qtimer_scheduler {
 	ssize_t try_add_connection(qconn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val = 0);
 	ssize_t remove_connection(qconn_io* qconnection);
 	player* get_player(qconn_io* qconnection);
-    player* get_player(unsigned cid_hash);
+	player* get_player(unsigned cid_hash);
 	inline bool is_min_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MIN_PLAYERS; }
 	inline bool is_max_capacity_reached() { return (int) playermap.size() >= ROOM_CONFIG.MAX_PLAYERS; }
 	inline ssize_t get_playermap_count() { return playermap.size(); }
@@ -93,6 +96,8 @@ class room : public room_interface, public qtimer_scheduler {
 	void kick_all_except(qconn_io* qconnection);
 	void print_info();
 	ev_tstamp since_creation();
+	const std::map<unsigned, player*>* get_player_map() { return &playermap; }
+	disconnected_player* get_disconnected_players() { return disconnected_players; }
 
 	std::map<unsigned, player*> playermap;
 	const int ROOM_ID = 0;
@@ -134,7 +139,7 @@ class room : public room_interface, public qtimer_scheduler {
 	const roomconfig ROOM_CONFIG;
 	states state = ROOM_UNINITIALISED;
 	roomserver_interface* roomserverinterface = nullptr;
-    qnetworkserver* native_server = nullptr;
+	qnetworkserver* native_server = nullptr;
 	observer_qserver_events* observer = nullptr;
 	static int room_id_counter;
 	qstring states_string[4] = {"uninitialised", "waiting", "start", "end"};

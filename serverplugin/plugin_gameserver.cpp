@@ -85,12 +85,13 @@ EXPORT bool gsdk::server::room_broadcast_except(qnetworkserver* server, class ro
     room_ptr = pserver->try_get_room_if_in_map(room_ptr);
     if (room_ptr == nullptr) {
         debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_broadcast_except for message %.*s", length, msg);
+        return false;
     }
-    player* p = room_ptr->get_player(cid_hash);
-    if (p) {
-        return room_ptr->broadcast_except(p, qstring(msg, length));
-    }
-    return false;
+    
+    struct st_stateful_response_packet* response_packet = DEBUG_NEW st_stateful_response_packet(0, server, room_ptr, cid_hash, msg, length);
+    pserver->get_ev_notifier().enqueue_response(response_packet);
+    pserver->get_ev_notifier().notify_main_thread();
+    return true;
 }
 
 EXPORT void gsdk::server::room_broadcast(qnetworkserver* server, class room* room_ptr, const char* msg, unsigned length) {
@@ -102,8 +103,12 @@ EXPORT void gsdk::server::room_broadcast(qnetworkserver* server, class room* roo
     room_ptr = pserver->try_get_room_if_in_map(room_ptr);
     if (room_ptr == nullptr) {
         debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_broadcast for message %.*s", length, msg);
+        return;
     }
-    room_ptr->broadcast(qstring(msg, length));
+    
+    struct st_stateful_response_packet* response_packet = DEBUG_NEW st_stateful_response_packet(1, server, room_ptr, 0, msg, length);
+    pserver->get_ev_notifier().enqueue_response(response_packet);
+    pserver->get_ev_notifier().notify_main_thread();
 }
 
 EXPORT bool gsdk::server::room_send_to(qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, unsigned length) {
@@ -115,12 +120,13 @@ EXPORT bool gsdk::server::room_send_to(qnetworkserver* server, class room* room_
     room_ptr = pserver->try_get_room_if_in_map(room_ptr);
     if (room_ptr == nullptr) {
         debug_warn(LOG_LEVEL_0, __LOGTAG__, "room not present on map. Ignoring room_send_to for message %.*s", length, msg);
+        return false;
     }
-    player* p = room_ptr->get_player(cid_hash);
-    if (p) {
-        return room_ptr->sendto(p, qstring(msg, length));
-    }
-    return false;
+    
+    struct st_stateful_response_packet* response_packet = DEBUG_NEW st_stateful_response_packet(2, server, room_ptr, cid_hash, msg, length);
+    pserver->get_ev_notifier().enqueue_response(response_packet);
+    pserver->get_ev_notifier().notify_main_thread();
+    return true;
 }
 // MARK: - plugin_game_room
 plugin_game_room::plugin_game_room(roomserver_interface* interface, const roomconfig& room_config) : room(interface, room_config) {}
@@ -139,8 +145,6 @@ void plugin_game_room::onroom_player_added(player* p) {
 void plugin_game_room::onroom_message(player* p, const qstring& msg) {
     room::onroom_message(p, msg);
 //    debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
-//    // passing to other clients
-//    broadcast_except(p, msg);
 }
 void plugin_game_room::onroom_player_removed(player* p) {
     room::onroom_player_removed(p);
@@ -156,12 +160,15 @@ bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
 //----------------------------------------------------------------------------
 //---------------------------------plugin_gameserver--------------------------
 //----------------------------------------------------------------------------
-plugin_gameserver::plugin_gameserver(const qstring& zk_uri) : roomserver(zk_uri) {}
+plugin_gameserver::plugin_gameserver() : roomserver() {}
 
-plugin_gameserver::~plugin_gameserver() {}
+plugin_gameserver::~plugin_gameserver() {
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "plugin_gameserver destructor called");
+}
 
 void plugin_gameserver::on_network_server_init() {
     roomserver::on_network_server_init();
+    ev_notifier.init(get_netowrk_main_loop(), notify_server_async_cb, this);
     debug_print_important2(__LOGTAG__, "plugin_gameserver::init");
 }
 
@@ -169,7 +176,39 @@ room* plugin_gameserver::create_room(const msg_room_config* room_config_msg) {
     return DEBUG_NEW plugin_game_room(this, roomconfig(room_config_msg));
 }
 
-EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
+void plugin_gameserver::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
+    plugin_gameserver* pserver = static_cast<plugin_gameserver*>(w->data);
+    while (st_stateful_response_packet* response_packet = pserver->get_ev_notifier().dequeue_response()) {
+        room* room_ptr = pserver->try_get_room_if_in_map(response_packet->room_ptr);
+        if (!room_ptr) {
+            GX_DELETE(response_packet);
+            continue;
+        }
+        switch (response_packet->type) {
+            case 0: {
+                player* p = room_ptr->get_player(response_packet->cid_hash);
+                if (p) {
+                    room_ptr->broadcast_except(p, response_packet->message);
+                }
+            }
+                break;
+            case 1: {
+                room_ptr->broadcast(response_packet->message);
+            }
+                break;
+            case 2: {
+                player* p = room_ptr->get_player(response_packet->cid_hash);
+                if (p) {
+                    room_ptr->sendto(p, response_packet->message);
+                }
+            }
+                break;
+        }
+        GX_DELETE(response_packet);
+    }
+}
+
+EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
     qplugin_qserver_event_listener::type_on_qserver_error error_cb,
                                        qplugin_qserver_event_listener::type_room_event_create room_event_create_cb,
                                        qplugin_qserver_event_listener::type_room_event_start room_event_start_cb,
@@ -178,18 +217,21 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
                                        qplugin_qserver_event_listener::type_room_event_player_removed room_player_removed_cb,
                                        qplugin_qserver_event_listener::type_room_event_end room_event_end_cb,
                                        qplugin_qserver_event_listener::type_room_event_countdown_to_start room_event_countdown_to_start_cb,
-                                       qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb) {
+                                       qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
+                                       void* user_arg
+                                       ) {
     qaddress server_addr(server_address);
     qaddress redis_addr(redis_address);
-    struct qnetworkserver::runserverconfig* config = new struct qnetworkserver::runserverconfig();
+    struct server_config_in* config = new struct server_config_in();
     config->host = server_addr.ip;
     config->port = qstring::format_string("%d", server_addr.port);
     config->redis_ip = redis_addr.ip;
     config->redis_port = redis_addr.port;
     config->zk_uri = zk_uri;
     config->root_dir = fs::path(root_dir);
+    config->inf_file = fs::path(inf_file);
     config->app_id = app_id;
-
+    config->user_arg = user_arg;
     qplugin_qserver_event_listener* listener = DEBUG_NEW qplugin_qserver_event_listener(
                                                                                         pre_start_cb, start_cb, stop_cb, error_cb,
                                                                                         room_event_create_cb,
@@ -200,7 +242,7 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
                                                                                         room_event_end_cb,
                                                                                         room_event_countdown_to_start_cb,
                                                                                         room_event_countdown_cancelled_cb);
-    std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>(config, listener);
+    std::tuple<server_config_in*, qplugin_qserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qplugin_qserver_event_listener*>(config, listener);
     if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qserver_internal, (void*)tuple_in) < 0) {
         debug_print_error(__LOGTAG__, "spawn_qserver - could not create thread: %s - %d", strerror(errno), errno);
         GX_DELETE(tuple_in);
@@ -212,15 +254,16 @@ EXPORT int gsdk::server::spawn_qserver(const char* server_address, const char* r
 }
 
 void* gsdk::server::spawn_qserver_internal(void* data) {
-    std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>* tuple_in = (std::tuple<qnetworkserver::runserverconfig*, qplugin_qserver_event_listener*>*) data;
-    qnetworkserver::runserverconfig* config = (qnetworkserver::runserverconfig*)std::get<0>(*tuple_in);
+    std::tuple<server_config_in*, qplugin_qserver_event_listener*>* tuple_in = (std::tuple<server_config_in*, qplugin_qserver_event_listener*>*) data;
+    server_config_in* config = (server_config_in*)std::get<0>(*tuple_in);
     qplugin_qserver_event_listener* listener = (qplugin_qserver_event_listener*)std::get<1>(*tuple_in);
-    plugin_gameserver server(config->zk_uri);
-    server.run(config->host, config->port, config->root_dir, config->redis_ip, config->redis_port, config->app_id, listener);
+    plugin_gameserver server;
+    int result = server.run(*config, listener, config->user_arg);
     GX_DELETE(tuple_in);
     GX_DELETE(config);
     GX_DELETE(listener);
-    pthread_exit(0);
+    debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qserver_internal, result %d", result);
+    return nullptr;
 }
 
 EXPORT uint64_t gsdk::server::qserver_logfile(qnetworkserver* server, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message) {

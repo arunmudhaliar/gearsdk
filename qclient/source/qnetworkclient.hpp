@@ -23,7 +23,9 @@ extern "C" {
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 
-#include <deque>
+//#include <deque>
+#include <queue>
+#include <atomic>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
@@ -107,10 +109,11 @@ class conn_io_client {
 	uint8_t recv_buf[65535];
 	uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 
-	std::vector<qdata*> send_buffer;
+    std::queue<qdata*> send_buffer;
 	unsigned cid_hash_val = 0;
 	bool issue_close = false;
-	bool fin_received = false;
+    std::atomic<bool> fin_received = false;
+    ev_tstamp last_flush_time;
 };
 
 class bridge_qconnection {
@@ -221,6 +224,8 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	bool is_runfinished();
 	int run(qstring host, qstring port);
 	void forcerelease();
+    inline bool is_fin_received()  { return qclient_connection && qclient_connection->fin_received.load(); }
+    
 #if USE_PTHREAD
 	inline qmutex& get_runconfig_mutex() { return runconfig_mutex; }
 #endif

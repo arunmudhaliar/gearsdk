@@ -1,6 +1,6 @@
 import { server as qserver } from '../gameserver/gameserver';
-import { debug_error, debug_print, LOG_LEVEL_4 } from '../helpers/sdktypes';
-import { serversdk } from '../helpers/serversdk';
+import { debug_error, debug_print, LOG_LEVEL_0, LOG_LEVEL_4 } from '../helpers/sdktypes';
+import { serversdk } from '../helpers/libserverplugin';
 
 // namespace app {
 export class custom_room implements qserver.interface_room {
@@ -45,13 +45,13 @@ export class custom_room implements qserver.interface_room {
 
     // broadcast and send
     broadcast_except(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        return serversdk.serverplugin.room_broadcast_except(this.native_server, room_ptr, cid_hash, message, message.length);
+        return serversdk.sdklib.room_broadcast_except(this.native_server, room_ptr, cid_hash, message);
     }
     broadcast(room_ptr: serversdk.room_ptr, message: string): void {
-        serversdk.serverplugin.room_broadcast(this.native_server, room_ptr, message, message.length);
+        serversdk.sdklib.room_broadcast(this.native_server, room_ptr, message);
     }
     send_to(room_ptr: serversdk.room_ptr, cid_hash: number, message: string): boolean {
-        return serversdk.serverplugin.room_send_to(this.native_server, room_ptr, cid_hash, message, message.length);
+        return serversdk.sdklib.room_send_to(this.native_server, room_ptr, cid_hash, message);
     }
 }
 
@@ -59,6 +59,24 @@ export class custom_gameserver implements qserver.interface_gameserver {
     private static __LOGTAG__: string = `custom_gameserver`;
     private gameserver_instance?: qserver.gameserver;
 
+    private on_gameserver_start_cb: (native_server: any) => Promise<void>;
+    private on_gameserver_stop_cb: (native_server: any) => Promise<void>;
+
+    constructor(on_gameserver_start_cb: (native_server: any) => Promise<void>, on_gameserver_stop_cb: (native_server: any) => Promise<void>) {
+        this.on_gameserver_start_cb = on_gameserver_start_cb;
+        this.on_gameserver_stop_cb = on_gameserver_stop_cb;
+    }
+
+    ongameserver_pre_start(native_server: serversdk.qserver_ptr): void {
+    }
+    ongameserver_start(native_server: serversdk.qserver_ptr): void {
+        this.on_gameserver_start_cb(native_server);
+    }
+    ongameserver_stop(native_server: serversdk.qserver_ptr): void {
+        this.on_gameserver_stop_cb(native_server);
+    }
+    ongameserver_error(native_server: serversdk.qserver_ptr, error_code: number): void {
+    }
     ongameserver_room_create(native_server: serversdk.qserver_ptr, room: number, bet_id: string): qserver.interface_room {
         return new custom_room(native_server, room, bet_id);
     }

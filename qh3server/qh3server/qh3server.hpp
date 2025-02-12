@@ -24,6 +24,7 @@ extern "C" {
 #include "../../networkcommon/source/essentials.hpp"
 #include "../../networkcommon/source/qcustomlogger.hpp"
 #include "../../networkcommon/source/qstatslogger.hpp"
+#include "../../networkcommon/source/serverrunconfig.hpp"
 #include "qh3server_structs.h"
 
 #undef __LOGTAG__
@@ -100,6 +101,7 @@ class qh3server : public bridge_h3_connection {
 	fs::path app_directory = ".";
 	observer_qh3server_events* server_event_observer = nullptr;	 // used for ts callbacks
 	void* user_arg = nullptr;
+	struct server_config_in run_server_config;
 
    public:
 	qh3server();
@@ -111,9 +113,8 @@ class qh3server : public bridge_h3_connection {
 	struct conn_io_qh3* get_conn(uint8_t* dcid, uint16_t dcid_len);
 	observer_qh3server_events* get_server_observer() { return server_event_observer; }
 	void* get_user_arg() { return user_arg; }
-
-	int run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
-			observer_qh3server_events* event_observer = nullptr, void* user_arg = nullptr);
+	void shutdown();
+	int run(const server_config_in& in_config, observer_qh3server_events* event_observer = nullptr, void* user_arg = nullptr);
 };
 
 #endif /* qh3server_hpp */

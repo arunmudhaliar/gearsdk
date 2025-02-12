@@ -32,6 +32,7 @@ export class serverconfig {
     }
 
     public async load(path: string, qzk: qzookeeper | null, zk_root_folder: string): Promise<boolean> {
+        debug_print(LOG_LEVEL_0, serverconfig.__LOGTAG__, `reading from zk_root_node ${zk_root_folder}`);
         let result = false;
         try {
             let buffer = fs.readFileSync(path, 'utf8'); // Read file content

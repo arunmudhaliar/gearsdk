@@ -754,18 +754,19 @@ void qh3server::libev_idle_cb(EV_P_ ev_idle* w, int revents) {
 }
 #endif
 
-int qh3server::run(const qstring& host, const qstring& port, const fs::path& root_dir, struct addrinfo* router, uint16_t command_center_feedback_port, uint16_t router_port_return, const qstring& app_id,
-				   observer_qh3server_events* event_observer, void* user_arg_ptr) {
+int qh3server::run(const server_config_in& in_config, observer_qh3server_events* event_observer, void* user_arg_ptr) {
+	run_server_config = in_config;
 	server_event_observer = event_observer;
 	user_arg = user_arg_ptr;
-	app_directory = root_dir;
-	host_id = host;
-	port_id = port;
+	app_directory = in_config.root_dir;
+	host_id = in_config.host;
+	port_id = in_config.port;
+
 	GX_DELETE(relay_through_router_info);
-	if (router != nullptr) {
-		relay_through_router_info = DEBUG_NEW struct routerinfo(router, router_port_return);
+	if (in_config.router != nullptr) {
+		relay_through_router_info = DEBUG_NEW struct routerinfo(in_config.router, in_config.router_port_return);
 	}
-	logtag = qstring::format_string("%s:%s", __LOGTAG__, port.c_str());
+	logtag = qstring::format_string("%s:%s", __LOGTAG__, port_id.c_str());
 	const char* const_logtag = logtag.c_str();
 #if ENABLE_QUICHE_LOG
 	quiche_enable_debug_logging(debug_quiche_log, this);
@@ -776,8 +777,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	const struct addrinfo HINTS = {.ai_family = PF_UNSPEC, .ai_socktype = SOCK_DGRAM, .ai_protocol = IPPROTO_UDP};
 	struct addrinfo* local;
-	if (getaddrinfo(host.c_str(), port.c_str(), &HINTS, &local) != 0) {
-		debug_print_error(const_logtag, "failed to resolve host - port[%s]", port.c_str());
+	if (getaddrinfo(host_id.c_str(), port_id.c_str(), &HINTS, &local) != 0) {
+		debug_print_error(const_logtag, "failed to resolve host - port[%s]", port_id.c_str());
 		GX_DELETE(relay_through_router_info);
 		QH3SERVER_EVENT_ERROR(this, -1);
 		return -1;
@@ -785,7 +786,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 
 	int sock = socket(local->ai_family, SOCK_DGRAM, 0);
 	if (sock < 0) {
-		debug_print_error(const_logtag, "failed to create socket - port[%s]", port.c_str());
+		debug_print_error(const_logtag, "failed to create socket - port[%s]", port_id.c_str());
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
 		QH3SERVER_EVENT_ERROR(this, -1);
@@ -793,7 +794,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	}
 
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) != 0) {
-		debug_print_error(const_logtag, "failed to make socket non-blocking - port[%s]", port.c_str());
+		debug_print_error(const_logtag, "failed to make socket non-blocking - port[%s]", port_id.c_str());
 		close(sock);  // (amudaliar) : Needed for running as virtual servers. Else
 		// new servers wont be able to bind.
 		freeaddrinfo(local);
@@ -803,7 +804,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	}
 
 	if (bind(sock, local->ai_addr, local->ai_addrlen) < 0) {
-		debug_print_error(const_logtag, "failed to bind socket - port[%s]", port.c_str());
+		debug_print_error(const_logtag, "failed to bind socket - port[%s]", port_id.c_str());
 		close(sock);
 		freeaddrinfo(local);
 		GX_DELETE(relay_through_router_info);
@@ -821,8 +822,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 		return -1;
 	}
 
-	fs::path cert_file(root_dir / "cert.crt");
-	fs::path key_file(root_dir / "cert.key");
+	fs::path cert_file(app_directory / "cert.crt");
+	fs::path key_file(app_directory / "cert.key");
 	debug_print(LOG_LEVEL_2, const_logtag, "cert file %s, key file %s", cert_file.c_str(), key_file.c_str());
 	int res_crt_load = quiche_config_load_cert_chain_from_pem_file(config, cert_file.c_str());
 	if (res_crt_load != 0) {
@@ -878,8 +879,8 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	c.h = NULL;
 	c.local_addr = local->ai_addr;
 	c.local_addr_len = local->ai_addrlen;
-	c.server_port = port;
-	c.quic_alternate_protocol_str = qstring("quic:") + port;
+	c.server_port = port_id;
+	c.quic_alternate_protocol_str = qstring("quic:") + port_id;
 
 	conns = &c;
 
@@ -917,7 +918,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	if (!on_server_pre_init()) {
 		debug_print_error(const_logtag, "on_server_pre_init failed !!!, Exiting.");
 		on_server_uninitialise();
-		stop_services_and_report(sock, command_center_feedback_port, 3.0f);
+		stop_services_and_report(sock, in_config.command_feedback_port, 3.0f);
 		GX_DELETE(stats_logger);
 		GX_DELETE(logger);
 		close(sock);
@@ -928,13 +929,13 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	}
 
 	// logs and stats service
-	qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port.c_str());
-	qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port.c_str());
+	qstring log_path = qstring::format_string("./logs/%s/qh3_logfile", port_id.c_str());
+	qstring stats_path = qstring::format_string("./stats/%s/qh3_statfile", port_id.c_str());
 	qh3server::get_file_logger()->start_session(log_path, log_path.length());
-	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", app_id, 0);
+	qh3server::get_stats_loggeer()->init(essentials::get_sysname(), essentials::get_device_name(), "", in_config.app_id, 0);
 	qh3server::get_stats_loggeer()->start_session(stats_path, stats_path.length());
 
-	try_report_router("qh3server-start", sock, command_center_feedback_port);
+	try_report_router("qh3server-start", sock, in_config.command_feedback_port);
 
 	// dangling connection check timer
 	TIMER_SCHEDuLER_TYPE close_dangling_connections_scheduler;
@@ -943,11 +944,11 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	// router hb timer
 	TIMER_SCHEDuLER_TYPE router_hb_scheduler;
 	router_hb_scheduler.set_loop(mainloop);
-	TIMER_TYPE* router_hb_timer = router_hb_loop(router_hb_scheduler, host, port, sock, command_center_feedback_port);
+	TIMER_TYPE* router_hb_timer = router_hb_loop(router_hb_scheduler, host_id, port_id, sock, in_config.command_feedback_port);
 	QH3SERVER_EVENT_PRE_START(this);
 	on_run_started();
 	int port_in_number = 0;
-	if (gsdk::str2int(&port_in_number, port.c_str(), port.length(), 10) != gsdk::STR2INT_SUCCESS) {
+	if (gsdk::str2int(&port_in_number, port_id.c_str(), port_id.length(), 10) != gsdk::STR2INT_SUCCESS) {
 		debug_print_error(__LOGTAG__, "Unable to parse server port, defaulting to %d !!!", port_in_number);
 	}
 	QH3SERVER_EVENT_START(this, host_id.c_str(), (uint16_t) port_in_number);
@@ -995,7 +996,7 @@ int qh3server::run(const qstring& host, const qstring& port, const fs::path& roo
 	get_file_logger()->end_session();
 
 	// async shutdown of services
-	stop_services_and_report(sock, command_center_feedback_port, 3.0f);
+	stop_services_and_report(sock, in_config.command_feedback_port, 3.0f);
 
 	// destroying vars
 	close(sock);
@@ -1049,6 +1050,19 @@ void qh3server::stop_services_and_report(int sock, uint16_t command_center_feedb
 	wait_scheduler.cancel_and_destroy_timer(wait_timer);
 	ev_loop_destroy(wait_loop);
 	debug_print_important(const_logtag, "services finish successfully !!!");
+}
+
+void qh3server::shutdown() {
+	if (get_mainloop() == nullptr) {
+		debug_print_error(__LOGTAG__, "shutdown event CANCELLED. mainlopp is null !!!");
+		return;
+	}
+#if USE_UV_MAIN_LOOP
+	uv_stop(get_mainloop());
+//    uv_run(conn_io->bridge->get_mainloop(), UV_RUN_ONCE);
+#else
+	ev_break(get_mainloop(), EVBREAK_ONE);
+#endif
 }
 
 void qh3server::try_report_router(const qstring& cmd_string, int sock, uint16_t command_center_feedback_port) {
