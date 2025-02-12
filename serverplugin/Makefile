@@ -65,7 +65,7 @@ SRCS = $(SRCDIR)/serverplugin.cpp \
 USE_NAPI ?= 0
 # Conditional NAPI include directory
 ifeq ($(USE_NAPI), 1)
-    INCLUDES += -I $(shell node -p "require('node-addon-api').include")
+    INCLUDES += -I $(shell node -p "require('../serverplugin_ts_proj/node_modules/node-addon-api').include")
 	INCLUDES += -I $(shell . ~/.nvm/nvm.sh && nvm which current | sed 's|bin/node|include/node|')
 	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp \
         $(SRCDIR)/gserverplugin_napi_addon.cpp \
@@ -189,12 +189,19 @@ DEBUG_LDFLAGS += $(LDFLAGS) $(RPATH_FLAGS)
 RELEASE_LDFLAGS += $(LDFLAGS) $(RPATH_FLAGS)
 
 ifeq ($(USE_NAPI), 1)
-    DEBUG_LDFLAGS += \
-        -undefined dynamic_lookup \
-        -Wl,-search_paths_first
-    RELEASE_LDFLAGS += \
-        -undefined dynamic_lookup \
-        -Wl,-search_paths_first
+    ifeq ($(shell uname -s), Darwin)
+        DEBUG_LDFLAGS += \
+            -undefined dynamic_lookup \
+            -Wl,-search_paths_first
+        RELEASE_LDFLAGS += \
+            -undefined dynamic_lookup \
+            -Wl,-search_paths_first
+    else
+        DEBUG_LDFLAGS += \
+            -Wl,--allow-shlib-undefined
+        RELEASE_LDFLAGS += \
+            -Wl,--allow-shlib-undefined
+    endif
 endif
 
 .cpp.o:

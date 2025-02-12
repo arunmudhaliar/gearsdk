@@ -43,7 +43,7 @@ void SetThreadName(const Napi::CallbackInfo& info) {
         return;
     }
     std::string thread_name = info[0].As<Napi::String>().Utf8Value();
-    pthread_setname_np(thread_name.c_str());
+    PTHREAD_NAME(thread_name.c_str());
 }
 
 void Add(const Napi::CallbackInfo& info) {
