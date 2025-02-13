@@ -541,14 +541,14 @@ Napi::Value napi_qh3server_stats_count(const Napi::CallbackInfo& info) {
     long count_val = info[2].As<Napi::Number>().Int64Value();
 
     // Extract optional parameters (default to "")
-    std::string session = info[3].As<Napi::String>();
-    std::string pid = info[4].As<Napi::String>();
-    std::string version = info[5].As<Napi::String>();
-    std::string epic = info[6].As<Napi::String>();
-    std::string myth = info[7].As<Napi::String>();
-    std::string legend = info[8].As<Napi::String>();
-    std::string story = info[9].As<Napi::String>();
-    std::string message = info[10].As<Napi::String>();
+    std::string session = (info.Length() > 3) ? info[3].As<Napi::String>().Utf8Value() : "";
+    std::string pid = (info.Length() > 4) ? info[4].As<Napi::String>().Utf8Value() : "";
+    std::string version = (info.Length() > 5) ? info[5].As<Napi::String>().Utf8Value() : "";
+    std::string epic = (info.Length() > 6) ? info[6].As<Napi::String>().Utf8Value() : "";
+    std::string myth = (info.Length() > 7) ? info[7].As<Napi::String>().Utf8Value() : "";
+    std::string legend = (info.Length() > 8) ? info[8].As<Napi::String>().Utf8Value() : "";
+    std::string story = (info.Length() > 9) ? info[9].As<Napi::String>().Utf8Value() : "";
+    std::string message = (info.Length() > 10) ? info[10].As<Napi::String>().Utf8Value() : "";
 
     // Call the actual function
     size_t result = gsdk::server::qh3server_stats_count(server, counter.c_str(), count_val, session.c_str(), pid.c_str(),
@@ -595,16 +595,14 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "qh3server_release_callbacks"), Napi::Function::New(env, napi_qh3server_release_callbacks));
     exports.Set(Napi::String::New(env, "qh3router_release_callbacks"), Napi::Function::New(env, napi_qh3router_release_callbacks));
     
-    //napi_qh3router_release_callbacks
-    //napi_qh3server_release_callbacks
-    //napi_qserver_release_callbacks
-    
     exports.Set(Napi::String::New(env, "spawn_qserver"), Napi::Function::New(env, napi_gserver_funcs::napi_spawn_qserver));
     exports.Set(Napi::String::New(env, "room_broadcast_except"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast_except));
     exports.Set(Napi::String::New(env, "room_broadcast"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast));
     exports.Set(Napi::String::New(env, "room_send_to"), Napi::Function::New(env, napi_gserver_funcs::napi_room_send_to));
     exports.Set(Napi::String::New(env, "qserver_release_callbacks"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_release_callbacks));
-
+    exports.Set(Napi::String::New(env, "qserver_logfile"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_logfile));
+    exports.Set(Napi::String::New(env, "qserver_stats_count"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_stats_count));
+    
     return exports;
 }
 // Define the module

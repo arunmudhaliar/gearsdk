@@ -39,5 +39,7 @@ namespace napi_gserver_funcs {
     Napi::Value napi_room_broadcast(const Napi::CallbackInfo& info);
     Napi::Value napi_room_send_to(const Napi::CallbackInfo& info);
     Napi::Value napi_qserver_release_callbacks(const Napi::CallbackInfo& info);
+    Napi::Value napi_qserver_stats_count(const Napi::CallbackInfo& info);
+    Napi::Value napi_qserver_logfile(const Napi::CallbackInfo& info);
 }
 #endif

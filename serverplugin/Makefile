@@ -224,3 +224,6 @@ debug: $(OBJS)
 release: CXXFLAGS += $(RELEASE_CXXFLAGS)
 release: $(OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(RELEASE_LIB) $(OBJS) $(LIBS)
+    ifeq ($(UNAME), Linux)
+		strip --strip-unneeded --keep-section=.text $(RELEASE_LIB)
+    endif

@@ -174,6 +174,9 @@ export namespace serversdk {
             message: string
         ): boolean;
         qserver_release_callbacks(native_server: qserver_ptr): void;
+        qserver_logfile(native_server: qserver_ptr, lvl: log_lvls, type: elog_type, tag: string, pid: string, roomid: string, message: string): number;
+        qserver_stats_count(native_server: qserver_ptr, counter: string, count_val: number, session: string, pid: string, version: string /*= ``*/, epic: string /*= ``*/, myth: string /*= ``*/, legend: string /*= ``*/,
+            story: string /*= ``*/, message: string /*= ``*/): number;
         qh3server_release_callbacks(native_server: qh3server_ptr): void;
         qh3router_release_callbacks(cb_data: any): void;
     }

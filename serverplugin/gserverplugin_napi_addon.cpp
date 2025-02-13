@@ -317,4 +317,76 @@ Napi::Value napi_room_send_to(const Napi::CallbackInfo& info) {
     // Return success status as a boolean
     return Napi::Boolean::New(env, success);
 }
+
+Napi::Value napi_qserver_logfile(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Validate arguments count
+    if (info.Length() != 6) {
+        Napi::TypeError::New(env, "Expected 6 arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Validate argument types
+    if (!info[0].IsExternal() || !info[1].IsNumber() || !info[2].IsNumber() ||
+        !info[3].IsString() || !info[4].IsString() || !info[5].IsString() || !info[6].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument types").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract parameters
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    qlogfile::log_lvls lvl = static_cast<qlogfile::log_lvls>(info[1].As<Napi::Number>().Uint32Value());
+    qcustomlogger::elog_type type = static_cast<qcustomlogger::elog_type>(info[2].As<Napi::Number>().Uint32Value());
+    std::string tag = info[3].As<Napi::String>();
+    std::string pid = info[4].As<Napi::String>();
+    std::string roomid = info[5].As<Napi::String>();
+    std::string message = info[6].As<Napi::String>();
+
+    // Call the original function
+    uint64_t result = gsdk::server::qserver_logfile(server, lvl, type, tag.c_str(), pid.c_str(), roomid.c_str(), message.c_str());
+
+    // Return the result as a BigInt
+    return Napi::BigInt::New(env, result);
+}
+
+Napi::Value napi_qserver_stats_count(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Ensure minimum arguments (6 mandatory, 4 optional)
+    if (info.Length() < 6 || info.Length() > 10) {
+        Napi::TypeError::New(env, "Expected 6 to 10 arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Validate argument types
+    if (!info[0].IsExternal() || !info[1].IsString() || !info[2].IsNumber() ||
+        !info[3].IsString() || !info[4].IsString() || !info[5].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument types for required parameters").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract required parameters
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    std::string counter = info[1].As<Napi::String>();
+    long count_val = info[2].As<Napi::Number>().Int64Value();
+    std::string session = info[3].As<Napi::String>();
+    std::string pid = info[4].As<Napi::String>();
+    std::string version = info[5].As<Napi::String>(); // Mandatory
+
+    // Extract optional parameters with default values
+    std::string epic = (info.Length() > 6) ? info[6].As<Napi::String>().Utf8Value() : "";
+    std::string myth = (info.Length() > 7) ? info[7].As<Napi::String>().Utf8Value() : "";
+    std::string legend = (info.Length() > 8) ? info[8].As<Napi::String>().Utf8Value() : "";
+    std::string story = (info.Length() > 9) ? info[9].As<Napi::String>().Utf8Value() : "";
+    std::string message = (info.Length() > 10) ? info[10].As<Napi::String>().Utf8Value() : "";
+
+    // Call the original function
+    size_t result = gsdk::server::qserver_stats_count(server, counter.c_str(), count_val, session.c_str(), pid.c_str(),
+                                        version.c_str(), epic.c_str(), myth.c_str(), legend.c_str(),
+                                        story.c_str(), message.c_str());
+
+    // Return the result as a Number
+    return Napi::Number::New(env, static_cast<double>(result));
+}
 }
