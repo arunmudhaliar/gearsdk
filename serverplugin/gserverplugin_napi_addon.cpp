@@ -41,7 +41,7 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
     struct CallbackPayload {
         short type = 0;
         qnetworkserver* server = nullptr;
-        qstring ip;
+        qstring ip = "";
         uint16_t port = 0;
         int error_code = 0;
         int room = -1;

@@ -153,6 +153,7 @@ void room::onroom_countdown_cancelled() {
 	}
 }
 bool room::can_allow_reconnection(unsigned cid_hash) {
+	UNUSED(cid_hash);
 	return false;
 }
 void room::pass_message_to_room(player* p, const qstring& msg) {

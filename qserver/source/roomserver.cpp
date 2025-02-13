@@ -83,7 +83,10 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 	}
 }
 
-void roomserver::configchanged(const qstring& path, const qstring& data) {}
+void roomserver::configchanged(const qstring& path, const qstring& data) {
+	UNUSED(path);
+	UNUSED(data);
+}
 
 bool roomserver::on_network_server_begin() {
 	const struct server_config_in& run_config = get_run_server_config();

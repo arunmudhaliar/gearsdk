@@ -87,6 +87,8 @@ void qlogfile::get_all_log_files(fs::path& path, std::vector<fs::path>& files, b
 			file_not_exist_counter++;
 		}
 	} while (file_not_exist_counter < INT_MAX - 1);
+#else
+	UNUSED(print_error_logs);
 #endif
 }
 

@@ -29,7 +29,8 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
     $(ZK_SRCDIR)/source/qzookeeper.cpp \
 
 # Add debug_new.cpp conditionally for the debug build
-debug: NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+debug:
+    NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
 
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
     -I "$(QUTILS_SRCDIR)" \
@@ -64,7 +65,7 @@ SRCS = $(SRCDIR)/serverplugin.cpp \
 USE_NAPI ?= 0
 # Conditional NAPI include directory
 ifeq ($(USE_NAPI), 1)
-    INCLUDES += -I $(shell node -p "require('node-addon-api').include")
+    INCLUDES += -I $(shell node -p "require('../serverplugin_ts_proj/node_modules/node-addon-api').include")
 	INCLUDES += -I $(shell . ~/.nvm/nvm.sh && nvm which current | sed 's|bin/node|include/node|')
 	SRCS += $(SRCDIR)/serverplugin_napi_addon.cpp \
         $(SRCDIR)/gserverplugin_napi_addon.cpp \
@@ -103,7 +104,7 @@ USER_DEFINES += -Dnode_engine=v8
 endif
 
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
-CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -s -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
+CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 
 DEBUG_CXXFLAGS = -g -O0 -DDEBUG -DDEV_BUILD=1
 RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
@@ -111,6 +112,7 @@ RELEASE_CXXFLAGS = -O2 -DPROD_BUILD=1 -DNDEBUG
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
+    ARCH := $(shell uname -m)
     LINUX_LIB_DIR = linux
     LIBS = $(ZK_SRCDIR)/libs/$(LINUX_LIB_DIR)/libzookeeper_mt.a \
         ../networkcommon/libs/$(LINUX_LIB_DIR)/libquiche.a \
@@ -130,8 +132,8 @@ ifeq ($(UNAME), Linux)
     LIB_EXT = so
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
-	    DEBUG_LIB = libserverplugin-linux-debug.$(LIB_EXT)
-	    RELEASE_LIB = libserverplugin-linux.$(LIB_EXT)
+	    DEBUG_LIB = libserverplugin-linux-$(ARCH)-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-linux-$(ARCH).$(LIB_EXT)
     else
 	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
 	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
@@ -141,12 +143,13 @@ endif
 ifeq ($(UNAME), Darwin)
     ARCH := $(shell uname -m)
     MACOS_LIB_DIR = macos_$(ARCH)
-    LIBS = ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a \
+    LIBS = $(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR)/libzookeeper_mt.a \
+        ../networkcommon/libs/$(MACOS_LIB_DIR)/libquiche.a \
         ../networkcommon/libs/$(MACOS_LIB_DIR)/libev.a \
         ../networkcommon/libs/$(MACOS_LIB_DIR)/libuv.a \
         ../qhiredis/libs/$(MACOS_LIB_DIR)/libhiredis.a \
         ../common/libs/$(MACOS_LIB_DIR)/libz.a \
-        -framework CoreFoundation -framework Security -lzookeeper_mt \
+        -framework CoreFoundation -framework Security \
         -lresolv -lsasl2 -lcurl
     LDFLAGS = -L$(ZK_SRCDIR)/libs/$(MACOS_LIB_DIR) \
         -L$(SERVER_COMMON_SRCDIR)/../libs/$(MACOS_LIB_DIR) \
@@ -159,8 +162,9 @@ ifeq ($(UNAME), Darwin)
     LIB_EXT = dylib
     ifeq ($(USE_NAPI), 1)
 	    LIB_EXT = node
-	    DEBUG_LIB = libserverplugin-darwin-debug.$(LIB_EXT)
-	    RELEASE_LIB = libserverplugin-darwin.$(LIB_EXT)
+	    MACOS_LIB_DIR = macos_$(ARCH)
+	    DEBUG_LIB = libserverplugin-darwin-$(ARCH)-debug.$(LIB_EXT)
+	    RELEASE_LIB = libserverplugin-darwin-$(ARCH).$(LIB_EXT)
     else
 	    DEBUG_LIB = libserverplugin-debug.$(LIB_EXT)
 	    RELEASE_LIB = libserverplugin.$(LIB_EXT)
@@ -185,12 +189,19 @@ DEBUG_LDFLAGS += $(LDFLAGS) $(RPATH_FLAGS)
 RELEASE_LDFLAGS += $(LDFLAGS) $(RPATH_FLAGS)
 
 ifeq ($(USE_NAPI), 1)
-    DEBUG_LDFLAGS += \
-        -undefined dynamic_lookup \
-        -Wl,-search_paths_first
-    RELEASE_LDFLAGS += \
-        -undefined dynamic_lookup \
-        -Wl,-search_paths_first
+    ifeq ($(shell uname -s), Darwin)
+        DEBUG_LDFLAGS += \
+            -undefined dynamic_lookup \
+            -Wl,-search_paths_first
+        RELEASE_LDFLAGS += \
+            -undefined dynamic_lookup \
+            -Wl,-search_paths_first
+    else
+        DEBUG_LDFLAGS += \
+            -Wl,--allow-shlib-undefined
+        RELEASE_LDFLAGS += \
+            -Wl,--allow-shlib-undefined
+    endif
 endif
 
 .cpp.o:

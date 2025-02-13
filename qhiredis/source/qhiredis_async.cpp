@@ -18,6 +18,7 @@ qhiredis_async::~qhiredis_async() {
 }
 
 void qhiredis_async::set_notify_keyspace_events_cb(redisAsyncContext* context, void* reply, void* privdata) {
+	UNUSED(privdata);
 	if (reply == nullptr) {
 		debug_print_error(__LOGTAG__, "f:set_notify_keyspace_events_cb - err: %s", context->errstr);
 		return;

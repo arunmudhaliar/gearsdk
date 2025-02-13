@@ -254,6 +254,9 @@ void qnetworkserver::onconnection_connected(qconn_io* qconnection) {
 }
 
 void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
+	UNUSED(recv_len);
+	UNUSED(buf);
+	UNUSED(qconnection);
 #if DEV_BUILD && 0
 	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 	uint8_t* copybuf = DEBUG_NEW uint8_t[recv_len + 1];
@@ -621,16 +624,20 @@ void qnetworkserver::heartbeat_check() {
 }
 
 void qnetworkserver::heart_beat_check_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(loop);
 	UNUSED(revents);
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
 	server->heartbeat_check();
 }
 
 void qnetworkserver::threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents) {
+	UNUSED(loop);
 	UNUSED(revents);
 #if QTHREADPOOL
 	qnetworkserver* server = reinterpret_cast<qnetworkserver*>(w->data);
 	server->threadpool.process_in_main_thread();
+#else
+	UNUSED(w);
 #endif
 }
 

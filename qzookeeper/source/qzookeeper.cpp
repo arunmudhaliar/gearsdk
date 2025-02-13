@@ -535,6 +535,7 @@ void qzookeeper::register_value_change_callback(type_qzk_value_changed callback,
 }
 
 void qzookeeper::unregister_value_change_callback(type_qzk_value_changed callback, void* context) {
+	UNUSED(context);
 	std::map<type_qzk_value_changed, void*>::iterator it = value_change_callbacks.find(callback);
 	if (it != value_change_callbacks.end()) {
 		value_change_callbacks.erase(it);

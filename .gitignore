@@ -139,5 +139,8 @@ server_app_ts_proj/gstats
 server_app_ts_proj/logs
 server_app_ts_proj/node_modules
 server_app_ts_proj/stats
-libserverplugin-darwin.node
-libserverplugin-darwin-debug.node
+libserverplugin-darwin-*-debug.node
+libserverplugin-darwin-*.node
+libserverplugin-linux-*-debug.node
+libserverplugin-linux-*.node
+

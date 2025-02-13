@@ -104,10 +104,13 @@ bool qh3router::is_route_available(const route* r) {
 	return (std::find(routes.begin(), routes.end(), r) == routes.end());
 }
 
-void qh3router::on_qhiredis_async_key_expired(const qstring& expired_key) {}
+void qh3router::on_qhiredis_async_key_expired(const qstring& expired_key) {
+	UNUSED(expired_key);
+}
 
 void qh3router::on_qhiredis_async_key_changed(const qstring& modified_key, const qstring& event) {
 	UNUSED(modified_key);
+	UNUSED(event);
 }
 
 void qh3router::on_qhiredis_connect() {}
@@ -264,6 +267,7 @@ void qh3router::cmd_feedback_from_client(struct sockaddr* client_addr, const qst
 					qh3client_helper::send_async_request<client::qh3client>(
 						command_route->host, command_route->port, req, nullptr,
 						[](conn_io_req_res* request, conn_io_req_res* response, void* client_specific_data, void* arg, bool success) {
+							UNUSED(request);
 							UNUSED(response);
 							UNUSED(client_specific_data);
 							UNUSED(arg);
@@ -456,6 +460,7 @@ void qh3router::push_to_routes(route* r) {
 }
 
 route* qh3router::create_qh3server_route(const qstring& host, const qstring& port, pid_t child_process_id) {
+	UNUSED(child_process_id);
 	route* route_obj = DEBUG_NEW route(host, port, server_counter++);
 	route_obj->refresh_hb_timestamp(mainloop);
 	routes.push_back(route_obj);

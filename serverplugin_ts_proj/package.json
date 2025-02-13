@@ -1,15 +1,15 @@
 {
   "name": "@amudaliar/gsdk-serverplugin",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "gsdk server plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "make -C ../serverplugin clean && rm -rf ./dist",
     "watch": "tsc --watch -p tsconfig.debug.json",
-    "build:debug": "make -C ../serverplugin debug USE_NAPI=1 DDEV_BUILD=1 LOG_LEVEL=2 && tsc -p tsconfig.debug.json && cp ../serverplugin/libserverplugin-darwin-debug.node ./dist/ 2>/dev/null || true && cp ../serverplugin/libserverplugin-linux-debug.node ./dist/ 2>/dev/null || true",
+    "build:debug": "ARCH=$(uname -m) && make -C ../serverplugin debug USE_NAPI=1 DDEV_BUILD=1 LOG_LEVEL=2 && tsc -p tsconfig.debug.json && cp ../serverplugin/libserverplugin-darwin-${ARCH}-debug.node ./dist/ 2>/dev/null || true && cp ../serverplugin/libserverplugin-linux-${ARCH}-debug.node ./dist/ 2>/dev/null || true",
     "start:debug": "NODE_ENV=development DYLD_LIBRARY_PATH='./dist' node dist/app.js",
-    "build:release": "make -C ../serverplugin release USE_NAPI=1 DPROD_BUILD=1 LOG_LEVEL=2 && tsc -p tsconfig.json && cp ../serverplugin/libserverplugin-darwin.node ./dist/ 2>/dev/null || true && cp ../serverplugin/libserverplugin-linux.node ./dist/ 2>/dev/null || true",
+    "build:release": "ARCH=$(uname -m) && make -C ../serverplugin release USE_NAPI=1 DPROD_BUILD=1 LOG_LEVEL=2 && tsc -p tsconfig.json && cp ../serverplugin/libserverplugin-darwin-${ARCH}.node ./dist/ 2>/dev/null || true && cp ../serverplugin/libserverplugin-linux-${ARCH}.node ./dist/ 2>/dev/null || true",
     "start:release": "NODE_ENV=production DYLD_LIBRARY_PATH='./dist' node dist/app.js"
   },
   "files": [
@@ -20,6 +20,7 @@
     "class-transformer": "^0.5.1",
     "ioredis": "^5.4.2",
     "mongodb": "^6.12.0",
+    "node-addon-api": "^8.3.0",
     "node-zookeeper-client": "^1.1.3"
   },
   "devDependencies": {

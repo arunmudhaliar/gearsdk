@@ -153,6 +153,7 @@ void plugin_game_room::onroom_end() {
     room::onroom_end();
 }
 bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
+    UNUSED(cid_hash);
     return true;
 }
 
@@ -177,6 +178,8 @@ room* plugin_gameserver::create_room(const msg_room_config* room_config_msg) {
 }
 
 void plugin_gameserver::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
+    UNUSED(loop);
+    UNUSED(revents);
     plugin_gameserver* pserver = static_cast<plugin_gameserver*>(w->data);
     while (st_stateful_response_packet* response_packet = pserver->get_ev_notifier().dequeue_response()) {
         room* room_ptr = pserver->try_get_room_if_in_map(response_packet->room_ptr);
