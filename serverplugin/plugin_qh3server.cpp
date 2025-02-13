@@ -1,76 +1,76 @@
 //
-//  serverplugin.cpp
+//  plugin_qh3server.cpp
 //  qh3server
 //
 //  Created by Arun A on 22/12/24.
 //
 
-#include "serverplugin.h"
+#include "plugin_qh3server.h"
 
 #include "../common/signal_handler/signal_handler.hpp"
 #include "../servercommon/source/servercommon.hpp"
 #include "../qh3server/qh3server/http3_command_server.hpp"
 
 #undef __LOGTAG__
-#define __LOGTAG__ "serverplugin"
+#define __LOGTAG__ "plugin_qh3server"
 
 // qh3plugin_router_event_listener
-void gsdk::server::qh3plugin_router_event_listener::on_router_pre_start(qh3router* router) {
+void gsdk::server::plugin_qh3router_event_listener::on_router_pre_start(qh3router* router) {
 	if (cb_on_router_pre_start) {
 		cb_on_router_pre_start(router, router->get_server_config().user_arg);
 	}
 }
 
-void gsdk::server::qh3plugin_router_event_listener::on_router_start(qh3router* router) {
+void gsdk::server::plugin_qh3router_event_listener::on_router_start(qh3router* router) {
 	if (cb_on_router_start) {
 		cb_on_router_start(router, router->get_server_config().user_arg);
 	}
 }
 
-void gsdk::server::qh3plugin_router_event_listener::on_router_stop(qh3router* router) {
+void gsdk::server::plugin_qh3router_event_listener::on_router_stop(qh3router* router) {
 	if (cb_on_router_stop) {
 		cb_on_router_stop(router, router->get_server_config().user_arg);
 	}
 }
 
-void gsdk::server::qh3plugin_router_event_listener::on_router_error(qh3router* router, int error_code) {
+void gsdk::server::plugin_qh3router_event_listener::on_router_error(qh3router* router, int error_code) {
 	if (cb_on_router_error) {
 		cb_on_router_error(router, router->get_server_config().user_arg, error_code);
 	}
 }
 
 // qh3plugin_router_event_listener
-void gsdk::server::qh3plugin_server_event_listener::on_server_pre_start(qh3server* server) {
+void gsdk::server::plugin_qh3server_event_listener::on_server_pre_start(qh3server* server) {
     // std::lock_guard<std::mutex> lock(callback_mutex);
 	if (cb_on_server_pre_start) {
 		cb_on_server_pre_start(server, server->get_user_arg());
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_server_start(qh3server* server, const char* ip, uint16_t port) {
+void gsdk::server::plugin_qh3server_event_listener::on_server_start(qh3server* server, const char* ip, uint16_t port) {
     // std::lock_guard<std::mutex> lock(callback_mutex);
 	if (cb_on_server_start) {
 		cb_on_server_start(server, server->get_user_arg(), ip, port);
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_server_stop(qh3server* server) {
+void gsdk::server::plugin_qh3server_event_listener::on_server_stop(qh3server* server) {
     // std::lock_guard<std::mutex> lock(callback_mutex);
 	if (cb_on_server_stop) {
 		cb_on_server_stop(server, server->get_user_arg());
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_server_error(qh3server* server, int error_code) {
+void gsdk::server::plugin_qh3server_event_listener::on_server_error(qh3server* server, int error_code) {
     // std::lock_guard<std::mutex> lock(callback_mutex);
 	if (cb_on_server_error) {
 		cb_on_server_error(server, server->get_user_arg(), error_code);
 	}
 }
 
-void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
+void gsdk::server::plugin_qh3server_event_listener::on_serevr_parse(qh3server* server, const conn_io_qh3* conn, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
 
-    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
+    plugin_qh3server* plugin_server = static_cast<plugin_qh3server*>(server);
     plugin_server->increment_request_counter();
 	if (cb_on_server_parse) {
 //        debug_print_scid(LOG_LEVEL_0, conn->cid, sizeof(conn->cid));
@@ -79,19 +79,19 @@ void gsdk::server::qh3plugin_server_event_listener::on_serevr_parse(qh3server* s
 }
 
 // qh3plugin_server
-gsdk::server::qh3plugin_server::qh3plugin_server(const server_config_in& config) : qh3server() {
+gsdk::server::plugin_qh3server::plugin_qh3server(const server_config_in& config) : qh3server() {
 	UNUSED(config);
 }
 
-gsdk::server::qh3plugin_server::~qh3plugin_server() {
+gsdk::server::plugin_qh3server::~plugin_qh3server() {
     debug_print(LOG_LEVEL_0, __LOGTAG__, "qh3plugin_server destructor called");
 }
 
-void gsdk::server::qh3plugin_server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
+void gsdk::server::plugin_qh3server::parse_header(const qstring& name, const qstring& value, struct conn_io_qh3* conn_io) {
 	qh3server::parse_header(name, value, conn_io);
 }
 
-bridge_h3_connection::parse_return gsdk::server::qh3plugin_server::parse(struct conn_io_qh3* conn_io) {
+bridge_h3_connection::parse_return gsdk::server::plugin_qh3server::parse(struct conn_io_qh3* conn_io) {
 	const char* const_logtag = logtag.c_str();
 	const char* port_id_cstr = port_id.c_str();
 	conn_io_req_res::header* path_header = conn_io->http_request->get_header(":path");
@@ -123,22 +123,22 @@ bridge_h3_connection::parse_return gsdk::server::qh3plugin_server::parse(struct 
 	return parse_sync;
 }
 
-bool gsdk::server::qh3plugin_server::on_server_pre_init() {
+bool gsdk::server::plugin_qh3server::on_server_pre_init() {
 	return true;
 }
 
-void gsdk::server::qh3plugin_server::on_server_uninitialise() {}
+void gsdk::server::plugin_qh3server::on_server_uninitialise() {}
 
-void gsdk::server::qh3plugin_server::on_run_started() {
+void gsdk::server::plugin_qh3server::on_run_started() {
     ev_notifier.init(get_server_main_loop(), notify_server_async_cb, this);
     ev_async_init(&async_cmd_watcher_notify_server, notify_server_cmd_async_cb);
     async_cmd_watcher_notify_server.data = nullptr;
     ev_async_start(get_server_main_loop(), &async_cmd_watcher_notify_server);
 }
 
-void gsdk::server::qh3plugin_server::on_run_end() {}
+void gsdk::server::plugin_qh3server::on_run_end() {}
 
-void gsdk::server::qh3plugin_server::notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents) {
+void gsdk::server::plugin_qh3server::notify_server_cmd_async_cb(EV_P_ ev_async *w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);
     st_admin_cmd* cmd = static_cast<st_admin_cmd*>(w->data);
@@ -156,11 +156,11 @@ void gsdk::server::qh3plugin_server::notify_server_cmd_async_cb(EV_P_ ev_async *
     GX_DELETE(cmd);
 }
 
-void gsdk::server::qh3plugin_server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
+void gsdk::server::plugin_qh3server::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
 	UNUSED(loop);
 	UNUSED(revents);
-    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(w->data);
-    while (st_response_packet* response_packet = plugin_server->get_ev_notifier().dequeue_response()) {
+    plugin_qh3server* plugin_server = static_cast<plugin_qh3server*>(w->data);
+    while (st_plugin_qh3server_response_packet* response_packet = plugin_server->get_ev_notifier().dequeue_response()) {
         struct conn_io_qh3* conn_io = plugin_server->get_conn(response_packet->cid, response_packet->cid_len);
         if (conn_io != nullptr) {
             conn_io->http_response->set_payload(response_packet->payload);
@@ -182,14 +182,14 @@ EXPORT void gsdk::server::pre_init_serverplugin_sdk() {
 }
 
 EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
-										  qh3plugin_router_event_listener::type_on_router_pre_start pre_start_cb, qh3plugin_router_event_listener::type_on_router_start start_cb, qh3plugin_router_event_listener::type_on_router_stop stop_cb,
-										  qh3plugin_router_event_listener::type_on_router_error error_cb, void* user_arg) {
+										  plugin_qh3router_event_listener::type_on_router_pre_start pre_start_cb, plugin_qh3router_event_listener::type_on_router_start start_cb, plugin_qh3router_event_listener::type_on_router_stop stop_cb,
+										  plugin_qh3router_event_listener::type_on_router_error error_cb, void* user_arg) {
 	qaddress router_addr(router_address);
 	qaddress redis_addr(redis_address);
 	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), nullptr, command_port, router_addr.port, zk_uri,
 														  router_port_return, app_id, user_arg);
-	qh3plugin_router_event_listener* listener = DEBUG_NEW qh3plugin_router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
-	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_router_event_listener*>(config, listener);
+	plugin_qh3router_event_listener* listener = DEBUG_NEW plugin_qh3router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
+	std::tuple<server_config_in*, plugin_qh3router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, plugin_qh3router_event_listener*>(config, listener);
 	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3router_internal, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3router - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(tuple_in);
@@ -198,12 +198,12 @@ EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char
 	}
 }
 void* gsdk::server::spawn_qh3router_internal(void* data) {
-	std::tuple<server_config_in*, qh3plugin_router_event_listener*>* tuple_in = (std::tuple<server_config_in*, qh3plugin_router_event_listener*>*) data;
+	std::tuple<server_config_in*, plugin_qh3router_event_listener*>* tuple_in = (std::tuple<server_config_in*, plugin_qh3router_event_listener*>*) data;
 	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
-	qh3plugin_router_event_listener* listener = (qh3plugin_router_event_listener*) std::get<1>(*tuple_in);
+	plugin_qh3router_event_listener* listener = (plugin_qh3router_event_listener*) std::get<1>(*tuple_in);
 	config->print();
 	http3_sample_router router(*config);
-	int result = router.run<http3_command_server, qh3plugin_server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, listener);
+	int result = router.run<http3_command_server, plugin_qh3server>(qh3router::qh3router_run_flag::SKIP_DEFAULT_QH3SERVER_SPAWN, listener);
 	GX_DELETE(tuple_in);
 	GX_DELETE(listener);
 	GX_DELETE(config);
@@ -214,7 +214,7 @@ void* gsdk::server::spawn_qh3router_internal(void* data) {
 void* gsdk::server::spawn_qh3server_internal(void* data) {
 	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = (std::tuple<server_config_in*, observer_qh3server_events*>*) data;
 	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
-	qh3plugin_server_event_listener* listener = (qh3plugin_server_event_listener*) std::get<1>(*tuple_in);
+	plugin_qh3server_event_listener* listener = (plugin_qh3server_event_listener*) std::get<1>(*tuple_in);
 	port_range range;
 	int index = 0;
 	int free_port = qh3router::next_available_port(config->host, range, index);
@@ -226,8 +226,8 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
         debug_print(LOG_LEVEL_0, __LOGTAG__, "exiting spawn_qh3server_internal");
         return nullptr;
 	}
-	PTHREAD_NAME(qh3plugin_server::get_server_name());
-	qh3plugin_server* new_server = DEBUG_NEW qh3plugin_server(*config);
+	PTHREAD_NAME(plugin_qh3server::get_server_name());
+	plugin_qh3server* new_server = DEBUG_NEW plugin_qh3server(*config);
     config->port = qstring::format_string("%d", free_port);
 	int result = new_server->run(*config, listener, config->user_arg);
 	GX_DELETE(new_server);
@@ -239,14 +239,14 @@ void* gsdk::server::spawn_qh3server_internal(void* data) {
 }
 
 EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return,
-										  const char* app_id, qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb,
-										  qh3plugin_server_event_listener::type_on_server_stop stop_cb, qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb, void* user_arg) {
+										  const char* app_id, plugin_qh3server_event_listener::type_on_server_pre_start pre_start_cb, plugin_qh3server_event_listener::type_on_server_start start_cb,
+										  plugin_qh3server_event_listener::type_on_server_stop stop_cb, plugin_qh3server_event_listener::type_on_server_error error_cb, plugin_qh3server_event_listener::type_on_server_parse parse_cb, void* user_arg) {
 	qaddress server_addr(server_address);
 	qaddress redis_addr(redis_address);
 	server_config_in* config = new server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), (router) ? router->get_router_addrinfo() : nullptr,
 													command_port, server_addr.port, zk_uri, router_port_return, app_id, user_arg);
-	qh3plugin_server_event_listener* listener = DEBUG_NEW qh3plugin_server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
-	std::tuple<server_config_in*, qh3plugin_server_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, qh3plugin_server_event_listener*>(config, listener);
+	plugin_qh3server_event_listener* listener = DEBUG_NEW plugin_qh3server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
+	std::tuple<server_config_in*, plugin_qh3server_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, plugin_qh3server_event_listener*>(config, listener);
 	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3server_internal, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(tuple_in);
@@ -280,8 +280,8 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 }
 
 EXPORT void gsdk::server::qh3server_try_send_response(qh3server* server, uint8_t *cid, uint16_t cid_len, const char* payload, size_t len) {
-    qh3plugin_server* plugin_server = static_cast<qh3plugin_server*>(server);
-    struct st_response_packet* response_packet = DEBUG_NEW st_response_packet(server, cid, cid_len, payload, len);
+    plugin_qh3server* plugin_server = static_cast<plugin_qh3server*>(server);
+    struct st_plugin_qh3server_response_packet* response_packet = DEBUG_NEW st_plugin_qh3server_response_packet(server, cid, cid_len, payload, len);
     plugin_server->get_ev_notifier().enqueue_response(response_packet);
     plugin_server->get_ev_notifier().notify_main_thread();
     plugin_server->increment_response_notified();

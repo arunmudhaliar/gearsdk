@@ -47,7 +47,7 @@ INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
 SRCDIR = .
 QSRCDIR = ./../qserver/source
 
-SRCS = $(SRCDIR)/serverplugin.cpp \
+SRCS = $(SRCDIR)/plugin_qh3server.cpp \
     $(SRCDIR)/plugin_gameserver.cpp \
     $(SRCDIR)/plugin_qhiredis.cpp \
     $(SRCDIR)/plugin_qzookeeper.cpp \

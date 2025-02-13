@@ -66,11 +66,11 @@ export namespace serversdk {
     export type type_on_router_error = (router: any, error_code: number) => void;
 
     // qh3server events
-    export type type_on_server_pre_start = (server: qh3server_ptr) => void;
-    export type type_on_server_start = (router: qh3server_ptr, ip: string, port: number) => void;
-    export type type_on_server_stop = (server: qh3server_ptr) => void;
-    export type type_on_server_error = (server: qh3server_ptr, error_code: number) => void;
-    export type type_on_server_parse = (server: qh3server_ptr, cid: any, cid_len: number, path: string, buffer: string, headers: string) => void;
+    export type type_on_qh3server_pre_start = (server: qh3server_ptr) => void;
+    export type type_on_qh3server_start = (router: qh3server_ptr, ip: string, port: number) => void;
+    export type type_on_qh3server_stop = (server: qh3server_ptr) => void;
+    export type type_on_qh3server_error = (server: qh3server_ptr, error_code: number) => void;
+    export type type_on_qh3server_parse = (server: qh3server_ptr, cid: any, cid_len: number, path: string, buffer: string, headers: string) => void;
 
     // qserver events
     export type type_on_qserver_pre_start = (server: qserver_ptr) => void;
@@ -92,10 +92,11 @@ export namespace serversdk {
     export interface interface_serverplugin {
         setup_signal_handler(): void;
         pre_init_serverplugin_sdk(): void;
-        get_live_connection_count(native_server: qh3server_ptr): number;
         get_device_public_ip(): string;
         get_crc32(str: Buffer): number;
         mod_crc32(adler: number, buf: Buffer | null): number;
+
+        // qh3router
         spawn_qh3router(routerAddress: string,
             mongodbUri: string,
             redisAddress: string,
@@ -110,6 +111,9 @@ export namespace serversdk {
             stopCallback: type_on_router_stop,
             errorCallback: type_on_router_error,
         ): void;
+        qh3router_release_callbacks(cb_data: any): void;
+
+        //qh3server
         spawn_qh3server(
             native_router: any,
             server_address: string,
@@ -121,11 +125,11 @@ export namespace serversdk {
             command_port: number,
             router_port_return: number,
             app_id: string,
-            pre_start_cb: type_on_server_pre_start,
-            start_cb: type_on_server_start,
-            stop_cb: type_on_server_stop,
-            error_cb: type_on_server_error,
-            parse_cb: type_on_server_parse
+            pre_start_cb: type_on_qh3server_pre_start,
+            start_cb: type_on_qh3server_start,
+            stop_cb: type_on_qh3server_stop,
+            error_cb: type_on_qh3server_error,
+            parse_cb: type_on_qh3server_parse
         ): void;
         qh3server_try_send_response(
             native_server: qh3server_ptr,
@@ -137,9 +141,11 @@ export namespace serversdk {
         qh3server_stats_count(native_server: qh3server_ptr, counter: string, count_val: number, session: string, pid: string, version: string /*= ``*/, epic: string /*= ``*/, myth: string /*= ``*/, legend: string /*= ``*/,
             story: string /*= ``*/, message: string /*= ``*/): number;
         qh3server_shutdown(native_server: qh3server_ptr): void;
+        qh3server_release_callbacks(native_server: qh3server_ptr): void;
+        get_live_connection_count(native_server: qh3server_ptr): number;
 
-        // gserver
-        spawn_qserver(
+        // game server
+        spawn_game_server(
             server_address: string,
             redis_address: string,
             zk_uri: string,
@@ -173,12 +179,10 @@ export namespace serversdk {
             cid_hash: number,
             message: string
         ): boolean;
-        qserver_release_callbacks(native_server: qserver_ptr): void;
+        game_server_release_callbacks(native_server: qserver_ptr): void;
         qserver_logfile(native_server: qserver_ptr, lvl: log_lvls, type: elog_type, tag: string, pid: string, roomid: string, message: string): number;
         qserver_stats_count(native_server: qserver_ptr, counter: string, count_val: number, session: string, pid: string, version: string /*= ``*/, epic: string /*= ``*/, myth: string /*= ``*/, legend: string /*= ``*/,
             story: string /*= ``*/, message: string /*= ``*/): number;
-        qh3server_release_callbacks(native_server: qh3server_ptr): void;
-        qh3router_release_callbacks(cb_data: any): void;
     }
 
     debug_print(LOG_LEVEL_0, __LOGTAG__, 'serverplugin loaded successfully.');

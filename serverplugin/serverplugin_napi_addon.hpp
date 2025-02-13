@@ -4,33 +4,33 @@
 #include <napi.h>
 
 namespace napi_funcs {
-    struct qh3router_spawn_qh3router_cb_data {
-        napi_threadsafe_function preStartCbRef;
-        napi_threadsafe_function startCbRef;
-        napi_threadsafe_function stopCbRef;
-        napi_threadsafe_function errorCbRef;
+    struct napi_qh3router_cb_data {
+        napi_threadsafe_function pre_start_cb_ref;
+        napi_threadsafe_function start_cb_ref;
+        napi_threadsafe_function stop_cb_ref;
+        napi_threadsafe_function error_cb_ref;
         
         void release(Napi::Env env) {
-            napi_unref_threadsafe_function(env, preStartCbRef);
-            napi_unref_threadsafe_function(env, startCbRef);
-            napi_unref_threadsafe_function(env, stopCbRef);
-            napi_unref_threadsafe_function(env, errorCbRef);
+            napi_unref_threadsafe_function(env, pre_start_cb_ref);
+            napi_unref_threadsafe_function(env, start_cb_ref);
+            napi_unref_threadsafe_function(env, stop_cb_ref);
+            napi_unref_threadsafe_function(env, error_cb_ref);
         }
     };
 
-    struct qh3server_spawn_qh3server_cb_data {
-        napi_threadsafe_function preStartCbRef;
-        napi_threadsafe_function startCbRef;
-        napi_threadsafe_function stopCbRef;
-        napi_threadsafe_function errorCbRef;
-        napi_threadsafe_function parseCbRef;
+    struct napi_qh3server_cb_data {
+        napi_threadsafe_function pre_start_cb_ref;
+        napi_threadsafe_function start_cb_ref;
+        napi_threadsafe_function stop_cb_ref;
+        napi_threadsafe_function error_cb_ref;
+        napi_threadsafe_function parse_cb_ref;
         
         void release(Napi::Env env) {
-            napi_unref_threadsafe_function(env, preStartCbRef);
-            napi_unref_threadsafe_function(env, startCbRef);
-            napi_unref_threadsafe_function(env, stopCbRef);
-            napi_unref_threadsafe_function(env, errorCbRef);
-            napi_unref_threadsafe_function(env, parseCbRef);
+            napi_unref_threadsafe_function(env, pre_start_cb_ref);
+            napi_unref_threadsafe_function(env, start_cb_ref);
+            napi_unref_threadsafe_function(env, stop_cb_ref);
+            napi_unref_threadsafe_function(env, error_cb_ref);
+            napi_unref_threadsafe_function(env, parse_cb_ref);
         }
     };
 }

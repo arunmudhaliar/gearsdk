@@ -40,7 +40,7 @@ $(SRCDIR)/qh3router.cpp \
 $(SRCDIR)/http3_command_server.cpp \
 $(SRCDIR)/http3_sample_server.cpp \
 $(SRCDIR)/qh3router_structs.cpp \
-$(SRCDIR)/../../serverplugin/serverplugin.cpp \
+$(SRCDIR)/../../serverplugin/plugin_qh3server.cpp \
 $(SRCDIR)/../../serverplugin/plugin_gameserver.cpp \
 $(QSRCDIR)/room.cpp \
 $(QSRCDIR)/roomserver.cpp \
