@@ -1,3 +1,16 @@
+# Default to debug mode if no target is specified
+BUILD_MODE ?= debug
+
+# Check the target specified
+ifeq ($(MAKECMDGOALS), debug)
+    BUILD_MODE = debug
+endif
+
+ifeq ($(MAKECMDGOALS), release)
+    BUILD_MODE = release
+endif
+$(info Building $(BUILD_MODE) mode.)
+
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 QHIREDIS_SRCDIR = ../qhiredis/source
 SERVER_COMMON_SRCDIR = ../servercommon/source
@@ -27,10 +40,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
     $(ZK_SRCDIR)/source/qzookeeper.cpp \
-
-# Add debug_new.cpp conditionally for the debug build
-debug:
-    NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+    $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
     -I "$(QUTILS_SRCDIR)" \
@@ -60,6 +70,11 @@ SRCS = $(SRCDIR)/plugin_qh3server.cpp \
     $(QSRCDIR)/gameserver.cpp \
     $(QSRCDIR)/qnetworkserver.cpp \
     $(NCOMMONSRCS) \
+
+ifeq ($(BUILD_MODE), release)
+    SRCS := $(filter-out $(COMMON_SRCDIR)/nvwa/debug_new.cpp, $(SRCS))
+    $(info Excluding $(COMMON_SRCDIR)/nvwa/debug_new.cpp for release.)
+endif
 
 # Default value for USE_NAPI
 USE_NAPI ?= 0
@@ -213,7 +228,7 @@ endif
 all: debug
 
 clean:
-	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o
+	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o $(COMMON_SRCDIR)/nvwa/debug_new.o
 
 $(OBJS): Makefile
 
