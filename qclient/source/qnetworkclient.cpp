@@ -694,7 +694,8 @@ void* qnetworkclient::run_internal(void* data) {
 	if (thiz->run_mutex.try_lock(__FUNCTION__) != 0) {
 		run_config_data->finished = true;
 		run_config_data->pthread_return_value = -1;
-		pthread_exit(&run_config_data->pthread_return_value);
+//		pthread_exit(&run_config_data->pthread_return_value);
+        return nullptr;
 	}
 #endif
 
@@ -709,7 +710,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-		pthread_exit(&run_config_data->pthread_return_value);
+//		pthread_exit(&run_config_data->pthread_return_value);
+        return nullptr;
 #else
 		return nullptr;
 #endif
@@ -745,7 +747,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-		pthread_exit(&run_config_data->pthread_return_value);
+//		pthread_exit(&run_config_data->pthread_return_value);
+        return nullptr;
 #else
 		return nullptr;
 #endif
@@ -757,7 +760,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-		pthread_exit(&run_config_data->pthread_return_value);
+//		pthread_exit(&run_config_data->pthread_return_value);
+        return nullptr;
 #else
 		return nullptr;
 #endif
@@ -820,7 +824,8 @@ void* qnetworkclient::run_internal(void* data) {
 	run_config_data->finished = true;
 	DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfig_mutex().unlock() == 0), __FUNCTION__);
 	DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-	pthread_exit(0);
+//	pthread_exit(0);
+    return nullptr;
 #else
 	run_config_data->pthread_return_value = 0;
 	run_config_data->finished = true;

@@ -117,7 +117,9 @@ ifeq ($(USE_NAPI), 1)
 USER_DEFINES += $(NAPI_DEFINES)
 USER_DEFINES += -Dnode_engine=v8
 endif
-
+ifeq ($(BUILD_MODE), debug)
+USER_DEFINES += -D_DEBUG_NEW_FILENAME_LEN=128
+endif
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 
