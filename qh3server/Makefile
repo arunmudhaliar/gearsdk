@@ -1,3 +1,16 @@
+# Default to debug mode if no target is specified
+BUILD_MODE ?= debug
+
+# Check the target specified
+ifeq ($(MAKECMDGOALS), debug)
+    BUILD_MODE = debug
+endif
+
+ifeq ($(MAKECMDGOALS), release)
+    BUILD_MODE = release
+endif
+$(info Building $(BUILD_MODE) mode.)
+
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 QHIREDIS_SRCDIR = ../qhiredis/source
 SERVER_COMMON_SRCDIR = ../servercommon/source
@@ -24,12 +37,11 @@ $(COMMON_SRCDIR)/timer.cpp \
 $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
 $(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
+$(COMMON_SRCDIR)/serverinforeader.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
 $(ZK_SRCDIR)/source/qzookeeper.cpp \
-
-# Add debug_new.cpp conditionally for the debug build
-debug: NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+$(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" -I "$(QUTILS_SRCDIR)" -I "$(QH3_CLIENT_SRCDIR)" -I "$(COMMON_SRCDIR)" -I "$(COMMON_SRCDIR)/uthash" -I "$(NETWORK_COMMON_SRCDIR)/ev" -I "$(NETWORK_COMMON_SRCDIR)/uv" -I "$(NETWORK_COMMON_SRCDIR)/quiche" -I "$(COMMON_SRCDIR)/libbson-1.0" -I "$(COMMON_SRCDIR)/zlib" -I "../qhiredis/hiredis" -I "$(SERVER_COMMON_SRCDIR)/libmongoc-1.0" -I "$(SERVER_COMMON_SRCDIR)"
 SRCDIR = ./qh3server
@@ -47,6 +59,11 @@ $(QSRCDIR)/roomserver.cpp \
 $(QSRCDIR)/gameserver.cpp \
 $(QSRCDIR)/qnetworkserver.cpp \
 $(NCOMMONSRCS) \
+
+ifeq ($(BUILD_MODE), release)
+    SRCS := $(filter-out $(COMMON_SRCDIR)/nvwa/debug_new.cpp, $(SRCS))
+    $(info Excluding $(COMMON_SRCDIR)/nvwa/debug_new.cpp for release.)
+endif
 
 C_SRCS =$(COMMON_SRCDIR)/crypto/sha256.c \
 

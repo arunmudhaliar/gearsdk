@@ -8,8 +8,6 @@
 
 #include "http3_command_server.hpp"
 
-#include "../../common/serverinforeader.hpp"
-
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/stringbuffer.h>
@@ -19,7 +17,8 @@ using namespace rapidjson;
 using namespace client;
 using namespace gsdk::common;
 
-http3_command_server::http3_command_server(const server_config_in& config, bridge_command_center* bridge) : qh3server(), config_copy(config), bridge(bridge) {
+http3_command_server::http3_command_server(const st_qh3server_config_in& config, const st_services_config& services_config, bridge_command_center* bridge)
+	: qh3server(), config_copy(config), services_config_copy(services_config), bridge(bridge) {
 	UNUSED(bridge);
 }
 
@@ -40,7 +39,7 @@ bool http3_command_server::on_server_pre_init() {
 	}
 	qstring router_redis_user = info_reader->get_value_else_default("router_redis_user", "gsdkuser");
 	qstring router_redis_password = info_reader->get_value_else_default("router_redis_password", "Fr0gmoon123");
-	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", config_copy.redis_ip, config_copy.redis_port, router_redis_user, router_redis_password);
+	hiredis = DEBUG_NEW qhiredis("cmd_server_hiredis", services_config_copy.redis_ip, services_config_copy.redis_port, router_redis_user, router_redis_password);
 	return hiredis->connect_redis() == 0;
 }
 

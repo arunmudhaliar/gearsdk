@@ -101,7 +101,8 @@ struct st_plugin_qh3server_response_packet {
 
 class plugin_qh3server : public qh3server {
    public:
-	plugin_qh3server(const server_config_in& config);
+    plugin_qh3server(){}
+    plugin_qh3server(const st_qh3server_config_in& config, const st_services_config& services_config);
     ~plugin_qh3server();
     
 	static inline const char* get_server_name() { return "qh3plugin_server"; }
@@ -183,7 +184,7 @@ EXPORT void pre_init_serverplugin_sdk();
 EXPORT void spawn_qh3router(const char* router_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							plugin_qh3router_event_listener::type_on_router_pre_start pre_start_cb, plugin_qh3router_event_listener::type_on_router_start start_cb, plugin_qh3router_event_listener::type_on_router_stop stop_cb,
 							plugin_qh3router_event_listener::type_on_router_error error_cb, void* user_arg = nullptr);
-EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
+EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* root_dir, const char* inf_file, uint16_t command_port, uint16_t router_port_return, const char* app_id,
 							plugin_qh3server_event_listener::type_on_server_pre_start pre_start_cb, plugin_qh3server_event_listener::type_on_server_start start_cb, plugin_qh3server_event_listener::type_on_server_stop stop_cb,
 							plugin_qh3server_event_listener::type_on_server_error error_cb, plugin_qh3server_event_listener::type_on_server_parse parse_cb, void* user_arg);
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);

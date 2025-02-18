@@ -25,7 +25,7 @@ export namespace serversdk {
 
     export const sdklib = require(lib_path) as serversdk.interface_serverplugin;
 
-    export interface qh3_router_input_config {
+    export interface qh3router_input_config {
         router_address: string;
         mongodb_uri: string;
         mongodb_db: string;
@@ -117,9 +117,6 @@ export namespace serversdk {
         spawn_qh3server(
             native_router: any,
             server_address: string,
-            mongodb_uri: string,
-            redis_address: string,
-            zk_uri: string,
             root_dir: string,
             inf_file: string,
             command_port: number,

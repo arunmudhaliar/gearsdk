@@ -868,7 +868,7 @@ int qnetworkserver::run(const server_config_in& in_config, observer_qserver_even
 #endif
 
 	network_server_end();
-    QSERVER_EVENT_STOP(this, server_event_observer);
+	QSERVER_EVENT_STOP(this, server_event_observer);
 	force_disconnect_all();
 
 	ev_loop_destroy(mainloop);

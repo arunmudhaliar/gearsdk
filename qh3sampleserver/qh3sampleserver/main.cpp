@@ -59,7 +59,7 @@ int main(int argc, const char* argv[]) {
 	//    http3_sample_server server(mongodb_uri.c_str(), redis_ip.c_str(),
 	//    redis_port, zk_uri); server.run(host, port, rootDir, nullptr, 4010, 0);   // port return not used, so passing 0
 
-	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, nullptr, 4010, port, zk_uri, 4005, "qh3sampleserver-app");
+	server_config_in config(host, port, mongodb_uri, redis_ip, redis_port, rootDir, "./serverconfig.rel.inf", nullptr, 4010, port, zk_uri, 4005, "qh3sampleserver-app");
 	http3_sample_router router(config);
 	router.run<http3_command_server, http3_sample_server>();
 

@@ -759,7 +759,7 @@ void qh3server::libev_idle_cb(EV_P_ ev_idle* w, int revents) {
 }
 #endif
 
-int qh3server::run(const server_config_in& in_config, observer_qh3server_events* event_observer, void* user_arg_ptr) {
+int qh3server::run(const st_qh3server_config_in& in_config, observer_qh3server_events* event_observer, void* user_arg_ptr) {
 	run_server_config = in_config;
 	server_event_observer = event_observer;
 	user_arg = user_arg_ptr;

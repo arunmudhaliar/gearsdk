@@ -5,7 +5,7 @@
 
 ## 🖥️ Platform Supported
 
-*OS:* **macOS** (x86_64), Linux (x86_64)
+*OS:* **macOS** (x86_64), **Linux** (x86_64)
 
 *Node.js Version:*
 Requires Node.js v16.20.2+ and N-API compatibility

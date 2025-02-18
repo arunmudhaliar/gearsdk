@@ -8,6 +8,7 @@
 #ifndef http3_sample_server_hpp
 #define http3_sample_server_hpp
 
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/qtextfile.hpp"
 #include "../../networkcommon/source/serverconfig.hpp"
@@ -49,7 +50,7 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 	msg_room_config_list* room_config_list = nullptr;
 
    public:
-	http3_sample_server(const server_config_in& config);
+	http3_sample_server(const st_qh3server_config_in& config, const st_services_config& services_config);
 	virtual ~http3_sample_server();
 
 	void test_mongo_db();
@@ -70,7 +71,8 @@ class http3_sample_server : public qh3server, interface_qmongo_connection, obser
 
 	message_parser msg_parser;
 	bool is_log_quiche_flag = false;
-	server_config_in config_copy;
+	st_qh3server_config_in config_copy;
+	st_services_config services_config_copy;
 #if TEST_RESPONSE
 	qstring test_response;
 #endif

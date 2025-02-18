@@ -9,6 +9,7 @@
 #ifndef roomserver_hpp
 #define roomserver_hpp
 
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/message.hpp"
 #include "../../networkcommon/source/roommessage.hpp"
 #include "../../networkcommon/source/serverconfig.hpp"

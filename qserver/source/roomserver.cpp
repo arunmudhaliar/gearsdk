@@ -8,8 +8,6 @@
 
 #include "roomserver.hpp"
 
-#include "../../common/serverinforeader.hpp"
-
 #include <algorithm>
 
 #define EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS 45

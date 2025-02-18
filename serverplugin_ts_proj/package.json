@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node-zookeeper-client": "^0.2.14",
+    "0x": "^5.8.0",
     "typescript": "^5.7.2"
   },
   "keywords": [
