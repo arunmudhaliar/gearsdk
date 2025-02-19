@@ -87,7 +87,7 @@ void roomserver::configchanged(const qstring& path, const qstring& data) {
 }
 
 bool roomserver::on_network_server_begin() {
-	const struct server_config_in& run_config = get_run_server_config();
+	const struct st_qserver_config_in& run_config = get_run_server_config();
 	server_info_reader* info_reader = server_info_reader::get_instance();
 	if (!info_reader->load_config(run_server_config.inf_file.c_str())) {
 		debug_print_error(__LOGTAG__, "info_reader failed to load config !!!, Exiting.");
@@ -147,7 +147,7 @@ bool roomserver::on_network_server_begin() {
 }
 
 qtimer* roomserver::schedule_update_redis_about_gserver_timer() {
-	const struct server_config_in& run_config = get_run_server_config();
+	const struct st_qserver_config_in& run_config = get_run_server_config();
 	int grace_time = 10;
 	int expire_timer_unresponsive_gserver_check_in_sec = zkconfig->get_int32("gserver/expire_timer_unresponsive_gserver_check_in_sec", EXPIRE_TIMER_UNRESPONSIVE_GSERVER_CHECK_IN_SECONDS);
 	const qstring& hash_key = qstring::format_string("gservers:%s", gsdk::device::public_ip);

@@ -187,10 +187,10 @@ EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char
 										  plugin_qh3router_event_listener::type_on_router_error error_cb, void* user_arg) {
 	qaddress router_addr(router_address);
 	qaddress redis_addr(redis_address);
-	server_config_in* config = DEBUG_NEW server_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), nullptr, command_port, router_addr.port, zk_uri,
+	st_qh3router_config_in* config = DEBUG_NEW st_qh3router_config_in(router_addr.ip, qstring::format_string("%d", router_addr.port), mongodb_uri, redis_addr.ip, redis_addr.port, fs::path(root_dir), fs::path(inf_file), nullptr, command_port, router_addr.port, zk_uri,
 														  router_port_return, app_id, user_arg);
 	plugin_qh3router_event_listener* listener = DEBUG_NEW plugin_qh3router_event_listener(pre_start_cb, start_cb, stop_cb, error_cb);
-	std::tuple<server_config_in*, plugin_qh3router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, plugin_qh3router_event_listener*>(config, listener);
+	std::tuple<st_qh3router_config_in*, plugin_qh3router_event_listener*>* tuple_in = DEBUG_NEW std::tuple<st_qh3router_config_in*, plugin_qh3router_event_listener*>(config, listener);
 	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3router_internal, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3router - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(tuple_in);
@@ -199,8 +199,8 @@ EXPORT void gsdk::server::spawn_qh3router(const char* router_address, const char
 	}
 }
 void* gsdk::server::spawn_qh3router_internal(void* data) {
-	std::tuple<server_config_in*, plugin_qh3router_event_listener*>* tuple_in = (std::tuple<server_config_in*, plugin_qh3router_event_listener*>*) data;
-	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
+	std::tuple<st_qh3router_config_in*, plugin_qh3router_event_listener*>* tuple_in = (std::tuple<st_qh3router_config_in*, plugin_qh3router_event_listener*>*) data;
+	st_qh3router_config_in* config = (st_qh3router_config_in*) std::get<0>(*tuple_in);
 	plugin_qh3router_event_listener* listener = (plugin_qh3router_event_listener*) std::get<1>(*tuple_in);
 	config->print();
 	http3_sample_router router(*config);
@@ -245,6 +245,7 @@ EXPORT void gsdk::server::spawn_qh3server(qh3router* router, const char* server_
 	qaddress server_addr(server_address);
     st_qh3server_config_in* config = DEBUG_NEW st_qh3server_config_in(server_addr.ip, qstring::format_string("%d", server_addr.port), fs::path(root_dir), fs::path(inf_file), (router) ? router->get_router_addrinfo() : nullptr,
 													command_port, server_addr.port, router_port_return, app_id, user_arg);
+    config->print();
 	plugin_qh3server_event_listener* listener = DEBUG_NEW plugin_qh3server_event_listener(pre_start_cb, start_cb, stop_cb, error_cb, parse_cb);
 	std::tuple<st_qh3server_config_in*, plugin_qh3server_event_listener*>* tuple_in = DEBUG_NEW std::tuple<st_qh3server_config_in*, plugin_qh3server_event_listener*>(config, listener);
 	if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_qh3server_internal, (void*) tuple_in) < 0) {

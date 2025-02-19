@@ -225,7 +225,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                        ) {
     qaddress server_addr(server_address);
     qaddress redis_addr(redis_address);
-    struct server_config_in* config = new struct server_config_in();
+    struct st_qserver_config_in* config = new struct st_qserver_config_in();
     config->host = server_addr.ip;
     config->port = qstring::format_string("%d", server_addr.port);
     config->redis_ip = redis_addr.ip;
@@ -235,6 +235,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
     config->inf_file = fs::path(inf_file);
     config->app_id = app_id;
     config->user_arg = user_arg;
+    config->print();
     plugin_gameserver_event_listener* listener = DEBUG_NEW plugin_gameserver_event_listener(
                                                                                         pre_start_cb, start_cb, stop_cb, error_cb,
                                                                                         room_event_create_cb,
@@ -245,7 +246,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                                                                         room_event_end_cb,
                                                                                         room_event_countdown_to_start_cb,
                                                                                         room_event_countdown_cancelled_cb);
-    std::tuple<server_config_in*, plugin_gameserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, plugin_gameserver_event_listener*>(config, listener);
+    std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>(config, listener);
     if (pthread_create(&config->run_thread_id, nullptr, gsdk::server::spawn_game_server_internal, (void*)tuple_in) < 0) {
         debug_print_error(__LOGTAG__, "spawn_qserver - could not create thread: %s - %d", strerror(errno), errno);
         GX_DELETE(tuple_in);
@@ -257,8 +258,8 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
 }
 
 void* gsdk::server::spawn_game_server_internal(void* data) {
-    std::tuple<server_config_in*, plugin_gameserver_event_listener*>* tuple_in = (std::tuple<server_config_in*, plugin_gameserver_event_listener*>*) data;
-    server_config_in* config = (server_config_in*)std::get<0>(*tuple_in);
+    std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>* tuple_in = (std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>*) data;
+    st_qserver_config_in* config = (st_qserver_config_in*)std::get<0>(*tuple_in);
     plugin_gameserver_event_listener* listener = (plugin_gameserver_event_listener*)std::get<1>(*tuple_in);
     plugin_gameserver server;
     int result = server.run(*config, listener, config->user_arg);

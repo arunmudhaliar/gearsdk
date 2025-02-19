@@ -9,7 +9,7 @@
 #include "qh3router.hpp"
 
 using namespace client;
-qh3router::qh3router(const server_config_in& config) : config(config) {}
+qh3router::qh3router(const st_qh3router_config_in& config) : config(config) {}
 qh3router::~qh3router() {
 	for (auto r : routes) {
 		GX_DELETE(r);

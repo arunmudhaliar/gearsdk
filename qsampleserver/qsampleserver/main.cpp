@@ -43,14 +43,15 @@ int32_t main(int32_t argc, const char* argv[]) {
 	qstring redis_ip = "3.109.144.159";
 	qstring zk_uri = "3.109.144.159:2181";
 	uint16_t redis_port = 6379;
-	fs::path rootDir;
-	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, rootDir, redis_ip, redis_port, zk_uri);
+	fs::path root_dir;
+	int result = essentials::resolve_cmd_line_args(__LOGTAG__, argc, argv, version_string, version_code, host, port, mongodb_uri, root_dir, redis_ip, redis_port, zk_uri);
 	if (result < 0) {
 		discord_util::shutdown();
 		exit(0);
 	}
-	gameserver server(zk_uri);
-	server.run(host, port, rootDir, redis_ip, redis_port, "qsampleserver-app");
+	gameserver server;
+	struct st_qserver_config_in config(host, port, mongodb_uri, redis_ip, redis_port, root_dir, "./serverconfig.rel.inf", zk_uri, "qsampleserver-app");
+	server.run(config);
 
 	// dummy run loop
 	struct ev_loop* loop = ev_default_loop(0);
@@ -62,9 +63,9 @@ int32_t main(int32_t argc, const char* argv[]) {
 			UNUSED(timer);
 			UNUSED(creation_time);
 			// debug_print(LOG_LEVEL_0, __LOGTAG__, "iam alive - t:%5.2fs", ev_now(loop) - creation_time );
-			if (server.is_run()) {
-				ev_break(loop, EVBREAK_ONE);
-			}
+			//			if (server.is_run()) {
+			//				ev_break(loop, EVBREAK_ONE);
+			//			}
 		},
 		15);
 

@@ -1,3 +1,8 @@
+
+# Project Title
+
+A brief description of what this project does and who it's for
+
 ## 📌 Features
 
 - Supports **qh3router**, **qh3server (stateless)**, and **game server (stateful)** operations.
@@ -14,7 +19,7 @@ Ensure you have the necessary dependencies installed before using the plugin.
 
 **Note: This plugin is under development phase. Will notify once its release ready.**
 
-### 🚀 Installation
+### 📝 Installation
 
 ```sh
 # todo
@@ -28,7 +33,7 @@ This TypeScript module provides a **server plugin** that integrates with a QUIC-
 
 ---
 
-# qh3router
+# 🚦 qh3router
 
 ## Overview
 `spawn_qh3router` initializes and starts a router with the given parameters. It sets up the necessary connections to MongoDB, Redis, and ZooKeeper, while providing callback hooks for various lifecycle events.
@@ -55,14 +60,14 @@ spawn_qh3router(
 ```
 
 ### Parameters
-- **routerAddress** *(string)* - The address where the router will listen.
+- **routerAddress** *(string)* - The address where the router will listen. Ex '127.0.0.1:4004'
 - **mongodbUri** *(string)* - The MongoDB connection URI.
 - **redisAddress** *(string)* - The Redis server address.
 - **zkUri** *(string)* - The ZooKeeper connection URI.
 - **rootDir** *(string)* - The root directory for storing runtime files.
 - **inf_file** *(string)* - Path to the interface file.
-- **commandPort** *(number)* - The port used for command communication.
-- **routerPortReturn** *(number)* - The router return port.
+- **commandPort** *(number)* - The port used for command communication. Ex '4010'.
+- **routerPortReturn** *(number)* - The router return port. ex '4005'
 - **appId** *(string)* - The application ID associated with this router.
 - **preStartCallback** *(type_on_router_pre_start)* - Callback function executed before the router starts.
 - **startCallback** *(type_on_router_start)* - Callback function executed when the router starts successfully.
@@ -73,14 +78,14 @@ spawn_qh3router(
 
 ```typescript
 spawn_qh3router(
-    "0.0.0.0:5000",                 // Router Address
-    "mongodb://localhost:27017",    // MongoDB URI
-    "redis://localhost:6379",       // Redis Address
-    "zk://localhost:2181",          // ZooKeeper URI
+    "127.0.0.1:4004",               // Router Address
+    "mongodb://127.0.0.1:27017",    // MongoDB URI
+    "redis://127.0.0.1:6379",       // Redis Address
+    "zk://127.0.0.1:2181",          // ZooKeeper URI
     "/var/qh3router",               // Root Directory
     "/etc/qh3router/config.inf",    // Interface File
-    8081,                            // Command Port
-    6000,                            // Router Port Return
+    4010,                            // Command Port
+    4005,                            // Router Port Return
     "qh3router-app",                // Application ID
     (router: any, cd_data: any) => console.log("Pre-start hook"), // Pre-start callback
     (router: any) => console.log("Router started"), // Start callback
@@ -121,9 +126,6 @@ The `spawn_qh3server` function initializes and starts a `qh3server` instance wit
 spawn_qh3server(
     native_router: any,
     server_address: string,
-    mongodb_uri: string,
-    redis_address: string,
-    zk_uri: string,
     root_dir: string,
     inf_file: string,
     command_port: number,
@@ -142,10 +144,7 @@ spawn_qh3server(
 | Parameter           | Type                         | Description |
 |---------------------|----------------------------|-------------|
 | `native_router`    | `any`                        | The native router instance for handling requests. |
-| `server_address`   | `string`                     | The address where the server will be hosted (e.g., `0.0.0.0:443`). |
-| `mongodb_uri`      | `string`                     | The MongoDB connection URI. |
-| `redis_address`    | `string`                     | The Redis server address (e.g., `redis://localhost:6379`). |
-| `zk_uri`           | `string`                     | The ZooKeeper connection URI. |
+| `server_address`   | `string`                     | The address where the server will be hosted (e.g., `127.0.0.1:5100`). |
 | `root_dir`         | `string`                     | The root directory for server files. |
 | `inf_file`         | `string`                     | Path to the interface configuration file. |
 | `command_port`     | `number`                     | The port for command communication. |
@@ -161,14 +160,11 @@ spawn_qh3server(
 ```typescript
 spawn_qh3server(
     nativeRouterInstance,
-    "0.0.0.0:443",
-    "mongodb://localhost:27017/qh3db",
-    "redis://localhost:6379",
-    "zk://localhost:2181",
+    "127.0.0.1:5100",
     "/var/qh3server",
     "/etc/qh3server/config.inf",
-    8080,
-    9000,
+    4010,
+    4005,
     "qh3-app",
     (native_server: serversdk.qh3server_ptr) => console.log("Server is preparing to start..."),
     (native_server: serversdk.qh3server_ptr, ip: string, port: number) => console.log("Server started successfully."),
@@ -212,11 +208,11 @@ A **stateful server** maintains session data for clients, making it suitable for
 import { serversdk } from './serversdk';
 
 const config: serversdk.qserver_input_config = {
-    server_address: "127.0.0.1",
-    redis_address: "localhost:6379",
-    redis_user: "",
-    redis_password: "",
-    zk_uri: "zk://localhost:2181",
+    server_address: "127.0.0.1:4000",
+    redis_address: "127.0.0.1:6379",
+    redis_user: "",           // redis username
+    redis_password: "",       // redis password
+    zk_uri: "zk://127.0.0.1:2181",
     root_dir: "/data",
     inf_file: "server.inf",
     app_id: "app-1234"

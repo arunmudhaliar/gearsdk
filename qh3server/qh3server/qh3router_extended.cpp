@@ -367,9 +367,7 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 }
 
 template <typename U>
-route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3router* router) {
-	//	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, nullptr, config.command_port, config.router_port, config.zk_uri,
-	//															  config.router_port_return, config.app_id);
+route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, qh3router* router) {
 	st_qh3server_config_in* new_config = DEBUG_NEW st_qh3server_config_in(host, port, config.root_dir, config.inf_file, nullptr, config.command_port, config.router_port, config.router_port_return, config.app_id);
 	new_config->command_server = true;
 
@@ -399,7 +397,7 @@ route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstr
 }
 
 template <typename V>
-int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer) {
+int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer) {
 #if FORK_QH3_SERVER
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
 	fork_result = false;
@@ -443,8 +441,6 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 #else
 	UNUSED(child_process_id);
 	fork_result = false;
-	//	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.zk_uri,
-	//															  config.router_port_return, config.app_id);
 	st_qh3server_config_in* new_config = DEBUG_NEW st_qh3server_config_in(host, port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.router_port_return, config.app_id);
 	st_services_config* new_services_config = DEBUG_NEW st_services_config(config.redis_ip, config.redis_port, config.mongodb_uri, config.zk_uri);
 	std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>* tuple_in =

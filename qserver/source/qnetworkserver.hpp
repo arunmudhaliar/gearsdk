@@ -130,7 +130,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qnetworkserver() {};
 	virtual ~qnetworkserver();
 
-	int run(const server_config_in& in_config, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
+	int run(const st_qserver_config_in& in_config, observer_qserver_events* observer = nullptr, void* user_arg = nullptr);
 	void broadcast_message(const qstring& buffer, bool flush);
 	bool network_server_begin();
 	void network_server_end();
@@ -139,7 +139,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qcustomlogger* get_file_logger() { return &logger; }
 	qstatslogger* get_stats_loggeer() { return &stats_logger; }
 	void* get_user_arg() { return user_arg; }
-	const struct server_config_in& get_run_server_config() { return run_server_config; }
+	const struct st_qserver_config_in& get_run_server_config() { return run_server_config; }
 
    protected:
 	virtual bool on_network_server_begin() = 0;
@@ -165,7 +165,7 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	qstring host_id;
 	qstring port_id;
 	observer_qserver_events* server_event_observer = nullptr;
-	struct server_config_in run_server_config;
+	struct st_qserver_config_in run_server_config;
 
    private:
 	static void debug_quiche_log(const char* line, void* argp);

@@ -697,7 +697,7 @@ void qnetworkserver::exit_services_gracefully() {
 	ev_loop_destroy(wait_loop);
 }
 
-int qnetworkserver::run(const server_config_in& in_config, observer_qserver_events* observer, void* user_arg_ptr) {
+int qnetworkserver::run(const st_qserver_config_in& in_config, observer_qserver_events* observer, void* user_arg_ptr) {
 	user_arg = user_arg_ptr;
 	run_server_config = in_config;
 	qstring app_id = run_server_config.app_id;
