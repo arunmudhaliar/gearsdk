@@ -20,7 +20,7 @@ export namespace serversdk {
         lib_path = lib_release_path;
         debug_print(LOG_LEVEL_0, __LOGTAG__, "RELEASE version:", lib_path);
     } else {
-        throw new Error("No valid libserverplugin{configuration}.node file found!");
+        throw new Error(`No valid libserverplugin{configuration}.node file found!\n${lib_debug_path}\n${lib_release_path}`);
     }
 
     export const sdklib = require(lib_path) as serversdk.interface_serverplugin;
