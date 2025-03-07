@@ -1,4 +1,4 @@
-import { api_ping, api_user_get, api_whoami, custom_gameserver, debug_error, debug_print, LOG_LEVEL_0, qh3server, routerserver, server_info_reader } from '@amudaliar/gsdk-serverplugin';
+import { api_ping, api_shutdown_test, api_user_get, api_whoami, custom_gameserver, debug_error, debug_print, LOG_LEVEL_0, qh3server, routerserver, server_info_reader } from '@amudaliar/gsdk-serverplugin';
 
 namespace app {
     export class server_app {
@@ -60,6 +60,7 @@ namespace app {
             userserver_instance.register_api(new api_whoami());
             userserver_instance.register_api(new api_ping());
             userserver_instance.register_api(new api_user_get());
+            userserver_instance.register_api(new api_shutdown_test());
             userserver_instance.run(native_router);
             this.userserver_instances?.push(userserver_instance);
         }

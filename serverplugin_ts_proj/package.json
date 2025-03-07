@@ -1,6 +1,6 @@
 {
   "name": "@amudaliar/gsdk-serverplugin",
-  "version": "1.0.19",
+  "version": "1.0.21",
   "description": "gsdk server plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
