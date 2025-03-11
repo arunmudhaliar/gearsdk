@@ -28,7 +28,7 @@ COPY run_server_app.sh ./
 RUN chmod +x /app/run_server_app.sh
 
 # Install required system dependencies
-RUN apt-get update && apt-get install -y libsasl2-dev libssl-dev libsnappy-dev libunwind-dev build-essential
+RUN apt-get update && apt-get install -y libsasl2-dev libssl-dev libsnappy-dev libunwind-dev build-essential iproute2
 
 # Add Debian backports to get OpenSSL 3.x
 RUN echo "deb http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list \
