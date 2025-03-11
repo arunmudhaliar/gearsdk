@@ -4,6 +4,8 @@ pwd
 #https://unix.stackexchange.com/questions/8518/how-to-get-my-own-ip-address-and-save-it-to-a-variable-in-a-shell-script
 # ip=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}')
 
+#!/bin/bash
+
 uname_out="$(uname -s)"
 case "${uname_out}" in
     Linux*)     machine=Linux;;
@@ -11,15 +13,29 @@ case "${uname_out}" in
     CYGWIN*)    machine=Cygwin;;
     MINGW*)     machine=MinGw;;
     MSYS_NT*)   machine=Git;;
-    *)          machine="UNKNOWN:${uname_out}"
+    *)          machine="UNKNOWN:${uname_out}";;
 esac
-echo ${machine}
+echo "Detected OS: ${machine}"
 
-if [ $machine = 'Linux' ]; then
-	ip=$(ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}')
-elif [ $machine = 'Mac' ]; then
-	ip=$(ipconfig getifaddr en0)
+# Determine IP Address without newline
+if [ "$machine" = 'Linux' ]; then
+    ip=$(ip route get 8.8.8.8 | awk '/src/{print $7}' | tr -d '\n')
+elif [ "$machine" = 'Mac' ]; then
+    ip=$(ifconfig en0 | grep "inet " | awk '{print $2}' | tr -d '\n')
+else
+    echo "Unsupported OS. Exiting."
+    exit 1
 fi
-sed -i "s/127\.0\.0\.1/$ip/" ./serverconfig.dev.inf
-sed -i "s/127\.0\.0\.1/$ip/" ./serverconfig.rel.inf
+echo "Detected IP: $ip"
+
+# Replace IP in config files without newlines
+if [ "$machine" = 'Mac' ]; then
+    sed -i "" "s/127\.0\.0\.1/${ip}/g" ./serverconfig.dev.inf
+    sed -i "" "s/127\.0\.0\.1/${ip}/g" ./serverconfig.rel.inf
+else
+    sed -i "s/127\.0\.0\.1/${ip}/g" ./serverconfig.dev.inf
+    sed -i "s/127\.0\.0\.1/${ip}/g" ./serverconfig.rel.inf
+fi
+
+# Start the server
 npm run start
