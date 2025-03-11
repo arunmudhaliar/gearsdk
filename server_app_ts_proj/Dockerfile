@@ -24,6 +24,8 @@ COPY cert.crt ./
 COPY cert.key ./
 COPY serverconfig.dev.inf ./
 COPY serverconfig.rel.inf ./
+COPY run_server_app.sh ./
+RUN chmod +x /app/run_server_app.sh
 
 # Install required system dependencies
 RUN apt-get update && apt-get install -y libsasl2-dev libssl-dev libsnappy-dev libunwind-dev build-essential
@@ -40,7 +42,7 @@ RUN npm install
 RUN npm run build
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["/app/run_server_app.sh"]
 
 
 # docker run -d \
