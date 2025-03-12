@@ -30,6 +30,7 @@ $(COMMON_SRCDIR)/sdktypes.cpp \
 $(COMMON_SRCDIR)/crypto_helper.cpp \
 $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 $(COMMON_SRCDIR)/signal_handler/signal_handler.cpp \
+$(COMMON_SRCDIR)/serverinforeader.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
 $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
 $(ZK_SRCDIR)/source/qzookeeper.cpp
