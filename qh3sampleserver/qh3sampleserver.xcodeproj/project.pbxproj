@@ -20,6 +20,8 @@
 		555EB1162C303987001F1B21 /* libsasl2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 555EB1152C303981001F1B21 /* libsasl2.tbd */; };
 		555EB1612C3199A7001F1B21 /* cert.key in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB15F2C319999001F1B21 /* cert.key */; };
 		555EB1622C3199A7001F1B21 /* cert.crt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 555EB1602C319999001F1B21 /* cert.crt */; };
+		558F67892D8215400095E51F /* serverconfig.dev.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 558F67872D8215380095E51F /* serverconfig.dev.inf */; };
+		558F678A2D8215440095E51F /* serverconfig.rel.inf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 558F67882D8215380095E51F /* serverconfig.rel.inf */; };
 		55CB700C2C77AF1E00E05D37 /* libuv.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB700B2C77AF1A00E05D37 /* libuv.a */; };
 		55CB700F2C77AFB900E05D37 /* libdpp.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 55CB700D2C77AFB900E05D37 /* libdpp.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		55CB70102C77AFF900E05D37 /* libdpp.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 55CB700D2C77AFB900E05D37 /* libdpp.dylib */; };
@@ -39,14 +41,16 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		555EB0C42C2F0B5F001F1B21 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
 				555EB1612C3199A7001F1B21 /* cert.key in CopyFiles */,
 				555EB1622C3199A7001F1B21 /* cert.crt in CopyFiles */,
+				558F678A2D8215440095E51F /* serverconfig.rel.inf in CopyFiles */,
+				558F67892D8215400095E51F /* serverconfig.dev.inf in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		555EB1042C30380A001F1B21 /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -87,6 +91,8 @@
 		555EB1172C303AC8001F1B21 /* qh3sampleserver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = qh3sampleserver.entitlements; sourceTree = "<group>"; };
 		555EB15F2C319999001F1B21 /* cert.key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cert.key; sourceTree = "<group>"; };
 		555EB1602C319999001F1B21 /* cert.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cert.crt; sourceTree = "<group>"; };
+		558F67872D8215380095E51F /* serverconfig.dev.inf */ = {isa = PBXFileReference; lastKnownFileType = text; name = serverconfig.dev.inf; path = ../qh3server/serverconfig.dev.inf; sourceTree = "<group>"; };
+		558F67882D8215380095E51F /* serverconfig.rel.inf */ = {isa = PBXFileReference; lastKnownFileType = text; name = serverconfig.rel.inf; path = ../qh3server/serverconfig.rel.inf; sourceTree = "<group>"; };
 		55CB700B2C77AF1A00E05D37 /* libuv.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv.a; path = ../networkcommon/libs/macos/libuv.a; sourceTree = "<group>"; };
 		55CB700D2C77AFB900E05D37 /* libdpp.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libdpp.dylib; path = ../servercommon/libs/macos/libdpp.dylib; sourceTree = "<group>"; };
 		55CB70112C77B05300E05D37 /* libuv.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libuv.1.dylib; path = ../networkcommon/libs/macos/libuv.1.dylib; sourceTree = "<group>"; };
@@ -133,6 +139,8 @@
 		555EB0BD2C2F0B5F001F1B21 = {
 			isa = PBXGroup;
 			children = (
+				558F67872D8215380095E51F /* serverconfig.dev.inf */,
+				558F67882D8215380095E51F /* serverconfig.rel.inf */,
 				555EB15E2C319999001F1B21 /* certs */,
 				555EB0C82C2F0B5F001F1B21 /* qh3sampleserver */,
 				555EB0C72C2F0B5F001F1B21 /* Products */,
