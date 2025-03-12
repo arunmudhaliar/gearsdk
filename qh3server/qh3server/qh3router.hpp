@@ -46,7 +46,7 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
    public:
 	enum qh3router_run_flag { SKIP_DEFAULT_QH3SERVER_SPAWN = (1 << 0), DEFAUT_RUN = 0 };
 
-	qh3router(const server_config_in& config);
+	qh3router(const st_qh3router_config_in& config);
 	virtual ~qh3router();
 	template <typename U, typename V>
 	int run(qh3router_run_flag run_flag = DEFAUT_RUN, observer_router_events* event_observer = nullptr);
@@ -59,7 +59,7 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 
 	inline struct addrinfo* get_router_addrinfo() { return this->router; }
 	route* create_qh3server_route(const qstring& host, const qstring& port, pid_t child_process_id = -1);
-	inline server_config_in& get_server_config() { return config; }
+	inline st_qh3router_config_in& get_server_config() { return config; }
 
    protected:
 	void on_qhiredis_async_key_expired(const qstring& expired_key) override;
@@ -76,13 +76,13 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 
 	// qh3
 	template <typename U>
-	static route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3router* router);
+	static route* spawn_qh3server_command_server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, qh3router* router);
 	template <typename U>
 	static void* spawn_qh3_command_server_internal(void* data);
 
    public:
 	template <typename V>
-	static int spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer = nullptr);
+	static int spawn_qh3server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer = nullptr);
 
    private:
 	template <typename V>
@@ -108,7 +108,7 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 #endif
 	int server_counter = 0;
 	port_range range;
-	server_config_in config;  // default config
+	st_qh3router_config_in config;	// default config
 	struct addrinfo* router = nullptr;
 	struct addrinfo* router_return = nullptr;
 	qhiredis* hiredis = nullptr;
@@ -121,7 +121,7 @@ class qh3router : public bridge_command_center, protected interface_qhiredis_asy
 
 class http3_sample_router : public qh3router {
    public:
-	http3_sample_router(const server_config_in& config) : qh3router(config) {}
+	http3_sample_router(const st_qh3router_config_in& config) : qh3router(config) {}
 	~http3_sample_router() { debug_print(LOG_LEVEL_0, __LOGTAG__, "http3_sample_router destructor called."); }
 };
 #endif /* qh3router_hpp */

@@ -78,7 +78,7 @@ export namespace server {
             debug_print(LOG_LEVEL_2, gameserver.__LOGTAG__, `on_server_stop:, server_id: ${this.gserver_id}`);
             // TODO(amudaliar): need to gracefully remove all rooms
             this.gameserver_interface?.ongameserver_stop(native_server);
-            serversdk.sdklib.qserver_release_callbacks(native_server);
+            serversdk.sdklib.game_server_release_callbacks(native_server);
         }
         protected on_server_error: serversdk.type_on_qserver_error = (native_server: serversdk.qserver_ptr, error_code: number) => {
             debug_error(gameserver.__LOGTAG__, `on_server_error: ${error_code}, server_id: ${this.gserver_id}`);
@@ -181,7 +181,7 @@ export namespace server {
         }
 
         public async run(): Promise<number> {
-            let spawned = serversdk.sdklib.spawn_qserver(
+            let spawned = serversdk.sdklib.spawn_game_server(
                 this.qserver_config.server_address,
                 this.qserver_config.redis_address,
                 this.qserver_config.zk_uri,

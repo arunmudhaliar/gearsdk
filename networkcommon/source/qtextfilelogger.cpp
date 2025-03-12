@@ -314,7 +314,8 @@ void* qtextfilelogger::run_log_session(void* data) {
 	if (logger->log_session_mutex.try_lock(__FUNCTION__) != 0) {
 		config->finished = true;
 		config->pthread_return_value = -1;
-		pthread_exit(&config->pthread_return_value);
+		//		pthread_exit(&config->pthread_return_value);
+		return nullptr;
 	}
 	GX_DELETE(logger->logfile);
 	logger->logfile = DEBUG_NEW qlogfile(config->logfile_path, config->max_size_of_file);
@@ -354,10 +355,12 @@ void* qtextfilelogger::run_log_session(void* data) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "file logger exiting ...");
 	if (logger->log_session_mutex.unlock(__FUNCTION__) != 0) {
 		config->pthread_return_value = -1;
-		pthread_exit(&config->pthread_return_value);
+		//		pthread_exit(&config->pthread_return_value);
+		return nullptr;
 	}
 
-	pthread_exit(0);
+	//	pthread_exit(0);
+	return nullptr;
 }
 
 uint64_t qtextfilelogger::log(qlogfile::log_lvls lvl, const char* tag, const char* format, ...) {

@@ -1,10 +1,10 @@
 #include "napi_helper.hpp"
-#include "serverplugin.h"
+#include "plugin_qh3server.h"
 #include "plugin_gameserver.hpp"
 #include "gserverplugin_napi_addon.hpp"
 
 namespace napi_gserver_funcs {
-Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
+Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     /*
@@ -128,18 +128,18 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
 
     // Extract and persist JavaScript callbacks
     qserver_spawn_qserver_cb_data* callbackData = DEBUG_NEW qserver_spawn_qserver_cb_data();
-    callbackData->preStartCbRef = napi_funcs::create_threadsafe_func(env, info[6].As<Napi::Function>(), "PreStart Callback", return_cb);
-    callbackData->startCbRef = napi_funcs::create_threadsafe_func(env, info[7].As<Napi::Function>(), "Start Callback", return_cb);
-    callbackData->stopCbRef = napi_funcs::create_threadsafe_func(env, info[8].As<Napi::Function>(), "Stop Callback", return_cb);
-    callbackData->errorCbRef = napi_funcs::create_threadsafe_func(env, info[9].As<Napi::Function>(), "Error Callback", return_cb);
-    callbackData->room_event_create_CbRef = napi_funcs::create_threadsafe_func(env, info[10].As<Napi::Function>(), "room_event_create Callback", return_cb);
-    callbackData->room_event_start_CbRef = napi_funcs::create_threadsafe_func(env, info[11].As<Napi::Function>(), "room_event_start Callback", return_cb);
-    callbackData->room_event_player_added_CbRef = napi_funcs::create_threadsafe_func(env, info[12].As<Napi::Function>(), "room_event_player_added Callback", return_cb);
-    callbackData->room_event_message_CbRef = napi_funcs::create_threadsafe_func(env, info[13].As<Napi::Function>(), "room_event_message Callback", return_cb);
-    callbackData->room_player_removed_CbRef = napi_funcs::create_threadsafe_func(env, info[14].As<Napi::Function>(), "room_player_removed Callback", return_cb);
-    callbackData->room_event_end_CbRef = napi_funcs::create_threadsafe_func(env, info[15].As<Napi::Function>(), "room_event_end Callback", return_cb);
-    callbackData->room_event_countdown_to_start_CbRef = napi_funcs::create_threadsafe_func(env, info[16].As<Napi::Function>(), "room_event_countdown_to_start Callback", return_cb);
-    callbackData->room_event_countdown_cancelled_CbRef = napi_funcs::create_threadsafe_func(env, info[17].As<Napi::Function>(), "room_event_countdown_cancelled Callback", return_cb);
+    callbackData->pre_start_cb_ref = napi_funcs::create_threadsafe_func(env, info[6].As<Napi::Function>(), "PreStart Callback", return_cb);
+    callbackData->start_cb_ref = napi_funcs::create_threadsafe_func(env, info[7].As<Napi::Function>(), "Start Callback", return_cb);
+    callbackData->stop_cb_ref = napi_funcs::create_threadsafe_func(env, info[8].As<Napi::Function>(), "Stop Callback", return_cb);
+    callbackData->error_cb_ref = napi_funcs::create_threadsafe_func(env, info[9].As<Napi::Function>(), "Error Callback", return_cb);
+    callbackData->room_event_create_cb_ref = napi_funcs::create_threadsafe_func(env, info[10].As<Napi::Function>(), "room_event_create Callback", return_cb);
+    callbackData->room_event_start_cb_ref = napi_funcs::create_threadsafe_func(env, info[11].As<Napi::Function>(), "room_event_start Callback", return_cb);
+    callbackData->room_event_player_added_cb_ref = napi_funcs::create_threadsafe_func(env, info[12].As<Napi::Function>(), "room_event_player_added Callback", return_cb);
+    callbackData->room_event_message_cb_ref = napi_funcs::create_threadsafe_func(env, info[13].As<Napi::Function>(), "room_event_message Callback", return_cb);
+    callbackData->room_player_removed_cb_ref = napi_funcs::create_threadsafe_func(env, info[14].As<Napi::Function>(), "room_player_removed Callback", return_cb);
+    callbackData->room_event_end_cb_ref = napi_funcs::create_threadsafe_func(env, info[15].As<Napi::Function>(), "room_event_end Callback", return_cb);
+    callbackData->room_event_countdown_to_start_cb_ref = napi_funcs::create_threadsafe_func(env, info[16].As<Napi::Function>(), "room_event_countdown_to_start Callback", return_cb);
+    callbackData->room_event_countdown_cancelled_cb_ref = napi_funcs::create_threadsafe_func(env, info[17].As<Napi::Function>(), "room_event_countdown_cancelled Callback", return_cb);
     
     /*
      const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
@@ -170,67 +170,67 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
      };
      */
     // Call the C++ function
-    gsdk::server::spawn_qserver(
+    gsdk::server::spawn_game_server(
         server_address.c_str(), redisAddress.c_str(), zkUri.c_str(), rootDir.c_str(), inf_file.c_str(), appId.c_str(),
         [](qnetworkserver* server){ //pre_start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 1, server };
-            napi_call_threadsafe_function(cdata->preStartCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->pre_start_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, const char* ip, uint16_t port){  //start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 2, server, ip, port };
-            napi_call_threadsafe_function(cdata->startCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->start_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server){ //stop_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 3, server};
-            napi_call_threadsafe_function(cdata->stopCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->stop_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int error_code){ //error_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 4, server, nullptr, 0, error_code};
-            napi_call_threadsafe_function(cdata->errorCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->error_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_create_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 5, server, nullptr, 0, 0, room, room_ptr};
-            napi_call_threadsafe_function(cdata->room_event_create_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_create_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 6, server, nullptr, 0, 0, room, room_ptr};
-            napi_call_threadsafe_function(cdata->room_event_start_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_start_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //type_room_event_player_added
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 7, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
-            napi_call_threadsafe_function(cdata->room_event_player_added_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_player_added_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg){ //room_event_message_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, msg};
-            napi_call_threadsafe_function(cdata->room_event_message_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_message_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //room_player_removed_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 9, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
-            napi_call_threadsafe_function(cdata->room_player_removed_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_player_removed_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_end_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 10, server, nullptr, 0, 0, room, room_ptr};
-            napi_call_threadsafe_function(cdata->room_event_end_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_end_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, int count, int max_count){ //room_event_countdown_to_start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 11, server, nullptr, 0, 0, room, room_ptr, nullptr, 0, nullptr, count, max_count};
-            napi_call_threadsafe_function(cdata->room_event_countdown_to_start_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_countdown_to_start_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_countdown_cancelled_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 12, server, nullptr, 0, 0, room, room_ptr};
-            napi_call_threadsafe_function(cdata->room_event_countdown_cancelled_CbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->room_event_countdown_cancelled_cb_ref, payload, napi_tsfn_blocking);
         },
         callbackData
         );
@@ -238,7 +238,7 @@ Napi::Value napi_spawn_qserver(const Napi::CallbackInfo& info) {
     return env.Null();
 }
 
-Napi::Value napi_qserver_release_callbacks(const Napi::CallbackInfo& info) {
+Napi::Value napi_game_server_release_callbacks(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     if (info.Length() < 1 || !info[0].IsExternal()) {
         Napi::TypeError::New(env, "Expected (qnetworkserver*)").ThrowAsJavaScriptException();
@@ -316,5 +316,77 @@ Napi::Value napi_room_send_to(const Napi::CallbackInfo& info) {
 
     // Return success status as a boolean
     return Napi::Boolean::New(env, success);
+}
+
+Napi::Value napi_qserver_logfile(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Validate arguments count
+    if (info.Length() != 6) {
+        Napi::TypeError::New(env, "Expected 6 arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Validate argument types
+    if (!info[0].IsExternal() || !info[1].IsNumber() || !info[2].IsNumber() ||
+        !info[3].IsString() || !info[4].IsString() || !info[5].IsString() || !info[6].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument types").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract parameters
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    qlogfile::log_lvls lvl = static_cast<qlogfile::log_lvls>(info[1].As<Napi::Number>().Uint32Value());
+    qcustomlogger::elog_type type = static_cast<qcustomlogger::elog_type>(info[2].As<Napi::Number>().Uint32Value());
+    std::string tag = info[3].As<Napi::String>();
+    std::string pid = info[4].As<Napi::String>();
+    std::string roomid = info[5].As<Napi::String>();
+    std::string message = info[6].As<Napi::String>();
+
+    // Call the original function
+    uint64_t result = gsdk::server::qserver_logfile(server, lvl, type, tag.c_str(), pid.c_str(), roomid.c_str(), message.c_str());
+
+    // Return the result as a BigInt
+    return Napi::BigInt::New(env, result);
+}
+
+Napi::Value napi_qserver_stats_count(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // Ensure minimum arguments (6 mandatory, 4 optional)
+    if (info.Length() < 6 || info.Length() > 10) {
+        Napi::TypeError::New(env, "Expected 6 to 10 arguments").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Validate argument types
+    if (!info[0].IsExternal() || !info[1].IsString() || !info[2].IsNumber() ||
+        !info[3].IsString() || !info[4].IsString() || !info[5].IsString()) {
+        Napi::TypeError::New(env, "Invalid argument types for required parameters").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    // Extract required parameters
+    qnetworkserver* server = info[0].As<Napi::External<qnetworkserver>>().Data();
+    std::string counter = info[1].As<Napi::String>();
+    long count_val = info[2].As<Napi::Number>().Int64Value();
+    std::string session = info[3].As<Napi::String>();
+    std::string pid = info[4].As<Napi::String>();
+    std::string version = info[5].As<Napi::String>(); // Mandatory
+
+    // Extract optional parameters with default values
+    std::string epic = (info.Length() > 6) ? info[6].As<Napi::String>().Utf8Value() : "";
+    std::string myth = (info.Length() > 7) ? info[7].As<Napi::String>().Utf8Value() : "";
+    std::string legend = (info.Length() > 8) ? info[8].As<Napi::String>().Utf8Value() : "";
+    std::string story = (info.Length() > 9) ? info[9].As<Napi::String>().Utf8Value() : "";
+    std::string message = (info.Length() > 10) ? info[10].As<Napi::String>().Utf8Value() : "";
+
+    // Call the original function
+    size_t result = gsdk::server::qserver_stats_count(server, counter.c_str(), count_val, session.c_str(), pid.c_str(),
+                                        version.c_str(), epic.c_str(), myth.c_str(), legend.c_str(),
+                                        story.c_str(), message.c_str());
+
+    // Return the result as a Number
+    return Napi::Number::New(env, static_cast<double>(result));
 }
 }

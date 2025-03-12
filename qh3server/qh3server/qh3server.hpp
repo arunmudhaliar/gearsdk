@@ -101,7 +101,7 @@ class qh3server : public bridge_h3_connection {
 	fs::path app_directory = ".";
 	observer_qh3server_events* server_event_observer = nullptr;	 // used for ts callbacks
 	void* user_arg = nullptr;
-	struct server_config_in run_server_config;
+	struct st_qh3server_config_in run_server_config;
 
    public:
 	qh3server();
@@ -114,7 +114,7 @@ class qh3server : public bridge_h3_connection {
 	observer_qh3server_events* get_server_observer() { return server_event_observer; }
 	void* get_user_arg() { return user_arg; }
 	void shutdown();
-	int run(const server_config_in& in_config, observer_qh3server_events* event_observer = nullptr, void* user_arg = nullptr);
+	int run(const st_qh3server_config_in& in_config, observer_qh3server_events* event_observer = nullptr, void* user_arg = nullptr);
 };
 
 #endif /* qh3server_hpp */

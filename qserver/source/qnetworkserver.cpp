@@ -697,7 +697,7 @@ void qnetworkserver::exit_services_gracefully() {
 	ev_loop_destroy(wait_loop);
 }
 
-int qnetworkserver::run(const server_config_in& in_config, observer_qserver_events* observer, void* user_arg_ptr) {
+int qnetworkserver::run(const st_qserver_config_in& in_config, observer_qserver_events* observer, void* user_arg_ptr) {
 	user_arg = user_arg_ptr;
 	run_server_config = in_config;
 	qstring app_id = run_server_config.app_id;
@@ -867,8 +867,8 @@ int qnetworkserver::run(const server_config_in& in_config, observer_qserver_even
 	ev_timer_stop(mainloop, &threadpool_mainthread_dispatcher_timer);
 #endif
 
-	QSERVER_EVENT_STOP(this, server_event_observer);
 	network_server_end();
+	QSERVER_EVENT_STOP(this, server_event_observer);
 	force_disconnect_all();
 
 	ev_loop_destroy(mainloop);

@@ -17,33 +17,33 @@
 namespace gsdk {
 namespace server {
 
-class qplugin_qserver_event_listener : public observer_qserver_events {
+class plugin_gameserver_event_listener : public observer_qserver_events {
 public:
-    ~qplugin_qserver_event_listener() {}
-    typedef void (*type_on_qserver_pre_start)(qnetworkserver* server);
-    typedef void (*type_on_qserver_start)(qnetworkserver* server, const char* ip, uint16_t port);
-    typedef void (*type_on_qserver_stop)(qnetworkserver* server);
-    typedef void (*type_on_qserver_error)(qnetworkserver* server, int error_code);
+    ~plugin_gameserver_event_listener() {}
+    typedef void (*type_plugin_gameserver_on_pre_start)(qnetworkserver* server);
+    typedef void (*type_plugin_gameserver_on_start)(qnetworkserver* server, const char* ip, uint16_t port);
+    typedef void (*type_plugin_gameserver_on_stop)(qnetworkserver* server);
+    typedef void (*type_plugin_gameserver_on_error)(qnetworkserver* server, int error_code);
     
     // room event cb
-    typedef void (*type_room_event_create)(qnetworkserver* server, int room, class room* room_ptr);
-    typedef void (*type_room_event_start)(qnetworkserver* server, int room, class room* room_ptr);
-    typedef void (*type_room_event_player_added)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
-    typedef void (*type_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg);
-    typedef void (*type_room_event_player_removed)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
-    typedef void (*type_room_event_end)(qnetworkserver* server, int room, class room* room_ptr);
-    typedef void (*type_room_event_countdown_to_start)(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count);
-    typedef void (*type_room_event_countdown_cancelled)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_plugin_gameserver_on_room_event_create)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_plugin_gameserver_on_room_event_start)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_plugin_gameserver_on_room_event_player_added)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
+    typedef void (*type_plugin_gameserver_on_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg);
+    typedef void (*type_plugin_gameserver_on_room_event_player_removed)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
+    typedef void (*type_plugin_gameserver_on_room_event_end)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_plugin_gameserver_on_room_event_countdown_to_start)(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count);
+    typedef void (*type_plugin_gameserver_on_room_event_countdown_cancelled)(qnetworkserver* server, int room, class room* room_ptr);
     
-    qplugin_qserver_event_listener(type_on_qserver_pre_start pre_start_cb, type_on_qserver_start start_cb, type_on_qserver_stop stop_cb, type_on_qserver_error error_cb,
-                                   type_room_event_create room_event_create_cb,
-                                   type_room_event_start room_event_start_cb,
-                                   type_room_event_player_added room_event_player_added_cb,
-                                   type_room_event_message room_event_message_cb,
-                                   type_room_event_player_removed room_player_removed_cb,
-                                   type_room_event_end room_event_end_cb,
-                                   type_room_event_countdown_to_start room_event_countdown_to_start_cb,
-                                   type_room_event_countdown_cancelled room_event_countdown_cancelled_cb)
+    plugin_gameserver_event_listener(type_plugin_gameserver_on_pre_start pre_start_cb, type_plugin_gameserver_on_start start_cb, type_plugin_gameserver_on_stop stop_cb, type_plugin_gameserver_on_error error_cb,
+                                   type_plugin_gameserver_on_room_event_create room_event_create_cb,
+                                   type_plugin_gameserver_on_room_event_start room_event_start_cb,
+                                   type_plugin_gameserver_on_room_event_player_added room_event_player_added_cb,
+                                   type_plugin_gameserver_on_room_event_message room_event_message_cb,
+                                   type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
+                                   type_plugin_gameserver_on_room_event_end room_event_end_cb,
+                                   type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
+                                   type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb)
     : cb_on_server_pre_start(pre_start_cb), cb_on_server_start(start_cb), cb_on_server_stop(stop_cb), cb_on_server_error(error_cb),
     cb_room_event_create(room_event_create_cb), cb_room_event_start(room_event_start_cb), cb_room_event_player_added(room_event_player_added_cb), cb_room_event_message(room_event_message_cb), cb_room_player_removed(room_player_removed_cb), cb_room_event_end(room_event_end_cb), cb_room_event_countdown_to_start(room_event_countdown_to_start_cb), cb_room_event_countdown_cancelled(room_event_countdown_cancelled_cb) {}
 
@@ -63,19 +63,19 @@ protected:
     void room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) override final;
     
 private:
-    type_on_qserver_pre_start cb_on_server_pre_start = nullptr;
-    type_on_qserver_start cb_on_server_start = nullptr;
-    type_on_qserver_stop cb_on_server_stop = nullptr;
-    type_on_qserver_error cb_on_server_error = nullptr;
+    type_plugin_gameserver_on_pre_start cb_on_server_pre_start = nullptr;
+    type_plugin_gameserver_on_start cb_on_server_start = nullptr;
+    type_plugin_gameserver_on_stop cb_on_server_stop = nullptr;
+    type_plugin_gameserver_on_error cb_on_server_error = nullptr;
     
-    type_room_event_create cb_room_event_create = nullptr;
-    type_room_event_start cb_room_event_start = nullptr;
-    type_room_event_player_added cb_room_event_player_added = nullptr;
-    type_room_event_message cb_room_event_message = nullptr;
-    type_room_event_player_removed cb_room_player_removed = nullptr;
-    type_room_event_end cb_room_event_end = nullptr;
-    type_room_event_countdown_to_start cb_room_event_countdown_to_start = nullptr;
-    type_room_event_countdown_cancelled cb_room_event_countdown_cancelled = nullptr;
+    type_plugin_gameserver_on_room_event_create cb_room_event_create = nullptr;
+    type_plugin_gameserver_on_room_event_start cb_room_event_start = nullptr;
+    type_plugin_gameserver_on_room_event_player_added cb_room_event_player_added = nullptr;
+    type_plugin_gameserver_on_room_event_message cb_room_event_message = nullptr;
+    type_plugin_gameserver_on_room_event_player_removed cb_room_player_removed = nullptr;
+    type_plugin_gameserver_on_room_event_end cb_room_event_end = nullptr;
+    type_plugin_gameserver_on_room_event_countdown_to_start cb_room_event_countdown_to_start = nullptr;
+    type_plugin_gameserver_on_room_event_countdown_cancelled cb_room_event_countdown_cancelled = nullptr;
 };
 
 // MARK: -
@@ -95,8 +95,8 @@ protected:
 };
 
 // MARK: -
-struct st_stateful_response_packet {
-    st_stateful_response_packet(short type, qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, size_t len) {
+struct st_stateful_gameserver_response_packet {
+    st_stateful_gameserver_response_packet(short type, qnetworkserver* server, class room* room_ptr, unsigned cid_hash, const char* msg, size_t len) {
         this->type = type;
         this->server = server;
         this->room_ptr = room_ptr;
@@ -116,30 +116,30 @@ public:
     plugin_gameserver();
     virtual ~plugin_gameserver();
     
-    async_ev_notifier<struct st_stateful_response_packet>& get_ev_notifier()   { return ev_notifier; }
+    async_ev_notifier<struct st_stateful_gameserver_response_packet>& get_ev_notifier()   { return ev_notifier; }
     
 protected:
     void on_network_server_init() override;
     room* create_room(const msg_room_config* room_config_msg) override;
     
-    async_ev_notifier<struct st_stateful_response_packet> ev_notifier;
+    async_ev_notifier<struct st_stateful_gameserver_response_packet> ev_notifier;
     static void notify_server_async_cb(EV_P_ ev_async *w, int revents);
 };
 
 extern "C" {
-EXPORT int spawn_qserver(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
-                         qplugin_qserver_event_listener::type_on_qserver_error error_cb,
-                         qplugin_qserver_event_listener::type_room_event_create room_event_create_cb,
-                         qplugin_qserver_event_listener::type_room_event_start room_event_start_cb,
-                         qplugin_qserver_event_listener::type_room_event_player_added room_event_player_added_cb,
-                         qplugin_qserver_event_listener::type_room_event_message room_event_message_cb,
-                         qplugin_qserver_event_listener::type_room_event_player_removed room_player_removed_cb,
-                         qplugin_qserver_event_listener::type_room_event_end room_event_end_cb,
-                         qplugin_qserver_event_listener::type_room_event_countdown_to_start room_event_countdown_to_start_cb,
-                         qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
+EXPORT int spawn_game_server(const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* inf_file, const char* app_id, plugin_gameserver_event_listener::type_plugin_gameserver_on_pre_start pre_start_cb, plugin_gameserver_event_listener::type_plugin_gameserver_on_start start_cb, plugin_gameserver_event_listener::type_plugin_gameserver_on_stop stop_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_error error_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_create room_event_create_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_start room_event_start_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_player_added room_event_player_added_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_message room_event_message_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_end room_event_end_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
+                         plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
                          void* user_arg = nullptr
                          );
-void* spawn_qserver_internal(void* data);
+void* spawn_game_server_internal(void* data);
 EXPORT uint64_t qserver_logfile(qnetworkserver*, qlogfile::log_lvls lvl, qcustomlogger::elog_type type, const char* tag, const char* pid, const char* roomid, const char* message);
 EXPORT size_t qserver_stats_count(qnetworkserver* server, const char* counter, long count_val, const char* session, const char* pid, const char* version = "", const char* epic = "", const char* myth = "", const char* legend = "",
                     const char* story = "", const char* message = "");

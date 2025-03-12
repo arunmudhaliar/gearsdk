@@ -1,7 +1,7 @@
 #include <napi.h>
 #include <pthread.h>
 #include "napi_helper.hpp"
-#include "serverplugin.h"
+#include "plugin_qh3server.h"
 #include "serverplugin_napi_addon.hpp"
 #include "gserverplugin_napi_addon.hpp"
 
@@ -127,7 +127,7 @@ Napi::Value napi_spawn_qh3router(const Napi::CallbackInfo& info) {
     struct CallbackPayload {
         short type = 0;
         qh3router* router = nullptr;
-        qh3router_spawn_qh3router_cb_data* cb_data = nullptr;
+        napi_qh3router_cb_data* cb_data = nullptr;
         int error_code = 0;
     };
 
@@ -136,7 +136,7 @@ Napi::Value napi_spawn_qh3router(const Napi::CallbackInfo& info) {
         // Convert the payload to CallbackPayload and extract pointers
         CallbackPayload* payload = static_cast<CallbackPayload*>(data);
         qh3router* router = payload->router;
-        qh3router_spawn_qh3router_cb_data* cdata = payload->cb_data;
+        napi_qh3router_cb_data* cdata = payload->cb_data;
         
         // Ensure proper scope
         Napi::HandleScope scope(env);
@@ -147,7 +147,7 @@ Napi::Value napi_spawn_qh3router(const Napi::CallbackInfo& info) {
             {
                 jsFunc.Call({
                     Napi::External<qh3router>::New(env, router),
-                    Napi::External<qh3router_spawn_qh3router_cb_data>::New(env, cdata)
+                    Napi::External<napi_qh3router_cb_data>::New(env, cdata)
                     });
             }
             break;
@@ -175,31 +175,31 @@ Napi::Value napi_spawn_qh3router(const Napi::CallbackInfo& info) {
         };
 
     // Extract and persist JavaScript callbacks
-    qh3router_spawn_qh3router_cb_data* callbackData = DEBUG_NEW qh3router_spawn_qh3router_cb_data();
-    callbackData->preStartCbRef = create_threadsafe_func(env, info[9].As<Napi::Function>(), "PreStart Callback", return_cb);
-    callbackData->startCbRef = create_threadsafe_func(env, info[10].As<Napi::Function>(), "Start Callback", return_cb);
-    callbackData->stopCbRef = create_threadsafe_func(env, info[11].As<Napi::Function>(), "Stop Callback", return_cb);
-    callbackData->errorCbRef = create_threadsafe_func(env, info[12].As<Napi::Function>(), "Error Callback", return_cb);
+    napi_qh3router_cb_data* callbackData = DEBUG_NEW napi_qh3router_cb_data();
+    callbackData->pre_start_cb_ref = create_threadsafe_func(env, info[9].As<Napi::Function>(), "PreStart Callback", return_cb);
+    callbackData->start_cb_ref = create_threadsafe_func(env, info[10].As<Napi::Function>(), "Start Callback", return_cb);
+    callbackData->stop_cb_ref = create_threadsafe_func(env, info[11].As<Napi::Function>(), "Stop Callback", return_cb);
+    callbackData->error_cb_ref = create_threadsafe_func(env, info[12].As<Napi::Function>(), "Error Callback", return_cb);
 
     // Call the C++ function
     gsdk::server::spawn_qh3router(routerAddress.c_str(), mongodbUri.c_str(), redisAddress.c_str(), zkUri.c_str(), rootDir.c_str(), inf_file.c_str(),
         commandPort, routerPortReturn, appId.c_str(),
         [](qh3router* router, void* user_arg) mutable {
-        qh3router_spawn_qh3router_cb_data* cdata = static_cast<qh3router_spawn_qh3router_cb_data*>(user_arg);
+        napi_qh3router_cb_data* cdata = static_cast<napi_qh3router_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 1, router, cdata };
-            napi_call_threadsafe_function(cdata->preStartCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->pre_start_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3router* router, void* user_arg) {
-            qh3router_spawn_qh3router_cb_data* cdata = static_cast<qh3router_spawn_qh3router_cb_data*>(user_arg);
+            napi_qh3router_cb_data* cdata = static_cast<napi_qh3router_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 2, router };
-            napi_call_threadsafe_function(cdata->startCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->start_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3router* router, void* user_arg) {
-            qh3router_spawn_qh3router_cb_data* cdata = static_cast<qh3router_spawn_qh3router_cb_data*>(user_arg);
+            napi_qh3router_cb_data* cdata = static_cast<napi_qh3router_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 3, router };
-            napi_call_threadsafe_function(cdata->stopCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->stop_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3router* router, void* user_arg, int error_code) {
-            qh3router_spawn_qh3router_cb_data* cdata = static_cast<qh3router_spawn_qh3router_cb_data*>(user_arg);
+            napi_qh3router_cb_data* cdata = static_cast<napi_qh3router_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 4, router, nullptr, error_code };
-            napi_call_threadsafe_function(cdata->errorCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->error_cb_ref, payload, napi_tsfn_blocking);
             }, callbackData);
 
     return env.Null();
@@ -211,7 +211,7 @@ Napi::Value napi_qh3router_release_callbacks(const Napi::CallbackInfo& info) {
         Napi::TypeError::New(env, "Expected (qh3router*)").ThrowAsJavaScriptException();
         return env.Null();
     }
-    qh3router_spawn_qh3router_cb_data* cdata = info[0].As<Napi::External<qh3router_spawn_qh3router_cb_data>>().Data();
+    napi_qh3router_cb_data* cdata = info[0].As<Napi::External<napi_qh3router_cb_data>>().Data();
     cdata->release(env);
     GX_DELETE(cdata);   // NOTE: server->get_server_config().user_arg is now invalid. WE MUST NOT CALL ANY qh3router function post this on this server.
     debug_print(LOG_LEVEL_0, __LOGTAG__, "releasing qh3router_spawn_qh3router_cb_data");
@@ -220,33 +220,11 @@ Napi::Value napi_qh3router_release_callbacks(const Napi::CallbackInfo& info) {
 
 Napi::Value napi_spawn_qh3server(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-
-    /*
-     EXPORT void spawn_qh3server(qh3router* router, const char* server_address, const char* mongodb_uri, const char* redis_address, const char* zk_uri, const char* root_dir, uint16_t command_port, uint16_t router_port_return, const char* app_id,
-     qh3plugin_server_event_listener::type_on_server_pre_start pre_start_cb, qh3plugin_server_event_listener::type_on_server_start start_cb, qh3plugin_server_event_listener::type_on_server_stop stop_cb,
-     qh3plugin_server_event_listener::type_on_server_error error_cb, qh3plugin_server_event_listener::type_on_server_parse parse_cb, void* user_arg);
-     */
-     /*
-      native_router: Buffer,
-      server_address: string,
-      mongodb_uri: string,
-      redis_address: string,
-      zk_uri: string,
-      root_dir: string,
-      command_port: number,
-      router_port_return: number,
-      app_id: string,
-      pre_start_cb: type_on_server_pre_start,
-      start_cb: type_on_server_start,
-      stop_cb: type_on_server_stop,
-      error_cb: type_on_server_error,
-      parse_cb: type_on_server_parse
-      */
-      // Validate arguments
-    if (info.Length() < 15 || !(info[0].IsExternal() || info[0].IsNull()) || !info[1].IsString() || !info[2].IsString() || !info[3].IsString() ||
-        !info[4].IsString() || !info[5].IsString() || !info[6].IsString() || !info[7].IsNumber() ||
-        !info[8].IsNumber() || !info[9].IsString() || !info[10].IsFunction() ||
-        !info[11].IsFunction() || !info[12].IsFunction() || !info[13].IsFunction() || !info[14].IsFunction()) {
+    // Validate arguments
+    if (info.Length() < 12 || !(info[0].IsExternal() || info[0].IsNull()) || !info[1].IsString() ||
+        !info[2].IsString() || !info[3].IsString() || !info[4].IsNumber() ||
+        !info[5].IsNumber() || !info[6].IsString() || !info[7].IsFunction() ||
+        !info[8].IsFunction() || !info[9].IsFunction() || !info[10].IsFunction() || !info[11].IsFunction()) {
         Napi::TypeError::New(env, "Invalid arguments").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -259,14 +237,11 @@ Napi::Value napi_spawn_qh3server(const Napi::CallbackInfo& info) {
 
     // Extract arguments
     std::string routerAddress = info[1].As<Napi::String>();
-    std::string mongodbUri = info[2].As<Napi::String>();
-    std::string redisAddress = info[3].As<Napi::String>();
-    std::string zkUri = info[4].As<Napi::String>();
-    std::string rootDir = info[5].As<Napi::String>();
-    std::string inf_file = info[6].As<Napi::String>();
-    uint16_t commandPort = info[7].As<Napi::Number>().Uint32Value();
-    uint16_t routerPortReturn = info[8].As<Napi::Number>().Uint32Value();
-    std::string appId = info[9].As<Napi::String>();
+    std::string rootDir = info[2].As<Napi::String>();
+    std::string inf_file = info[3].As<Napi::String>();
+    uint16_t commandPort = info[4].As<Napi::Number>().Uint32Value();
+    uint16_t routerPortReturn = info[5].As<Napi::Number>().Uint32Value();
+    std::string appId = info[6].As<Napi::String>();
 
     struct CallbackPayload {
         short type = 0;
@@ -328,35 +303,35 @@ Napi::Value napi_spawn_qh3server(const Napi::CallbackInfo& info) {
         };
 
     // Extract and persist JavaScript callbacks
-    qh3server_spawn_qh3server_cb_data* callbackData = DEBUG_NEW qh3server_spawn_qh3server_cb_data();
-    callbackData->preStartCbRef = create_threadsafe_func(env, info[10].As<Napi::Function>(), "PreStart Callback", return_cb);
-    callbackData->startCbRef = create_threadsafe_func(env, info[11].As<Napi::Function>(), "Start Callback", return_cb);
-    callbackData->stopCbRef = create_threadsafe_func(env, info[12].As<Napi::Function>(), "Stop Callback", return_cb);
-    callbackData->errorCbRef = create_threadsafe_func(env, info[13].As<Napi::Function>(), "Error Callback", return_cb);
-    callbackData->parseCbRef = create_threadsafe_func(env, info[14].As<Napi::Function>(), "Parse Callback", return_cb);
+    napi_qh3server_cb_data* callbackData = DEBUG_NEW napi_qh3server_cb_data();
+    callbackData->pre_start_cb_ref = create_threadsafe_func(env, info[7].As<Napi::Function>(), "PreStart Callback", return_cb);
+    callbackData->start_cb_ref = create_threadsafe_func(env, info[8].As<Napi::Function>(), "Start Callback", return_cb);
+    callbackData->stop_cb_ref = create_threadsafe_func(env, info[9].As<Napi::Function>(), "Stop Callback", return_cb);
+    callbackData->error_cb_ref = create_threadsafe_func(env, info[10].As<Napi::Function>(), "Error Callback", return_cb);
+    callbackData->parse_cb_ref = create_threadsafe_func(env, info[11].As<Napi::Function>(), "Parse Callback", return_cb);
 
     // Call the C++ function
-    gsdk::server::spawn_qh3server(router, routerAddress.c_str(), mongodbUri.c_str(), redisAddress.c_str(), zkUri.c_str(), rootDir.c_str(), inf_file.c_str(), commandPort, routerPortReturn, appId.c_str(),
+    gsdk::server::spawn_qh3server(router, routerAddress.c_str(), rootDir.c_str(), inf_file.c_str(), commandPort, routerPortReturn, appId.c_str(),
         [](qh3server* server, void* user_arg) mutable {
-        qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(user_arg);
+        napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 1, server };
-            napi_call_threadsafe_function(cdata->preStartCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->pre_start_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3server* server, void* user_arg, const char* ip, uint16_t port) {
-            qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(user_arg);
+            napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 2, server, ip, port };
-            napi_call_threadsafe_function(cdata->startCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->start_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3server* server, void* user_arg) {
-            qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(user_arg);
+            napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 3, server };
-            napi_call_threadsafe_function(cdata->stopCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->stop_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3server* server, void* user_arg, int error_code) {
-            qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(user_arg);
+            napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 4, server, nullptr, 0, error_code };
-            napi_call_threadsafe_function(cdata->errorCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->error_cb_ref, payload, napi_tsfn_blocking);
         }, [](qh3server* server, void* user_arg, uint8_t* cid, uint16_t cid_len, const char* path, const char* buffer, unsigned long len, const char* headers_buffer, unsigned long headers_buffer_size) {
-            qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(user_arg);
+            napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(user_arg);
             auto* payload = new CallbackPayload{ 5, server, nullptr, 0, 0, cid, cid_len, path, buffer, len, headers_buffer, headers_buffer_size};
-            napi_call_threadsafe_function(cdata->parseCbRef, payload, napi_tsfn_blocking);
+            napi_call_threadsafe_function(cdata->parse_cb_ref, payload, napi_tsfn_blocking);
         }, callbackData);
 
     return env.Null();
@@ -420,7 +395,7 @@ Napi::Value napi_qh3server_release_callbacks(const Napi::CallbackInfo& info) {
         return env.Null();
     }
     qh3server* server = info[0].As<Napi::External<qh3server>>().Data();
-    qh3server_spawn_qh3server_cb_data* cdata = static_cast<qh3server_spawn_qh3server_cb_data*>(server->get_user_arg());
+    napi_qh3server_cb_data* cdata = static_cast<napi_qh3server_cb_data*>(server->get_user_arg());
     cdata->release(env);
     GX_DELETE(cdata);   // NOTE: server->get_user_arg() is now invalid. WE MUST NOT CALL ANY qh3server function post this on this server.
     debug_print(LOG_LEVEL_0, __LOGTAG__, "releasing qh3server_spawn_qh3server_cb_data");
@@ -541,14 +516,14 @@ Napi::Value napi_qh3server_stats_count(const Napi::CallbackInfo& info) {
     long count_val = info[2].As<Napi::Number>().Int64Value();
 
     // Extract optional parameters (default to "")
-    std::string session = info[3].As<Napi::String>();
-    std::string pid = info[4].As<Napi::String>();
-    std::string version = info[5].As<Napi::String>();
-    std::string epic = info[6].As<Napi::String>();
-    std::string myth = info[7].As<Napi::String>();
-    std::string legend = info[8].As<Napi::String>();
-    std::string story = info[9].As<Napi::String>();
-    std::string message = info[10].As<Napi::String>();
+    std::string session = (info.Length() > 3) ? info[3].As<Napi::String>().Utf8Value() : "";
+    std::string pid = (info.Length() > 4) ? info[4].As<Napi::String>().Utf8Value() : "";
+    std::string version = (info.Length() > 5) ? info[5].As<Napi::String>().Utf8Value() : "";
+    std::string epic = (info.Length() > 6) ? info[6].As<Napi::String>().Utf8Value() : "";
+    std::string myth = (info.Length() > 7) ? info[7].As<Napi::String>().Utf8Value() : "";
+    std::string legend = (info.Length() > 8) ? info[8].As<Napi::String>().Utf8Value() : "";
+    std::string story = (info.Length() > 9) ? info[9].As<Napi::String>().Utf8Value() : "";
+    std::string message = (info.Length() > 10) ? info[10].As<Napi::String>().Utf8Value() : "";
 
     // Call the actual function
     size_t result = gsdk::server::qh3server_stats_count(server, counter.c_str(), count_val, session.c_str(), pid.c_str(),
@@ -569,8 +544,8 @@ Napi::Value napi_qh3server_shutdown(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    Napi::External<gsdk::server::qh3plugin_server> external = info[0].As<Napi::External<gsdk::server::qh3plugin_server>>();
-    gsdk::server::qh3plugin_server* server = external.Data();
+    Napi::External<gsdk::server::plugin_qh3server> external = info[0].As<Napi::External<gsdk::server::plugin_qh3server>>();
+    gsdk::server::plugin_qh3server* server = external.Data();
     server->shutdown_server();
     return env.Null();
 }
@@ -595,16 +570,14 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "qh3server_release_callbacks"), Napi::Function::New(env, napi_qh3server_release_callbacks));
     exports.Set(Napi::String::New(env, "qh3router_release_callbacks"), Napi::Function::New(env, napi_qh3router_release_callbacks));
     
-    //napi_qh3router_release_callbacks
-    //napi_qh3server_release_callbacks
-    //napi_qserver_release_callbacks
-    
-    exports.Set(Napi::String::New(env, "spawn_qserver"), Napi::Function::New(env, napi_gserver_funcs::napi_spawn_qserver));
+    exports.Set(Napi::String::New(env, "spawn_game_server"), Napi::Function::New(env, napi_gserver_funcs::napi_spawn_game_server));
     exports.Set(Napi::String::New(env, "room_broadcast_except"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast_except));
     exports.Set(Napi::String::New(env, "room_broadcast"), Napi::Function::New(env, napi_gserver_funcs::napi_room_broadcast));
     exports.Set(Napi::String::New(env, "room_send_to"), Napi::Function::New(env, napi_gserver_funcs::napi_room_send_to));
-    exports.Set(Napi::String::New(env, "qserver_release_callbacks"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_release_callbacks));
-
+    exports.Set(Napi::String::New(env, "game_server_release_callbacks"), Napi::Function::New(env, napi_gserver_funcs::napi_game_server_release_callbacks));
+    exports.Set(Napi::String::New(env, "qserver_logfile"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_logfile));
+    exports.Set(Napi::String::New(env, "qserver_stats_count"), Napi::Function::New(env, napi_gserver_funcs::napi_qserver_stats_count));
+    
     return exports;
 }
 // Define the module

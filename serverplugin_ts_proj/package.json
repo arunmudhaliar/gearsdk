@@ -1,6 +1,6 @@
 {
   "name": "@amudaliar/gsdk-serverplugin",
-  "version": "1.0.14",
+  "version": "1.0.23",
   "description": "gsdk server plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node-zookeeper-client": "^0.2.14",
+    "0x": "^5.8.0",
     "typescript": "^5.7.2"
   },
   "keywords": [

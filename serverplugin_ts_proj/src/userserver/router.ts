@@ -5,7 +5,7 @@ import { server_info_reader } from '../helpers/serverinforeader';
 export namespace server {
     export class router {
         private static __LOGTAG__: string = `router`;
-        private router_config: serversdk.qh3_router_input_config = {
+        private router_config: serversdk.qh3router_input_config = {
             router_address: server_info_reader.get_instance().get_value('router_address'),
             mongodb_uri: server_info_reader.get_instance().get_value('router_mongodb_uri'),
             mongodb_db: "",

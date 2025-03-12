@@ -1,3 +1,16 @@
+# Default to debug mode if no target is specified
+BUILD_MODE ?= debug
+
+# Check the target specified
+ifeq ($(MAKECMDGOALS), debug)
+    BUILD_MODE = debug
+endif
+
+ifeq ($(MAKECMDGOALS), release)
+    BUILD_MODE = release
+endif
+$(info Building $(BUILD_MODE) mode.)
+
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 QHIREDIS_SRCDIR = ../qhiredis/source
 SERVER_COMMON_SRCDIR = ../servercommon/source
@@ -27,10 +40,7 @@ NCOMMONSRCS = $(NETWORK_COMMON_SRCDIR)/essentials.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client_helper.cpp \
     $(QH3_CLIENT_SRCDIR)/qh3client.cpp \
     $(ZK_SRCDIR)/source/qzookeeper.cpp \
-
-# Add debug_new.cpp conditionally for the debug build
-debug:
-    NCOMMONSRCS += $(COMMON_SRCDIR)/nvwa/debug_new.cpp
+    $(COMMON_SRCDIR)/nvwa/debug_new.cpp \
 
 INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
     -I "$(QUTILS_SRCDIR)" \
@@ -47,7 +57,7 @@ INCLUDES = -I "$(ZK_SRCDIR)/zookeeper" \
 SRCDIR = .
 QSRCDIR = ./../qserver/source
 
-SRCS = $(SRCDIR)/serverplugin.cpp \
+SRCS = $(SRCDIR)/plugin_qh3server.cpp \
     $(SRCDIR)/plugin_gameserver.cpp \
     $(SRCDIR)/plugin_qhiredis.cpp \
     $(SRCDIR)/plugin_qzookeeper.cpp \
@@ -60,6 +70,11 @@ SRCS = $(SRCDIR)/serverplugin.cpp \
     $(QSRCDIR)/gameserver.cpp \
     $(QSRCDIR)/qnetworkserver.cpp \
     $(NCOMMONSRCS) \
+
+ifeq ($(BUILD_MODE), release)
+    SRCS := $(filter-out $(COMMON_SRCDIR)/nvwa/debug_new.cpp, $(SRCS))
+    $(info Excluding $(COMMON_SRCDIR)/nvwa/debug_new.cpp for release.)
+endif
 
 # Default value for USE_NAPI
 USE_NAPI ?= 0
@@ -102,7 +117,9 @@ ifeq ($(USE_NAPI), 1)
 USER_DEFINES += $(NAPI_DEFINES)
 USER_DEFINES += -Dnode_engine=v8
 endif
-
+ifeq ($(BUILD_MODE), debug)
+USER_DEFINES += -D_DEBUG_NEW_FILENAME_LEN=128
+endif
 CXXFLAGS = $(INCLUDES) $(USER_DEFINES) -std=c++17 -fvisibility=hidden -W -Wall -fPIC
 CXFLAGS = $(INCLUDES) $(USER_DEFINES) -Os -ffunction-sections -fdata-sections -fvisibility=hidden -fPIC
 
@@ -213,7 +230,7 @@ endif
 all: debug
 
 clean:
-	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o
+	rm -f $(OBJS) $(DEBUG_LIB) $(RELEASE_LIB) *.node *.o $(COMMON_SRCDIR)/nvwa/debug_new.o
 
 $(OBJS): Makefile
 
@@ -224,3 +241,6 @@ debug: $(OBJS)
 release: CXXFLAGS += $(RELEASE_CXXFLAGS)
 release: $(OBJS)
 	$(CXX) $(RELEASE_LDFLAGS) -o $(RELEASE_LIB) $(OBJS) $(LIBS)
+    ifeq ($(UNAME), Linux)
+		strip --strip-unneeded --keep-section=.text $(RELEASE_LIB)
+    endif

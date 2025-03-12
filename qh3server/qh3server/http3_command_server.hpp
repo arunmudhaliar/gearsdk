@@ -10,6 +10,7 @@
 #define http3_command_server_hpp
 
 #include "../../common/crypto_helper.hpp"
+#include "../../common/serverinforeader.hpp"
 #include "../../networkcommon/source/qbuffer.hpp"
 #include "../../qhiredis/source/qhiredis.hpp"
 #include "qh3router_structs.h"
@@ -34,10 +35,11 @@ class http3_command_server : public qh3server {
 	float get_router_hb_interval_in_sec() override;
 
 	qhiredis* hiredis = nullptr;
-	server_config_in config_copy;
+	st_qh3server_config_in config_copy;
+	st_services_config services_config_copy;
 
    public:
-	http3_command_server(const server_config_in& config, bridge_command_center* bridge);
+	http3_command_server(const st_qh3server_config_in& config, const st_services_config& services_config, bridge_command_center* bridge);
 	~http3_command_server();
 	static void command_feedback_recv_cb(EV_P_ ev_io* w, int revents);
 	static inline const char* get_server_name() { return "http3_command_server"; }

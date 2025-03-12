@@ -367,14 +367,18 @@ int qh3router::run(qh3router_run_flag run_flag, observer_router_events* event_ob
 }
 
 template <typename U>
-route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const server_config_in& config, qh3router* router) {
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, nullptr, config.command_port, config.router_port, config.zk_uri,
-															  config.router_port_return, config.app_id);
+route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, qh3router* router) {
+	st_qh3server_config_in* new_config = DEBUG_NEW st_qh3server_config_in(host, port, config.root_dir, config.inf_file, nullptr, config.command_port, config.router_port, config.router_port_return, config.app_id);
 	new_config->command_server = true;
-	std::tuple<server_config_in*, bridge_command_center*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, bridge_command_center*>(new_config, dynamic_cast<bridge_command_center*>(router));
+
+	st_services_config* new_services_config = DEBUG_NEW st_services_config(config.redis_ip, config.redis_port, config.mongodb_uri, config.zk_uri);
+
+	std::tuple<st_qh3server_config_in*, st_services_config*, bridge_command_center*>* tuple_in =
+		DEBUG_NEW std::tuple<st_qh3server_config_in*, st_services_config*, bridge_command_center*>(new_config, new_services_config, dynamic_cast<bridge_command_center*>(router));
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3_command_server_internal<U>, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_command_server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(tuple_in);
+		GX_DELETE(new_services_config);
 		GX_DELETE(new_config);
 		return nullptr;
 	}
@@ -393,7 +397,7 @@ route* qh3router::spawn_qh3server_command_server(const qstring& host, const qstr
 }
 
 template <typename V>
-int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const server_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer) {
+int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const st_qh3router_config_in& config, pid_t& child_process_id, bool& fork_result, qh3router* router, observer_qh3server_events* server_event_observer) {
 #if FORK_QH3_SERVER
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "Parent process (PID: %d)", getpid());
 	fork_result = false;
@@ -407,12 +411,14 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 		fork_result = true;
 		// Code executed by the child process
 		debug_print(LOG_LEVEL_0, __LOGTAG__, "Child process (PID: %d) [%d]", getpid(), child_process_id);
-		server_config_in* new_config =
-			DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, router->router, config.command_port, config.router_port, config.zk_uri, config.router_port_return, config.app_id);
-		std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, observer_qh3server_events*>(new_config, server_event_observer);
+		st_qh3server_config_in* new_config = DEBUG_NEW st_qh3server_config_in(host, port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.router_port_return, config.app_id);
+		st_services_config* new_services_config = DEBUG_NEW st_services_config(config.redis_ip, config.redis_port, config.mongodb_uri, config.zk_uri);
+		std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>* tuple_in =
+			DEBUG_NEW std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>(new_config, new_services_config, server_event_observer);
 		if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3server_internal<V>, (void*) tuple_in) < 0) {
 			debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 			GX_DELETE(tuple_in);
+			GX_DELETE(new_services_config);
 			GX_DELETE(new_config);
 			GX_DELETE(server_event_observer);
 			return -1;
@@ -435,12 +441,14 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 #else
 	UNUSED(child_process_id);
 	fork_result = false;
-	server_config_in* new_config = DEBUG_NEW server_config_in(host, port, config.mongodb_uri, config.redis_ip, config.redis_port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.zk_uri,
-															  config.router_port_return, config.app_id);
-	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = DEBUG_NEW std::tuple<server_config_in*, observer_qh3server_events*>(new_config, server_event_observer);
+	st_qh3server_config_in* new_config = DEBUG_NEW st_qh3server_config_in(host, port, config.root_dir, config.inf_file, router->router, config.command_port, config.router_port, config.router_port_return, config.app_id);
+	st_services_config* new_services_config = DEBUG_NEW st_services_config(config.redis_ip, config.redis_port, config.mongodb_uri, config.zk_uri);
+	std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>* tuple_in =
+		DEBUG_NEW std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>(new_config, new_services_config, server_event_observer);
 	if (pthread_create(&new_config->run_thread_id, nullptr, qh3router::spawn_qh3server_internal<V>, (void*) tuple_in) < 0) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server - could not create thread: %s - %d", strerror(errno), errno);
 		GX_DELETE(tuple_in);
+		GX_DELETE(new_services_config);
 		GX_DELETE(new_config);
 		GX_DELETE(server_event_observer);
 		return -1;
@@ -453,47 +461,51 @@ int qh3router::spawn_qh3server(const qstring& host, const qstring& port, const s
 
 template <typename V>
 void* qh3router::spawn_qh3server_internal(void* data) {
-	std::tuple<server_config_in*, observer_qh3server_events*>* tuple_in = (std::tuple<server_config_in*, observer_qh3server_events*>*) data;
-	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
-	observer_qh3server_events* event_observer = (observer_qh3server_events*) std::get<1>(*tuple_in);
+	std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>* tuple_in = (std::tuple<st_qh3server_config_in*, st_services_config*, observer_qh3server_events*>*) data;
+	st_qh3server_config_in* config = (st_qh3server_config_in*) std::get<0>(*tuple_in);
+	st_services_config* services_config = (st_services_config*) std::get<1>(*tuple_in);
+	observer_qh3server_events* event_observer = (observer_qh3server_events*) std::get<2>(*tuple_in);
 	if (config->command_server) {
 		debug_print_error(__LOGTAG__, "spawn_qh3server_internal failed, its a command server");
-		GX_DELETE(config);
 		GX_DELETE(tuple_in);
+		GX_DELETE(services_config);
+		GX_DELETE(config);
 		GX_DELETE(event_observer);
-		pthread_exit(0);
 		return nullptr;
 	}
 
 	PTHREAD_NAME(V::get_server_name());
-	V* new_server = DEBUG_NEW V(*config);
+	V* new_server = DEBUG_NEW V(*config, *services_config);
 	new_server->run(*config, event_observer);
-	GX_DELETE(new_server);
-	GX_DELETE(config);
 	GX_DELETE(tuple_in);
+	GX_DELETE(new_server);
+	GX_DELETE(services_config);
+	GX_DELETE(config);
 	GX_DELETE(event_observer);
-	pthread_exit(0);
+	return nullptr;
 }
 
 template <typename U>
 void* qh3router::spawn_qh3_command_server_internal(void* data) {
-	std::tuple<server_config_in*, bridge_command_center*>* tuple_in = (std::tuple<server_config_in*, bridge_command_center*>*) data;
-	server_config_in* config = (server_config_in*) std::get<0>(*tuple_in);
-	bridge_command_center* bridge_ref = (bridge_command_center*) std::get<1>(*tuple_in);
+	std::tuple<st_qh3server_config_in*, st_services_config*, bridge_command_center*>* tuple_in = (std::tuple<st_qh3server_config_in*, st_services_config*, bridge_command_center*>*) data;
+	st_qh3server_config_in* config = (st_qh3server_config_in*) std::get<0>(*tuple_in);
+	st_services_config* services_config = (st_services_config*) std::get<1>(*tuple_in);
+	bridge_command_center* bridge_ref = (bridge_command_center*) std::get<2>(*tuple_in);
 	if (!config->command_server) {
 		debug_print_error(__LOGTAG__, "spawn_qh3_command_server_internal failed, not a command server");
 		GX_DELETE(tuple_in);
+		GX_DELETE(services_config);
 		GX_DELETE(config);
-		pthread_exit(0);
 		return nullptr;
 	}
 	PTHREAD_NAME(U::get_server_name());
-	U* new_server = DEBUG_NEW U(*config, bridge_ref);
+	U* new_server = DEBUG_NEW U(*config, *services_config, bridge_ref);
 	new_server->run(*config);
-	GX_DELETE(new_server);
 	GX_DELETE(tuple_in);
+	GX_DELETE(services_config);
+	GX_DELETE(new_server);
 	GX_DELETE(config);
-	pthread_exit(0);
+	return nullptr;
 }
 
 #endif

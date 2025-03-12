@@ -24,9 +24,24 @@ export namespace server {
         get_post_cb(): type_api_callback;
     }
 
+    export interface userserver_input_config {
+        router_address: string;
+        mongodb_uri: string;
+        mongodb_db: string;
+        redis_address: string;
+        redis_user: string,
+        redis_password: string,
+        zk_uri: string;
+        root_dir: string;
+        inf_file: string;
+        command_port: number;
+        router_port_return: number;
+        app_id: string;
+    }
+
     export class userserver implements interface_userserver {
         private static __LOGTAG__: string = `userserver`;
-        private router_config: serversdk.qh3_router_input_config = {
+        private userserver_config: userserver_input_config = {
             router_address: server_info_reader.get_instance().get_value('userserver_address'),
             mongodb_uri: server_info_reader.get_instance().get_value('userserver_mongodb_uri'),
             mongodb_db: server_info_reader.get_instance().get_value('userserver_mongodb_name'),
@@ -162,14 +177,14 @@ export namespace server {
 
         public async run(native_router: any): Promise<void> {
             // mongo setup
-            this.mongo = new qmongo("", this.router_config.mongodb_db, this.router_config.mongodb_uri);
+            this.mongo = new qmongo("", this.userserver_config.mongodb_db, this.userserver_config.mongodb_uri);
             await this.mongo?.connect();
 
             // redis setup
-            const redis_ip_port = essentials.extract_ip_and_port(this.router_config.redis_address);
+            const redis_ip_port = essentials.extract_ip_and_port(this.userserver_config.redis_address);
             if (redis_ip_port) {
                 const [ip, port]: [string, number] = redis_ip_port;
-                this.hiredis = new qhiredis("hiredis", ip, port, this.router_config.redis_user, this.router_config.redis_password);
+                this.hiredis = new qhiredis("hiredis", ip, port, this.userserver_config.redis_user, this.userserver_config.redis_password);
                 await this.hiredis.connect_redis();
             } else {
                 debug_error(userserver.__LOGTAG__, "Invalid hiredis address format");
@@ -177,10 +192,10 @@ export namespace server {
             }
 
             // zookeeper setup
-            const zk_ip_port = essentials.extract_ip_and_port(this.router_config.zk_uri);
+            const zk_ip_port = essentials.extract_ip_and_port(this.userserver_config.zk_uri);
             if (zk_ip_port) {
                 const [ip, port]: [string, number] = zk_ip_port;
-                this.qzk = new qzookeeper(this.router_config.zk_uri);
+                this.qzk = new qzookeeper(this.userserver_config.zk_uri);
                 await this.qzk.connect();
             } else {
                 debug_error(userserver.__LOGTAG__, "Invalid zk address format");
@@ -189,7 +204,7 @@ export namespace server {
 
             // load server config
             this.zkconfig = new serverconfig(this.qzk, null);
-            const config_path = path.join(this.router_config.root_dir, 'configs', (process.env.NODE_ENV === 'production') ? 'prod' : 'dev', 'runtime-config.json');
+            const config_path = path.join(this.userserver_config.root_dir, 'configs', (process.env.NODE_ENV === 'production') ? 'prod' : 'dev', 'runtime-config.json');
             debug_print(LOG_LEVEL_4, userserver.__LOGTAG__, `reading ${config_path}`);
             let zk_root_node: string = server_info_reader.get_instance().get_value('userserver_zk_root_node');
             await this.zkconfig.load(config_path, this.qzk, zk_root_node);
@@ -197,15 +212,12 @@ export namespace server {
             // server spawn
             serversdk.sdklib.spawn_qh3server(
                 native_router,
-                this.router_config.router_address,
-                this.router_config.mongodb_uri,
-                this.router_config.redis_address,
-                this.router_config.zk_uri,
-                this.router_config.root_dir,
-                this.router_config.inf_file,
-                this.router_config.command_port,
-                this.router_config.router_port_return,
-                this.router_config.app_id,
+                this.userserver_config.router_address,
+                this.userserver_config.root_dir,
+                this.userserver_config.inf_file,
+                this.userserver_config.command_port,
+                this.userserver_config.router_port_return,
+                this.userserver_config.app_id,
                 this.on_server_pre_start,
                 this.on_server_start,
                 this.on_server_stop,
