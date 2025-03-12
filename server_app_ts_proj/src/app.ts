@@ -106,5 +106,5 @@ app_instance.run();
 
 app.server_app.keep_alive_timer = setInterval(() => {
     console.log('Keep-alive ping...');
-}, 5 * 60 * 1000); // Every 5 minute
+}, 12 * 60 * 60 * 1000); // Every 5 minute
 console.log('Keep-alive exit...');
