@@ -302,37 +302,29 @@ qstring essentials::get_device_release_str() {
 	return qstring(device::device_details.release);
 }
 
-time_t essentials::get_time_local() {
+time_t essentials::get_time_local(struct tm& time_info) {
 	// Get the current time in seconds since the Unix epoch (UTC)
 	time_t now = time(NULL);
-	// Convert to local time
-	struct tm* local_tm = localtime(&now);
-	return mktime(local_tm);
-}
-
-qstring essentials::get_time_local_tostring(time_t& local_time) {
-	local_time = get_time_local();
-	struct tm time_info;
-	char buffer[32];
 #if PLATFORM == PLATFORM_WINDOWS
 	// On Windows, use localtime_s
-	localtime_s(&time_info, &local_time);
+	localtime_s(&time_info, &now);
 #else
 	// On Unix-like systems, use localtime_r
-	localtime_r(&local_time, &time_info);
+	localtime_r(&now, &time_info);
 #endif
+	return mktime(&time_info);
+}
 
+qstring essentials::get_time_local_readable(time_t& local_time) {
+	struct tm time_info;
+	local_time = get_time_local(time_info);
+	char buffer[32];
 	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &time_info);
 	return qstring(buffer);
 }
 
 time_t essentials::get_time_utc() {
-	// Get the current time in seconds since the Unix epoch (UTC)
-	time_t now = time(NULL);
-	// Convert the time to a UTC time structure (tm)
-	struct tm* tm = gmtime(&now);
-	// Convert the UTC time structure back to a time_t (seconds since epoch)
-	return timegm(tm);
+	return time(NULL);
 }
 
 qstring essentials::get_time_utc_string(time_t& utc_time) {

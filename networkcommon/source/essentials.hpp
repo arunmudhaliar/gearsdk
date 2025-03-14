@@ -114,8 +114,8 @@ class essentials {
 	static int32_t resolve_cmd_line_args(const char* tag, int32_t argc, const char* argv[], const qstring& version_string, unsigned version_code, qstring& host, qstring& port, qstring& mongodb_uri, fs::path& root_dir, qstring& redis_ip,
 										 uint16_t& redis_port, qstring& zk_uri);
 
-	static time_t get_time_local();
-	static qstring get_time_local_tostring(time_t& local_time);
+	static time_t get_time_local(struct tm& time_info);
+	static qstring get_time_local_readable(time_t& local_time);
 	static time_t get_time_utc();
 	static qstring get_time_utc_string(time_t& utc_time);
 	static qstring get_time_utc_readable(time_t& utc_time);
