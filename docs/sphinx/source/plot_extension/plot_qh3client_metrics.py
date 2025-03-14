@@ -7,6 +7,17 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+def extract_csv_comments(csv_path):
+    """Extract comment lines (starting with #) from the CSV file."""
+    comments = []
+    with open(csv_path, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                comments.append(line.strip('#').strip())  # Remove '#' and extra spaces
+            else:
+                break  # Stop when actual data starts
+    return "\n".join(comments)  # Join lines into a single string
+
 def generate_plot(app):
     # Directory containing CSV files
     csv_dir = os.path.join(app.srcdir, '../../../qfist/')
@@ -37,8 +48,11 @@ def generate_plot(app):
         csv_path = os.path.join(csv_dir, file)
         
         try:
+            # Extract comments for the header
+            csv_comments = extract_csv_comments(csv_path)
+
             # Read the CSV file
-            df = pd.read_csv(csv_path)
+            df = pd.read_csv(csv_path, comment='#')
         except Exception as e:
             logger.error(f"Error reading {csv_path}: {e}")
             continue
@@ -73,6 +87,17 @@ def generate_plot(app):
         # Customize layout with properly configured y-axes
         fig.update_layout(
             title=f'Performance Metrics - {file}',
+            annotations=[
+                dict(
+                    text=csv_comments,  # Add comment as subtitle
+                    x=0.0,  # Center align
+                    y=0.0,  # Position
+                    xref='paper',  # Use relative positioning
+                    yref='paper',
+                    showarrow=False,
+                    font=dict(size=8, color="gray")  # Reduce font size and change color
+                )
+            ],
             xaxis_title='Total Requests',
             yaxis=dict(
                 title='Success Percentage',

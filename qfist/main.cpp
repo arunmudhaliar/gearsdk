@@ -198,6 +198,12 @@ void write_summary_to_csv(const qstring& filename) {
 
 	// Write headers if file is empty (optional)
 	if (csv_file.tellp() == 0) {
+		if (!app_state.single_request) {
+			csv_file << "# Parameters: Min Timeout=" << app_state.min_timeout_ms << "ms, Max Timeout=" << app_state.max_timeout_ms << "ms, Weightage=" << app_state.request_weightage << ", Max Parallel=" << app_state.max_parallel_requests
+					<< ", Exit After=" << app_state.exit_after_seconds << "s, Summary Interval=" << app_state.summary_interval << "s, server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+		} else {
+			csv_file << "# SINGLE-SHOT-MODE, server=" << app_state.host.c_str() << ":" << app_state.port.c_str() << std::endl;
+		}
 		csv_file << "Elapsed Time,Total Requests,Success Percentage,Avg Response Time (ms),Data Transfer Rate (KB/s),Rq/s\n";
 	}
 
