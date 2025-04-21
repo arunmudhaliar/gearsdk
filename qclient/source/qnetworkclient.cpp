@@ -392,7 +392,7 @@ int qnetworkclient::close() {
 		if (qclient_connection) {
 			int con_active = qclient_connection->connection_active();
 			if (con_active == 0) {
-				const uint8_t BYE[] = "Bye\r\n";
+                const uint8_t BYE[] = "{\"m\":\"bye\"}";
 				qclient_connection->send_buffer.push(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE), true));
 			}
 		}

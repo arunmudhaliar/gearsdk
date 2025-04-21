@@ -153,6 +153,7 @@ msg_room_server_event_base::msg_room_server_event_base(unsigned long type_string
 void msg_room_server_event_base::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	message_room_base::serialize(obj, allocator);
 	obj.AddMember("room_event", Value().SetString(room_event.c_str(), (unsigned int) room_event.length(), allocator), allocator);
+	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
 }
 bool msg_room_server_event_base::deserialize(rapidjson::Value& obj) {
 	if (!message_room_base::deserialize(obj)) {
@@ -161,6 +162,11 @@ bool msg_room_server_event_base::deserialize(rapidjson::Value& obj) {
 	// Access the nested objects and values
 	if (obj.HasMember("room_event") && obj["room_event"].IsString()) {
 		room_event = obj["room_event"].GetString();
+	} else {
+		return false;
+	}
+	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
+		room_id = obj["room_id"].GetInt();
 	} else {
 		return false;
 	}
@@ -205,7 +211,7 @@ msg_room_server_event_player_add::~msg_room_server_event_player_add() {
 }
 void msg_room_server_event_player_add::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	msg_room_server_event_base::serialize(obj, allocator);
-	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
+	//	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
 	obj.AddMember("self", Value().SetUint(self), allocator);
 	// Create an array of objects
 
@@ -222,11 +228,11 @@ bool msg_room_server_event_player_add::deserialize(rapidjson::Value& obj) {
 	if (!msg_room_server_event_base::deserialize(obj)) {
 		return false;
 	}
-	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
-		room_id = obj["room_id"].GetInt();
-	} else {
-		return false;
-	}
+	//	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
+	//		room_id = obj["room_id"].GetInt();
+	//	} else {
+	//		return false;
+	//	}
 	if (obj.HasMember("self") && obj["self"].IsUint()) {
 		self = obj["self"].GetUint();
 	}
@@ -261,7 +267,7 @@ msg_room_server_event_player_remove::~msg_room_server_event_player_remove() {
 }
 void msg_room_server_event_player_remove::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	msg_room_server_event_base::serialize(obj, allocator);
-	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
+	//	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
 	obj.AddMember("self", Value().SetUint(self), allocator);
 	// Create an array of objects
 	rapidjson::Value array(rapidjson::kArrayType);
@@ -277,11 +283,11 @@ bool msg_room_server_event_player_remove::deserialize(rapidjson::Value& obj) {
 	if (!msg_room_server_event_base::deserialize(obj)) {
 		return false;
 	}
-	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
-		room_id = obj["room_id"].GetInt();
-	} else {
-		return false;
-	}
+	//	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
+	//		room_id = obj["room_id"].GetInt();
+	//	} else {
+	//		return false;
+	//	}
 	if (obj.HasMember("self") && obj["self"].IsUint()) {
 		self = obj["self"].GetUint();
 	}
@@ -310,17 +316,17 @@ msg_room_server_event_start::msg_room_server_event_start() : msg_room_server_eve
 }
 void msg_room_server_event_start::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	msg_room_server_event_base::serialize(obj, allocator);
-	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
+	//	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
 }
 bool msg_room_server_event_start::deserialize(rapidjson::Value& obj) {
 	if (!msg_room_server_event_base::deserialize(obj)) {
 		return false;
 	}
-	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
-		room_id = obj["room_id"].GetInt();
-	} else {
-		return false;
-	}
+	//	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
+	//		room_id = obj["room_id"].GetInt();
+	//	} else {
+	//		return false;
+	//	}
 	return true;
 }
 
@@ -331,16 +337,16 @@ msg_room_server_event_end::msg_room_server_event_end() : msg_room_server_event_b
 }
 void msg_room_server_event_end::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
 	msg_room_server_event_base::serialize(obj, allocator);
-	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
+	//	obj.AddMember("room_id", Value().SetInt(room_id), allocator);
 }
 bool msg_room_server_event_end::deserialize(rapidjson::Value& obj) {
 	if (!msg_room_server_event_base::deserialize(obj)) {
 		return false;
 	}
-	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
-		room_id = obj["room_id"].GetInt();
-	} else {
-		return false;
-	}
+	//	if (obj.HasMember("room_id") && obj["room_id"].IsInt()) {
+	//		room_id = obj["room_id"].GetInt();
+	//	} else {
+	//		return false;
+	//	}
 	return true;
 }

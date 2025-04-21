@@ -66,6 +66,7 @@ class msg_room_server_event_base : public message_room_base {
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_event_base, "msg_room_server_event_base")
+	int room_id = -1;
 	qstring room_event;
 };
 
@@ -76,7 +77,7 @@ class msg_room_server_event_player_add : public msg_room_server_event_base {
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_event_player_add, "msg_room_server_event_player_add")
-	int room_id = -1;
+	//	int room_id = -1;
 	std::vector<room_player*> players;
 	unsigned self = 0;
 };
@@ -88,7 +89,7 @@ class msg_room_server_event_player_remove : public msg_room_server_event_base {
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_event_player_remove, "msg_room_server_event_player_remove")
-	int room_id = -1;
+
 	std::vector<room_player*> players;
 	unsigned self = 0;
 };
@@ -99,7 +100,7 @@ class msg_room_server_event_start : public msg_room_server_event_base {
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_event_start, "msg_room_server_event_start")
-	int room_id = -1;
+	//	int room_id = -1;
 };
 
 class msg_room_server_event_end : public msg_room_server_event_base {
@@ -108,7 +109,7 @@ class msg_room_server_event_end : public msg_room_server_event_base {
 	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
 	bool deserialize(rapidjson::Value& obj) override;
 	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_server_event_end, "msg_room_server_event_end")
-	int room_id = -1;
+	//	int room_id = -1;
 };
 
 #endif /* roommessage_hpp */

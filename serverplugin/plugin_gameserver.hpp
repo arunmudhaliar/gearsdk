@@ -32,6 +32,7 @@ public:
     typedef void (*type_plugin_gameserver_on_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg);
     typedef void (*type_plugin_gameserver_on_room_event_player_removed)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
     typedef void (*type_plugin_gameserver_on_room_event_end)(qnetworkserver* server, int room, class room* room_ptr);
+    typedef void (*type_plugin_gameserver_on_room_event_destroy)(qnetworkserver* server, int room, class room* room_ptr);
     typedef void (*type_plugin_gameserver_on_room_event_countdown_to_start)(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count);
     typedef void (*type_plugin_gameserver_on_room_event_countdown_cancelled)(qnetworkserver* server, int room, class room* room_ptr);
     
@@ -42,10 +43,11 @@ public:
                                    type_plugin_gameserver_on_room_event_message room_event_message_cb,
                                    type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
                                    type_plugin_gameserver_on_room_event_end room_event_end_cb,
+                                     type_plugin_gameserver_on_room_event_destroy room_event_destroy_cb,
                                    type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
                                    type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb)
     : cb_on_server_pre_start(pre_start_cb), cb_on_server_start(start_cb), cb_on_server_stop(stop_cb), cb_on_server_error(error_cb),
-    cb_room_event_create(room_event_create_cb), cb_room_event_start(room_event_start_cb), cb_room_event_player_added(room_event_player_added_cb), cb_room_event_message(room_event_message_cb), cb_room_player_removed(room_player_removed_cb), cb_room_event_end(room_event_end_cb), cb_room_event_countdown_to_start(room_event_countdown_to_start_cb), cb_room_event_countdown_cancelled(room_event_countdown_cancelled_cb) {}
+    cb_room_event_create(room_event_create_cb), cb_room_event_start(room_event_start_cb), cb_room_event_player_added(room_event_player_added_cb), cb_room_event_message(room_event_message_cb), cb_room_player_removed(room_player_removed_cb), cb_room_event_end(room_event_end_cb), cb_room_event_destroy(room_event_destroy_cb), cb_room_event_countdown_to_start(room_event_countdown_to_start_cb), cb_room_event_countdown_cancelled(room_event_countdown_cancelled_cb) {}
 
 protected:
     void on_server_pre_start(qnetworkserver* server) override final;
@@ -59,6 +61,7 @@ protected:
     void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) override final;
     void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) override final;
     void room_event_end(qnetworkserver* server, int room, class room* room_ptr) override final;
+    void room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) override final;
     void room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) override final;
     void room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) override final;
     
@@ -74,6 +77,7 @@ private:
     type_plugin_gameserver_on_room_event_message cb_room_event_message = nullptr;
     type_plugin_gameserver_on_room_event_player_removed cb_room_player_removed = nullptr;
     type_plugin_gameserver_on_room_event_end cb_room_event_end = nullptr;
+    type_plugin_gameserver_on_room_event_end cb_room_event_destroy = nullptr;
     type_plugin_gameserver_on_room_event_countdown_to_start cb_room_event_countdown_to_start = nullptr;
     type_plugin_gameserver_on_room_event_countdown_cancelled cb_room_event_countdown_cancelled = nullptr;
 };
@@ -91,6 +95,7 @@ protected:
     void onroom_message(player* p, const qstring& msg) override;
     void onroom_player_removed(player* p) override;
     void onroom_end() override;
+    void onroom_destroy() override;
     bool can_allow_reconnection(unsigned cid_hash) override;
 };
 
@@ -135,6 +140,7 @@ EXPORT int spawn_game_server(const char* server_address, const char* redis_addre
                          plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_message room_event_message_cb,
                          plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
                          plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_end room_event_end_cb,
+    plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_destroy room_event_destroy_cb,
                          plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
                          plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
                          void* user_arg = nullptr

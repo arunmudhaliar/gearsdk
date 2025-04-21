@@ -85,6 +85,7 @@ export namespace serversdk {
     export type type_on_room_event_message = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, pid: string, cid_hash: number, message: string) => void;
     export type type_on_room_event_player_removed = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, pid: string, cid_hash: number) => void;
     export type type_on_room_event_end = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
+    export type type_on_room_event_destroy = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
     export type type_on_room_event_countdown_to_start = (native_server: qserver_ptr, room: number, room_ptr: room_ptr, count: number, max_count: number) => void;
     export type type_on_room_event_countdown_cancelled = (native_server: qserver_ptr, room: number, room_ptr: room_ptr) => void;
 
@@ -159,6 +160,7 @@ export namespace serversdk {
             room_event_message: type_on_room_event_message,
             room_event_player_removed: type_on_room_event_player_removed,
             room_event_end: type_on_room_event_end,
+            room_event_destroy: type_on_room_event_destroy,
             room_event_countdown_to_start: type_on_room_event_countdown_to_start,
             room_event_countdown_cancelled: type_on_room_event_countdown_cancelled
         ): number;

@@ -75,6 +75,7 @@ void roomserver::on_timer_check_zombie_rooms(qtimer& timer) {
 						new_connections.erase(ncmap_it);
 					}
 				}
+				zombie->cleanup();
 				GX_DELETE(zombie);
 			}
 		}
@@ -191,11 +192,13 @@ void roomserver::on_network_server_end() {
 	message_handlers.clear();
 
 	for (auto* wr : waiting_rooms) {
+		wr->cleanup();
 		GX_DELETE(wr);
 	}
 	waiting_rooms.clear();
 
 	for (auto& pairs : rooms) {
+		pairs.second->cleanup();
 		GX_DELETE(pairs.second);
 	}
 	rooms.clear();
@@ -471,6 +474,7 @@ void roomserver::do_process_roomjoin(qconn_io* qconnection, const msg_room_match
 
 room* roomserver::create_waiting_room(const msg_room_config* room_config_msg) {
 	room* room_ptr = create_room(room_config_msg);
+	room_ptr->set_state_to_waiting();  // HACK - bcz we cant call set_sate inside constructor due to virtual in constructor issue.
 
 	waiting_rooms.push_back(room_ptr);
 	long long count_waiting_room_of_this_type = 0;
@@ -509,6 +513,7 @@ void roomserver::onconnection_destroy(qconn_io* qconnection) {
 		const qstring& rkey = room_ptr->get_room_signature("room:", host_id, port_id);
 		Q_INFO_WITH_ROOID("", qstring::format_string("%d", room_ptr->ROOM_ID).c_str(), __LOGTAG__, "destroy room (%s), total:%d", rkey.c_str(), rooms.size());
 
+		room_ptr->cleanup();
 		GX_DELETE(room_ptr);
 		debug_print_important2(__LOGTAG__, "room size %d", rooms.size());
 	}

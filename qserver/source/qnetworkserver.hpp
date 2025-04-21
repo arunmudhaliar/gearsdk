@@ -66,6 +66,7 @@ class observer_qserver_events {
 	virtual void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) = 0;
 	virtual void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) = 0;
 	virtual void room_event_end(qnetworkserver* server, int room, class room* room_ptr) = 0;
+	virtual void room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) = 0;
 	virtual void room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) = 0;
 };
@@ -105,6 +106,7 @@ class qconn_io {
 	void sendmessage(const char* buf, size_t buflen, bool flush);
 	void sendmessage(const qstring& buffer, bool flush);
 	void close();
+	bool send_byez(uint64_t s);
 
 	bridge_qpeerconnection* bridge = nullptr;
 	uint8_t cid[Q_LOCAL_CONN_ID_LEN];

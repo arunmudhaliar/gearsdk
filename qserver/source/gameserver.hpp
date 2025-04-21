@@ -27,6 +27,7 @@ class game_room : public room {
 	void onroom_message(player* p, const qstring& msg) override;
 	void onroom_player_removed(player* p) override;
 	void onroom_end() override;
+	void onroom_destroy() override;
 	bool can_allow_reconnection(unsigned cid_hash) override;
 };
 

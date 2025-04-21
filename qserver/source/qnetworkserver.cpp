@@ -132,14 +132,7 @@ void qconn_io::close() {
 	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - stream %" PRIu64 " is writable - connection %0x", s, cid_hash_val);
-		const uint8_t BYEZ[] = "byez";
-		uint64_t out_error_code = 0;
-		ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
-		debug_print(LOG_LEVEL_3, __LOGTAG__, "f:close - sending 'byez' - connection %0x", cid_hash_val);
-		if (bye_sent_len != 5) {
-			debug_print_error(__LOGTAG__, "f:close - sending 'byez' failed !!! - connection %0x", cid_hash_val);
-		}
-		debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) BYEZ);
+		send_byez(s);
 		break;
 	}
 	quiche_stream_iter_free(writable);
@@ -154,6 +147,20 @@ void qconn_io::close() {
 			debug_print_important(__LOGTAG__, "f:close - closing... connection %0x", cid_hash_val);
 		}
 	}
+}
+
+bool qconn_io::send_byez(uint64_t s) {
+	bool result = true;
+	const uint8_t BYEZ[] = "{\"m\":\"byez\"}";
+	uint64_t out_error_code = 0;
+	ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:send_byez - sending 'byez' - connection %0x", cid_hash_val);
+	if (bye_sent_len != sizeof(BYEZ)) {
+		debug_print_error(__LOGTAG__, "f:send_byez - sending 'byez' failed !!! - connection %0x", cid_hash_val);
+		result = false;
+	}
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", s, (char*) BYEZ);
+	return result;
 }
 
 // MARK: - qnetworkserver
@@ -513,12 +520,8 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 					break;
 				}
 				if (fin) {
-					const uint8_t BYEZ[] = "byez";
-					ssize_t bye_sent_len = quiche_conn_stream_send(qconnection->conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
 					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
-					if (bye_sent_len != 5) {
-						debug_print_error(__LOGTAG__, "sending 'byez' failed !!!");
-					}
+					qconnection->send_byez(s);
 				}
 
 				// heart-beat from client

@@ -20,11 +20,12 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
                               qplugin_qserver_event_listener::type_room_event_countdown_cancelled room_event_countdown_cancelled_cb);
      */
       // Validate arguments
-    if (info.Length() < 18 ||
+    if (info.Length() < 19 ||
         !info[0].IsString() || !info[1].IsString() || !info[2].IsString() || !info[3].IsString() || !info[4].IsString() || !info[5].IsString() ||
         !info[6].IsFunction() || !info[7].IsFunction() || !info[8].IsFunction() || !info[9].IsFunction() ||
         !info[10].IsFunction() || !info[11].IsFunction() || !info[12].IsFunction() || !info[13].IsFunction() ||
-        !info[14].IsFunction() || !info[15].IsFunction() || !info[16].IsFunction() || !info[17].IsFunction()
+        !info[14].IsFunction() || !info[15].IsFunction() || !info[16].IsFunction() || !info[17].IsFunction() ||
+        !info[18].IsFunction()
         ) {
         Napi::TypeError::New(env, "Invalid arguments").ThrowAsJavaScriptException();
         return env.Null();
@@ -138,8 +139,9 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
     callbackData->room_event_message_cb_ref = napi_funcs::create_threadsafe_func(env, info[13].As<Napi::Function>(), "room_event_message Callback", return_cb);
     callbackData->room_player_removed_cb_ref = napi_funcs::create_threadsafe_func(env, info[14].As<Napi::Function>(), "room_player_removed Callback", return_cb);
     callbackData->room_event_end_cb_ref = napi_funcs::create_threadsafe_func(env, info[15].As<Napi::Function>(), "room_event_end Callback", return_cb);
-    callbackData->room_event_countdown_to_start_cb_ref = napi_funcs::create_threadsafe_func(env, info[16].As<Napi::Function>(), "room_event_countdown_to_start Callback", return_cb);
-    callbackData->room_event_countdown_cancelled_cb_ref = napi_funcs::create_threadsafe_func(env, info[17].As<Napi::Function>(), "room_event_countdown_cancelled Callback", return_cb);
+    callbackData->room_event_destroy_cb_ref = napi_funcs::create_threadsafe_func(env, info[16].As<Napi::Function>(), "room_event_destroy Callback", return_cb);
+    callbackData->room_event_countdown_to_start_cb_ref = napi_funcs::create_threadsafe_func(env, info[17].As<Napi::Function>(), "room_event_countdown_to_start Callback", return_cb);
+    callbackData->room_event_countdown_cancelled_cb_ref = napi_funcs::create_threadsafe_func(env, info[18].As<Napi::Function>(), "room_event_countdown_cancelled Callback", return_cb);
     
     /*
      const char* server_address, const char* redis_address, const char* zk_uri, const char* root_dir, const char* app_id, qplugin_qserver_event_listener::type_on_qserver_pre_start pre_start_cb, qplugin_qserver_event_listener::type_on_qserver_start start_cb, qplugin_qserver_event_listener::type_on_qserver_stop stop_cb,
@@ -217,10 +219,15 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
             auto* payload = new CallbackPayload{ 9, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
             napi_call_threadsafe_function(cdata->room_player_removed_cb_ref, payload, napi_tsfn_blocking);
         },
-        [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_end_cb
+        [](qnetworkserver* server, int room, class room* room_ptr){
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
             auto* payload = new CallbackPayload{ 10, server, nullptr, 0, 0, room, room_ptr};
             napi_call_threadsafe_function(cdata->room_event_end_cb_ref, payload, napi_tsfn_blocking);
+        },
+        [](qnetworkserver* server, int room, class room* room_ptr){
+            qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
+            auto* payload = new CallbackPayload{ 10, server, nullptr, 0, 0, room, room_ptr};
+            napi_call_threadsafe_function(cdata->room_event_destroy_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, int count, int max_count){ //room_event_countdown_to_start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());

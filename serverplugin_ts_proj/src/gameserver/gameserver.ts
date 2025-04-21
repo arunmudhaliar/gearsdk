@@ -18,6 +18,7 @@ export namespace server {
         onroom_message(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number, msg: string): void;
         onroom_player_removed(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number): void;
         onroom_end(room_ptr: serversdk.room_ptr): void;
+        onroom_destroy(room_ptr: serversdk.room_ptr): void;
         onroom_countdown_to_start(room_ptr: serversdk.room_ptr, count: number, max_count: number): void;
         onroom_countdown_cancelled(room_ptr: serversdk.room_ptr): void;
         can_allow_reconnection(room_ptr: serversdk.room_ptr, pid: string, cid_hash: number): boolean;
@@ -107,7 +108,6 @@ export namespace server {
             } else {
                 debug_error(gameserver.__LOGTAG__, `native_server not present in rooms map !!!, server_id: ${this.gserver_id}`);
             }
-
         }
 
         protected room_event_start: serversdk.type_on_room_event_start = (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
@@ -160,6 +160,16 @@ export namespace server {
             }
         }
 
+        protected room_event_destroy: serversdk.type_on_room_event_destroy = (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr) => {
+            if (!this.rooms.has(this.gserver_id)) {
+                return;
+            }
+            let native_server_buffer = this.rooms.get(this.gserver_id);
+            if (native_server_buffer?.has(room)) {
+                native_server_buffer.get(room)?.onroom_destroy(room_ptr);
+            }
+        }
+
         protected room_event_countdown_to_start: serversdk.type_on_room_event_countdown_to_start = (native_server: serversdk.qserver_ptr, room: number, room_ptr: serversdk.room_ptr, count: number, max_count: number) => {
             if (!this.rooms.has(this.gserver_id)) {
                 return;
@@ -198,6 +208,7 @@ export namespace server {
                 this.room_event_message,
                 this.room_event_player_removed,
                 this.room_event_end,
+                this.room_event_destroy,
                 this.room_event_countdown_to_start,
                 this.room_event_countdown_cancelled
             );

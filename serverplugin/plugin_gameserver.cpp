@@ -65,6 +65,11 @@ void plugin_gameserver_event_listener::room_event_end(qnetworkserver* server, in
         cb_room_event_end(server, room, room_ptr);
     }
 }
+void plugin_gameserver_event_listener::room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) {
+    if (cb_room_event_destroy) {
+        cb_room_event_destroy(server, room, room_ptr);
+    }
+}
 void plugin_gameserver_event_listener::room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) {
     if (cb_room_event_countdown_to_start) {
         cb_room_event_countdown_to_start(server, room, room_ptr, count, max_count);
@@ -152,6 +157,9 @@ void plugin_game_room::onroom_player_removed(player* p) {
 void plugin_game_room::onroom_end() {
     room::onroom_end();
 }
+void plugin_game_room::onroom_destroy() {
+    room::onroom_destroy();
+}
 bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
     UNUSED(cid_hash);
     return true;
@@ -219,6 +227,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_message room_event_message_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_end room_event_end_cb,
+                                           plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_destroy room_event_destroy_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
                                        void* user_arg
@@ -244,6 +253,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                                                                         room_event_message_cb,
                                                                                         room_player_removed_cb,
                                                                                         room_event_end_cb,
+                                                                                        room_event_destroy_cb,
                                                                                         room_event_countdown_to_start_cb,
                                                                                         room_event_countdown_cancelled_cb);
     std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>(config, listener);

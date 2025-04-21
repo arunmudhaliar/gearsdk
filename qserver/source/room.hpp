@@ -46,18 +46,22 @@ class roomserver_interface {
 	virtual qhiredis* get_hiredis() = 0;
 	virtual const qstring& get_host_id() = 0;
 	virtual const qstring& get_port_id() = 0;
+	virtual ~roomserver_interface() = default;
 };
 
 class room_interface {
+   public:
 	virtual void onroom_create() = 0;
 	virtual void onroom_start() = 0;
 	virtual void onroom_player_added(player* p) = 0;
 	virtual void onroom_message(player* p, const qstring& msg) = 0;
 	virtual void onroom_player_removed(player* p) = 0;
 	virtual void onroom_end() = 0;
+	virtual void onroom_destroy() = 0;
 	virtual void onroom_countdown_to_start(int count, int max_count) = 0;
 	virtual void onroom_countdown_cancelled() = 0;
 	virtual bool can_allow_reconnection(unsigned cid_hash) = 0;
+	virtual ~room_interface() = default;
 };
 
 struct roomconfig {
@@ -77,12 +81,15 @@ struct roomconfig {
 class room : public room_interface, public qtimer_scheduler {
    private:
 	room() : CREATION_TIME(0), ROOM_CONFIG(roomconfig(1, 1, 0, FX_TWO, false)) {}
+	bool performed_cleanup = false;
 
    public:
-	enum states { ROOM_UNINITIALISED, ROOM_WAITING, ROOM_START, ROOM_END };
+	enum states { ROOM_UNINITIALISED, ROOM_WAITING, ROOM_START, ROOM_END, ROOM_DESTROY };
 	room(roomserver_interface*, const roomconfig& room_config);
 	virtual ~room();
 
+	void set_state_to_waiting() { set_state(ROOM_WAITING); }  // because we cant call set_state in constructor
+	void cleanup();											  // because we cant call virtual in destructor
 	ssize_t try_add_connection(qconn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val = 0);
 	ssize_t remove_connection(qconn_io* qconnection);
 	player* get_player(qconn_io* qconnection);
@@ -125,6 +132,7 @@ class room : public room_interface, public qtimer_scheduler {
 	void onroom_message(player* p, const qstring& msg) override;
 	void onroom_player_removed(player* p) override;
 	void onroom_end() override;
+	void onroom_destroy() override;
 	void onroom_countdown_to_start(int count, int max_count) override;
 	void onroom_countdown_cancelled() override;
 	bool can_allow_reconnection(unsigned cid_hash) override;
