@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class message_base {
+public abstract class message_base {
     public message_base() {
     }
 
@@ -24,9 +24,10 @@ public class message_base {
 }
 
 [Serializable]
-public class rq_msg_user_base : message_base {
-    public string pid;
-    public string token;
+public abstract class rq_msg_user_base : message_base
+{
+    public string pid { get; set; } = "";
+    public string token { get; set; } = "";
     public rq_msg_user_base() : base() {
     }
 }
@@ -38,13 +39,14 @@ public class rq_msg_user_get : rq_msg_user_base {
     }
 
     [Serializable]
-    public struct device_struct {
-        public string sys_name;
-        public string node_name;
-        public string release;
-        public string arch;
+    public class device_struct {
+        public string sys_name { get; set; }
+        public string node_name { get; set; }
+        public string release { get; set; }
+        public string arch { get; set; }
     }
-    public device_struct device;
+
+    public device_struct device { get; set; }
 
     public static new string get_type_string() {
         return "rq_msg_user_get";
@@ -52,7 +54,6 @@ public class rq_msg_user_get : rq_msg_user_base {
     public static new ulong get_type_string_crc() {
         string type_string = rq_msg_user_get.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        //type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*)type_string.c_str(), type_string.length());
         return type_string_crc;
     }
 
@@ -80,7 +81,6 @@ public class msg_room_config : message_base {
     public static new ulong get_type_string_crc() {
         string type_string = msg_room_config.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        //type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*)type_string.c_str(), type_string.length());
         return type_string_crc;
     }
 
@@ -90,9 +90,9 @@ public class msg_room_config : message_base {
     public override string get_type() {
         return msg_room_config.get_type_string();
     }
-    public int min = 2;
-    public int max = 4;
-    public int betx = 0;  // Note: betx & rewardx are in fixed point values
-    public int rewardx = FX.FX_TWO;
-    public bool allow_after_start = false;
+    public int min { get; set; } = 2;
+    public int max { get; set; } = 4;
+    public int betx { get; set; } = 0;  // Note: betx & rewardx are in fixed point values
+    public int rewardx { get; set; } = FX.FX_TWO;
+    public bool allow_after_start { get; set; } = false;
 };

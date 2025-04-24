@@ -4,7 +4,8 @@ using UnityEngine;
 public class MainThreadDispatcher : MonoBehaviour {
     private static MainThreadDispatcher instance;
     private ConcurrentQueue<System.Action> actions = new ConcurrentQueue<System.Action>();
-
+    [SerializeField]
+    private int actionCount = 0;
     private void Awake() {
         if (instance == null) {
             instance = this;
@@ -17,6 +18,7 @@ public class MainThreadDispatcher : MonoBehaviour {
     public static void RunOnMainThread( System.Action action ) {
         if (instance) {
             instance.actions.Enqueue(action);
+            instance.actionCount = instance.actions.Count;
         }
     }
 

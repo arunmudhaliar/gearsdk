@@ -144,3 +144,4 @@ libserverplugin-darwin-*.node
 libserverplugin-linux-*-debug.node
 libserverplugin-linux-*.node
 
+qunityplugin/qunityplugin_unity_proj/Assets/Packages

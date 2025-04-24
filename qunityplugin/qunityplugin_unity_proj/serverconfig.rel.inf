@@ -1,0 +1,33 @@
+# app
+app_id = "serverplugin-app"
+
+# router
+router_address = "127.0.0.1:4004"
+router_mongodb_uri = "mongodb://3.109.144.159:27017"
+router_redis_uri = "3.109.144.159:6379"
+router_redis_user = "gsdkuser"
+router_redis_password = "Fr0gmoon123"
+router_zk_uri = "3.109.144.159:2181"
+router_zk_root_node = "/qh3router"
+router_command_port = 4010
+router_port_return = 4005
+
+
+# userserver
+userserver_address = "127.0.0.1:4004"
+userserver_mongodb_uri = "mongodb://3.109.144.159:27017"
+userserver_mongodb_name = "gsdk_mongodb"
+userserver_redis_uri = "3.109.144.159:6379"
+userserver_redis_user = "gsdkuser"
+userserver_redis_password = "Fr0gmoon123"
+userserver_zk_uri = "3.109.144.159:2181"
+userserver_zk_root_node = "/qh3server"
+userserver_command_port = 4010
+userserver_port_return = 4005
+
+# gameserver
+gameserver_address = "127.0.0.1:4000"
+gameserver_redis_uri = "3.109.144.159:6379"
+gameserver_redis_user = "gsdkuser"
+gameserver_redis_password = "Fr0gmoon123"
+gameserver_zk_uri = "3.109.144.159:2181"
