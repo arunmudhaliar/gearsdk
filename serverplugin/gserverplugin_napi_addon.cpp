@@ -49,7 +49,8 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
         class room* room_ptr = nullptr;
         qstring pid = nullptr;
         unsigned cid_hash = 0;
-        qstring msg = nullptr;
+        unsigned long recv_len = 0;
+        const uint8_t* buf = nullptr;
         int count = 0;
         int max_count = 0;
     };
@@ -110,7 +111,7 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
                 Napi::External<void>::New(env, payload->room_ptr),
                 Napi::String::New(env, payload->pid.c_str()),
                 Napi::Number::New(env, payload->cid_hash),
-                Napi::String::New(env, payload->msg.c_str())
+                Napi::String::New(env, (const char*)payload->buf, payload->recv_len)
                 });
             break;
         case 11:
@@ -209,9 +210,9 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
             auto* payload = new CallbackPayload{ 7, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash};
             napi_call_threadsafe_function(cdata->room_event_player_added_cb_ref, payload, napi_tsfn_blocking);
         },
-        [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg){ //room_event_message_cb
+        [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf){ //room_event_message_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
-            auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, msg};
+            auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, recv_len, buf};
             napi_call_threadsafe_function(cdata->room_event_message_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //room_player_removed_cb
@@ -231,7 +232,7 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
         },
         [](qnetworkserver* server, int room, class room* room_ptr, int count, int max_count){ //room_event_countdown_to_start_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
-            auto* payload = new CallbackPayload{ 11, server, nullptr, 0, 0, room, room_ptr, nullptr, 0, nullptr, count, max_count};
+            auto* payload = new CallbackPayload{ 11, server, nullptr, 0, 0, room, room_ptr, nullptr, 0, 0, nullptr, count, max_count};
             napi_call_threadsafe_function(cdata->room_event_countdown_to_start_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr){ //room_event_countdown_cancelled_cb

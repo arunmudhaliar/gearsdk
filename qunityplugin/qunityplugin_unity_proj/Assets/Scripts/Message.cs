@@ -2,24 +2,15 @@ using System;
 
 [Serializable]
 public abstract class message_base {
-    public message_base() {
+    protected message_base() {
     }
 
-    public static string get_type_string() {
-        return "message_base";
-    }
-    public static ulong get_type_string_crc() {
-        string type_string = message_base.get_type_string();
-        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        //type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*)type_string.c_str(), type_string.length());
-        return type_string_crc;
-    }
-
-    public virtual ulong get_type_crc() {
-        return message_base.get_type_string_crc();
+    public virtual ulong get_type_crc()
+    {
+        throw new InvalidOperationException("Called message_base.get_type_crc()");
     }
     public virtual string get_type() {
-        return message_base.get_type_string();
+        throw new InvalidOperationException("Called message_base.get_type()");
     }
 }
 
@@ -28,7 +19,7 @@ public abstract class rq_msg_user_base : message_base
 {
     public string pid { get; set; } = "";
     public string token { get; set; } = "";
-    public rq_msg_user_base() : base() {
+    protected rq_msg_user_base() : base() {
     }
 }
 
@@ -48,10 +39,10 @@ public class rq_msg_user_get : rq_msg_user_base {
 
     public device_struct device { get; set; }
 
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "rq_msg_user_get";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = rq_msg_user_get.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;
@@ -75,10 +66,10 @@ class FX {
 public class msg_room_config : message_base {
    public msg_room_config() : base() {
     }
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_config";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_config.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;

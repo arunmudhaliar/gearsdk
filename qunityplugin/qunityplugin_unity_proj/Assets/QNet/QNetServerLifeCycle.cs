@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
 using qsdk;
 using ServerPlugin;
 using UnityEngine;
@@ -23,32 +26,46 @@ internal interface IQNetServerLifeCycle
     void OnRoomCreate(int room);
     void OnPlayerAdd(int room, string pid);
     void OnPlayerRemove(int room, string pid);
-    void OnRoomMessage(int room, string pid, string msg);
+    void OnRoomMessage(int room, string pid,  ulong len, byte[] buf, string msg);
+    void OnRoomRPCMessage(int room, string pid, ulong len, byte[] buf, string msg);
     void OnRoomStarted(int room);
     void OnRoomEnd(int room);
     void OnRoomDestroy(int room);
     void OnRoomCountDownStarted(int room, int cnt, int max);
     void OnRoomCountDownCancelled(int room);
 }
+
 public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle, IQNetServerNetObjectLifeCycle
 {
     [FormerlySerializedAs("gamescene")] [SerializeField]
     private string templateGameSceneName = "gsdk-network-scene";
+    private ServerMessageHandler _messageHandler = new ServerMessageHandler();
+    protected Dictionary<int, ServerRoom> _rooms = new Dictionary<int, ServerRoom>();
     
     public void InitLifeCycle(string templateSceneName)
     {
+#if !UNITY_SERVER
+        qnetbehaviour.LogWarn($"QNetServerLifeCycle can't be inited on CLIENT, ignoring InitLifeCycle  !!!");
+        return;
+#else
         qnetbehaviour.LogInfo("Initing server lifecycle.");
+        
+        // register handlers
+        _messageHandler.RegisterHandler(simple_rpc_msg.get_type_string_crc(), OnRoomRPCMessage);
+        _messageHandler.RegisterHandler(simple_msg.get_type_string_crc(), OnRoomMessage);
+        
         templateGameSceneName = templateSceneName;
         LoadTemplateGameScene();
+#endif
     }
     
-    protected void CreateGameNodeForMatch(IntPtr nativeServerPtr, IntPtr roomPtr, int room, string newRoomName)
+    private GameObject CreateGameNodeForMatch(IntPtr nativeServerPtr, IntPtr roomPtr, int room, string newRoomName)
     {
         Scene templateGameScene = SceneManager.GetSceneByName(templateGameSceneName);
         if (!templateGameScene.IsValid())
         {
             qnetbehaviour.LogError("Couldn't get game scene !!!");
-            return;
+            return null;
         }
 
         GameObject newRoot = SetupGameNode(newRoomName, templateGameScene, nativeServerPtr, roomPtr, room);
@@ -56,20 +73,21 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
         {
             qnetbehaviour.LogError("Couldn't create new root !!!");
         }
+        return newRoot;
     }
     
-    GameObject SetupGameNode(string newRoomName, Scene templateScene, IntPtr nativeServerPtr, IntPtr roomPtr, int room)
+    private GameObject SetupGameNode(string newRoomName, Scene templateScene, IntPtr nativeServerPtr, IntPtr roomPtr, int room)
     {
         // create the root object
         GameObject newRoot = new GameObject(newRoomName);
         
-        // add QNetMetaInstance component
-        GameObject methodRegistryInstance = new GameObject("QNetMetaInstance");
-        QNetMetaInstance metaInstance = methodRegistryInstance.AddComponent<QNetMetaInstance>();
-        metaInstance.serverMeta.nativeServer = nativeServerPtr;
-        metaInstance.serverMeta.roomPtr = roomPtr;
-        metaInstance.room = room;
-        methodRegistryInstance.transform.SetParent(newRoot.transform);
+        // // add QNetMetaInstance component
+        // GameObject methodRegistryInstance = new GameObject("QNetMetaInstance");
+        // metaInstance = methodRegistryInstance.AddComponent<QNetMetaInstance>();
+        // metaInstance.serverMeta.nativeServer = nativeServerPtr;
+        // metaInstance.serverMeta.roomPtr = roomPtr;
+        // metaInstance.room = room;
+        // methodRegistryInstance.transform.SetParent(newRoot.transform);
         
         // copy objects
         GameObject[] rootObjects = templateScene.GetRootGameObjects();
@@ -148,21 +166,26 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
             {
                 MainThreadDispatcher.RunOnMainThread(() =>
                 {
-                    PlayerAdd(room, pid);
+                    PlayerAdd(room, pid, hash);
                 });
             },
-            (srv, room, ptr, pid, hash, msg) => 
+            (srv, room, ptr, pid, hash, recvLen, buf) => 
             {
-                MainThreadDispatcher.RunOnMainThread(() =>
+                if (buf != IntPtr.Zero && recvLen > 0)
                 {
-                    RoomMessage(room, pid, msg);
-                });
+                    byte[] data = new byte[recvLen];
+                    Marshal.Copy(buf, data, 0, (int)recvLen);
+                    MainThreadDispatcher.RunOnMainThread(() =>
+                    {
+                        RoomMessage(room, pid, data);
+                    });
+                }
             },
             (srv, room, ptr, pid, hash) =>
             {
                 MainThreadDispatcher.RunOnMainThread(() =>
                 {
-                    PlayerRemove(room, pid);
+                    PlayerRemove(room, pid, hash);
                 });
             },
             (srv, room, ptr) =>
@@ -233,23 +256,40 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
     private void RoomCreate(IntPtr nativeServerPtr, IntPtr roomPtr, int room)
     {
         qnetbehaviour.LogInfo($"Room {room} Created");
-        CreateGameNodeForMatch(nativeServerPtr, roomPtr, room, $"id-{room}");
+        GameObject rootNodeForMatche = CreateGameNodeForMatch(nativeServerPtr, roomPtr, room, $"id-{room}");
+        ServerRoom managedRoom = new ServerRoom(room, nativeServerPtr, roomPtr, rootNodeForMatche);
+        AddManagedRoom(managedRoom);
         OnRoomCreate(room);
     }
-    private void PlayerAdd(int room, string pid)
+    private void PlayerAdd(int room, string pid, ulong hash)
     {
         qnetbehaviour.LogInfo($"Player {pid} added to Room {room}");
+        Room managedRoom = GetManagedRoom(room);
+        managedRoom.AddOrUpdatePlayerMeta(pid, hash);
         OnPlayerAdd(room, pid);
     }
-    private void PlayerRemove(int room, string pid)
+    private void PlayerRemove(int room, string pid, ulong hash)
     {
         qnetbehaviour.LogInfo($"Player {pid} removed from Room {room}");
         OnPlayerRemove(room, pid);
     }
-    private void RoomMessage(int room, string pid, string msg)
+    private void RoomMessage(int room, string pid, byte[] data)
     {
-        qnetbehaviour.LogInfo($"Message in Room {room} from {pid}: {msg}");
-        OnRoomMessage(room, pid, msg);
+        ushort sig;
+        ulong t_crc;
+        string jsonString;
+        JsonDocument doc;
+        ulong recv_len = (ulong)data.Length;
+        int result = message_room_base.deserialize_header(recv_len, data, out jsonString, out sig, out t_crc, out doc);
+        if (result == 0)
+        {
+            _messageHandler.HandleMessage(t_crc, room, pid, recv_len, data, jsonString);
+        }
+        doc?.Dispose();
+        
+        // string msg = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
+        // qnetbehaviour.LogInfo($"Message in Room {room} from {pid}: {msg}");
+        // OnRoomMessage(room, pid, data);
     }
     private void RoomStarted(int room)
     {
@@ -264,6 +304,9 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
     private void RoomDestroy(int room)
     {
         qnetbehaviour.LogInfo($"Room {room} Destroyed");
+        OnRoomDestroy(room);
+        RemoveManagedRoom(room);
+        
         var rootName = $"id-{room}";
         UnloadPhysicsRoomScene(rootName);
         GameObject obj = GameObject.Find(rootName);
@@ -276,7 +319,6 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
         {
             Debug.LogWarning($"No GameObject found with name: {rootName}");
         }
-        OnRoomDestroy(room);
     }
     private void RoomCountDownStarted(int room, int cnt, int max)
     {
@@ -289,6 +331,31 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
         OnRoomCountDownCancelled(room);
     }
 
+    private ServerRoom GetManagedRoom(int room)
+    {
+        if (!_rooms.ContainsKey(room))
+        {
+            return null;
+        }
+        return _rooms[room];
+    }
+
+    private void AddManagedRoom(ServerRoom managedRoom)
+    {
+        Room checkRoom = GetManagedRoom(managedRoom.RoomID);
+        if (checkRoom != null)
+        {
+            qnetbehaviour.LogInfo($"Failed to add room {managedRoom.RoomID}. Already Exist !!!");
+            return;
+        }
+        _rooms[managedRoom.RoomID] = managedRoom;
+    }
+
+    private bool RemoveManagedRoom(int room)
+    {
+        return _rooms.Remove(room);
+    }
+    
     // interface functions, derived classes can get events through this if implemented
     public virtual void OnLoadTemplateGameScene(){}
     public virtual void OnInitLifeCycle(){}
@@ -299,7 +366,8 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
     public virtual void OnRoomCreate(int room){}
     public virtual void OnPlayerAdd(int room, string pid){}
     public virtual void OnPlayerRemove(int room, string pid){}
-    public virtual void OnRoomMessage(int room, string pid, string msg){}
+    public virtual void OnRoomMessage(int room, string pid, ulong len, byte[] buf, string msg){}
+    public virtual void OnRoomRPCMessage(int room, string pid, ulong len, byte[] buf, string msg){}
     public virtual void OnRoomStarted(int room){}
     public virtual void OnRoomEnd(int room){}
     public virtual void OnRoomDestroy(int room){}

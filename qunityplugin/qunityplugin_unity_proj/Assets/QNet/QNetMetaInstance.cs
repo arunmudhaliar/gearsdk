@@ -3,34 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 using qsdk;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class QNetMetaInstance : MonoBehaviour
 {
+    [System.Serializable]
     public class ServerMeta
     {
         public IntPtr nativeServer;
         public IntPtr roomPtr;
-        private ulong networkObjectIDCounter;
         public ServerMeta()
         {
             nativeServer = default;
             roomPtr = default;
-            networkObjectIDCounter = 0;
-        }
-
-        public ulong GenerteNetworkObjectId()
-        {
-            return ++networkObjectIDCounter;
         }
     }
 
+    [System.Serializable]
     public class ClientMeta
     {
+        public string networkClientID;
+        public ulong hash;
     }
     
     public int room;
-    public RpcMethodRegistry methodRegistry = new RpcMethodRegistry();
-    public RPCNetworkHandler networkHandler = new RPCNetworkHandler();
+    public RpcMethodRegistry methodRegistry = null;
+    public RPCNetworkHandler networkHandler = null;
+    public NetworkSpawnManager networkSpawnManager = null;
     public ServerMeta serverMeta = new ServerMeta();
     public ClientMeta clientMeta = new ClientMeta();
 }

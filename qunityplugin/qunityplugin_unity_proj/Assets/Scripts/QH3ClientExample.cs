@@ -39,50 +39,50 @@ public class QH3ClientExample : qsdk.qnetbehaviour
     }
 
     [qsdk.ServerRPC]
-    public void ProcessPlayerAction( string playerName, QH3ClientExampleTestData actionCode ) {
+    public void TestProcessPlayerAction( string playerName, QH3ClientExampleTestData actionCode ) {
         Debug.Log($"Server2 received action {actionCode} from player {playerName}");
     }
     
     [qsdk.ClientRPC]
-    public void ShowMessage( string playerName1, QH3ClientExampleTestData playerName2, string message ) {
+    public void TestShowMessage( string playerName1, QH3ClientExampleTestData playerName2, string message ) {
         Debug.Log($"Client received message: {playerName1}, {playerName2}, {message}");
     }
 
     [qsdk.BroadcastRPC]
-    public void BroadcastMessage( string message ) {
+    public void TestBroadcastMessage( string message ) {
         Debug.Log($"Broadcast received message: {message}");
     }
     
-    private static void Mock_SendData( byte[] data ) {
-        Debug.Log($"Mock SendData - {Encoding.UTF8.GetString(data)}");
-    }
-
-    private static void Mock_BroadCastData( byte[] data ) {
-        Debug.Log($"Mock BroadCastData - {Encoding.UTF8.GetString(data)}");
-    }
+    // private void Mock_SendData( QNetMetaInstance qnetMeta, byte[] data ) {
+    //     Debug.Log($"Mock SendData - {Encoding.UTF8.GetString(data)}");
+    // }
+    //
+    // private void Mock_BroadCastData( QNetMetaInstance qnetMeta, byte[] data ) {
+    //     Debug.Log($"Mock BroadCastData - {Encoding.UTF8.GetString(data)}");
+    // }
     
     // Start is called before the first frame update
     void Start()
     {
-        // MessagePackInitializer.Init();
-        _isServer = true;
-        Debug.Log("DSsssssS");
-        // MessagePackSerializer.Serialize(new TestData());
-        // Debug.Log("~DSSSSSS");
-        
+        // // MessagePackInitializer.Init();
+        // _isServer = true;
+        // Debug.Log("DSsssssS");
+        // // MessagePackSerializer.Serialize(new TestData());
+        // // Debug.Log("~DSSSSSS");
+        //
         // qsdk.RPCNetworkHandler.Instance.RegisterSendCallback(Mock_SendData);
         // qsdk.RPCNetworkHandler.Instance.RegisterBroadCastCallback(Mock_BroadCastData);
-        //
-        Invoke_RegisterRPCMethods();
-        // var _rpcRegistry = GeneratedProxies.RpcMethodRegistry.Instance;
-        // _rpcRegistry.GetInfo();
-        // _rpcRegistry.InvokeMethod(GeneratedProxies.RpcMethodId.TestScript_ProcessPlayerAction, new object[]{"hello", 1});
+        // //
+        // Invoke_RegisterRPCMethods();
+        // // var _rpcRegistry = GeneratedProxies.RpcMethodRegistry.Instance;
+        // // _rpcRegistry.GetInfo();
+        // // _rpcRegistry.InvokeMethod(GeneratedProxies.RpcMethodId.TestScript_ProcessPlayerAction, new object[]{"hello", 1});
+        // // Invoke_UnRegisterRPCMethods();
+        // TestProcessPlayerAction("TRY1", new QH3ClientExampleTestData());
+        // // ProcessPlayerAction2("trr", 2);
+        // TestShowMessage("A", new QH3ClientExampleTestData(), "hello");
+        // TestBroadcastMessage("BBB");
         // Invoke_UnRegisterRPCMethods();
-        ProcessPlayerAction("TRY1", new QH3ClientExampleTestData());
-        // ProcessPlayerAction2("trr", 2);
-        ShowMessage("A", new QH3ClientExampleTestData(), "hello");
-        BroadcastMessage("BBB");
-        Invoke_UnRegisterRPCMethods();
         
         Debug.Log("QH3ClientExample - Start");
         _appTitle.text = $"qunityplugin {Application.version}";

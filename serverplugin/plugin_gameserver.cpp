@@ -52,7 +52,7 @@ void plugin_gameserver_event_listener::room_event_player_added(qnetworkserver* s
 }
 void plugin_gameserver_event_listener::room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) {
     if (cb_room_event_message) {
-        cb_room_event_message(server, room, room_ptr, pid.c_str(), cid_hash, msg.c_str());
+        cb_room_event_message(server, room, room_ptr, pid.c_str(), cid_hash, msg.length(), (const uint8_t*)msg.c_str());
     }
 }
 void plugin_gameserver_event_listener::room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) {

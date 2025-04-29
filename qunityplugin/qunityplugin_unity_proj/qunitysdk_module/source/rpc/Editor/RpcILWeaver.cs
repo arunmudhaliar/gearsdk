@@ -281,6 +281,14 @@ public class RpcILWeaver
 	    var instanceGetter = rpcHandlerType.Resolve().Properties.First(p => p.Name == "Instance").GetMethod;
 	    ilProcessor.Append(ilProcessor.Create(OpCodes.Call, module.ImportReference(instanceGetter)));
 
+	    // Reference to your custom getter 'CachedMetaInstance'
+	    var getCachedMetaInstanceGetter = qnetbehaviourBaseType.Properties
+		    .First(p => p.Name == "CachedMetaInstance").GetMethod;
+	    var getCachedMetaInstanceGetterRef = module.ImportReference(getCachedMetaInstanceGetter);
+	    ilProcessor.Append(ilProcessor.Create(OpCodes.Ldarg_0));
+	    // Call 'this.CachedMetaInstance'
+	    ilProcessor.Append(ilProcessor.Create(OpCodes.Callvirt, getCachedMetaInstanceGetterRef));
+	    
 	    // Reference to your custom getter 'CachedNetworkObjectId'
 	    var getCachedNetworkObjectIdGetter = qnetbehaviourBaseType.Properties
 		    .First(p => p.Name == "CachedNetworkObjectId").GetMethod;
@@ -319,9 +327,9 @@ public class RpcILWeaver
 	    
 	    if (isServerRPC || isClientRPC)
 	    {
-		    // Call `SendRPC(RpcMethodId, object[])`
+		    // Call `SendRPC(QNetMetaInstance qnetMeta, ulong networkObjectId, RpcMethodId methodId, object[] parameters)`
 		    MethodReference sendRpcMethod = rpcHandlerType.Resolve().Methods
-			    .FirstOrDefault(m => m.Name == "SendRPC" && m.Parameters.Count == 3);
+			    .FirstOrDefault(m => m.Name == "SendRPC" && m.Parameters.Count == 4);
 		    if (sendRpcMethod == null)
 			    throw new InvalidOperationException("SendRPC method not found in RPCNetworkHandler");
 
@@ -329,9 +337,9 @@ public class RpcILWeaver
 	    }
 	    else
 	    {
-		    // Call `BroadcastRPC(RpcMethodId, object[])`
+		    // Call `BroadcastRPC(QNetMetaInstance qnetMeta, ulong networkObjectId, RpcMethodId methodId, object[] parameters)`
 		    MethodReference broadcastRpcMethod = rpcHandlerType.Resolve().Methods
-			    .FirstOrDefault(m => m.Name == "BroadcastRPC" && m.Parameters.Count == 3);
+			    .FirstOrDefault(m => m.Name == "BroadcastRPC" && m.Parameters.Count == 4);
 		    if (broadcastRpcMethod == null)
 			    throw new InvalidOperationException("BroadcastRPC method not found in RPCNetworkHandler");
 

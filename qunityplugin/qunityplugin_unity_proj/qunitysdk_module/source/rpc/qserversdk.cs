@@ -108,7 +108,7 @@ namespace ServerPlugin
     public delegate void OnRoomEventCreateDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr);
     public delegate void OnRoomEventStartDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr);
     public delegate void OnRoomEventPlayerAddedDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr, string playerId, ulong cidHash);
-    public delegate void OnRoomEventMessageDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr, string playerId, ulong cidHash, string message);
+    public delegate void OnRoomEventMessageDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr, string playerId, ulong cidHash, ulong recvLen, IntPtr buf);
     public delegate void OnRoomEventPlayerRemovedDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr, string playerId, ulong cidHash);
     public delegate void OnRoomEventEndDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr);
     public delegate void OnRoomEventDesroyDelegate(IntPtr nativeServer, int roomId, IntPtr roomPtr);
@@ -271,6 +271,25 @@ namespace ServerPlugin
                 countdownStart,
                 countdownCancelled
             );
+        }
+
+        public static bool SendTo(
+            IntPtr server,
+            IntPtr room,
+            uint cidHash,
+            byte[] msg,
+            uint length)
+        {
+            return NativeMethods.room_send_to(server, room, cidHash, msg, length);
+        }
+
+        public static void BroadcastToClients(
+            IntPtr server,
+            IntPtr room,
+            byte[] msg,
+            uint length)
+        {
+            NativeMethods.room_broadcast(server, room, msg, length);
         }
     }
 }

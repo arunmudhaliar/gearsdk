@@ -30,7 +30,7 @@ namespace qsdk
 	{
 		void OnNetworkSpawn(QNetMetaInstance meta);
 		void OnNetworkDeSpawn();
-		void OnNetworkOwnershipUpdate(bool previousOwnership);
+		void OnNetworkOwnershipUpdate(string prevNetworkClientID);
 	}
 	
 	public abstract class qnetbehaviour : MonoBehaviour, IQNetNetObjectLifeCycle
@@ -40,12 +40,19 @@ namespace qsdk
 		// variables
 		protected bool _isServer = RPCNetworkHandler.Instance.IsServer;
 		private ulong _cachedNetworkObjectId = 0;
-		private bool _cachedOwnership = false;
+		private string _cachedNetworkClientID = "";
+		private QNetMetaInstance _qnetMeta;
 		
 		// properties
 		public ulong CachedNetworkObjectId => _cachedNetworkObjectId;
-		public bool CachedOwnership => _cachedOwnership;
-		
+		public string CachedNetworkClientId => _cachedNetworkClientID;
+		public bool CachedOwnership => IsOwner();
+		public QNetMetaInstance CachedMetaInstance
+		{
+			get { return _qnetMeta; }
+			set { _qnetMeta = value; }
+		}
+
 		// functions
 		public static void LogInfo(string message)
 		{
@@ -103,10 +110,25 @@ namespace qsdk
 			_cachedNetworkObjectId = networkObjectId;
 		}
 
-		public void SetOwnership(bool ownership)
+		public void SetOwnership(string networkClientID)
 		{
-			_cachedOwnership = ownership;
+			_cachedNetworkClientID = networkClientID;
 		}
+
+		private bool IsOwner()
+		{
+			if (string.IsNullOrEmpty(_cachedNetworkClientID))
+			{
+				LogError($"IsOwner is not valid, since _cachedNetworkClientID is {_cachedNetworkClientID}");
+				return false;
+			}
+			if (_isServer)
+			{
+				return true;
+			}
+			return _qnetMeta.clientMeta.networkClientID == _cachedNetworkClientID;
+		}
+		
 		public virtual void OnNetworkSpawn(QNetMetaInstance meta)
 		{
 			
@@ -115,7 +137,7 @@ namespace qsdk
 		public virtual void OnNetworkDeSpawn()
 		{
 		}
-		public virtual void OnNetworkOwnershipUpdate(bool previousOwnership)
+		public virtual void OnNetworkOwnershipUpdate(string prevNetworkClientID)
 		{
 		}
 		private void OnDestroy()

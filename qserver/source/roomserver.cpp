@@ -360,7 +360,7 @@ void roomserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_io* 
 		debug_print_error(__LOGTAG__, "f:onconnection_message - player not found in the room !!!");
 		return;
 	}
-	room_ptr->pass_message_to_room(player_ptr, qstring(buf, recv_len));
+	room_ptr->pass_message_to_room(player_ptr, recv_len, buf);
 }
 
 void roomserver::onconnection_connect(qconn_io* qconnection) {

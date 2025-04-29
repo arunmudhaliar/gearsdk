@@ -1,10 +1,10 @@
 namespace GeneratedProxies {
     public enum RpcMethodId {
-        LocalPlayer_ProcessPlayerAction = 1,
-        LocalPlayer_ShowMessage = 2,
-        LocalPlayer_BroadcastMessage = 3,
-        QH3ClientExample_ProcessPlayerAction = 4,
-        QH3ClientExample_ShowMessage = 5,
-        QH3ClientExample_BroadcastMessage = 6,
+        Player_TestProcessPlayerAction = 1,
+        Player_TestShowMessage = 2,
+        Player_TestBroadcastMessage = 3,
+        QH3ClientExample_TestProcessPlayerAction = 4,
+        QH3ClientExample_TestShowMessage = 5,
+        QH3ClientExample_TestBroadcastMessage = 6,
     }
 }

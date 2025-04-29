@@ -29,7 +29,7 @@ public:
     typedef void (*type_plugin_gameserver_on_room_event_create)(qnetworkserver* server, int room, class room* room_ptr);
     typedef void (*type_plugin_gameserver_on_room_event_start)(qnetworkserver* server, int room, class room* room_ptr);
     typedef void (*type_plugin_gameserver_on_room_event_player_added)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
-    typedef void (*type_plugin_gameserver_on_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, const char* msg);
+    typedef void (*type_plugin_gameserver_on_room_event_message)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf);
     typedef void (*type_plugin_gameserver_on_room_event_player_removed)(qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash);
     typedef void (*type_plugin_gameserver_on_room_event_end)(qnetworkserver* server, int room, class room* room_ptr);
     typedef void (*type_plugin_gameserver_on_room_event_destroy)(qnetworkserver* server, int room, class room* room_ptr);

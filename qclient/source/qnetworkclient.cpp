@@ -45,10 +45,10 @@ void conn_io_client::release() {
 		conn = nullptr;
 	}
 
-    while (!send_buffer.empty()) {
-        GX_DELETE(send_buffer.front());
-        send_buffer.pop();
-    }
+	while (!send_buffer.empty()) {
+		GX_DELETE(send_buffer.front());
+		send_buffer.pop();
+	}
 }
 
 // Note: This function is not fully tested.
@@ -328,12 +328,12 @@ ssize_t qnetworkclient::flushegress(struct ev_loop* loop, conn_io_client* qconne
 	uint64_t timeout_in_nanos = quiche_conn_timeout_as_nanos(qconnection->conn);
 	double t = static_cast<double>(timeout_in_nanos) / 1e9;
 	qconnection->timer.repeat = t;
-    qconnection->last_flush_time = ev_now(loop);
+	qconnection->last_flush_time = ev_now(loop);
 	ev_timer_again(loop, &qconnection->timer);
-    if (t <= 1e-9) {
-        ev_feed_event(loop, &qconnection->timer, EV_TIMER);
-        debug_print(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 ", calling timeout manually !!!", t, timeout_in_nanos);
-    }
+	if (t <= 1e-9) {
+		ev_feed_event(loop, &qconnection->timer, EV_TIMER);
+		debug_print(LOG_LEVEL_0, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 ", calling timeout manually !!!", t, timeout_in_nanos);
+	}
 	debug_print(LOG_LEVEL_5, __LOGTAG__, "qconnection->timer.repeat %f - %" PRIu64 "", t, timeout_in_nanos);
 	return sent_bytes;
 }
@@ -392,7 +392,7 @@ int qnetworkclient::close() {
 		if (qclient_connection) {
 			int con_active = qclient_connection->connection_active();
 			if (con_active == 0) {
-                const uint8_t BYE[] = "{\"m\":\"bye\"}";
+				const uint8_t BYE[] = "{\"m\":\"bye\"}";
 				qclient_connection->send_buffer.push(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE), true));
 			}
 		}
@@ -409,9 +409,9 @@ int qnetworkclient::close() {
 }
 
 int qnetworkclient::send_message(const uint8_t* buffer, ssize_t size, bool flush) {
-    if (qclient_connection == nullptr || qclient_connection->fin_received.load()) {
-        return -1;
-    }
+	if (qclient_connection == nullptr || qclient_connection->fin_received.load()) {
+		return -1;
+	}
 #if USE_PTHREAD
 	// lock
 	DEBUG_ASSERT(__LOGTAG__, (send_mutex.try_lock(__FUNCTION__) == 0), __FUNCTION__);
@@ -558,24 +558,24 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 #endif
 
 	if (qconnection->bridge->getstate() == con_state::STATE_CONNECT) {
-        while (!qconnection->send_buffer.empty()) {
-            qdata* sd = qconnection->send_buffer.front();
-            ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
-            if (sd->size != send_res) {
-                debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received.load(), qconnection->send_buffer.size());
-                ev_tstamp elapsed_since_last_flush = ev_now(loop) - qconnection->last_flush_time;
-                if (elapsed_since_last_flush > 3.0f) {  // dont flush very often
-                    ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
-                    debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb (failed) - flushegress returned %ld", bytes_sent);
-                }
-                break;  // on failure it will break the loop
-            } else {
-                ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
-                debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb - flushegress returned %ld", bytes_sent);
-            }
-            GX_DELETE(sd);
-            qconnection->send_buffer.pop();
-        }
+		while (!qconnection->send_buffer.empty()) {
+			qdata* sd = qconnection->send_buffer.front();
+			ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
+			if (sd->size != send_res) {
+				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received.load(), qconnection->send_buffer.size());
+				ev_tstamp elapsed_since_last_flush = ev_now(loop) - qconnection->last_flush_time;
+				if (elapsed_since_last_flush > 3.0f) {	// dont flush very often
+					ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+					debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb (failed) - flushegress returned %ld", bytes_sent);
+				}
+				break;	// on failure it will break the loop
+			} else {
+				ssize_t bytes_sent = qconnection->bridge->flushegress(qconnection->bridge->getmainloop(), qconnection);
+				debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:send_cb - flushegress returned %ld", bytes_sent);
+			}
+			GX_DELETE(sd);
+			qconnection->send_buffer.pop();
+		}
 	}
 
 	//    if (qconnection->issue_close) {
@@ -694,8 +694,8 @@ void* qnetworkclient::run_internal(void* data) {
 	if (thiz->run_mutex.try_lock(__FUNCTION__) != 0) {
 		run_config_data->finished = true;
 		run_config_data->pthread_return_value = -1;
-//		pthread_exit(&run_config_data->pthread_return_value);
-        return nullptr;
+		//		pthread_exit(&run_config_data->pthread_return_value);
+		return nullptr;
 	}
 #endif
 
@@ -710,8 +710,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-//		pthread_exit(&run_config_data->pthread_return_value);
-        return nullptr;
+		//		pthread_exit(&run_config_data->pthread_return_value);
+		return nullptr;
 #else
 		return nullptr;
 #endif
@@ -747,8 +747,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-//		pthread_exit(&run_config_data->pthread_return_value);
-        return nullptr;
+		//		pthread_exit(&run_config_data->pthread_return_value);
+		return nullptr;
 #else
 		return nullptr;
 #endif
@@ -760,8 +760,8 @@ void* qnetworkclient::run_internal(void* data) {
 		run_config_data->finished = true;
 #if USE_PTHREAD
 		DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-//		pthread_exit(&run_config_data->pthread_return_value);
-        return nullptr;
+		//		pthread_exit(&run_config_data->pthread_return_value);
+		return nullptr;
 #else
 		return nullptr;
 #endif
@@ -824,8 +824,8 @@ void* qnetworkclient::run_internal(void* data) {
 	run_config_data->finished = true;
 	DEBUG_ASSERT(__LOGTAG__, (thiz->get_runconfig_mutex().unlock() == 0), __FUNCTION__);
 	DEBUG_ASSERT(__LOGTAG__, (thiz->run_mutex.unlock() == 0), "CHECK !!!");
-//	pthread_exit(0);
-    return nullptr;
+	//	pthread_exit(0);
+	return nullptr;
 #else
 	run_config_data->pthread_return_value = 0;
 	run_config_data->finished = true;

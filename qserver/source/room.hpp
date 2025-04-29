@@ -110,7 +110,7 @@ class room : public room_interface, public qtimer_scheduler {
 	const int ROOM_ID = 0;
 	const ev_tstamp CREATION_TIME;
 
-	void pass_message_to_room(player* p, const qstring& msg);
+	void pass_message_to_room(player* p, ssize_t recv_len, const uint8_t* buf);
 	void broadcast(const qstring& msg);
 	bool broadcast_except(player* p, const qstring& msg);
 	bool sendto(player* p, const qstring& msg);

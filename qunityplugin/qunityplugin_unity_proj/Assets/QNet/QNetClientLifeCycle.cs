@@ -26,6 +26,7 @@ internal interface IQNetClientLifeCycle
     void OnRoomPlayerRemove(ulong len, byte[] buf, string msg);
     void OnRoomStart(ulong len, byte[] buf, string msg);
     void OnRoomEnd(ulong len, byte[] buf, string msg);
+    void OnSpawnFromServer(ulong len, byte[] buf, string msg);
 }
 public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
 {
@@ -47,6 +48,7 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
     [SerializeField]
     private EClientConnectionState _connectionState = EClientConnectionState.UnInitialised;
     private MessageHandler _messageHandler = new MessageHandler();
+    private Room _managedRoom;
     
     public EClientConnectionState ConnectionState
     {
@@ -67,6 +69,10 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
 
     public void InitLifeCycle()
     {
+#if UNITY_SERVER
+        qnetbehaviour.LogWarn($"QNetClientLifeCycle can't be inited on SERVER, ignoring InitLifeCycle  !!!");
+        return;
+#endif
         if (ConnectionState >= EClientConnectionState.Started)
         {
             qnetbehaviour.LogError($"Invalid State, {ConnectionState}, ignoring InitLifeCycle  !!!");
@@ -81,10 +87,11 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
         
         _qsocket = new qunitysdk.qsocket();
         // register handlers
-        _messageHandler.RegisterHandler(msg_room_server_event_player_add.get_type_string_crc(), OnRoomPlayerAdd);
+        _messageHandler.RegisterHandler(msg_room_server_event_player_add.get_type_string_crc(), RoomPlayerAdd);
         _messageHandler.RegisterHandler(msg_room_server_event_player_remove.get_type_string_crc(), OnRoomPlayerRemove);
         _messageHandler.RegisterHandler(msg_room_server_event_start.get_type_string_crc(), OnRoomStart);
         _messageHandler.RegisterHandler(msg_room_server_event_end.get_type_string_crc(), OnRoomEnd);
+        _messageHandler.RegisterHandler(rpc_spawn_msg.get_type_string_crc(), SpawnFromServer);
         OnInitLifeCycle();
     }
     
@@ -134,6 +141,13 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
         _qsocket.sendMessage(payload, true);
     }
 
+    private void SpawnFromServer(ulong len, byte[] buf, string msg)
+    {
+        rpc_spawn_msg spawnMsg = JsonSerializer.Deserialize<rpc_spawn_msg>(msg);
+
+        OnSpawnFromServer(len, buf, msg);
+    }
+    
     protected int SendMessage(string message, bool flush)
     {
         if (_qsocket == null)
@@ -149,6 +163,7 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
         return _qsocket.sendMessage(message, flush);
     }
 
+    
     protected int CloseConnection()
     {
         if (_qsocket == null)
@@ -245,6 +260,31 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
         SetState(EClientConnectionState.Close);
         LogMessage("qsocket close connection");
     }
+
+    private void RoomPlayerAdd(ulong len, byte[] buf, string msg)
+    {
+        msg_room_server_event_player_add playerAddMsg = JsonSerializer.Deserialize<msg_room_server_event_player_add>(msg);
+
+        if (_managedRoom == null)
+        {
+            _managedRoom = new ClientRoom(playerAddMsg.room_id, this.gameObject);
+            LogMessage($"Client room created {_managedRoom.RoomID}");
+        }
+        else
+        {
+            if (_managedRoom.RoomID != playerAddMsg.room_id)
+            {
+                _managedRoom.ReleaseAllMetaInstances();
+                _managedRoom = new ClientRoom(playerAddMsg.room_id, this.gameObject);
+            }
+        }
+
+        foreach (var player in playerAddMsg.players)
+        {
+            _managedRoom.AddOrUpdatePlayerMeta(player.pid, (ulong)player.hash);
+        }
+        OnRoomPlayerAdd(len, buf, msg);
+    }
     
     // interface functions
     public virtual void OnInitLifeCycle(){}
@@ -255,4 +295,5 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
     public virtual void OnRoomPlayerRemove(ulong len, byte[] buf, string msg){}
     public virtual void OnRoomStart(ulong len, byte[] buf, string msg){}
     public virtual void OnRoomEnd(ulong len, byte[] buf, string msg){}
+    public virtual void OnSpawnFromServer(ulong len, byte[] buf, string msg){}
 }

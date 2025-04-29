@@ -12,22 +12,6 @@ public abstract class message_room_base : message_base {
     protected message_room_base( ulong typeStringCrc ) : base() {
         t_crc = typeStringCrc;
     }
-
-    public static new string get_type_string() {
-        return "message_room_base";
-    }
-    public static new ulong get_type_string_crc() {
-        string type_string = message_room_base.get_type_string();
-        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        return type_string_crc;
-    }
-
-    public override ulong get_type_crc() {
-        return message_room_base.get_type_string_crc();
-    }
-    public override string get_type() {
-        return message_room_base.get_type_string();
-    }
     
     public static int deserialize_header(
         ulong len,
@@ -90,13 +74,12 @@ public class msg_room_server_shutdown : message_room_base {
     public msg_room_server_shutdown() : base(msg_room_server_shutdown.get_type_string_crc()) {
     }
 
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_server_shutdown";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_server_shutdown.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        //type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*)type_string.c_str(), type_string.length());
         return type_string_crc;
     }
 
@@ -114,13 +97,12 @@ public class msg_room_match_request : message_room_base {
         this.pid = pid_;
     }
 
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_match_request";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_match_request.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        //type_string_crc = essentials::mod_crc32_z(type_string_crc, (const unsigned char*)type_string.c_str(), type_string.length());
         return type_string_crc;
     }
 
@@ -145,22 +127,7 @@ public class room_player {
 
 [Serializable]
 public abstract class msg_room_server_event : message_room_base {
-    public msg_room_server_event(ulong typeStringCrc) : base(typeStringCrc) {
-    }
-    public static new string get_type_string() {
-        return "msg_room_server_event";
-    }
-    public static new ulong get_type_string_crc() {
-        string type_string = msg_room_server_event.get_type_string();
-        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
-        return type_string_crc;
-    }
-
-    public override ulong get_type_crc() {
-        return msg_room_server_event.get_type_string_crc();
-    }
-    public override string get_type() {
-        return msg_room_server_event.get_type_string();
+    protected msg_room_server_event(ulong typeStringCrc) : base(typeStringCrc) {
     }
     public string room_event { get; set; }
     public int room_id { get; set; }
@@ -171,10 +138,10 @@ public class msg_room_server_event_player_add : msg_room_server_event {
     public msg_room_server_event_player_add() : base(msg_room_server_event_player_add.get_type_string_crc()) {
         room_event = "player-add";
     }
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_server_event_player_add";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_server_event_player_add.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;
@@ -195,10 +162,10 @@ public class msg_room_server_event_player_remove : msg_room_server_event {
     public msg_room_server_event_player_remove() : base(msg_room_server_event_player_remove.get_type_string_crc()) {
         room_event = "player-remove";
     }
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_server_event_player_remove";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_server_event_player_remove.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;
@@ -220,10 +187,10 @@ public class msg_room_server_event_start : msg_room_server_event {
     public msg_room_server_event_start() : base(msg_room_server_event_start.get_type_string_crc()) {
         room_event = "room-start";
     }
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_server_event_start";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_server_event_start.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;
@@ -240,12 +207,12 @@ public class msg_room_server_event_start : msg_room_server_event {
 [Serializable]
 public class msg_room_server_event_end : msg_room_server_event {
     public msg_room_server_event_end() : base(msg_room_server_event_end.get_type_string_crc()) {
-        room_event = "rroom-end";
+        room_event = "room-end";
     }
-    public static new string get_type_string() {
+    public static string get_type_string() {
         return "msg_room_server_event_end";
     }
-    public static new ulong get_type_string_crc() {
+    public static ulong get_type_string_crc() {
         string type_string = msg_room_server_event_end.get_type_string();
         ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
         return type_string_crc;
@@ -256,5 +223,94 @@ public class msg_room_server_event_end : msg_room_server_event {
     }
     public override string get_type() {
         return msg_room_server_event_end.get_type_string();
+    }
+}
+
+[Serializable]
+public abstract class simple_msg_base : message_room_base {
+    protected simple_msg_base(ulong typeStringCrc) : base(typeStringCrc) {
+        sig = 0x7A9D;
+    }
+}
+
+[Serializable]
+public class simple_msg : simple_msg_base
+{
+    public string msg_data;
+    public simple_msg(string data) : base(simple_msg.get_type_string_crc())
+    {
+        msg_data = data;
+    }
+    public static string get_type_string() {
+        return "simple_msg";
+    }
+    public static ulong get_type_string_crc() {
+        string type_string = simple_msg.get_type_string();
+        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
+        return type_string_crc;
+    }
+
+    public override ulong get_type_crc() {
+        return simple_msg.get_type_string_crc();
+    }
+    public override string get_type() {
+        return simple_msg.get_type_string();
+    }
+}
+
+[Serializable]
+public abstract class rpc_msg_base : message_room_base {
+    protected rpc_msg_base(ulong typeStringCrc) : base(typeStringCrc) {
+        sig = 0x7A9E;
+    }
+}
+
+[Serializable]
+public class simple_rpc_msg : rpc_msg_base
+{
+    public object rpc_data;
+    public simple_rpc_msg(object data) : base(simple_rpc_msg.get_type_string_crc())
+    {
+        rpc_data = data;
+    }
+    public static string get_type_string() {
+        return "simple_rpc_msg";
+    }
+    public static ulong get_type_string_crc() {
+        string type_string = simple_rpc_msg.get_type_string();
+        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
+        return type_string_crc;
+    }
+
+    public override ulong get_type_crc() {
+        return simple_rpc_msg.get_type_string_crc();
+    }
+    public override string get_type() {
+        return simple_rpc_msg.get_type_string();
+    }
+}
+
+[Serializable]
+public class rpc_spawn_msg : rpc_msg_base
+{
+    public object rpc_data;
+    public rpc_spawn_msg(object data) : base(rpc_spawn_msg.get_type_string_crc())
+    {
+        rpc_data = data;
+    }
+    public static string get_type_string() {
+        return "rpc_spawn_msg";
+    }
+    public static ulong get_type_string_crc() {
+        string type_string = rpc_spawn_msg.get_type_string();
+        ulong type_string_crc = qunitysdk.get_crc32(type_string, type_string.Length);
+        return type_string_crc;
+    }
+
+    public override ulong get_type_crc() {
+        return rpc_spawn_msg.get_type_string_crc();
+    }
+    public override string get_type() {
+        return rpc_spawn_msg.get_type_string();
     }
 }

@@ -205,7 +205,7 @@ class qstring {
 	 * @param buf Pointer to the binary data.
 	 * @param len Length of the binary data.
 	 */
-	void bin_copy(const uint8_t* buf, ssize_t len) {
+	void bin_copy(const uint8_t* buf, size_t len) {
 		if (buf == nullptr) {
 			return;
 		}
@@ -329,7 +329,7 @@ class qstring {
 	 * @brief Returns the length of the string.
 	 * @return Length of the string.
 	 */
-	unsigned long length() const { return utstring_len(ut_string); }
+	size_t length() const { return utstring_len(ut_string); }
 
 	/**
 	 * @brief Checks if the string is empty.
