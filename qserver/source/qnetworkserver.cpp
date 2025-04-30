@@ -128,6 +128,8 @@ void qconn_io::close() {
 		debug_print_important(__LOGTAG__, "f:close - Cant close !!!, connection not established. - connection %0x", cid_hash_val);
 		return;
 	}
+
+    // INVESTIGATE (amudaliar): Do we need to call flush_egress before we send_byez ?
 	uint64_t s = 0;
 	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
@@ -521,6 +523,7 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				}
 				if (fin) {
 					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
+					flush_egress(loop, qconnection);
 					qconnection->send_byez(s);
 				}
 

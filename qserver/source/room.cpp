@@ -184,7 +184,7 @@ bool room::can_allow_reconnection(unsigned cid_hash) {
 	return false;
 }
 void room::pass_message_to_room(player* p, ssize_t recv_len, const uint8_t* buf) {
-    // TODO(amudaliar): [Optimisation] Check if we need to deep copy this buffer here.
+	// TODO(amudaliar): [Optimisation] Check if we need to deep copy this buffer here.
 	qstring msg;
 	msg.bin_copy(buf, recv_len);
 	onroom_message(p, msg);
