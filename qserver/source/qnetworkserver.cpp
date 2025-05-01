@@ -129,7 +129,7 @@ void qconn_io::close() {
 		return;
 	}
 
-    // INVESTIGATE (amudaliar): Do we need to call flush_egress before we send_byez ?
+	// INVESTIGATE (amudaliar): Do we need to call flush_egress before we send_byez ?
 	uint64_t s = 0;
 	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
@@ -153,11 +153,11 @@ void qconn_io::close() {
 
 bool qconn_io::send_byez(uint64_t s) {
 	bool result = true;
-	const uint8_t BYEZ[] = "{\"m\":\"byez\"}";
+	const uint8_t BYEZ[] = "{\"sig\":31387,\"t_crc\":3801332633, \"m\":\"byez\"}";
 	uint64_t out_error_code = 0;
-	ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ), true, &out_error_code);
+	ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ) - 1, true, &out_error_code);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:send_byez - sending 'byez' - connection %0x", cid_hash_val);
-	if (bye_sent_len != sizeof(BYEZ)) {
+	if (bye_sent_len != sizeof(BYEZ) - 1) {
 		debug_print_error(__LOGTAG__, "f:send_byez - sending 'byez' failed !!! - connection %0x", cid_hash_val);
 		result = false;
 	}

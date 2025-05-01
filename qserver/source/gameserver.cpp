@@ -22,11 +22,11 @@ void game_room::onroom_start() {
 void game_room::onroom_player_added(player* p) {
 	room::onroom_player_added(p);
 }
-void game_room::onroom_message(player* p, const qstring& msg) {
-	room::onroom_message(p, msg);
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+void game_room::onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) {
+	room::onroom_message(p, recv_len, buf);
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, recv_len, (const char*) buf, p->qconnection->cid_hash_val);
 	// passing to other clients
-	broadcast_except(p, msg);
+	broadcast_except(p, recv_len, buf);
 }
 void game_room::onroom_player_removed(player* p) {
 	room::onroom_player_removed(p);

@@ -392,8 +392,8 @@ int qnetworkclient::close() {
 		if (qclient_connection) {
 			int con_active = qclient_connection->connection_active();
 			if (con_active == 0) {
-				const uint8_t BYE[] = "{\"m\":\"bye\"}";
-				qclient_connection->send_buffer.push(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE), true));
+				const uint8_t BYE[] = "{\"sig\":31387,\"t_crc\":3801332633, \"m\":\"bye\"}";
+				qclient_connection->send_buffer.push(DEBUG_NEW qdata(reinterpret_cast<const uint8_t*>(BYE), sizeof(BYE) - 1, true));
 			}
 		}
 	}
@@ -503,7 +503,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		const uint8_t HI[] = "{\"m\":\"hi\"}";
 		uint64_t error_code = 0;
-		if (quiche_conn_stream_send(qconnection->conn, 4, HI, sizeof(HI), false, &error_code) < 0) {
+		if (quiche_conn_stream_send(qconnection->conn, 4, HI, sizeof(HI) - 1, false, &error_code) < 0) {
 			debug_print_error(__LOGTAG__, "failed to send Hi request");
 			return;
 		}

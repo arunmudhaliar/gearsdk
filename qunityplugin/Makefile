@@ -1,3 +1,16 @@
+# Default to debug mode if no target is specified
+BUILD_MODE ?= debug
+
+# Check the target specified
+ifeq ($(MAKECMDGOALS), debug)
+    BUILD_MODE = debug
+endif
+
+ifeq ($(MAKECMDGOALS), release)
+    BUILD_MODE = release
+endif
+$(info Building $(BUILD_MODE) mode.)
+
 # Paths
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 SERVER_COMMON_SRCDIR = ../servercommon/source

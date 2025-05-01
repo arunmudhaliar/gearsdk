@@ -112,4 +112,13 @@ class msg_room_server_event_end : public msg_room_server_event_base {
 	//	int room_id = -1;
 };
 
+// This is not used, but the same signature is used for sending byez and bye
+class msg_room_byez : public message_room_base {
+   public:
+	msg_room_byez();
+	void serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const override;
+	bool deserialize(rapidjson::Value& obj) override;
+	DECLARE_MESSAGE_PRE_REQUISITES(msg_room_byez, "msg_room_byez")
+};
+
 #endif /* roommessage_hpp */

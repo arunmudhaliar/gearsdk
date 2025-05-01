@@ -54,7 +54,7 @@ class room_interface {
 	virtual void onroom_create() = 0;
 	virtual void onroom_start() = 0;
 	virtual void onroom_player_added(player* p) = 0;
-	virtual void onroom_message(player* p, const qstring& msg) = 0;
+	virtual void onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) = 0;
 	virtual void onroom_player_removed(player* p) = 0;
 	virtual void onroom_end() = 0;
 	virtual void onroom_destroy() = 0;
@@ -111,9 +111,9 @@ class room : public room_interface, public qtimer_scheduler {
 	const ev_tstamp CREATION_TIME;
 
 	void pass_message_to_room(player* p, ssize_t recv_len, const uint8_t* buf);
-	void broadcast(const qstring& msg);
-	bool broadcast_except(player* p, const qstring& msg);
-	bool sendto(player* p, const qstring& msg);
+	void broadcast(unsigned long recv_len, const uint8_t* buf);
+	bool broadcast_except(player* p, unsigned long recv_len, const uint8_t* buf);
+	bool sendto(player* p, unsigned long recv_len, const uint8_t* buf);
 	inline const roomconfig& get_room_config() { return ROOM_CONFIG; }
 	qstring get_room_signature(const qstring& prefix, const qstring& host_id, const qstring& port_id);
 
@@ -129,7 +129,7 @@ class room : public room_interface, public qtimer_scheduler {
 	void onroom_create() override;
 	void onroom_start() override;
 	void onroom_player_added(player* p) override;
-	void onroom_message(player* p, const qstring& msg) override;
+	void onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) override;
 	void onroom_player_removed(player* p) override;
 	void onroom_end() override;
 	void onroom_destroy() override;

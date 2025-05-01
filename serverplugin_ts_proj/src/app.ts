@@ -116,7 +116,18 @@ if (process.env.NODE_ENV === "production") {
 export const app_instance = new app.server_app();
 app_instance.run();
 
+// exception handlers
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Caught: Unhandled Rejection at:', promise, 'reason:', reason);
+    // optionally: process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Caught: Uncaught Exception thrown:', err);
+    // optionally: process.exit(1);
+});
+
 app.server_app.keep_alive_timer = setInterval(() => {
     console.log('Keep-alive ping...');
 }, 5 * 60 * 1000); // Every 5 minute
-console.log('Keep-alive exit...');
+console.log('Keep-alive started...');

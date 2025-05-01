@@ -16,6 +16,7 @@ do
   
   # Run the command and capture the exit status
   ./qgfist-app --gserver 127.0.0.1:4000
+  # ./qgfist-app --gserver 15.206.79.30:4000
   exit_status=$?
 
   # Log success or failure for each iteration

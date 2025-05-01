@@ -350,3 +350,14 @@ bool msg_room_server_event_end::deserialize(rapidjson::Value& obj) {
 	//	}
 	return true;
 }
+
+// MARK: - msg_room_byez
+DEFINE_MESSAGE_PRE_REQUISITES(msg_room_byez)
+msg_room_byez::msg_room_byez() : message_room_base(msg_room_byez::get_type_string_crc()) {}
+void msg_room_byez::serialize(rapidjson::Value& obj, rapidjson::Document::AllocatorType& allocator) const {
+	message_room_base::serialize(obj, allocator);
+}
+bool msg_room_byez::deserialize(rapidjson::Value& obj) {
+	message_room_base::deserialize(obj);
+	return true;
+}

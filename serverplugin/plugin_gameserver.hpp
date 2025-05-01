@@ -58,7 +58,7 @@ protected:
     void room_event_create(qnetworkserver* server, int room, class room* room_ptr) override final;
     void room_event_start(qnetworkserver* server, int room, class room* room_ptr) override final;
     void room_event_player_added(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) override final;
-    void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) override final;
+    void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf) override final;
     void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) override final;
     void room_event_end(qnetworkserver* server, int room, class room* room_ptr) override final;
     void room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) override final;
@@ -92,7 +92,7 @@ protected:
     void onroom_create() override;
     void onroom_start() override;
     void onroom_player_added(player* p) override;
-    void onroom_message(player* p, const qstring& msg) override;
+    void onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) override;
     void onroom_player_removed(player* p) override;
     void onroom_end() override;
     void onroom_destroy() override;

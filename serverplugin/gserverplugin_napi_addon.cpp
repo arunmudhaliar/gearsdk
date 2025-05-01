@@ -50,9 +50,16 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
         qstring pid = nullptr;
         unsigned cid_hash = 0;
         unsigned long recv_len = 0;
-        const uint8_t* buf = nullptr;
+        uint8_t* buf = nullptr;
         int count = 0;
         int max_count = 0;
+
+        ~CallbackPayload() {
+            if (buf) {
+                free((void*)buf);
+                buf = nullptr;
+            }
+        }
     };
 
     auto return_cb = [](napi_env env, napi_value jsCallback, void* context, void* data) {
@@ -212,7 +219,9 @@ Napi::Value napi_spawn_game_server(const Napi::CallbackInfo& info) {
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf){ //room_event_message_cb
             qserver_spawn_qserver_cb_data* cdata = static_cast<qserver_spawn_qserver_cb_data*>(server->get_user_arg());
-            auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, recv_len, buf};
+            uint8_t* cached_buf = (uint8_t*)malloc(recv_len);   // This will be freed on the destructor of CallbackPayload
+            memcpy(cached_buf, buf, recv_len);
+            auto* payload = new CallbackPayload{ 8, server, nullptr, 0, 0, room, room_ptr, pid, cid_hash, recv_len, cached_buf };
             napi_call_threadsafe_function(cdata->room_event_message_cb_ref, payload, napi_tsfn_blocking);
         },
         [](qnetworkserver* server, int room, class room* room_ptr, const char* pid, unsigned cid_hash){ //room_player_removed_cb
@@ -276,7 +285,7 @@ Napi::Value napi_room_broadcast_except(const Napi::CallbackInfo& info) {
     std::string msg = info[3].As<Napi::String>().Utf8Value();
 
     // Call the actual function
-    bool result = gsdk::server::room_broadcast_except(server, room_ptr, cid_hash, msg.c_str(), msg.length());
+    bool result = gsdk::server::room_broadcast_except(server, room_ptr, cid_hash, msg.c_str(), (unsigned)msg.length());
 
     // Return result as a boolean
     return Napi::Boolean::New(env, result);
@@ -297,7 +306,7 @@ Napi::Value napi_room_broadcast(const Napi::CallbackInfo& info) {
     std::string msg = info[2].As<Napi::String>().Utf8Value();
 
     // Call the actual C++ function
-    gsdk::server::room_broadcast(server, room_ptr, msg.c_str(), msg.length());
+    gsdk::server::room_broadcast(server, room_ptr, msg.c_str(), (unsigned)msg.length());
 
     // No return value (void function)
     return env.Undefined();
@@ -320,7 +329,7 @@ Napi::Value napi_room_send_to(const Napi::CallbackInfo& info) {
     std::string msg = info[3].As<Napi::String>().Utf8Value();
 
     // Call the actual C++ function
-    bool success = gsdk::server::room_send_to(server, room_ptr, cid_hash, msg.c_str(), msg.length());
+    bool success = gsdk::server::room_send_to(server, room_ptr, cid_hash, msg.c_str(), (unsigned)msg.length());
 
     // Return success status as a boolean
     return Napi::Boolean::New(env, success);

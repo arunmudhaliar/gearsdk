@@ -63,7 +63,7 @@ class observer_qserver_events {
 	virtual void room_event_create(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_start(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_player_added(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) = 0;
-	virtual void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) = 0;
+	virtual void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf) = 0;
 	virtual void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) = 0;
 	virtual void room_event_end(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) = 0;
