@@ -115,9 +115,7 @@ qsampleserver/gstats
 qserver/gstats
 scripts/__pycache__
 libserverplugin-debug.dylib
-libserverplugin.dylib
 libserverplugin-debug.so
-libserverplugin.so
 serverplugin_ts_proj/dist
 serverplugin_ts_proj/logs
 serverplugin_ts_proj/node_modules
