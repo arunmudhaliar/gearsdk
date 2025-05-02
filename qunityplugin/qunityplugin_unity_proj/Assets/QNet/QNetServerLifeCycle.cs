@@ -265,12 +265,16 @@ public abstract class QNetServerLifeCycle : MonoBehaviour, IQNetServerLifeCycle,
     {
         qnetbehaviour.LogInfo($"Player {pid} added to Room {room}");
         Room managedRoom = GetManagedRoom(room);
-        managedRoom.AddOrUpdatePlayerMeta(pid, hash);
+        var metaInstance = managedRoom.AddOrUpdatePlayerMeta(pid, hash);
+        metaInstance.clientMeta.connected = true;
         OnPlayerAdd(room, pid);
     }
     private void PlayerRemove(int room, string pid, ulong hash)
     {
         qnetbehaviour.LogInfo($"Player {pid} removed from Room {room}");
+        Room managedRoom = GetManagedRoom(room);
+        var metaInstance = managedRoom.GetQNetMetaInstance(pid);
+        metaInstance.clientMeta.connected = false;
         OnPlayerRemove(room, pid);
     }
     private void RoomMessage(int room, string pid, byte[] data)

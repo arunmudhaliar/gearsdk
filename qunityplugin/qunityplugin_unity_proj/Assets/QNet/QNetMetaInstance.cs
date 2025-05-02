@@ -24,6 +24,14 @@ public class QNetMetaInstance : MonoBehaviour
     {
         public string networkClientID;
         public ulong hash;
+        public bool connected;
+
+        public ClientMeta()
+        {
+            networkClientID = "";
+            hash = 0;
+            connected = false;
+        }
     }
     
     public int room;

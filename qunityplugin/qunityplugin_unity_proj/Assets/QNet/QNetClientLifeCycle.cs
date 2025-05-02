@@ -72,7 +72,7 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
 #if UNITY_SERVER
         qnetbehaviour.LogWarn($"QNetClientLifeCycle can't be inited on SERVER, ignoring InitLifeCycle  !!!");
         return;
-#endif
+#else
         if (ConnectionState >= EClientConnectionState.Started)
         {
             qnetbehaviour.LogError($"Invalid State, {ConnectionState}, ignoring InitLifeCycle  !!!");
@@ -88,11 +88,12 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
         _qsocket = new qunitysdk.qsocket();
         // register handlers
         _messageHandler.RegisterHandler(msg_room_server_event_player_add.get_type_string_crc(), RoomPlayerAdd);
-        _messageHandler.RegisterHandler(msg_room_server_event_player_remove.get_type_string_crc(), OnRoomPlayerRemove);
+        _messageHandler.RegisterHandler(msg_room_server_event_player_remove.get_type_string_crc(), RoomPlayerRemove);
         _messageHandler.RegisterHandler(msg_room_server_event_start.get_type_string_crc(), OnRoomStart);
         _messageHandler.RegisterHandler(msg_room_server_event_end.get_type_string_crc(), OnRoomEnd);
         _messageHandler.RegisterHandler(rpc_spawn_msg.get_type_string_crc(), SpawnFromServer);
         OnInitLifeCycle();
+#endif
     }
     
     public void StartClientConnection()
@@ -281,9 +282,30 @@ public class QNetClientLifeCycle : MonoBehaviour, IQNetClientLifeCycle
 
         foreach (var player in playerAddMsg.players)
         {
-            _managedRoom.AddOrUpdatePlayerMeta(player.pid, (ulong)player.hash);
+            var metaInstance = _managedRoom.AddOrUpdatePlayerMeta(player.pid, (ulong)player.hash);
+            metaInstance.clientMeta.connected = true;
         }
         OnRoomPlayerAdd(len, buf, msg);
+    }
+
+    private void RoomPlayerRemove(ulong len, byte[] buf, string msg)
+    {
+        msg_room_server_event_player_remove playerRemoveMsg = JsonSerializer.Deserialize<msg_room_server_event_player_remove>(msg);
+        if (_managedRoom.RoomID != playerRemoveMsg.room_id)
+        {
+            qnetbehaviour.LogWarn($"room id mismatch {_managedRoom.RoomID} != {playerRemoveMsg.room_id}, returning.");
+            return;
+        }
+        foreach (var player in playerRemoveMsg.players)
+        {
+            var metaInstance = _managedRoom.AddOrUpdatePlayerMeta(player.pid, (ulong)player.hash);
+            if (!player.flag)
+            {
+                continue;
+            }
+            metaInstance.clientMeta.connected = false;
+        }
+        OnRoomPlayerRemove(len, buf, msg);
     }
     
     // interface functions

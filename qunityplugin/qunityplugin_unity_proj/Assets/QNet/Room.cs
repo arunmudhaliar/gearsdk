@@ -41,7 +41,15 @@ public abstract class Room
     protected abstract void RemoteSendData(QNetMetaInstance qnetMeta, byte[] data);
     protected abstract void RemoteBroadCastData(QNetMetaInstance qnetMeta, byte[] data);
     protected abstract void RemoteSpawnMessageData(QNetMetaInstance qnetMeta, QNetObject netObject, byte[] data);
-    
+
+    public QNetMetaInstance GetQNetMetaInstance(string pid)
+    {
+        if (_metaMap.TryGetValue(pid, out var playerInfo))
+        {
+            return playerInfo.metaInstance;
+        }
+        return null;
+    }
     public QNetMetaInstance AddOrUpdatePlayerMeta(string pid, ulong hashValue)
     {
         if (_metaMap.TryGetValue(pid, out var playerInfo))

@@ -61,9 +61,9 @@ public abstract class message_room_base : message_base {
 
             return 0;
         }
-        catch (JsonException)
+        catch (JsonException e)
         {
-            Debug.LogError($"DeserializeHeader failed while parsing JSON {jsonString}");
+            Debug.LogError($"DeserializeHeader failed while parsing JSON, [slen:{jsonString.Length}, len:{len}] - {jsonString}, err:{e}");
             return -1;
         }
     }
