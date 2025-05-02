@@ -143,3 +143,5 @@ libserverplugin-linux-*-debug.node
 libserverplugin-linux-*.node
 
 qunityplugin/qunityplugin_unity_proj/Assets/Packages
+serverplugin/libserverplugin.dylib
+serverplugin/libserverplugin.so
