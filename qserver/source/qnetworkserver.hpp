@@ -30,7 +30,7 @@ extern "C" {
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
 #define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + QUICHE_MAX_CONN_ID_LEN
-
+#define MAX_CUSTOM_SENDBUFFER_SIZE (2 * 1024 * 1024)
 #define QTHREADPOOL 0
 #define QTHREADPOOL_THREAD_COUNT 4
 
@@ -124,6 +124,11 @@ class qconn_io {
 	int user_data = 0;
 	ev_tstamp last_heartbeat_time;
 	ev_tstamp connection_start_time;
+
+   private:
+	qconn_io() {}
+	ssize_t custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code);
+	uint8_t* custom_send_buffer = nullptr;
 };
 
 // MARK: -
@@ -182,6 +187,9 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	void heartbeat_check();
 	static void heart_beat_check_cb(EV_P_ ev_timer* w, int revents);
 	static void threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents);
+
+	static void process_recv_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static bool is_heartbeat_from_client(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
 
 	quiche_config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;

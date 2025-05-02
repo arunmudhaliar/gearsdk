@@ -62,6 +62,7 @@ qconn_io::qconn_io(bridge_qpeerconnection* bridge, uint8_t* scid, size_t scid_le
 	HASH_VALUE(cid, Q_LOCAL_CONN_ID_LEN, cid_hash_val);
 	last_heartbeat_time = ev_now(bridge->get_mainloop());
 	connection_start_time = ev_now(bridge->get_mainloop());
+	custom_send_buffer = (uint8_t*) malloc(MAX_CUSTOM_SENDBUFFER_SIZE);
 }
 
 qconn_io::~qconn_io() {
@@ -70,6 +71,29 @@ qconn_io::~qconn_io() {
 		quiche_conn_free(conn);
 		conn = nullptr;
 	}
+	if (custom_send_buffer) {
+		free(custom_send_buffer);
+		custom_send_buffer = nullptr;
+	}
+}
+
+ssize_t qconn_io::custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code) {
+	uint32_t htonl_buf_len = htonl(buf_len);
+	size_t len_type_sz = sizeof(htonl_buf_len);
+	if (buf_len + len_type_sz > MAX_CUSTOM_SENDBUFFER_SIZE) {
+		uint8_t* large_send_buffer = (uint8_t*) malloc(buf_len + len_type_sz);
+		if (large_send_buffer == nullptr) {
+			return -1;
+		}
+		memcpy(large_send_buffer, &htonl_buf_len, len_type_sz);
+		memcpy(large_send_buffer + len_type_sz, buf, buf_len);
+		ssize_t result = quiche_conn_stream_send(conn, stream_id, large_send_buffer, buf_len + len_type_sz, fin, out_error_code);
+		free(large_send_buffer);
+		return result;
+	}
+	memcpy(custom_send_buffer, &htonl_buf_len, len_type_sz);
+	memcpy(custom_send_buffer + len_type_sz, buf, buf_len);
+	return quiche_conn_stream_send(conn, stream_id, custom_send_buffer, buf_len + len_type_sz, fin, out_error_code) - len_type_sz;
 }
 
 void qconn_io::sendmessage(const qstring& buffer, bool flush) {
@@ -90,7 +114,7 @@ void qconn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 		}
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "stream %" PRIu64 " is writable", s);
 		uint64_t out_error_code = 0;
-		ssize_t sent_len = quiche_conn_stream_send(conn, s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
+		ssize_t sent_len = custom_quiche_conn_stream_send(s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
 		if (sent_len != (ssize_t) buflen) {
 			debug_print_error(__LOGTAG__, "send failure %d", sent_len);
 			break;
@@ -106,7 +130,7 @@ void qconn_io::sendmessage(const char* buf, size_t buflen, bool flush) {
 	while (!success && next_s < MAX_SEND_STREAM_TO_TRY) {
 		next_s = (next_s + 1) + (next_s % 2);
 		uint64_t out_error_code = 0;
-		ssize_t sent_len = quiche_conn_stream_send(conn, next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
+		ssize_t sent_len = custom_quiche_conn_stream_send(next_s, reinterpret_cast<const uint8_t*>(buf), buflen, false, &out_error_code);
 		if (sent_len == (ssize_t) buflen) {
 			debug_print(LOG_LEVEL_3, __LOGTAG__, "--------->>>>>>>>>>>[%d] %s", next_s, (char*) buf);
 			last_stream_s = next_s;
@@ -129,7 +153,6 @@ void qconn_io::close() {
 		return;
 	}
 
-	// INVESTIGATE (amudaliar): Do we need to call flush_egress before we send_byez ?
 	uint64_t s = 0;
 	quiche_stream_iter* writable = quiche_conn_writable(conn);
 	while (quiche_stream_iter_next(writable, &s)) {
@@ -155,7 +178,7 @@ bool qconn_io::send_byez(uint64_t s) {
 	bool result = true;
 	const uint8_t BYEZ[] = "{\"sig\":31387,\"t_crc\":3801332633, \"m\":\"byez\"}";
 	uint64_t out_error_code = 0;
-	ssize_t bye_sent_len = quiche_conn_stream_send(conn, s, BYEZ, sizeof(BYEZ) - 1, true, &out_error_code);
+	ssize_t bye_sent_len = custom_quiche_conn_stream_send(s, BYEZ, sizeof(BYEZ) - 1, true, &out_error_code);
 	debug_print(LOG_LEVEL_3, __LOGTAG__, "f:send_byez - sending 'byez' - connection %0x", cid_hash_val);
 	if (bye_sent_len != sizeof(BYEZ) - 1) {
 		debug_print_error(__LOGTAG__, "f:send_byez - sending 'byez' failed !!! - connection %0x", cid_hash_val);
@@ -284,6 +307,30 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_
 	qconnection->sendmessage(ss, true);
 	*/
 #endif
+}
+
+void qnetworkserver::process_recv_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
+	size_t len_type_sz = sizeof(uint32_t);
+	size_t offset = 0;
+
+	while (offset + len_type_sz <= (size_t) recv_len) {
+		uint32_t net_msg_len;
+		memcpy(&net_msg_len, buf + offset, len_type_sz);
+		uint32_t msg_len = ntohl(net_msg_len);
+
+		if (offset + len_type_sz + msg_len > (size_t) recv_len) {
+			// Incomplete message
+			break;
+		}
+
+		qconnection->bridge->onconnection_message(msg_len, buf + offset + len_type_sz, qconnection);
+		offset += len_type_sz + msg_len;
+	}
+
+	if (offset < (size_t) recv_len) {
+		debug_print_error(__LOGTAG__, "%zd leftover bytes after parsing complete messages", recv_len - offset);
+		// Optionally: hexdump or inspect buf + offset
+	}
 }
 
 void qnetworkserver::flush_egress(struct ev_loop* loop, qconn_io* qconnection) {
@@ -523,16 +570,17 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 				}
 				if (fin) {
 					debug_print_important(__LOGTAG__, "fin received, sending 'byez' - %0x", qconnection->cid_hash_val);
-					flush_egress(loop, qconnection);
+					// flush_egress(loop, qconnection);
 					qconnection->send_byez(s);
 				}
 
 				// heart-beat from client
-				if (recv_len == 2 && conns->buf[0] == 'h' && conns->buf[1] == 'b') {
+				if (is_heartbeat_from_client(recv_len, conns->buf, qconnection)) {
 					qconnection->last_heartbeat_time = ev_now(loop);
 					continue;
 				}
-				qconnection->bridge->onconnection_message(recv_len, conns->buf, qconnection);
+
+				process_recv_message(recv_len, conns->buf, qconnection);
 			}
 			quiche_stream_iter_free(readable);
 		}
@@ -553,6 +601,11 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 			destroy_connection(loop, qconnection);
 		}
 	}
+}
+
+bool qnetworkserver::is_heartbeat_from_client(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
+	size_t len_type_sz = sizeof(uint32_t);
+	return (recv_len == len_type_sz + 2 && buf[len_type_sz + 0] == 'h' && buf[len_type_sz + 1] == 'b');
 }
 
 void qnetworkserver::broadcast_message(const qstring& buffer, bool flush) {

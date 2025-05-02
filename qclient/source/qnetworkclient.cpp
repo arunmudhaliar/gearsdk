@@ -19,12 +19,21 @@ using client::qnetworkclient;
 int qnetworkclient::connection_id = 0;
 
 // MARK: - QConnection
-conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : id(id), bridge(bridge) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, int id) : id(id), bridge(bridge) {
+	custom_send_buffer = (uint8_t*) malloc(MAX_CUSTOM_SENDBUFFER_SIZE);
+}
 
-conn_io_client::conn_io_client(bridge_qcommand* bridge, quiche_config* config, int id) : id(id), bridge(bridge), config(config) {}
+conn_io_client::conn_io_client(bridge_qcommand* bridge, quiche_config* config, int id) : id(id), bridge(bridge), config(config) {
+	custom_send_buffer = (uint8_t*) malloc(MAX_CUSTOM_SENDBUFFER_SIZE);
+}
 
 conn_io_client::~conn_io_client() {
 	release();
+
+	if (custom_send_buffer) {
+		free(custom_send_buffer);
+		custom_send_buffer = nullptr;
+	}
 }
 
 void conn_io_client::release() {
@@ -188,11 +197,30 @@ int conn_io_client::connection_active() {
 	return 0;
 }
 
-ssize_t conn_io_client::send_message(const qstring& buffer, bool fin) {
-	return send_message(buffer.c_str(), buffer.length(), fin);
+ssize_t conn_io_client::custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code) {
+	uint32_t htonl_buf_len = htonl(buf_len);
+	size_t len_type_sz = sizeof(htonl_buf_len);
+	if (buf_len + len_type_sz > MAX_CUSTOM_SENDBUFFER_SIZE) {
+		uint8_t* large_send_buffer = (uint8_t*) malloc(buf_len + len_type_sz);
+		if (large_send_buffer == nullptr) {
+			return -1;
+		}
+		memcpy(large_send_buffer, &htonl_buf_len, len_type_sz);
+		memcpy(large_send_buffer + len_type_sz, buf, buf_len);
+		ssize_t result = quiche_conn_stream_send(conn, stream_id, large_send_buffer, buf_len + len_type_sz, fin, out_error_code);
+		free(large_send_buffer);
+		return result;
+	}
+	memcpy(custom_send_buffer, &htonl_buf_len, len_type_sz);
+	memcpy(custom_send_buffer + len_type_sz, buf, buf_len);
+	return quiche_conn_stream_send(conn, stream_id, custom_send_buffer, buf_len + len_type_sz, fin, out_error_code) - len_type_sz;
 }
 
-ssize_t conn_io_client::send_message(const char* buf, size_t buflen, bool fin) {
+ssize_t conn_io_client::send_message_without_length_prefix(const qstring& buffer, bool fin) {
+	return send_message_without_length_prefix(buffer.c_str(), buffer.length(), fin);
+}
+
+ssize_t conn_io_client::send_message_without_length_prefix(const char* buf, size_t buflen, bool fin) {
 	int conn_active = connection_active();
 	if (conn_active < 0) {
 		debug_print(LOG_LEVEL_3, __LOGTAG__, "Cant send !!!, conn not active = %d", conn_active);
@@ -503,7 +531,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 
 		const uint8_t HI[] = "{\"m\":\"hi\"}";
 		uint64_t error_code = 0;
-		if (quiche_conn_stream_send(qconnection->conn, 4, HI, sizeof(HI) - 1, false, &error_code) < 0) {
+		if (qconnection->custom_quiche_conn_stream_send(4, HI, sizeof(HI) - 1, false, &error_code) < 0) {
 			debug_print_error(__LOGTAG__, "failed to send Hi request");
 			return;
 		}
@@ -532,7 +560,7 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				}
 			}
 			qconnection->fin_received.store(fin);
-			qconnection->bridge->event_msg_received(recv_len, qconnection->recv_buf, qconnection, fin);
+			process_recv_message(recv_len, qconnection->recv_buf, qconnection, fin);
 		}
 		quiche_stream_iter_free(readable);
 	}
@@ -540,6 +568,30 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 	if (qconnection->conn) {
 		ssize_t bytes_sent = qconnection->bridge->flushegress(loop, qconnection);
 		debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:recv_cb - flushegress returned %ld", bytes_sent);
+	}
+}
+
+void qnetworkclient::process_recv_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin) {
+	size_t len_type_sz = sizeof(uint32_t);
+	size_t offset = 0;
+
+	while (offset + len_type_sz <= (size_t) recv_len) {
+		uint32_t net_msg_len;
+		memcpy(&net_msg_len, buf + offset, len_type_sz);
+		uint32_t msg_len = ntohl(net_msg_len);
+
+		if (offset + len_type_sz + msg_len > (size_t) recv_len) {
+			// Incomplete message
+			break;
+		}
+
+		qconnection->bridge->event_msg_received(msg_len, buf + offset + len_type_sz, qconnection, fin);
+		offset += len_type_sz + msg_len;
+	}
+
+	if (offset < (size_t) recv_len) {
+		debug_print_error(__LOGTAG__, "%zd leftover bytes after parsing complete messages", recv_len - offset);
+		// Optionally: hexdump or inspect buf + offset
 	}
 }
 
@@ -560,7 +612,8 @@ void qnetworkclient::send_cb(EV_P_ ev_timer* w, int revents) {
 	if (qconnection->bridge->getstate() == con_state::STATE_CONNECT) {
 		while (!qconnection->send_buffer.empty()) {
 			qdata* sd = qconnection->send_buffer.front();
-			ssize_t send_res = qconnection->send_message((const char*) sd->data, sd->size, sd->fin);
+			// Note: length will be prefixed by qdata
+			ssize_t send_res = qconnection->send_message_without_length_prefix((const char*) sd->data, sd->size, sd->fin);
 			if (sd->size != send_res) {
 				debug_print(LOG_LEVEL_3, __LOGTAG__, "send_cb failed for %.*s, err %d, fin %d, pending %d", sd->size, sd->data, send_res, qconnection->fin_received.load(), qconnection->send_buffer.size());
 				ev_tstamp elapsed_since_last_flush = ev_now(loop) - qconnection->last_flush_time;
