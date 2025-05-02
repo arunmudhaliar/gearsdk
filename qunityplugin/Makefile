@@ -103,6 +103,9 @@ release: $(RELEASE_LIB)
 
 $(RELEASE_LIB): $(SDK_SRCS) | $(RELEASE_DIR)
 	$(CXX) $(CXXFLAGS) $(RELEASE_CXXFLAGS) -o $@ $^ $(RELEASE_LDFLAGS) $(LIBS)
+    ifeq ($(UNAME), Linux)
+		strip --strip-unneeded --keep-section=.text $(RELEASE_LIB)
+    endif
 # strip -x $@  # Strip local symbols to reduce file size
 
 # Create directories if they do not exist
