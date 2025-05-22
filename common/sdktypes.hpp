@@ -206,6 +206,32 @@ struct utsname {
 #define closesocket close
 #endif
 
+#if defined(__linux__) || defined(__APPLE__)
+#include <arpa/inet.h>
+#include <stdint.h>
+
+// Only define if not already defined
+#ifndef htonll
+static inline uint64_t htonll(uint64_t value) {
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	return (((uint64_t) htonl(value & 0xFFFFFFFFULL)) << 32) | htonl(value >> 32);
+#else
+	return value;
+#endif
+}
+#endif
+
+#ifndef ntohll
+static inline uint64_t ntohll(uint64_t value) {
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	return (((uint64_t) ntohl(value & 0xFFFFFFFFULL)) << 32) | ntohl(value >> 32);
+#else
+	return value;
+#endif
+}
+#endif
+#endif
+
 namespace gsdk {
 
 /**
