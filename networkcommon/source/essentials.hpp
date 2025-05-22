@@ -155,6 +155,17 @@ class essentials {
 	static int set_non_blocking(int socket);
 	static int generate_random_data(uint8_t* buffer, size_t length);
 
+	// Function to serialize time_t into an 8-byte buffer
+	static void serialize_time(qstring& out, time_t t);
+	// Function to deserialize an 8-byte buffer into time_t
+	static time_t deserialize_time(const uint8_t* in_buf, ssize_t len);
+
+	// Function to serialize current time in milliseconds into an 8-byte buffer
+	static void serialize_time_in_millis(qstring& out, size_t offset, int64_t millis);
+	// Function to deserialize an 8-byte buffer into time in milliseconds
+	static int64_t deserialize_time_in_millis(const uint8_t* in_buf, ssize_t len);
+	static int64_t current_time_in_millis();
+
 #if USE_LIBUV
 	// uv cleanups
 	static bool cleanup_and_destroy_uv_loop(uv_loop_t* loop);

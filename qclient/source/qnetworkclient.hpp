@@ -123,7 +123,8 @@ class conn_io_client {
 	bool issue_close = false;
 	std::atomic<bool> fin_received = false;
 	ev_tstamp last_flush_time;
-
+	int64_t last_ping_time = 0;
+	int64_t last_ping_ack_time = 0;	 // last ping ack time, rtt for the last ping if issued.
 	ssize_t custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code);
 };
 
@@ -198,6 +199,8 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	static void heart_beat_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
 	static void process_recv_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin);
+	static bool is_pong_from_server(ssize_t recv_len, uint8_t* buf);
+	static void process_recv_pong_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection);
 
 	void setstate(con_state state);
 	con_state state = STATE_OPEN;
@@ -241,6 +244,8 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 #if USE_PTHREAD
 	inline qmutex& get_runconfig_mutex() { return runconfig_mutex; }
 #endif
+
+	void send_ping();
 };
 };	// namespace client
 #endif /* qnetworkclient_hpp */

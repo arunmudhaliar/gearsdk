@@ -309,6 +309,20 @@ void qnetworkserver::onconnection_message(ssize_t recv_len, uint8_t* buf, qconn_
 #endif
 }
 
+void qnetworkserver::process_recv_ping_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
+	size_t len_type_sz = sizeof(uint32_t);
+	size_t offset = len_type_sz + 2;  // [p][i][8-byte time]
+	int64_t deser_time = essentials::deserialize_time_in_millis(buf + offset, recv_len - (len_type_sz + 2));
+	if (deser_time == 0) {
+		return;
+	}
+
+	qstring pong_msg;
+	pong_msg.bin_copy(buf, recv_len);
+	pong_msg.bin_copy_with_offset((const uint8_t*) "po", len_type_sz, 2);
+	qconnection->sendmessage(pong_msg, false);
+}
+
 void qnetworkserver::process_recv_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
 	size_t len_type_sz = sizeof(uint32_t);
 	size_t offset = 0;
@@ -580,6 +594,12 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 					continue;
 				}
 
+				// ping from client
+				if (is_ping_from_client(recv_len, conns->buf)) {
+					process_recv_ping_message(recv_len, conns->buf, qconnection);
+					continue;
+				}
+
 				process_recv_message(recv_len, conns->buf, qconnection);
 			}
 			quiche_stream_iter_free(readable);
@@ -606,6 +626,12 @@ void qnetworkserver::recv_cb_internal(EV_P_ ev_io* w, int revents) {
 bool qnetworkserver::is_heartbeat_from_client(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection) {
 	size_t len_type_sz = sizeof(uint32_t);
 	return (recv_len == len_type_sz + 2 && buf[len_type_sz + 0] == 'h' && buf[len_type_sz + 1] == 'b');
+}
+
+bool qnetworkserver::is_ping_from_client(ssize_t recv_len, uint8_t* buf) {
+	size_t len_type_sz = sizeof(uint32_t);
+	// 2 + 8 = 2 bytes for 'pi' and 8-byte time buffer
+	return (recv_len == len_type_sz + 2 + 8 && buf[len_type_sz + 0] == 'p' && buf[len_type_sz + 1] == 'i');
 }
 
 void qnetworkserver::broadcast_message(const qstring& buffer, bool flush) {

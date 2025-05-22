@@ -129,6 +129,15 @@ EXPORT unsigned long get_crc32(const char* guid, int guid_len) {
 	return essentials::get_crc((const uint8_t*) guid, guid_len);
 }
 
+EXPORT void qsocket_send_ping(unsigned long guid_crc) {
+    std::map<unsigned long, qsocket*>::iterator it = qsockets.find(guid_crc);
+    if (it == qsockets.end()) {
+        debug_warn(LOG_LEVEL_0, __LOGTAG__, "qsocket_send_ping failed - guid_crc not exist %d", guid_crc);
+        return;
+    }
+    return it->second->send_ping();
+}
+
 EXPORT bool qsocket_connect(unsigned long guid_crc, const char* host, const char* port, void* arg, qsocket::type_qsocket_onconnect cb_connect, qsocket::type_qsocket_onmessage cb_message,
 							qsocket::type_qsocket_onreleaseconnection cb_release_connection, qsocket::type_qsocket_onclose cb_close) {
 	if (qsockets.find(guid_crc) != qsockets.end()) {
@@ -185,7 +194,7 @@ EXPORT void qsocket_print_info() {
 }
 
 // #define QH3TEST_APP 1
-#if PLATFORM == PLATFORM_WINDOWS && QH3TEST_APP
+#if QH3TEST_APP
 // Callback function definition
 void async_request_callback(const char* payload, void* arg, bool success) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "async_request_callback called with result %d", success);
@@ -247,7 +256,7 @@ void test_qclient() {
 	qsocket_print_info();
 }
 
-int main() {
+int main(int argc, const char * argv[]) {
 	debug_print(LOG_LEVEL_0, __LOGTAG__, "qunity test app");
 #if PLATFORM == PLATFORM_WINDOWS
 	// Initialize Winsock

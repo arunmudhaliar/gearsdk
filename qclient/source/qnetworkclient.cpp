@@ -558,8 +558,9 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 				} else {
 					debug_print(LOG_LEVEL_2, __LOGTAG__, "fin received, closing...");
 				}
+				qconnection->fin_received.store(fin);
 			}
-			qconnection->fin_received.store(fin);
+
 			process_recv_message(recv_len, qconnection->recv_buf, qconnection, fin);
 		}
 		quiche_stream_iter_free(readable);
@@ -569,6 +570,36 @@ void qnetworkclient::recv_cb(EV_P_ ev_io* w, int revents) {
 		ssize_t bytes_sent = qconnection->bridge->flushegress(loop, qconnection);
 		debug_warn_cond(__LOGTAG__, bytes_sent < 0, "f:recv_cb - flushegress returned %ld", bytes_sent);
 	}
+}
+
+bool qnetworkclient::is_pong_from_server(ssize_t recv_len, uint8_t* buf) {
+	size_t len_type_sz = sizeof(uint32_t);
+	// 2 + 8 = 2 bytes for 'po' and 8-byte time buffer
+	return (recv_len == len_type_sz + 2 + 8 && buf[len_type_sz + 0] == 'p' && buf[len_type_sz + 1] == 'o');
+}
+
+void qnetworkclient::process_recv_pong_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection) {
+	size_t len_type_sz = sizeof(uint32_t);
+	size_t offset = len_type_sz + 2;  // [p][o][8-byte time]
+	int64_t deser_time = essentials::deserialize_time_in_millis(buf + offset, recv_len - (len_type_sz + 2));
+	if (deser_time == 0) {
+		return;
+	}
+	int64_t current_time = essentials::current_time_in_millis();
+	qconnection->last_ping_ack_time = current_time;
+	int64_t elapsed_ack = current_time - deser_time;
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "ping [%lld] acked in %lld ms", static_cast<long long>(deser_time), static_cast<long long>(elapsed_ack));
+}
+
+void qnetworkclient::send_ping() {
+	if (qclient_connection == nullptr) {
+		return;
+	}
+	qclient_connection->last_ping_time = essentials::current_time_in_millis();
+	qstring ping_msg("pi");	 // [p]+[i]+[8-byte time]
+	essentials::serialize_time_in_millis(ping_msg, ping_msg.length(), qclient_connection->last_ping_time);
+	send_message(ping_msg, true);
+	debug_print(LOG_LEVEL_0, __LOGTAG__, "ping [%lld]", static_cast<long long>(qclient_connection->last_ping_time));
 }
 
 void qnetworkclient::process_recv_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin) {
@@ -585,7 +616,12 @@ void qnetworkclient::process_recv_message(ssize_t recv_len, uint8_t* buf, conn_i
 			break;
 		}
 
-		qconnection->bridge->event_msg_received(msg_len, buf + offset + len_type_sz, qconnection, fin);
+		// pong from server
+		if (is_pong_from_server(msg_len, buf + offset + len_type_sz)) {
+			process_recv_pong_message(msg_len, buf + offset + len_type_sz, qconnection);
+		} else {
+			qconnection->bridge->event_msg_received(msg_len, buf + offset + len_type_sz, qconnection, fin);
+		}
 		offset += len_type_sz + msg_len;
 	}
 

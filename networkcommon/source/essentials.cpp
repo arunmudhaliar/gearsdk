@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #endif
 
+#include <chrono>
 #include <cstring>
 #if PLATFORM == PLATFORM_LINUX
 #include <sys/sysinfo.h>
@@ -661,4 +662,46 @@ bool conn_io_req_res::validate() {
 	//     debug_print_important(__LOGTAG__, "CRC validation %lu == %lu, payload sz %lu, crc_as_string %s",
 	//        crc_, crc_from_req, payload->len, crc_header->value);
 	return crc_from_req == crc;
+}
+
+// Function to serialize time_t into an 8-byte buffer
+void essentials::serialize_time(qstring& out, time_t t) {
+	// Convert time_t to uint64_t (8 bytes)
+	uint64_t net = htonll((uint64_t) t);
+	uint8_t out_buf[sizeof(net)];
+	memcpy(out_buf, &net, sizeof(net));
+	out.bin_copy(out_buf, sizeof(net));
+}
+
+// Function to deserialize an 8-byte buffer into time_t
+time_t essentials::deserialize_time(const uint8_t* in_buf, ssize_t len) {
+	if (len < 8) {
+		return 0;  // Handle error appropriately if the buffer is too short
+	}
+	uint64_t net;
+	memcpy(&net, in_buf, sizeof(net));
+	// Convert back to time_t (may truncate depending on the platform)
+	return (time_t) ntohll(net);
+}
+
+// Function to serialize current time in milliseconds into an 8-byte buffer
+void essentials::serialize_time_in_millis(qstring& out, size_t offset, int64_t millis) {
+	uint64_t net = htonll(static_cast<uint64_t>(millis));
+	uint8_t out_buf[sizeof(net)];
+	memcpy(out_buf, &net, sizeof(net));
+	out.bin_copy_with_offset(out_buf, offset, sizeof(net));
+}
+
+// Function to deserialize an 8-byte buffer into time in milliseconds
+int64_t essentials::deserialize_time_in_millis(const uint8_t* in_buf, ssize_t len) {
+	if (len < 8) {
+		return 0;  // Handle error appropriately
+	}
+	uint64_t net;
+	memcpy(&net, in_buf, sizeof(net));
+	return static_cast<int64_t>(ntohll(net));
+}
+
+int64_t essentials::current_time_in_millis() {
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

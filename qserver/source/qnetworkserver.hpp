@@ -190,6 +190,8 @@ class qnetworkserver : protected bridge_qpeerconnection {
 
 	static void process_recv_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
 	static bool is_heartbeat_from_client(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static void process_recv_ping_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static bool is_ping_from_client(ssize_t recv_len, uint8_t* buf);
 
 	quiche_config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;
