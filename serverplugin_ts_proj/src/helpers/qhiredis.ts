@@ -37,6 +37,9 @@ class qhiredis {
                 // Authentication options
                 username: this.redis_username, // Optional: If you're using Redis ACL (6.x and later)
                 password: this.redis_password, // If password is set
+                retryStrategy: times => Math.min(times * 200, 5000),
+                maxRetriesPerRequest: 5,  // or null to disable per-request retries
+                enableOfflineQueue: false
             };
 
             if (unix_socket) {
@@ -46,6 +49,21 @@ class qhiredis {
             }
 
             this.redis_client = new Redis(options);
+            /*
+            // This callbacks not seems to be getting called. Need to investigate.
+            this.redis_client.on('error', (err) => {
+                console.error(`[${this.name}] Redis client error:`, err);
+            });
+            this.redis_client.on('close', () => {
+                console.warn(`[${this.name}] Redis connection closed.`);
+            });
+            this.redis_client.on('end', () => {
+                console.warn(`[${this.name}] Redis connection ended.`);
+            });
+            this.redis_client.on('reconnecting', () => {
+                console.warn(`[${this.name}] Redis reconnecting...`);
+            });
+            */
             debug_print(LOG_LEVEL_4, qhiredis.__LOGTAG__, `[${this.name}] Tyring connection to Redis at ${this.redis_ip}:${this.redis_port}`);
             await this.redis_client.connect();
             debug_print(LOG_LEVEL_0, qhiredis.__LOGTAG__, `[${this.name}] Connected to Redis at ${this.redis_ip}:${this.redis_port}`);

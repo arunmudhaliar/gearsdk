@@ -137,10 +137,15 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_request_with_callba
 
 			// debug_raw(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
 
-			conn_io_req_res::header* token_header = response->get_header("token");
-			if (token_header) {
-				token_value = token_header->value;
+			Document doc;
+			ParseResult ok = doc.Parse(response->get_payload().buffer.c_str());
+			EXPECT_TRUE(ok) << "JSON Parse FAILED !!!";
+			if (!ok) {
+				debug_print_error(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 			}
+			res_msg_user_get user_get_msg_res;
+			EXPECT_TRUE(user_get_msg_res.deserialize(doc)) << "deserialize FAILED !!!";
+			token_value = user_get_msg_res.token;
 
 			// Notify the test that the callback was invoked
 			callback_invoked.set_value();  // This won't cause memory leaks. Since the main thread will wait for the worker thread to finish its job.
@@ -198,10 +203,17 @@ TEST_P(functional_test_qh3client, test_qh3client_helper_send_async_request_with_
 			bool validate = response->validate();
 			EXPECT_TRUE(validate) << "crc validation FAILED !!!";
 			// debug_raw(LOG_LEVEL_0, "Callback called: %s", response->get_payload().buffer.c_str());
-			conn_io_req_res::header* token_header = response->get_header("token");
-			if (token_header) {
-				token_value = token_header->value;
+
+			Document doc;
+			ParseResult ok = doc.Parse(response->get_payload().buffer.c_str());
+			EXPECT_TRUE(ok) << "JSON Parse FAILED !!!";
+			if (!ok) {
+				debug_print_error(__LOGTAG__, "JSON parse error: %s (%u)\n", rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 			}
+			res_msg_user_get user_get_msg_res;
+			EXPECT_TRUE(user_get_msg_res.deserialize(doc)) << "deserialize FAILED !!!";
+			token_value = user_get_msg_res.token;
+
 			// Notify the test that the callback was invoked
 			// callback_invoked.set_value();    // Will lead to memory leak since the main thread will exit immediately after this.
 		},

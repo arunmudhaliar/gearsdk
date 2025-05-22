@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1009,7 +1008,7 @@ GameObject:
   - component: {fileID: 203291008}
   - component: {fileID: 203291007}
   m_Layer: 5
-  m_Name: qsockets_Scroll View
+  m_Name: StatefulClient_ScrollView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2196,7 +2195,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1437167468}
   m_HandleRect: {fileID: 1437167467}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2309,27 +2308,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 651346164}
-  - component: {fileID: 651346163}
   - component: {fileID: 651346165}
   m_Layer: 0
-  m_Name: qunitysdk
+  m_Name: ClientExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &651346163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 651346162}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4904944ba41c54a8f85ffac73ad4c902, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &651346164
 Transform:
   m_ObjectHideFlags: 0
@@ -2357,20 +2343,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1450daecf6ef046c2b41384b8e8edc44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  appTitle: {fileID: 1888000058}
-  scrollRect: {fileID: 1738225701}
-  scrollRect_qsocket: {fileID: 203291007}
-  resultLabelPrefab: {fileID: 2853637640019774233, guid: fd5aacd2cd4d74e2eab2d20dad8a707e,
+  _appTitle: {fileID: 1888000058}
+  _scrollRect: {fileID: 1738225701}
+  _scrollRect_qsocket: {fileID: 203291007}
+  _resultLabelPrefab: {fileID: 2853637640019774233, guid: fd5aacd2cd4d74e2eab2d20dad8a707e,
     type: 3}
-  qsocketTestPrefab: {fileID: 6796422373380120993, guid: 86f91253742e247dabd8a748ac23622e,
+  _qsocketTestPrefab: {fileID: 6796422373380120993, guid: 86f91253742e247dabd8a748ac23622e,
     type: 3}
-  no_of_requests: {fileID: 891525375}
-  progress: {fileID: 1354822178}
-  userLoginRequestToggle: {fileID: 350362998}
-  server_ip: {fileID: 1066965591}
-  forceCmdServerShutdownToggle: {fileID: 1391708647}
-  total_requests: 0
-  total_request_response_came: 0
+  _no_of_requests: {fileID: 891525375}
+  _progress: {fileID: 1354822178}
+  _userLoginRequestToggle: {fileID: 350362998}
+  _server_ip: {fileID: 1066965591}
+  _forceCmdServerShutdownToggle: {fileID: 1391708647}
+  _total_requests: 0
+  _total_request_response_came: 0
 --- !u!1 &658562618
 GameObject:
   m_ObjectHideFlags: 0
@@ -2758,6 +2744,51 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &844590882
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 844590884}
+  - component: {fileID: 844590883}
+  m_Layer: 0
+  m_Name: MainThreadDispatcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &844590883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844590882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8806ed8bde5fe4d75bafe0e05cf9cb42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actionCount: 0
+--- !u!4 &844590884
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844590882}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 270, y: 480, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &853447303
 GameObject:
   m_ObjectHideFlags: 0
@@ -5963,7 +5994,7 @@ GameObject:
   - component: {fileID: 1738225702}
   - component: {fileID: 1738225701}
   m_Layer: 5
-  m_Name: qh3_Scroll View
+  m_Name: QH3Client_ScrollView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6463,7 +6494,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1388972206}
   m_HandleRect: {fileID: 1388972205}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -7620,3 +7651,4 @@ SceneRoots:
   - {fileID: 651346164}
   - {fileID: 811683997}
   - {fileID: 75419657}
+  - {fileID: 844590884}

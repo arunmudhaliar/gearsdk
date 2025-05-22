@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/gsdk-preloader-scene.unity
+    guid: 01e345ae58f7a41cab81725036f99cb4
+  - enabled: 1
     path: Assets/Scenes/gsdk-main-scene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/gsdk-network-base-scene.unity
+    guid: 4dd201b4a44bc483482312fbd3d87441
+  - enabled: 1
+    path: Assets/Scenes/gsdk-network-scene.unity
+    guid: 80a7a2bb8c9174e55b59936e014c3795
   m_configObjects: {}

@@ -15,7 +15,8 @@ do
   echo "Running iteration $i..."
   
   # Run the command and capture the exit status
-  ./qfist-app --server 127.0.0.1:4004 --exit-after 30
+    ./qfist-app --server 127.0.0.1:4004 --exit-after 300 --max-parallel 10
+  # ./qfist-app --server 15.206.79.30:4004 --exit-after 300 --max-parallel 10
   exit_status=$?
 
   # Log success or failure for each iteration

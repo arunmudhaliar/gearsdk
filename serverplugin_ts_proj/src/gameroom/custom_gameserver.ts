@@ -33,6 +33,9 @@ export class custom_room implements qserver.interface_room {
     onroom_end(room_ptr: serversdk.room_ptr): void {
         debug_print(LOG_LEVEL_4, custom_room.__LOGTAG__, `room_event_end called r:${this.room_id}`);
     }
+    onroom_destroy(room_ptr: serversdk.room_ptr): void {
+        debug_print(LOG_LEVEL_4, custom_room.__LOGTAG__, `room_event_destroy called r:${this.room_id}`);
+    }
     onroom_countdown_to_start(room_ptr: serversdk.room_ptr, count: number, max_count: number): void {
         debug_print(LOG_LEVEL_4, custom_room.__LOGTAG__, `room_event_countdown_to_start called r:${this.room_id} - ${count}/${max_count}`);
     }

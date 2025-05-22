@@ -30,7 +30,7 @@ extern "C" {
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
 #define MAX_TOKEN_LEN sizeof("quiche") - 1 + sizeof(struct sockaddr_storage) + QUICHE_MAX_CONN_ID_LEN
-
+#define MAX_CUSTOM_SENDBUFFER_SIZE (2 * 1024 * 1024)
 #define QTHREADPOOL 0
 #define QTHREADPOOL_THREAD_COUNT 4
 
@@ -63,9 +63,10 @@ class observer_qserver_events {
 	virtual void room_event_create(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_start(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_player_added(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) = 0;
-	virtual void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) = 0;
+	virtual void room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf) = 0;
 	virtual void room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) = 0;
 	virtual void room_event_end(qnetworkserver* server, int room, class room* room_ptr) = 0;
+	virtual void room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) = 0;
 	virtual void room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) = 0;
 	virtual void room_event_countdown_cancelled(qnetworkserver* server, int room, class room* room_ptr) = 0;
 };
@@ -105,6 +106,7 @@ class qconn_io {
 	void sendmessage(const char* buf, size_t buflen, bool flush);
 	void sendmessage(const qstring& buffer, bool flush);
 	void close();
+	bool send_byez(uint64_t s);
 
 	bridge_qpeerconnection* bridge = nullptr;
 	uint8_t cid[Q_LOCAL_CONN_ID_LEN];
@@ -122,6 +124,11 @@ class qconn_io {
 	int user_data = 0;
 	ev_tstamp last_heartbeat_time;
 	ev_tstamp connection_start_time;
+
+   private:
+	qconn_io() {}
+	ssize_t custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code);
+	uint8_t* custom_send_buffer = nullptr;
 };
 
 // MARK: -
@@ -180,6 +187,11 @@ class qnetworkserver : protected bridge_qpeerconnection {
 	void heartbeat_check();
 	static void heart_beat_check_cb(EV_P_ ev_timer* w, int revents);
 	static void threadpool_mainthread_dispatcher_cb(EV_P_ ev_timer* w, int revents);
+
+	static void process_recv_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static bool is_heartbeat_from_client(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static void process_recv_ping_message(ssize_t recv_len, uint8_t* buf, qconn_io* qconnection);
+	static bool is_ping_from_client(ssize_t recv_len, uint8_t* buf);
 
 	quiche_config* config = nullptr;
 	struct ev_loop* mainloop = nullptr;

@@ -115,13 +115,13 @@ class qstring {
 	 * @param str C-style string.
 	 * @param len Length of the substring.
 	 */
-	qstring(const char* str, unsigned len) {
-		utstring_new(ut_string);
-		if (str == nullptr) {
-			return;
-		}
-		utstring_printf(ut_string, "%.*s", (int) len, str);
-	}
+	//	qstring(const char* str, unsigned len) {
+	//		utstring_new(ut_string);
+	//		if (str == nullptr) {
+	//			return;
+	//		}
+	//		utstring_printf(ut_string, "%.*s", (int) len, str);
+	//	}
 	//    qstring(const uint8_t* str, int len) {
 	//        utstring_new(ut_string);
 	//        utstring_printf(ut_string, "%.*s", len, str);
@@ -205,12 +205,32 @@ class qstring {
 	 * @param buf Pointer to the binary data.
 	 * @param len Length of the binary data.
 	 */
-	void bin_copy(const uint8_t* buf, ssize_t len) {
+	void bin_copy(const uint8_t* buf, size_t len) {
 		if (buf == nullptr) {
 			return;
 		}
 		clear();
 		utstring_bincpy(ut_string, buf, len);
+	}
+
+	// Note: wont clear the existing buffer, if the length is less it will resize and fill the gap with 0.
+	void bin_copy_with_offset(const uint8_t* buf, size_t offset, size_t len) {
+		if (buf == nullptr) {
+			return;
+		}
+		size_t current_len = utstring_len(ut_string);
+		if (current_len < offset + len) {
+			// Ensure the buffer is large enough to accommodate the overwrite
+			utstring_reserve(ut_string, offset + len);
+
+			// Zero the gap between current end and offset, if any
+			if (offset > current_len) {
+				memset(utstring_body(ut_string) + current_len, 0, offset - current_len);
+			}
+			ut_string->i = offset + len;  // Update length to reflect new size
+			ut_string->d[ut_string->i] = '\0';
+		}
+		memcpy(utstring_body(ut_string) + offset, buf, len);
 	}
 
 	/**
@@ -329,7 +349,7 @@ class qstring {
 	 * @brief Returns the length of the string.
 	 * @return Length of the string.
 	 */
-	unsigned long length() const { return utstring_len(ut_string); }
+	size_t length() const { return utstring_len(ut_string); }
 
 	/**
 	 * @brief Checks if the string is empty.

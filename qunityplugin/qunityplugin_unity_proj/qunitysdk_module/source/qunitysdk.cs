@@ -4,8 +4,12 @@ using AOT;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class qunitysdk : MonoBehaviour
+public static class qunitysdk
 {
+    static qunitysdk()
+    {
+        pre_init_sdk();
+    }
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void type_qh3client_helper_cb(string payload, IntPtr arg, bool success);
 
@@ -21,7 +25,7 @@ public class qunitysdk : MonoBehaviour
 
     public abstract class mqsocket {
         abstract protected void onconnect(IntPtr user_data);
-        abstract protected void onmessage( ulong recv_len, string buf );
+        abstract protected void onmessage( ulong recv_len, byte[] buf );
         abstract protected void onreleaseconnection();
         abstract protected void onclose();
     }
@@ -30,7 +34,7 @@ public class qunitysdk : MonoBehaviour
         public ulong guid_crc = 0;
 
         public Action<qsocket, IntPtr> OnConnect;
-        public Action<qsocket, ulong, string> OnMessage;
+        public Action<qsocket, ulong, byte[]> OnMessage;
         public Action<qsocket> OnReleaseConnection;
         public Action<qsocket> OnClose;
 
@@ -45,7 +49,7 @@ public class qunitysdk : MonoBehaviour
             OnConnect(this, user_data);
         }
 
-        protected override void onmessage( ulong recv_len, string buf ) {
+        protected override void onmessage( ulong recv_len, byte[] buf ) {
             OnMessage(this, recv_len, buf);
         }
 
@@ -74,12 +78,12 @@ public class qunitysdk : MonoBehaviour
             // Copy the bytes from the unmanaged memory to the byte array
             Marshal.Copy(buf, array, 0, (int)recv_len);
 
-            string msg = System.Text.Encoding.UTF8.GetString(array, 0, (int)recv_len);
+            // string msg = System.Text.Encoding.UTF8.GetString(array, 0, (int)recv_len);
             MainThreadDispatcher.RunOnMainThread(() => {
                 if (!qunitysdk.sockets.ContainsKey(guid_crc)) {
                     return;
                 }
-                qunitysdk.sockets[guid_crc].onmessage(recv_len, msg);
+                qunitysdk.sockets[guid_crc].onmessage(recv_len, array);
             });
         }
         [MonoPInvokeCallback(typeof(qunitysdk.type_qsocket_onreleaseconnection))]
@@ -128,7 +132,8 @@ public class qunitysdk : MonoBehaviour
     }
 
 #if UNITY_EDITOR_OSX
-    const string cp = "Assets/Plugins/qunitysdk/libs/macos/libqunityplugin.dylib";
+    // const string cp = "Assets/Plugins/qunitysdk/libs/macos/libqunityplugin.dylib";
+    const string cp = "qunityplugin";
 #elif UNITY_STANDALONE_OSX
     const string cp = "qunityplugin";
 #elif UNITY_IOS || UNITY_IPHONE
@@ -165,17 +170,17 @@ public class qunitysdk : MonoBehaviour
     [DllImport(cp, CallingConvention = CallingConvention.Cdecl)]
     public static extern int qsocket_close( ulong guid_crc );
 
-    private static qunitysdk instance;
+    //private static qunitysdk instance;
     private static Dictionary<ulong, qsocket> sockets = new Dictionary<ulong, qsocket>();
-    private void Start() {
-        if (instance != null) {
-            Destroy(this.gameObject);
-            return;
-        }
-
-        pre_init_sdk();
-        this.gameObject.AddComponent<MainThreadDispatcher>();
-        instance = this;
-        DontDestroyOnLoad(this.gameObject);
-    }
+    // private void Start() {
+    //     if (instance != null) {
+    //         Destroy(this.gameObject);
+    //         return;
+    //     }
+    //
+    //     pre_init_sdk();
+    //     this.gameObject.AddComponent<MainThreadDispatcher>();
+    //     instance = this;
+    //     DontDestroyOnLoad(this.gameObject);
+    // }
 }

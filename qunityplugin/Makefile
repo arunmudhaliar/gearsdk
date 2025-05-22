@@ -1,3 +1,16 @@
+# Default to debug mode if no target is specified
+BUILD_MODE ?= debug
+
+# Check the target specified
+ifeq ($(MAKECMDGOALS), debug)
+    BUILD_MODE = debug
+endif
+
+ifeq ($(MAKECMDGOALS), release)
+    BUILD_MODE = release
+endif
+$(info Building $(BUILD_MODE) mode.)
+
 # Paths
 NETWORK_COMMON_SRCDIR = ../networkcommon/source
 SERVER_COMMON_SRCDIR = ../servercommon/source
@@ -90,6 +103,9 @@ release: $(RELEASE_LIB)
 
 $(RELEASE_LIB): $(SDK_SRCS) | $(RELEASE_DIR)
 	$(CXX) $(CXXFLAGS) $(RELEASE_CXXFLAGS) -o $@ $^ $(RELEASE_LDFLAGS) $(LIBS)
+    ifeq ($(UNAME), Linux)
+		strip --strip-unneeded --keep-section=.text $(RELEASE_LIB)
+    endif
 # strip -x $@  # Strip local symbols to reduce file size
 
 # Create directories if they do not exist

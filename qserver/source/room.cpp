@@ -17,19 +17,14 @@ room::room(roomserver_interface* interface, const roomconfig& room_config) : ROO
 	native_server = dynamic_cast<qnetworkserver*>(interface);
 	observer = (roomserverinterface != nullptr) ? roomserverinterface->get_main_observer() : nullptr;
 	set_loop(roomserverinterface->get_netowrk_main_loop());
-	set_state(ROOM_WAITING);
+	// set_state(ROOM_WAITING);
 }
 
 room::~room() {
-	kick_all_except(nullptr);
-	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
-		player* player_to_rem = (*it).second;
-		debug_print_important2(__LOGTAG__, "room %d: player %0x: removed ", ROOM_ID, player_to_rem->qconnection->cid_hash_val);
-		onroom_player_removed(player_to_rem);
-		GX_DELETE(player_to_rem);
+	if (!performed_cleanup) {
+		cleanup();
+		debug_print_warn(__LOGTAG__, "avoid cleanup in destructor, since it will not call the derived class overriden functions !!!");
 	}
-	destroy_all_disconnected_players();
-
 	const qstring& host_id = roomserverinterface->get_host_id();
 	const qstring& port_id = roomserverinterface->get_port_id();
 	qhiredis* hiredis = roomserverinterface->get_hiredis();
@@ -39,6 +34,19 @@ room::~room() {
 	debug_warn_cond(__LOGTAG__, result != 0, "hiredis decr_by failed for key %s, result %d", key.c_str(), result);
 
 	debug_print_important(__LOGTAG__, "room %d: destructor", ROOM_ID);
+}
+
+void room::cleanup() {
+	kick_all_except(nullptr);
+	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
+		player* player_to_rem = (*it).second;
+		debug_print_important2(__LOGTAG__, "room %d: player %0x: removed ", ROOM_ID, player_to_rem->qconnection->cid_hash_val);
+		onroom_player_removed(player_to_rem);
+		GX_DELETE(player_to_rem);
+	}
+	destroy_all_disconnected_players();
+	performed_cleanup = true;
+	set_state(ROOM_DESTROY);
 }
 
 void room::send_event_player_add_or_remove(player* p, bool add) {
@@ -89,14 +97,26 @@ void room::send_event_player_add_or_remove(player* p, bool add) {
 }
 
 void room::send_event_room_start_or_end(bool room_start) {
-	Document doc;
-	doc.SetObject();
+	msg_room_server_event_base* msg = nullptr;
+	if (room_start) {
+		msg_room_server_event_start* msg_start = (msg_room_server_event_start*) msg_room_server_event_start::create();
+		msg_start->room_id = ROOM_ID;
+		msg = msg_start;
+	} else {
+		msg_room_server_event_end* msg_end = (msg_room_server_event_end*) msg_room_server_event_end::create();
+		msg_end->room_id = ROOM_ID;
+		msg = msg_end;
+	}
 
-	// Create a JSON object to hold the data
-	Document::AllocatorType& allocator = doc.GetAllocator();
-	doc.AddMember("room_event", Value().SetString(room_start ? "room_start" : "room_end", allocator), allocator);
-	doc.AddMember("room_id", Value().SetInt(ROOM_ID), allocator);
-	// Convert JSON document to string
+	Document doc;
+	msg->serialize(doc, doc.GetAllocator());
+	//	doc.SetObject();
+	//
+	//	// Create a JSON object to hold the data
+	//	Document::AllocatorType& allocator = doc.GetAllocator();
+	//	doc.AddMember("room_event", Value().SetString(room_start ? "room_start" : "room_end", allocator), allocator);
+	//	doc.AddMember("room_id", Value().SetInt(ROOM_ID), allocator);
+	//	// Convert JSON document to string
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
 	doc.Accept(writer);
@@ -106,6 +126,7 @@ void room::send_event_room_start_or_end(bool room_start) {
 		player* player_ptr = (*it).second;
 		player_ptr->qconnection->sendmessage(buffer.GetString(), buffer.GetSize(), true);
 	}
+	GX_DELETE(msg);
 }
 
 void room::onroom_create() {
@@ -125,10 +146,11 @@ void room::onroom_player_added(player* p) {
 		observer->room_event_player_added(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val);
 	}
 }
-void room::onroom_message(player* p, const qstring& msg) {
-	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
+void room::onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) {
+	const char* char_buf = (const char*) buf;
+	debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, recv_len, char_buf, p->qconnection->cid_hash_val);
 	if (observer) {
-		observer->room_event_message(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val, msg);
+		observer->room_event_message(native_server, this->ROOM_ID, this, p->pid, p->qconnection->cid_hash_val, recv_len, buf);
 	}
 }
 void room::onroom_player_removed(player* p) {
@@ -139,6 +161,12 @@ void room::onroom_player_removed(player* p) {
 void room::onroom_end() {
 	if (observer) {
 		observer->room_event_end(native_server, this->ROOM_ID, this);
+	}
+}
+
+void room::onroom_destroy() {
+	if (observer) {
+		observer->room_event_destroy(native_server, this->ROOM_ID, this);
 	}
 }
 
@@ -156,8 +184,8 @@ bool room::can_allow_reconnection(unsigned cid_hash) {
 	UNUSED(cid_hash);
 	return false;
 }
-void room::pass_message_to_room(player* p, const qstring& msg) {
-	onroom_message(p, msg);
+void room::pass_message_to_room(player* p, ssize_t recv_len, const uint8_t* buf) {
+	onroom_message(p, recv_len, buf);
 }
 ssize_t room::try_add_connection(qconn_io* qconnection, const qstring& pid, bool& replaced_by_disconnected_player, unsigned prev_cid_hash_val) {
 	replaced_by_disconnected_player = false;
@@ -411,6 +439,10 @@ void room::on_state_change(states prev_state) {
 			onroom_end();
 			break;
 		}
+		case ROOM_DESTROY: {
+			debug_print_important2(__LOGTAG__, "room %d: destroy", ROOM_ID);
+			onroom_destroy();
+		}
 	}
 }
 
@@ -426,15 +458,17 @@ const qstring& room::get_state_string() {
 	return states_string[state];
 }
 
-void room::broadcast(const qstring& msg) {
-	debug_print(LOG_LEVEL_2, __LOGTAG__, "room %d: f:broadcast %s", ROOM_ID, msg.c_str());
+void room::broadcast(unsigned long recv_len, const uint8_t* buf) {
+	const char* char_buf = (const char*) buf;
+	debug_print(LOG_LEVEL_2, __LOGTAG__, "room %d: f:broadcast %.*s", ROOM_ID, recv_len, char_buf);
 	for (auto it = playermap.cbegin(); it != playermap.cend(); it++) {
 		player* player_ptr = it->second;
-		player_ptr->qconnection->sendmessage(msg, true);
+		player_ptr->qconnection->sendmessage(char_buf, recv_len, true);
 	}
 }
 
-bool room::broadcast_except(player* p, const qstring& msg) {
+bool room::broadcast_except(player* p, unsigned long recv_len, const uint8_t* buf) {
+	const char* char_buf = (const char*) buf;
 	std::map<unsigned, player*>::iterator it_except = playermap.find(p->qconnection->cid_hash_val);
 	if (it_except == playermap.end()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:broadcast_except - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
@@ -446,18 +480,18 @@ bool room::broadcast_except(player* p, const qstring& msg) {
 		if (it_except == it) {
 			continue;
 		}
-		player_ptr->qconnection->sendmessage(msg, true);
+		player_ptr->qconnection->sendmessage(char_buf, recv_len, true);
 	}
 	return true;
 }
 
-bool room::sendto(player* p, const qstring& msg) {
+bool room::sendto(player* p, unsigned long recv_len, const uint8_t* buf) {
 	std::map<unsigned, player*>::iterator it = playermap.find(p->qconnection->cid_hash_val);
 	if (it == playermap.end()) {
 		debug_warn(LOG_LEVEL_0, __LOGTAG__, "room %d: f:sendto - player %0x not found in map, ignoring !!!", ROOM_ID, p->qconnection->cid_hash_val);
 		return false;
 	}
-	p->qconnection->sendmessage(msg, true);
+	p->qconnection->sendmessage((const char*) buf, recv_len, true);
 	return true;
 }
 

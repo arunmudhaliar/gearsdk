@@ -23,15 +23,20 @@ extern "C" {
 #include "../../common/sdktypes.hpp"
 #include "../../networkcommon/source/essentials.hpp"
 
-//#include <deque>
-#include <queue>
+// #include <deque>
 #include <atomic>
+#include <queue>
 
 #undef __LOGTAG__
 #define __LOGTAG__ "qnetworkclient"
 
 #define Q_LOCAL_CONN_ID_LEN 16
 #define Q_MAX_DATAGRAM_SIZE 1350
+
+// (amudaliar): In server this is about 2MB size (refer in qnetworkserver header file - MAX_CUSTOM_SENDBUFFER_SIZE).
+// Since we are only using this buffer for Hi message on client, we dont need a big buffer.
+// We handle the length prefix through qdata constructor for all other messages.
+#define MAX_CUSTOM_SENDBUFFER_SIZE (1024)
 
 #define SENDTO_INITIAL_RETRY_INTERVAL 2
 #define MAX_SENDTO_RETRY_COUNT 4
@@ -42,9 +47,12 @@ extern "C" {
 
 namespace client {
 struct qdata {
-	qdata(const uint8_t* data, ssize_t sz, bool fin = false) : size(sz), fin(fin) {
-		this->data = new uint8_t[sz];
-		memcpy(this->data, data, sz);
+	qdata(const uint8_t* data, ssize_t sz, bool fin = false) : size(sz + sizeof(uint32_t)), fin(fin) {
+		uint32_t htonl_sz = htonl(sz);
+		size_t len_type_sz = sizeof(htonl_sz);
+		this->data = new uint8_t[sz + len_type_sz];
+		memcpy(this->data, &htonl_sz, len_type_sz);
+		memcpy(this->data + len_type_sz, data, sz);
 	}
 	~qdata() { GX_DELETE_ARY(this->data); }
 	uint8_t* data = nullptr;
@@ -77,6 +85,7 @@ class bridge_qcommand;
 class conn_io_client {
    private:
 	conn_io_client() {}
+	uint8_t* custom_send_buffer = nullptr;
 
    public:
 	conn_io_client(bridge_qcommand* bridge, int id);
@@ -100,8 +109,8 @@ class conn_io_client {
 	quiche_config* config = nullptr;
 	struct addrinfo* peer = nullptr;
 	int connect(qstring host, qstring port);
-	ssize_t send_message(const char* buf, size_t buflen, bool fin);
-	ssize_t send_message(const qstring& buffer, bool fin);
+	ssize_t send_message_without_length_prefix(const char* buf, size_t buflen, bool fin);
+	ssize_t send_message_without_length_prefix(const qstring& buffer, bool fin);
 	int connection_active();
 	void close_connection();  // Note: This function is not fully tested.
 	void release();
@@ -109,11 +118,14 @@ class conn_io_client {
 	uint8_t recv_buf[65535];
 	uint8_t egress_out[Q_MAX_DATAGRAM_SIZE];
 
-    std::queue<qdata*> send_buffer;
+	std::queue<qdata*> send_buffer;
 	unsigned cid_hash_val = 0;
 	bool issue_close = false;
-    std::atomic<bool> fin_received = false;
-    ev_tstamp last_flush_time;
+	std::atomic<bool> fin_received = false;
+	ev_tstamp last_flush_time;
+	int64_t last_ping_time = 0;
+	int64_t last_ping_ack_time = 0;	 // last ping ack time, rtt for the last ping if issued.
+	ssize_t custom_quiche_conn_stream_send(uint64_t stream_id, const uint8_t* buf, size_t buf_len, bool fin, uint64_t* out_error_code);
 };
 
 class bridge_qconnection {
@@ -186,6 +198,9 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	static void sendto_retry_cb(EV_P_ ev_timer* w, int revents);
 	static void heart_beat_cb(EV_P_ ev_timer* w, int revents);
 	static void* run_internal(void* data);
+	static void process_recv_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection, bool fin);
+	static bool is_pong_from_server(ssize_t recv_len, uint8_t* buf);
+	static void process_recv_pong_message(ssize_t recv_len, uint8_t* buf, conn_io_client* qconnection);
 
 	void setstate(con_state state);
 	con_state state = STATE_OPEN;
@@ -224,11 +239,13 @@ class qnetworkclient : public bridge_qcommand, public bridge_qconnection {
 	bool is_runfinished();
 	int run(qstring host, qstring port);
 	void forcerelease();
-    inline bool is_fin_received()  { return qclient_connection && qclient_connection->fin_received.load(); }
-    
+	inline bool is_fin_received() { return qclient_connection && qclient_connection->fin_received.load(); }
+
 #if USE_PTHREAD
 	inline qmutex& get_runconfig_mutex() { return runconfig_mutex; }
 #endif
+
+	void send_ping();
 };
 };	// namespace client
 #endif /* qnetworkclient_hpp */

@@ -50,9 +50,9 @@ void plugin_gameserver_event_listener::room_event_player_added(qnetworkserver* s
         cb_room_event_player_added(server, room, room_ptr, pid.c_str(), cid_hash);
     }
 }
-void plugin_gameserver_event_listener::room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, const qstring& msg) {
+void plugin_gameserver_event_listener::room_event_message(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash, unsigned long recv_len, const uint8_t* buf) {
     if (cb_room_event_message) {
-        cb_room_event_message(server, room, room_ptr, pid.c_str(), cid_hash, msg.c_str());
+        cb_room_event_message(server, room, room_ptr, pid.c_str(), cid_hash, recv_len, buf);
     }
 }
 void plugin_gameserver_event_listener::room_event_player_removed(qnetworkserver* server, int room, class room* room_ptr, const qstring& pid, unsigned cid_hash) {
@@ -63,6 +63,11 @@ void plugin_gameserver_event_listener::room_event_player_removed(qnetworkserver*
 void plugin_gameserver_event_listener::room_event_end(qnetworkserver* server, int room, class room* room_ptr) {
     if (cb_room_event_end) {
         cb_room_event_end(server, room, room_ptr);
+    }
+}
+void plugin_gameserver_event_listener::room_event_destroy(qnetworkserver* server, int room, class room* room_ptr) {
+    if (cb_room_event_destroy) {
+        cb_room_event_destroy(server, room, room_ptr);
     }
 }
 void plugin_gameserver_event_listener::room_event_countdown_to_start(qnetworkserver* server, int room, class room* room_ptr, int count, int max_count) {
@@ -142,8 +147,8 @@ void plugin_game_room::onroom_start() {
 void plugin_game_room::onroom_player_added(player* p) {
     room::onroom_player_added(p);
 }
-void plugin_game_room::onroom_message(player* p, const qstring& msg) {
-    room::onroom_message(p, msg);
+void plugin_game_room::onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) {
+    room::onroom_message(p, recv_len, buf);
 //    debug_print(LOG_LEVEL_3, __LOGTAG__, "room %d: received '%.*s' from player %0x", ROOM_ID, msg.length(), msg.c_str(), p->qconnection->cid_hash_val);
 }
 void plugin_game_room::onroom_player_removed(player* p) {
@@ -151,6 +156,9 @@ void plugin_game_room::onroom_player_removed(player* p) {
 }
 void plugin_game_room::onroom_end() {
     room::onroom_end();
+}
+void plugin_game_room::onroom_destroy() {
+    room::onroom_destroy();
 }
 bool plugin_game_room::can_allow_reconnection(unsigned cid_hash) {
     UNUSED(cid_hash);
@@ -191,18 +199,18 @@ void plugin_gameserver::notify_server_async_cb(EV_P_ ev_async *w, int revents) {
             case 0: {
                 player* p = room_ptr->get_player(response_packet->cid_hash);
                 if (p) {
-                    room_ptr->broadcast_except(p, response_packet->message);
+                    room_ptr->broadcast_except(p, response_packet->message.length(), (const uint8_t*)response_packet->message.c_str());
                 }
             }
                 break;
             case 1: {
-                room_ptr->broadcast(response_packet->message);
+                room_ptr->broadcast(response_packet->message.length(), (const uint8_t*)response_packet->message.c_str());
             }
                 break;
             case 2: {
                 player* p = room_ptr->get_player(response_packet->cid_hash);
                 if (p) {
-                    room_ptr->sendto(p, response_packet->message);
+                    room_ptr->sendto(p, response_packet->message.length(), (const uint8_t*)response_packet->message.c_str());
                 }
             }
                 break;
@@ -219,6 +227,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_message room_event_message_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_player_removed room_player_removed_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_end room_event_end_cb,
+                                           plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_destroy room_event_destroy_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_to_start room_event_countdown_to_start_cb,
                                        plugin_gameserver_event_listener::type_plugin_gameserver_on_room_event_countdown_cancelled room_event_countdown_cancelled_cb,
                                        void* user_arg
@@ -244,6 +253,7 @@ EXPORT int gsdk::server::spawn_game_server(const char* server_address, const cha
                                                                                         room_event_message_cb,
                                                                                         room_player_removed_cb,
                                                                                         room_event_end_cb,
+                                                                                        room_event_destroy_cb,
                                                                                         room_event_countdown_to_start_cb,
                                                                                         room_event_countdown_cancelled_cb);
     std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>* tuple_in = DEBUG_NEW std::tuple<st_qserver_config_in*, plugin_gameserver_event_listener*>(config, listener);

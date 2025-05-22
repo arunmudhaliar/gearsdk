@@ -24,9 +24,10 @@ class game_room : public room {
 	void onroom_create() override;
 	void onroom_start() override;
 	void onroom_player_added(player* p) override;
-	void onroom_message(player* p, const qstring& msg) override;
+	void onroom_message(player* p, unsigned long recv_len, const uint8_t* buf) override;
 	void onroom_player_removed(player* p) override;
 	void onroom_end() override;
+	void onroom_destroy() override;
 	bool can_allow_reconnection(unsigned cid_hash) override;
 };
 

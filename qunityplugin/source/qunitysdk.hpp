@@ -76,6 +76,7 @@ EXPORT int qsocket_close(unsigned long guid_crc);
 EXPORT void destroy_finished_qsockets();
 EXPORT void qsocket_print_info();
 EXPORT unsigned long get_crc32(const char* guid, int guid_len);
+EXPORT void qsocket_send_ping(unsigned long guid_crc);
 }
 };	// namespace qunitysdk
 

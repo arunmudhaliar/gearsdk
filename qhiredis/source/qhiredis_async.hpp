@@ -34,11 +34,11 @@
 
 #include <async.h>
 #include <event.h>
+#include <functional>
 #include <hiredis.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #undef __LOGTAG__
 #define __LOGTAG__ "qhiredis_async"
 

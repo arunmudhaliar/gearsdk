@@ -15,6 +15,7 @@ namespace napi_gserver_funcs {
         napi_threadsafe_function room_event_message_cb_ref;
         napi_threadsafe_function room_player_removed_cb_ref;
         napi_threadsafe_function room_event_end_cb_ref;
+        napi_threadsafe_function room_event_destroy_cb_ref;
         napi_threadsafe_function room_event_countdown_to_start_cb_ref;
         napi_threadsafe_function room_event_countdown_cancelled_cb_ref;
         
@@ -29,6 +30,7 @@ namespace napi_gserver_funcs {
             napi_unref_threadsafe_function(env, room_event_message_cb_ref);
             napi_unref_threadsafe_function(env, room_player_removed_cb_ref);
             napi_unref_threadsafe_function(env, room_event_end_cb_ref);
+            napi_unref_threadsafe_function(env, room_event_destroy_cb_ref);
             napi_unref_threadsafe_function(env, room_event_countdown_to_start_cb_ref);
             napi_unref_threadsafe_function(env, room_event_countdown_cancelled_cb_ref);
         }
